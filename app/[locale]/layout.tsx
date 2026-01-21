@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Antic_Didone, Inter } from "next/font/google";
 import "../globals.css";
 import Navbar from "@/components/Navbar";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 
-const playfair = Playfair_Display({
+const didot = Antic_Didone({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  weight: "400",
+  variable: "--font-didot",
   display: "swap",
 });
 
@@ -40,7 +41,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${playfair.variable} ${inter.variable} font-sans bg-ac-sand text-ac-taupe antialiased`} suppressHydrationWarning>
+      <body className={`${didot.variable} ${inter.variable} font-sans bg-ac-sand text-ac-taupe antialiased`} suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           <Navbar />
           {children}

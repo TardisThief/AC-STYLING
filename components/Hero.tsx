@@ -38,7 +38,10 @@ export default function Hero() {
                     </p>
 
                     {/* Main Headline */}
-                    <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-none mb-8 text-white">
+                    <h1
+                        className="font-serif text-5xl md:text-7xl lg:text-8xl leading-none mb-8 text-white"
+                        style={{ fontFamily: 'var(--font-didot), serif' }}
+                    >
                         {t('headline')} <br />
                         <span className="italic">{t('headline_accent')}</span>
                     </h1>

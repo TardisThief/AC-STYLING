@@ -22,7 +22,7 @@
   --color-ac-charcoal-light: #333333;
   --color-ac-white: #FFFFFF;
 
-  --font-serif: var(--font-playfair), serif;
+  --font-serif: var(--font-didot), serif;
   --font-sans: var(--font-inter), sans-serif;
 
   --background-image-gradient-hero: linear-gradient(to right, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0) 100%);
@@ -40,6 +40,14 @@
     color: inherit;
     text-decoration: none;
   }
+}
+
+/* Force apply serif font to override potentially broken utility */
+.font-serif,
+h1,
+h2,
+h3 {
+  font-family: var(--font-didot), serif !important;
 }
 
 html {

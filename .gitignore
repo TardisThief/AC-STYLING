@@ -39,3 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+public/catalogs/in-person-services.pdf
+public/catalogs/online-services.pdf

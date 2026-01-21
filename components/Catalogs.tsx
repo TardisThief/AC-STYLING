@@ -7,8 +7,8 @@ export default function Catalogs() {
     const t = useTranslations('Catalogs');
 
     const catalogs = [
-        { name: t('online'), file: "/catalogs/online-services.pdf" },
-        { name: t('in_person'), file: "/catalogs/in-person-services.pdf" },
+        { name: t('online'), file: "/catalogs/online-services_compressed.pdf" },
+        { name: t('in_person'), file: "/catalogs/in-person-services_compressed.pdf" },
         { name: t('corporate'), file: "/catalogs/corporate.pdf" },
     ];
 
