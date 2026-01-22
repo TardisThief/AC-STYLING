@@ -16,7 +16,7 @@ export default function Hero() {
                     src="/hero-manu.png"
                     alt="The AC Style - Refined Elegance"
                     fill
-                    className="object-cover object-center"
+                    className="object-cover object-[65%_center] md:object-center"
                     priority
                 />
             </div>

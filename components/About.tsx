@@ -17,14 +17,14 @@ export default function About() {
                         whileInView={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         viewport={{ once: true }}
-                        className="flex flex-col items-center md:items-start text-center md:text-left"
+                        className="flex flex-col items-center text-center"
                     >
                         <h2 className="font-serif text-3xl md:text-5xl lg:text-5xl mb-4 leading-tight text-ac-taupe">
                             {t('title')} <br />
                             <span className="italic text-ac-olive-dark">{t('title_accent')}</span>
                         </h2>
 
-                        <div className="w-16 h-px bg-ac-taupe/20 mb-6 mx-auto md:mx-0"></div>
+                        <div className="w-16 h-px bg-ac-taupe/20 mb-6 mx-auto"></div>
 
                         <p className="font-sans text-lg md:text-xl leading-relaxed text-ac-taupe/80 mb-6 max-w-xl">
                             {t('description')}

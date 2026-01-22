@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AC Styling - Premier Personal Styling Platform
 
-## Getting Started
+**AC Styling** is a high-end personal styling website built with modern web technologies, designed to reflect elegance, minimalism, and professional expertise.
 
-First, run the development server:
+## 🎨 Design System: "Liquid Glass & Taupe"
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The project implements a bespoke design system focusing on:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+-   **Aesthetic**: "Liquid Glass" (Translucent layers, blur effects, refined borders).
+-   **Palette**:
+    -   **Primary**: Deep Taupe (`#5A4F44`)
+    -   **Base**: Warm Sand (`#E6DED6`)
+    -   **Accents**: Muted Olive (`#7F8968`), Gold (`#D4AF37`)
+-   **Typography**:
+    -   **Headings**: *Didot* (Classic, Editorial, Serif)
+    -   **Body**: *Inter* (Clean, Modern, Sans)
+-   **Layout**: "Ultra-Compact" & "Editorial"
+    -   Tight vertical spacing for modern feel.
+    -   2-Column grids for storytelling sections.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠 Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+-   **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+-   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+-   **Animations**: [Framer Motion](https://www.framer.com/motion/) (Smooth transitions, scroll reveals)
+-   **Internationalization**: [next-intl](https://next-intl-docs.vercel.app/) (EN/ES support)
+-   **Icons**: [Lucide React](https://lucide.dev/)
 
-## Learn More
+## ✨ Key Features
 
-To learn more about Next.js, take a look at the following resources:
+### 1. Photo Carousel (`components/PhotoCarousel.tsx`)
+-   **Behavior**: Auto-playing, swipeable carousel for portrait editorial shots.
+-   **Design**: 3:4 aspect ratio with glass-morphism control overlays.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. Services & Testimonials (`components/Services.tsx`, `Testimonials.tsx`)
+-   **Effect**: Cards feature a "Liquid Glass" effect (`bg-white/80` + `backdrop-blur`).
+-   **Interaction**: Hover-lift effects with deepened shadows.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Smart Navbar (`components/Navbar.tsx`)
+-   **Dynamic**: Changes from transparent to white on scroll.
+-   **Assets**: Logo adapts color (Taupe/White) using CSS masks for perfect contrast.
 
-## Deploy on Vercel
+## 🚀 Getting Started
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2.  **Run development server**:
+    ```bash
+    npm run dev
+    ```
+
+3.  **Build for production**:
+    ```bash
+    npm run build
+    ```
+
+## 📂 Project Structure
+
+-   `/app`: Next.js App Router pages and global styles.
+-   `/components`: Reusable UI components (Hero, About, Carousel, etc.).
+-   `/public`: Static assets (images, PDFs).
+-   `/messages`: Localization files (en.json, es.json).
+-   `/design-system`: Generated design reference (Pro Max workflow).
+
+---
+*Maintained by AC Styling Dev Team*
