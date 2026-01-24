@@ -56,6 +56,41 @@
             "text": "Alejandra built me a summer closet with easy to combine pieces and pre-made outfits. Helps me to not think about what I wear and still get approval nods from the wife."
         }
     },
+    "Foundations": {
+        "title": "The Permanent Collection",
+        "subtitle": "Build your style infrastructure.",
+        "back": "Back to Dashboard",
+        "resources": "Chapter Resources",
+        "takeaways": "Key Takeaways",
+        "start": "Resume Chapter",
+        "chapters": {
+            "dna": {
+                "title": "Style DNA",
+                "description": "Decode your personal aesthetic inputs.",
+                "videoId": "76979871"
+            },
+            "architecture": {
+                "title": "Silhoutte Architecture",
+                "description": "Understanding proportion and balance.",
+                "videoId": "76979871"
+            },
+            "color": {
+                "title": "Color Theory",
+                "description": "Finding your power palette.",
+                "videoId": "76979871"
+            },
+            "detox": {
+                "title": "The Great Detox",
+                "description": "Editing your wardrobe with ruthlessness and grace.",
+                "videoId": "76979871"
+            },
+            "capsule": {
+                "title": "Capsule Creation",
+                "description": "Building a functional, rotating wardrobe.",
+                "videoId": "76979871"
+            }
+        }
+    },
     "Contact": {
         "label": "Get in Touch",
         "title": "Elevate Your Style",

@@ -4,6 +4,7 @@ import "../globals.css";
 import Navbar from "@/components/Navbar";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import { Toaster } from 'sonner';
 
 const didot = Antic_Didone({
   subsets: ["latin"],
@@ -43,8 +44,8 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <body className={`${didot.variable} ${inter.variable} font-sans bg-ac-sand text-ac-taupe antialiased`} suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
-          <Navbar />
           {children}
+          <Toaster position="top-center" richColors theme="system" />
         </NextIntlClientProvider>
       </body>
     </html>

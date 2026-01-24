@@ -6,10 +6,13 @@ import { motion } from 'framer-motion';
 
 const TrustedBy = () => {
     // Generate array of 12 partner items
-    const originalPartners = Array.from({ length: 12 }, (_, i) => ({
-        id: i + 1,
-        src: `/partner ${i + 1}.png`,
-        alt: `Partner ${i + 1}`,
+    // Specific order requested: 1 first, then 12, 2, 5, 6, 8
+    const partnerOrder = [1, 12, 2, 5, 6, 8, 3, 4, 7, 9, 10, 11];
+
+    const originalPartners = partnerOrder.map(id => ({
+        id,
+        src: `/partner ${id}.png`,
+        alt: `Partner ${id}`,
     }));
 
     // Duplicate the array to create a seamless loop

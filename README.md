@@ -18,13 +18,9 @@ The project implements a bespoke design system focusing on:
     -   Tight vertical spacing for modern feel.
     -   2-Column grids for storytelling sections.
 
-## 🛠 Tech Stack
+## Phase 1: Website Redesign & Public Landing Page
 
--   **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
--   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
--   **Animations**: [Framer Motion](https://www.framer.com/motion/) (Smooth transitions, scroll reveals)
--   **Internationalization**: [next-intl](https://next-intl-docs.vercel.app/) (EN/ES support)
--   **Icons**: [Lucide React](https://lucide.dev/)
+The website has completed Phase 1, which includes the redesign of the public landing page and the implementation of the new design system.
 
 ## ✨ Key Features
 
@@ -39,6 +35,14 @@ The project implements a bespoke design system focusing on:
 ### 3. Smart Navbar (`components/Navbar.tsx`)
 -   **Dynamic**: Changes from transparent to white on scroll.
 -   **Assets**: Logo adapts color (Taupe/White) using CSS masks for perfect contrast.
+
+## 🛠 Tech Stack
+
+-   **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+-   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+-   **Animations**: [Framer Motion](https://www.framer.com/motion/) (Smooth transitions, scroll reveals)
+-   **Internationalization**: [next-intl](https://next-intl-docs.vercel.app/) (EN/ES support)
+-   **Icons**: [Lucide React](https://lucide.dev/)
 
 ## 🚀 Getting Started
 
