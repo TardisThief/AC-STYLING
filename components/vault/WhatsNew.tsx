@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import VaultHero from "./VaultHero";
 import { PulseContent } from "@/app/actions/dashboard";
@@ -13,6 +14,7 @@ interface WhatsNewProps {
 }
 
 export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
+    const t = useTranslations('Vault');
     const items = pulse && pulse.length > 0 ? pulse : [];
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -41,17 +43,19 @@ export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
     const displayItem = activeItem || fallbackItem;
 
     return (
-        <section className="flex flex-col gap-6">
+        <section className="flex flex-col gap-4">
 
-            {/* 1. Static Editorial Banner */}
-            <div className="relative w-full overflow-hidden rounded-sm shadow-md group cursor-pointer aspect-[21/9]">
-                <VaultHero />
+            {/* 1. Static Editorial Banner - Compressed Height (~350px max) */}
+            <div className="relative w-full overflow-hidden rounded-sm shadow-md group cursor-pointer h-[320px] md:h-[380px]">
+                <div className="absolute inset-0 top-[-10%]">
+                    <VaultHero />
+                </div>
             </div>
 
-            {/* 2. Pulse Card (Single Rotating Card) */}
+            {/* 2. Pulse Card (Single Rotating Card) - Partially Visible at Bottom */}
             <div className="relative">
-                <div className="flex justify-between items-end mb-2 px-1">
-                    <h3 className="font-serif text-lg text-ac-taupe/60 italic">The Pulse</h3>
+                <div className="flex justify-between items-end mb-1 px-1">
+                    <h3 className="font-serif text-base text-ac-taupe/60 italic">{t('pulse')}</h3>
 
                     {/* Dots */}
                     {items.length > 1 && (
@@ -69,7 +73,7 @@ export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
                 </div>
 
                 <Link href={displayItem.link_url} className="block group">
-                    <div className="bg-white/60 backdrop-blur-sm border border-white/40 p-6 rounded-sm flex flex-col md:flex-row gap-6 items-center shadow-sm hover:shadow-md transition-shadow relative overflow-hidden min-h-[160px]">
+                    <div className="bg-white/60 backdrop-blur-sm border border-white/40 p-4 rounded-sm flex flex-col md:flex-row gap-4 items-center shadow-sm hover:shadow-md transition-shadow relative overflow-hidden min-h-[140px]">
 
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -78,10 +82,10 @@ export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.5 }}
-                                className="flex flex-col md:flex-row gap-6 items-center w-full"
+                                className="flex flex-col md:flex-row gap-4 items-center w-full"
                             >
                                 {/* Image */}
-                                <div className="relative w-full md:w-32 h-32 flex-shrink-0 overflow-hidden rounded-sm bg-ac-taupe/5">
+                                <div className="relative w-full md:w-24 h-24 flex-shrink-0 overflow-hidden rounded-sm bg-ac-taupe/5">
                                     <img
                                         src={displayItem.image_url}
                                         alt={displayItem.title}
@@ -93,7 +97,7 @@ export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
                                     {(displayItem.type === 'continue' || displayItem.type === 'new_learning') && (
                                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                             <div className="bg-white/20 p-2 rounded-full backdrop-blur-md">
-                                                <Play size={16} className="text-white fill-white" />
+                                                <Play size={12} className="text-white fill-white" />
                                             </div>
                                         </div>
                                     )}
@@ -101,13 +105,13 @@ export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
 
                                 {/* Text */}
                                 <div className="flex-grow text-center md:text-left">
-                                    <span className="text-ac-olive font-bold text-xs uppercase tracking-wider mb-1 block">
+                                    <span className="text-ac-olive font-bold text-[10px] uppercase tracking-wider mb-0.5 block">
                                         {displayItem.label}
                                     </span>
-                                    <h3 className="font-serif text-2xl text-ac-taupe mb-2 leading-tight">
+                                    <h3 className="font-serif text-xl text-ac-taupe mb-1 leading-tight">
                                         {displayItem.title}
                                     </h3>
-                                    <p className="text-ac-taupe/70 text-sm line-clamp-2">
+                                    <p className="text-ac-taupe/70 text-xs line-clamp-2">
                                         {displayItem.subtitle}
                                     </p>
                                 </div>

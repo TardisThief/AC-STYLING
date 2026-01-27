@@ -15,7 +15,8 @@ export type EssenceResponse = {
  * Saves (Upserts) a user's answer to the essence_responses table.
  */
 export async function saveEssenceResponse(
-    masterclassId: string,
+    masterclassId: string | null,
+    chapterId: string,
     chapterSlug: string,
     questionKey: string,
     answerValue: any
@@ -27,19 +28,25 @@ export async function saveEssenceResponse(
         return { success: false, error: 'Unauthorized' };
     }
 
+    // Clean masterclassId - if it's "standalone" or invalid UUID, set to null
+    let targetMasterclassId = masterclassId;
+    if (masterclassId === 'standalone' || !masterclassId) {
+        targetMasterclassId = null;
+    }
+
     // Upsert logic
-    // We match on (user_id, masterclass_id, question_key) due to UNIQUE constraint
     const { error } = await supabase
         .from('essence_responses')
         .upsert({
             user_id: user.id,
-            masterclass_id: masterclassId,
+            masterclass_id: targetMasterclassId,
+            chapter_id: chapterId,
             chapter_slug: chapterSlug,
             question_key: questionKey,
             answer_value: answerValue,
             updated_at: new Date().toISOString()
         }, {
-            onConflict: 'user_id, masterclass_id, question_key'
+            onConflict: 'user_id, question_key, masterclass_id, chapter_id'
         });
 
     if (error) {
@@ -116,6 +123,10 @@ export async function getAllEssenceData() {
             masterclass:masterclasses (
                 id,
                 title
+            ),
+            chapter:chapters (
+                id,
+                title
             )
         `)
         .eq('user_id', user.id)
@@ -127,19 +138,11 @@ export async function getAllEssenceData() {
     }
 
     // Grouping Logic
-    // Structure: 
-    // [
-    //   { 
-    //     masterclassTitle: "Foundations", 
-    //     entries: [ { question: "...", answer: "...", date: "..." } ] 
-    //   }
-    // ]
-
     const grouped: Record<string, { title: string, entries: any[] }> = {};
 
     data?.forEach((row: any) => {
-        const mcTitle = row.masterclass?.title || "General Styling";
-        const mcId = row.masterclass?.id || "general";
+        const mcTitle = row.masterclass?.title || row.chapter?.title || "General Styling";
+        const mcId = row.masterclass?.id || row.chapter?.id || "general";
 
         if (!grouped[mcId]) {
             grouped[mcId] = { title: mcTitle, entries: [] };
@@ -147,8 +150,6 @@ export async function getAllEssenceData() {
 
         grouped[mcId].entries.push({
             question_key: row.question_key,
-            // Since answer_value is JSONB, we might need to parse or use directly. 
-            // For now assuming it's a string or simple object.
             answer_value: row.answer_value,
             chapter_slug: row.chapter_slug,
             updated_at: row.updated_at
@@ -156,4 +157,23 @@ export async function getAllEssenceData() {
     });
 
     return Object.values(grouped);
+}
+
+export async function getFlatEssenceAnswers() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return [];
+
+    const { data, error } = await supabase
+        .from('essence_responses')
+        .select('question_key, answer_value')
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.error("Fetch Flat Essence Error:", error);
+        return [];
+    }
+
+    return data || [];
 }

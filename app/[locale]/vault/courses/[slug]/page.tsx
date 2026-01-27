@@ -58,7 +58,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
             .from('essence_responses')
             .select('question_key, answer_value')
             .eq('user_id', user.id)
-            .eq('masterclass_id', targetMasterclassId);
+            .eq('chapter_id', chapter.id);
 
         answers?.forEach(a => {
             essenceMap[a.question_key] = a.answer_value;
@@ -67,12 +67,12 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
 
 
 
-    const { data: progress } = await supabase
+    const { data: progress } = user ? await supabase
         .from('user_progress')
         .select('*')
         .eq('user_id', user.id)
         .eq('content_id', `foundations/${chapter.slug}`) // Keeping ID format consistent for now
-        .single();
+        .single() : { data: null };
     isCompleted = !!progress;
 
 
@@ -120,7 +120,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
                 <div className="lg:col-span-7 space-y-12">
                     {/* Video Player */}
                     <div className="space-y-6">
-                        <VaultVideoPlayer videoId={chapter.video_id} title={chapter.title} />
+                        <VaultVideoPlayer videoId={chapter.video_id} videoIdEs={chapter.video_id_es} title={chapter.title} />
 
                         <div className="flex justify-between items-start">
                             <div className="prose prose-stone max-w-none flex-1">
@@ -168,7 +168,8 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
 
                     {/* 2. Styling Essence Lab */}
                     <EssenceLab
-                        masterclassId={chapter.id} // Standalone: use chapter ID as masterclass ID
+                        masterclassId={null}
+                        chapterId={chapter.id}
                         chapterSlug={chapter.slug}
                         initialData={essenceMap}
                         questions={labQuestions}

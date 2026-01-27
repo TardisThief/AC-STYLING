@@ -75,7 +75,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
             .from('essence_responses')
             .select('question_key, answer_value')
             .eq('user_id', user.id)
-            .eq('masterclass_id', chapter.masterclass_id || chapter.id); // Fallback if no masterclass link? Ideally handle null.
+            .eq('chapter_id', chapter.id);
 
         answers?.forEach(a => {
             essenceMap[a.question_key] = a.answer_value;
@@ -84,12 +84,12 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
 
 
 
-    const { data: progress } = await supabase
+    const { data: progress } = user ? await supabase
         .from('user_progress')
         .select('*')
         .eq('user_id', user.id)
         .eq('content_id', `foundations/${slug}`)
-        .single();
+        .single() : { data: null };
     isCompleted = !!progress;
 
 
@@ -123,7 +123,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                 <div className="lg:col-span-7 space-y-12">
                     {/* Video Player */}
                     <div className="space-y-6">
-                        <VaultVideoPlayer videoId={chapter.video_id} title={chapter.title} />
+                        <VaultVideoPlayer videoId={chapter.video_id} videoIdEs={chapter.video_id_es} title={chapter.title} />
 
                         <div className="flex justify-between items-start">
                             <div className="prose prose-stone max-w-none flex-1">
@@ -171,7 +171,8 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
 
                     {/* 2. Styling Essence Lab (Always show - has fallback questions) */}
                     <EssenceLab
-                        masterclassId={chapter.masterclass_id || "standalone"} // Handle standalone case
+                        masterclassId={chapter.masterclass_id || null}
+                        chapterId={chapter.id}
                         chapterSlug={slug}
                         initialData={essenceMap}
                         questions={labQuestions}

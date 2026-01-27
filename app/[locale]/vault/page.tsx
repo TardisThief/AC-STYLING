@@ -4,8 +4,11 @@ import VaultHero from "@/components/vault/VaultHero";
 import QuickActions from "@/components/vault/QuickActions";
 import WhatsNew from "@/components/vault/WhatsNew";
 import { getDashboardPulse, getMasterclassCompletionStatus } from "@/app/actions/dashboard";
+import { getTranslations } from "next-intl/server";
 
-export default async function VaultPage() {
+export default async function VaultPage({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: 'Vault' });
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -32,11 +35,11 @@ export default async function VaultPage() {
     }
 
     return (
-        <div className="flex flex-col gap-10">
-            {/* Simple Greeting Header */}
-            <div className="fade-in-up">
-                <h1 className="font-serif text-3xl md:text-4xl text-ac-taupe">
-                    Welcome back, {fullName}
+        <div className="flex flex-col gap-4">
+            {/* Simple Greeting Header - Compressed */}
+            <div className="fade-in-up pt-2">
+                <h1 className="font-serif text-2xl md:text-3xl text-ac-taupe">
+                    {t('welcome', { name: fullName })}
                 </h1>
             </div>
 

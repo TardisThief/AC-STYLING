@@ -43,7 +43,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${didot.variable} ${inter.variable} font-sans bg-ac-sand text-ac-taupe antialiased`} suppressHydrationWarning>
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider messages={messages} locale={locale} timeZone="America/New_York">
           {children}
           <Toaster position="top-center" richColors theme="system" />
         </NextIntlClientProvider>

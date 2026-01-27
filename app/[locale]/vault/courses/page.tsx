@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 
 export default async function CoursesPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
-    const t = await getTranslations({ locale }); // Fallback to general namespace if needed, or specific 'Courses'
+    const t = await getTranslations({ locale, namespace: 'Courses' });
 
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -37,29 +37,29 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
     return (
         <section className="min-h-screen">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-ac-taupe/10 pb-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 border-b border-ac-taupe/10 pb-4">
                 <div>
-                    <Link href="/vault" className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-4 group">
-                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                        Back to Vault
+                    <Link href="/vault" className="flex items-center gap-2 text-xs uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-4 group">
+                        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                        {t('back')}
                     </Link>
-                    <h1 className="font-serif text-4xl md:text-6xl text-ac-taupe mb-2">
-                        Standalone Courses
+                    <h1 className="font-serif text-3xl md:text-5xl text-ac-taupe mb-2">
+                        {t('title')}
                     </h1>
-                    <p className="font-sans text-ac-coffee text-lg tracking-wide">
-                        Individual lessons to refine specific aspects of your style.
+                    <p className="font-sans text-ac-coffee text-sm tracking-wide">
+                        {t('subtitle')}
                     </p>
                 </div>
             </div>
 
             {/* STANDALONE CHAPTERS GRID */}
             {chapters && chapters.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {chapters.map((chapter) => {
                         const isCompleted = completedChapters.has(chapter.slug);
                         return (
                             <Link href={`/vault/courses/${chapter.slug}`} key={chapter.id} className="group block">
-                                <div className="relative aspect-square overflow-hidden rounded-sm mb-4 bg-ac-sand/20">
+                                <div className="relative aspect-[4/3] overflow-hidden rounded-sm mb-3 bg-ac-sand/20">
                                     <div className="absolute inset-0 bg-ac-taupe/10 group-hover:bg-transparent transition-colors z-10" />
                                     {chapter.thumbnail_url ? (
                                         <img
@@ -69,7 +69,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-ac-taupe/20">
-                                            <FolderOpen size={48} />
+                                            <FolderOpen size={40} />
                                         </div>
                                     )}
 
@@ -91,14 +91,14 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
                                 <h3 className="font-serif text-xl text-ac-taupe group-hover:text-ac-olive transition-colors">
                                     {chapter.title}
                                 </h3>
-                                <p className="text-xs text-ac-taupe/40 uppercase tracking-widest mt-1">Single Lesson</p>
+                                <p className="text-[10px] text-ac-taupe/40 uppercase tracking-widest mt-1">{t('lesson_label')}</p>
                             </Link>
                         );
                     })}
                 </div>
             ) : (
                 <div className="text-center py-20">
-                    <p className="text-ac-taupe/60 mb-4">No individual courses available.</p>
+                    <p className="text-ac-taupe/60 mb-4">{t('no_courses')}</p>
                 </div>
             )}
         </section>

@@ -33,6 +33,7 @@ export async function createChapter(formData: FormData) {
     const subtitle = formData.get('subtitle') as string;
     const description = formData.get('description') as string;
     const videoId = formData.get('videoId') as string;
+    const videoIdEs = formData.get('videoIdEs') as string || null;
     const thumbnailUrl = formData.get('thumbnailUrl') as string;
     const category = formData.get('category') as string || 'masterclass';
     const orderIndex = parseInt(formData.get('orderIndex') as string) || 0;
@@ -54,6 +55,7 @@ export async function createChapter(formData: FormData) {
             subtitle,
             description,
             video_id: videoId,
+            video_id_es: videoIdEs,
             thumbnail_url: thumbnailUrl,
             category,
             order_index: orderIndex,
@@ -90,6 +92,7 @@ export async function updateChapter(chapterId: string, formData: FormData) {
     const subtitle = formData.get('subtitle') as string;
     const description = formData.get('description') as string;
     const videoId = formData.get('videoId') as string;
+    const videoIdEs = formData.get('videoIdEs') as string || null;
     const thumbnailUrl = formData.get('thumbnailUrl') as string;
     const category = formData.get('category') as string || 'masterclass';
     const orderIndex = parseInt(formData.get('orderIndex') as string) || 0;
@@ -109,6 +112,7 @@ export async function updateChapter(chapterId: string, formData: FormData) {
             subtitle,
             description,
             video_id: videoId,
+            video_id_es: videoIdEs,
             thumbnail_url: thumbnailUrl,
             category,
             order_index: orderIndex,

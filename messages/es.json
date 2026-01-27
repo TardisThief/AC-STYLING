@@ -57,12 +57,17 @@
         }
     },
     "Foundations": {
-        "title": "La Colección Permanente",
-        "subtitle": "Construye tu infraestructura de estilo.",
-        "back": "Volver al Dashboard",
+        "title": "La Colección de Masterclasses",
+        "subtitle": "Principios y Fundamentos de Estilo",
+        "back": "Volver al Vault",
         "resources": "Recursos del Capítulo",
         "takeaways": "Puntos Clave",
         "start": "Reanudar Capítulo",
+        "collections": "Colecciones Curadas",
+        "view": "VER COLECCIÓN",
+        "masterclass_number": "Clase Magistral {number}",
+        "no_foundations": "No se encontraron colecciones.",
+        "admin_link": "Ir al Panel de Administración",
         "chapters": {
             "dna": {
                 "title": "ADN de Estilo",
@@ -90,6 +95,59 @@
                 "videoId": "76979871"
             }
         }
+    },
+    "Vault": {
+        "welcome": "Bienvenido de nuevo, {name}",
+        "quick_actions": "Acciones Rápidas",
+        "pulse": "El Pulso",
+        "masterclasses": {
+            "title": "Clases Magistrales",
+            "subtitle": "Fundamentos de Estilo"
+        },
+        "actions": {
+            "courses": {
+                "label": "Cursos",
+                "subtitle": "Biblioteca"
+            },
+            "studio": {
+                "label": "El Studio",
+                "subtitle": "Reservar un servicio"
+            },
+            "boutique": {
+                "label": "La Boutique",
+                "subtitle": "Tienda Curada"
+            },
+            "essence": {
+                "label": "Mi Esencia de Estilo",
+                "subtitle": "Diario"
+            },
+            "ask": {
+                "label": "Preguntar a Ale",
+                "subtitle": "Conserjería"
+            }
+        }
+    },
+    "Studio": {
+        "title": "El Studio",
+        "subtitle": "SESIONES EXPERTAS Y CURACIÓN CONTINUA",
+        "back": "Volver al Vault",
+        "apply_retainer": "Solicitar Acceso",
+        "inquire": "Consultar",
+        "secure_session": "Sesión Segura",
+        "suggested": "Sugerido",
+        "whatsapp": "Consulta Directa por WhatsApp",
+        "corporate": "Para proyectos corporativos o personalizados, contacta a",
+        "no_sessions": "No hay sesiones disponibles en este momento."
+    },
+    "Courses": {
+        "title": "Cursos Individuales",
+        "subtitle": "Lecciones individuales para refinar aspectos específicos de tu estilo.",
+        "back": "Volver al Vault",
+        "no_courses": "No hay cursos individuales disponibles.",
+        "lesson_label": "Lección Única"
+    },
+    "Video": {
+        "language": "Idioma del Video"
     },
     "Contact": {
         "label": "Ponte en Contacto",

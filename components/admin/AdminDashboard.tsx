@@ -7,17 +7,21 @@ import MasterclassForm from "./MasterclassForm";
 import BoutiqueManager from "./BoutiqueManager";
 import ClientList from "./ClientList";
 import ClientDossier from "./ClientDossier";
+import { getServices, deleteService } from "@/app/actions/admin/manage-services";
 import { getChapters, deleteChapter } from "@/app/actions/admin/manage-chapters";
 import { getMasterclasses, deleteMasterclass } from "@/app/actions/admin/manage-masterclasses";
+import ServicesList from "./ServicesList";
+import ServiceForm from "./ServiceForm";
 import { toast } from "sonner";
-import { Folder, FileVideo, Plus, Users, Tag } from "lucide-react";
+import { Folder, FileVideo, Plus, Users, Tag, Sparkles } from "lucide-react";
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'masterclasses' | 'chapters' | 'clients' | 'boutique'>('masterclasses');
+    const [activeTab, setActiveTab] = useState<'masterclasses' | 'chapters' | 'clients' | 'boutique' | 'services'>('masterclasses');
 
     // Data
     const [chapters, setChapters] = useState<any[]>([]);
     const [masterclasses, setMasterclasses] = useState<any[]>([]);
+    const [services, setServices] = useState<any[]>([]);
 
     // Forms & Modals
     const [isCreating, setIsCreating] = useState(false);
@@ -27,9 +31,10 @@ export default function AdminDashboard() {
     const formRef = useRef<HTMLDivElement>(null);
 
     const loadData = async () => {
-        const [cRes, mRes] = await Promise.all([getChapters(), getMasterclasses()]);
+        const [cRes, mRes, sRes] = await Promise.all([getChapters(), getMasterclasses(), getServices()]);
         if (cRes.success) setChapters(cRes.chapters || []);
         if (mRes.success) setMasterclasses(mRes.masterclasses || []);
+        if (sRes.success) setServices(sRes.services || []);
     };
 
     useEffect(() => {
@@ -54,6 +59,17 @@ export default function AdminDashboard() {
         const res = await deleteMasterclass(id);
         if (res.success) {
             toast.success("Masterclass deleted");
+            loadData();
+        } else {
+            toast.error(res.error);
+        }
+    };
+
+    const handleDeleteService = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this service?")) return;
+        const res = await deleteService(id);
+        if (res.success) {
+            toast.success("Service deleted");
             loadData();
         } else {
             toast.error(res.error);
@@ -85,6 +101,16 @@ export default function AdminDashboard() {
                     Chapters
                 </button>
                 <button
+                    onClick={() => { setActiveTab('services'); setIsCreating(false); setEditingItem(null); }}
+                    className={`pb-4 px-4 flex items-center gap-2 font-serif text-sm md:text-lg transition-colors whitespace-nowrap ${activeTab === 'services'
+                        ? 'text-ac-taupe border-b-2 border-ac-gold'
+                        : 'text-ac-taupe/40 hover:text-ac-taupe/60'
+                        }`}
+                >
+                    <Sparkles size={18} />
+                    Services
+                </button>
+                <button
                     onClick={() => { setActiveTab('boutique'); setIsCreating(false); setEditingItem(null); }}
                     className={`pb-4 px-4 flex items-center gap-2 font-serif text-sm md:text-lg transition-colors whitespace-nowrap ${activeTab === 'boutique'
                         ? 'text-ac-taupe border-b-2 border-ac-gold'
@@ -107,103 +133,135 @@ export default function AdminDashboard() {
             </div>
 
             {/* Action Bar (Not shown in Clients/Boutique tab usually, or different actions) */}
-            {activeTab !== 'clients' && activeTab !== 'boutique' && (
-                <div className="flex justify-between items-center">
-                    <h2 className="font-serif text-3xl text-ac-taupe">
-                        {activeTab === 'masterclasses' ? 'Masterclass Collections' : 'Video Chapters'}
-                    </h2>
-                    <button
-                        onClick={() => { setIsCreating(true); setEditingItem(null); }}
-                        className="flex items-center gap-2 bg-ac-taupe text-white px-4 py-2 rounded-sm hover:bg-ac-taupe/90 transition-colors"
-                    >
-                        <Plus size={18} />
-                        Create New
-                    </button>
-                </div>
-            )}
+            {
+                activeTab !== 'clients' && activeTab !== 'boutique' && (
+                    <div className="flex justify-between items-center">
+                        <h2 className="font-serif text-3xl text-ac-taupe">
+                            {activeTab === 'masterclasses' ? 'Masterclass Collections' :
+                                activeTab === 'chapters' ? 'Video Chapters' :
+                                    'Strategic Services'}
+                        </h2>
+                        <button
+                            onClick={() => { setIsCreating(true); setEditingItem(null); }}
+                            className="flex items-center gap-2 bg-ac-taupe text-white px-4 py-2 rounded-sm hover:bg-ac-taupe/90 transition-colors"
+                        >
+                            <Plus size={18} />
+                            Create New
+                        </button>
+                    </div>
+                )
+            }
 
             {/* Form Area */}
-            {(isCreating || editingItem) && activeTab !== 'clients' && activeTab !== 'boutique' && (
-                <div ref={formRef} className="bg-white/40 backdrop-blur-md border border-ac-gold shadow-lg rounded-sm p-8">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-serif text-xl text-ac-taupe">
-                            {editingItem ? 'Edit Item' : 'New Item'}
-                        </h3>
-                        <button onClick={() => { setIsCreating(false); setEditingItem(null); }} className="text-sm text-ac-taupe/60">Close</button>
-                    </div>
+            {
+                (isCreating || editingItem) && activeTab !== 'clients' && activeTab !== 'boutique' && (
+                    <div ref={formRef} className="bg-white/40 backdrop-blur-md border border-ac-gold shadow-lg rounded-sm p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-serif text-xl text-ac-taupe">
+                                {editingItem ? 'Edit Item' : 'New Item'}
+                            </h3>
+                            <button onClick={() => { setIsCreating(false); setEditingItem(null); }} className="text-sm text-ac-taupe/60">Close</button>
+                        </div>
 
-                    {activeTab === 'masterclasses' ? (
-                        <MasterclassForm
-                            masterclass={editingItem}
-                            onSuccess={handleSuccess}
-                            onCancel={() => { setIsCreating(false); setEditingItem(null); }}
-                        />
-                    ) : (
-                        <ChapterForm
-                            chapter={editingItem}
-                            onSuccess={handleSuccess}
-                            onCancel={() => { setIsCreating(false); setEditingItem(null); }}
-                        />
-                    )}
-                </div>
-            )}
+                        {activeTab === 'masterclasses' ? (
+                            <MasterclassForm
+                                masterclass={editingItem}
+                                onSuccess={handleSuccess}
+                                onCancel={() => { setIsCreating(false); setEditingItem(null); }}
+                            />
+                        ) : activeTab === 'chapters' ? (
+                            <ChapterForm
+                                chapter={editingItem}
+                                onSuccess={handleSuccess}
+                                onCancel={() => { setIsCreating(false); setEditingItem(null); }}
+                            />
+                        ) : (
+                            <ServiceForm
+                                service={editingItem}
+                                onSuccess={handleSuccess}
+                                onCancel={() => { setIsCreating(false); setEditingItem(null); }}
+                            />
+                        )}
+                    </div>
+                )
+            }
 
             {/* Views */}
-            {activeTab === 'masterclasses' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {masterclasses.map((mc) => (
-                        <div key={mc.id} className="bg-white/40 backdrop-blur-sm border border-white/30 rounded-sm overflow-hidden group">
-                            <div className="aspect-video bg-ac-taupe/10 relative">
-                                {mc.thumbnail_url && (
-                                    <img src={mc.thumbnail_url} alt={mc.title} className="w-full h-full object-cover" />
-                                )}
-                                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => setEditingItem(mc)} className="bg-white/90 p-2 rounded-full text-ac-olive hover:text-ac-gold shadow-sm">Edit</button>
+            {
+                activeTab === 'masterclasses' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {masterclasses.map((mc) => (
+                            <div key={mc.id} className="bg-white/40 backdrop-blur-sm border border-white/30 rounded-sm overflow-hidden group">
+                                <div className="aspect-video bg-ac-taupe/10 relative">
+                                    {mc.thumbnail_url && (
+                                        <img src={mc.thumbnail_url} alt={mc.title} className="w-full h-full object-cover" />
+                                    )}
+                                    <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => setEditingItem(mc)} className="bg-white/90 p-2 rounded-full text-ac-olive hover:text-ac-gold shadow-sm">Edit</button>
+                                    </div>
+                                </div>
+                                <div className="p-6">
+                                    <h3 className="font-serif text-xl text-ac-taupe mb-1">{mc.title}</h3>
+                                    <p className="text-sm text-ac-taupe/60 line-clamp-2 mb-4">{mc.description}</p>
+                                    <div className="flex justify-between items-center border-t border-ac-taupe/10 pt-4">
+                                        <span className="text-xs uppercase tracking-widest text-ac-taupe/40">Includes chapters</span>
+                                        <button onClick={() => handleDeleteMasterclass(mc.id, mc.title)} className="text-xs text-red-500 hover:text-red-700">Delete</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="p-6">
-                                <h3 className="font-serif text-xl text-ac-taupe mb-1">{mc.title}</h3>
-                                <p className="text-sm text-ac-taupe/60 line-clamp-2 mb-4">{mc.description}</p>
-                                <div className="flex justify-between items-center border-t border-ac-taupe/10 pt-4">
-                                    <span className="text-xs uppercase tracking-widest text-ac-taupe/40">Includes chapters</span>
-                                    <button onClick={() => handleDeleteMasterclass(mc.id, mc.title)} className="text-xs text-red-500 hover:text-red-700">Delete</button>
-                                </div>
+                        ))}
+                        {masterclasses.length === 0 && (
+                            <div className="col-span-full text-center py-12 text-ac-taupe/40 border-2 border-dashed border-ac-taupe/10 rounded-sm">
+                                No masterclasses found. Create one to group your chapters.
                             </div>
-                        </div>
-                    ))}
-                    {masterclasses.length === 0 && (
-                        <div className="col-span-full text-center py-12 text-ac-taupe/40 border-2 border-dashed border-ac-taupe/10 rounded-sm">
-                            No masterclasses found. Create one to group your chapters.
-                        </div>
-                    )}
-                </div>
-            )}
+                        )}
+                    </div>
+                )
+            }
 
-            {activeTab === 'chapters' && (
-                <div className="bg-white/40 backdrop-blur-md border border-white/30 rounded-sm p-6">
-                    <ChaptersTable
-                        chapters={chapters}
-                        onEdit={(c) => setEditingItem(c)}
-                        onDelete={loadData}
+            {
+                activeTab === 'chapters' && (
+                    <div className="bg-white/40 backdrop-blur-md border border-white/30 rounded-sm p-6">
+                        <ChaptersTable
+                            chapters={chapters}
+                            onEdit={(c) => setEditingItem(c)}
+                            onDelete={loadData}
+                        />
+                    </div>
+                )
+            }
+
+            {
+                activeTab === 'clients' && (
+                    <ClientList onSelectClient={(c) => setSelectedClient(c)} />
+                )
+            }
+
+            {
+                activeTab === 'boutique' && (
+                    <BoutiqueManager />
+                )
+            }
+
+            {
+                activeTab === 'services' && (
+                    <ServicesList
+                        services={services}
+                        onEdit={(s) => { setActiveTab('services'); setEditingItem(s); }}
+                        onDelete={handleDeleteService}
                     />
-                </div>
-            )}
-
-            {activeTab === 'clients' && (
-                <ClientList onSelectClient={(c) => setSelectedClient(c)} />
-            )}
-
-            {activeTab === 'boutique' && (
-                <BoutiqueManager />
-            )}
+                )
+            }
 
             {/* Modal: Client Dossier */}
-            {selectedClient && (
-                <ClientDossier
-                    client={selectedClient}
-                    onClose={() => setSelectedClient(null)}
-                />
-            )}
-        </div>
+            {
+                selectedClient && (
+                    <ClientDossier
+                        client={selectedClient}
+                        onClose={() => setSelectedClient(null)}
+                    />
+                )
+            }
+        </div >
     );
 }

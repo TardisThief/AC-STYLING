@@ -22,6 +22,7 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
         subtitle: chapter?.subtitle || '',
         description: chapter?.description || '',
         videoId: chapter?.video_id || '',
+        videoIdEs: chapter?.video_id_es || '',
         thumbnailUrl: chapter?.thumbnail_url || '',
         category: chapter?.category || 'masterclass',
         orderIndex: chapter?.order_index || 0,
@@ -58,6 +59,7 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
             subtitle: chapter?.subtitle || '',
             description: chapter?.description || '',
             videoId: chapter?.video_id || '',
+            videoIdEs: chapter?.video_id_es || '',
             thumbnailUrl: chapter?.thumbnail_url || '',
             category: chapter?.category || 'masterclass',
             orderIndex: chapter?.order_index || 0,
@@ -127,6 +129,7 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
         fd.append('subtitle', formData.subtitle);
         fd.append('description', formData.description);
         fd.append('videoId', formData.videoId);
+        fd.append('videoIdEs', formData.videoIdEs);
         fd.append('thumbnailUrl', formData.thumbnailUrl);
         fd.append('category', formData.category);
         fd.append('orderIndex', formData.orderIndex.toString());
@@ -145,7 +148,7 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
             onSuccess();
             // Reset form if creating new
             if (!chapter) {
-                setFormData({ slug: '', title: '', subtitle: '', description: '', videoId: '', thumbnailUrl: '', category: 'masterclass', orderIndex: 0, masterclassId: '', isStandalone: true });
+                setFormData({ slug: '', title: '', subtitle: '', description: '', videoId: '', videoIdEs: '', thumbnailUrl: '', category: 'masterclass', orderIndex: 0, masterclassId: '', isStandalone: true });
                 setLabQuestions([]);
                 setTakeaways([]);
                 setResourceUrls([]);
@@ -348,13 +351,26 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
                     <div className="space-y-4">
                         <div>
                             <label className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mb-2">
-                                Vimeo ID
+                                Vimeo ID (English)
                             </label>
                             <input
                                 type="text"
                                 required
                                 value={formData.videoId}
                                 onChange={(e) => setFormData({ ...formData, videoId: e.target.value })}
+                                placeholder="76979871"
+                                className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:outline-none focus:border-ac-gold focus:ring-1 focus:ring-ac-gold"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mb-2">
+                                Vimeo ID (Spanish)
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.videoIdEs}
+                                onChange={(e) => setFormData({ ...formData, videoIdEs: e.target.value })}
                                 placeholder="76979871"
                                 className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:outline-none focus:border-ac-gold focus:ring-1 focus:ring-ac-gold"
                             />

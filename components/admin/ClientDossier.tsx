@@ -64,7 +64,7 @@ export default function ClientDossier({ client, onClose }: ClientDossierProps) {
                             <p className="text-ac-taupe/60">No essence data recorded yet.</p>
                         </div>
                     ) : (
-                        Object.entries(grouped).map(([mcTitle, items]) => (
+                        (Object.entries(grouped) as [string, any[]][]).map(([mcTitle, items]) => (
                             <div key={mcTitle} className="space-y-6">
                                 <h3 className="font-serif text-2xl text-ac-taupe border-b border-ac-taupe/10 pb-2">
                                     {mcTitle}

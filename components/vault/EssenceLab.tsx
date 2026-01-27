@@ -5,7 +5,8 @@ import { createClient } from "@/utils/supabase/client";
 import { Sparkles, Loader2, Check } from "lucide-react";
 
 interface EssenceLabProps {
-    masterclassId: string;
+    masterclassId: string | null;
+    chapterId: string;
     chapterSlug: string;
     initialData: Record<string, string>; // Key -> Answer Value
     questions?: Array<{ key: string, label: string, placeholder: string }>;
@@ -38,7 +39,7 @@ const questionsMap: Record<string, { key: string; label: string; placeholder: st
     ]
 };
 
-export default function EssenceLab({ masterclassId, chapterSlug, initialData, questions: propQuestions }: EssenceLabProps) {
+export default function EssenceLab({ masterclassId, chapterId, chapterSlug, initialData, questions: propQuestions }: EssenceLabProps) {
     // Use provided questions or fall back to hardcoded map using slug
     const questions = propQuestions || questionsMap[chapterSlug] || [];
 
@@ -56,7 +57,7 @@ export default function EssenceLab({ masterclassId, chapterSlug, initialData, qu
         // For now, always save on blur for reliability.
         setSavingStatus(prev => ({ ...prev, [key]: 'saving' }));
 
-        const result = await saveEssenceResponse(masterclassId, chapterSlug, key, value);
+        const result = await saveEssenceResponse(masterclassId, chapterId, chapterSlug, key, value);
 
         if (result.success) {
             setSavingStatus(prev => ({ ...prev, [key]: 'saved' }));
