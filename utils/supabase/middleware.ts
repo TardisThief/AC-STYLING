@@ -68,6 +68,7 @@ export async function updateSession(request: NextRequest) {
         const locale = routing.locales.includes(firstSegment as any) ? firstSegment : 'en';
 
         url.pathname = `/${locale}/login`
+        url.searchParams.set('next', request.nextUrl.pathname)
         return NextResponse.redirect(url)
     }
 

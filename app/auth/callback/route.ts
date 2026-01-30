@@ -46,15 +46,26 @@ export async function GET(request: Request) {
                 cookieStore.delete('wardrobe_claim_token');
             }
 
-            const forwardedHost = request.headers.get('x-forwarded-host')
+            const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === 'development'
-            if (isLocalEnv) {
-                return NextResponse.redirect(`${origin}${next}`)
-            } else if (forwardedHost) {
-                return NextResponse.redirect(`https://${forwardedHost}${next}`)
-            } else {
-                return NextResponse.redirect(`${origin}${next}`)
+
+            // Determine the base URL for the redirect
+            let baseUrl = origin; // Default to the request origin
+
+            if (process.env.NEXT_PUBLIC_SITE_URL) {
+                baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+            } else if (!isLocalEnv && forwardedHost) {
+                baseUrl = `https://${forwardedHost}`;
+            } else if (!isLocalEnv && request.headers.get('host')) {
+                baseUrl = `https://${request.headers.get('host')}`;
             }
+
+            // Ensure baseUrl doesn't end with a slash if next starts with one
+            if (baseUrl.endsWith('/') && next.startsWith('/')) {
+                baseUrl = baseUrl.slice(0, -1);
+            }
+
+            return NextResponse.redirect(`${baseUrl}${next}`)
         } else {
             console.error('[AuthCallback] Exchange Error:', authError);
             const locale = next.split('/')[1] || 'en'; // Extract 'en' from '/en/vault'
