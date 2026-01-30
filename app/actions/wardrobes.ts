@@ -93,7 +93,9 @@ export async function createWardrobe(
         return { success: false, error: "Unauthorized" };
     }
 
-    const { data, error } = await supabase
+    const adminSupabase = createAdminClient();
+
+    const { data, error } = await adminSupabase
         .from('wardrobes')
         .insert({
             title,
@@ -135,7 +137,9 @@ export async function updateWardrobe(
         return { success: false, error: "Unauthorized" };
     }
 
-    const { error } = await supabase
+    const adminSupabase = createAdminClient();
+
+    const { error } = await adminSupabase
         .from('wardrobes')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', wardrobeId);
@@ -347,8 +351,10 @@ export async function assignWardrobe(
         return { success: false, error: "Unauthorized" };
     }
 
+    const adminSupabase = createAdminClient();
+
     // 1. Update Wardrobe Owner
-    const { error: wardrobeError } = await supabase
+    const { error: wardrobeError } = await adminSupabase
         .from('wardrobes')
         .update({ owner_id: userId, updated_at: new Date().toISOString() })
         .eq('id', wardrobeId);
@@ -359,7 +365,7 @@ export async function assignWardrobe(
     }
 
     // 2. Enable Studio Access for User
-    const { error: profileError } = await supabase
+    const { error: profileError } = await adminSupabase
         .from('profiles')
         .update({ active_studio_client: true })
         .eq('id', userId);
@@ -407,8 +413,10 @@ export async function claimWardrobe(token: string): Promise<{ success: boolean; 
         return { success: true, wardrobeId: wardrobe.id }; // Already owned by self, assume success
     }
 
+    const adminSupabase = createAdminClient();
+
     // 3. Claim it (Update Owner)
-    const { error: updateError } = await supabase
+    const { error: updateError } = await adminSupabase
         .from('wardrobes')
         .update({ owner_id: user.id, updated_at: new Date().toISOString() })
         .eq('id', wardrobe.id);
@@ -418,13 +426,53 @@ export async function claimWardrobe(token: string): Promise<{ success: boolean; 
     }
 
     // 4. Enable Studio Access for the claiming user
-    await supabase
+    await adminSupabase
         .from('profiles')
         .update({ active_studio_client: true })
         .eq('id', user.id);
 
     revalidatePath('/vault');
     return { success: true, wardrobeId: wardrobe.id };
+}
+
+
+// =============================================================================
+// Admin: Permanently Delete Wardrobe
+// =============================================================================
+
+export async function deleteWardrobe(
+    wardrobeId: string
+): Promise<{ success: boolean; error?: string }> {
+    const supabase = await createClient();
+
+    // Check admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    const adminSupabase = createAdminClient();
+
+    const { error } = await adminSupabase
+        .from('wardrobes')
+        .delete()
+        .eq('id', wardrobeId);
+
+    if (error) {
+        console.error('Error deleting wardrobe:', error);
+        return { success: false, error: error.message };
+    }
+
+    revalidatePath('/vault/studio');
+    return { success: true };
 }
 
 // =============================================================================
