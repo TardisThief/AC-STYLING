@@ -56,6 +56,99 @@
             "text": "Alejandra built me a summer closet with easy to combine pieces and pre-made outfits. Helps me to not think about what I wear and still get approval nods from the wife."
         }
     },
+    "Foundations": {
+        "title": "The Masterclass Collection",
+        "subtitle": "Styling Principles and Foundations",
+        "back": "Back to Vault",
+        "resources": "Chapter Resources",
+        "takeaways": "Key Takeaways",
+        "start": "Resume Chapter",
+        "collections": "Curated Collections",
+        "view": "VIEW COLLECTION",
+        "masterclass_number": "Masterclass {number}",
+        "no_foundations": "No collections found.",
+        "admin_link": "Go to Admin Dashboard",
+        "chapters": {
+            "dna": {
+                "title": "Style DNA",
+                "description": "Decode your personal aesthetic inputs.",
+                "videoId": "76979871"
+            },
+            "architecture": {
+                "title": "Silhoutte Architecture",
+                "description": "Understanding proportion and balance.",
+                "videoId": "76979871"
+            },
+            "color": {
+                "title": "Color Theory",
+                "description": "Finding your power palette.",
+                "videoId": "76979871"
+            },
+            "detox": {
+                "title": "The Great Detox",
+                "description": "Editing your wardrobe with ruthlessness and grace.",
+                "videoId": "76979871"
+            },
+            "capsule": {
+                "title": "Capsule Creation",
+                "description": "Building a functional, rotating wardrobe.",
+                "videoId": "76979871"
+            }
+        }
+    },
+    "Vault": {
+        "welcome": "Welcome back, {name}",
+        "quick_actions": "Quick Actions",
+        "pulse": "The Pulse",
+        "masterclasses": {
+            "title": "Masterclasses",
+            "subtitle": "Styling Foundations"
+        },
+        "actions": {
+            "courses": {
+                "label": "Courses",
+                "subtitle": "Library"
+            },
+            "studio": {
+                "label": "The Studio",
+                "subtitle": "Book a service"
+            },
+            "boutique": {
+                "label": "The Boutique",
+                "subtitle": "Curated Shop"
+            },
+            "essence": {
+                "label": "My Styling Essence",
+                "subtitle": "Journal"
+            },
+            "ask": {
+                "label": "Ask Ale a Question",
+                "subtitle": "Concierge"
+            }
+        }
+    },
+    "Studio": {
+        "title": "The Studio",
+        "subtitle": "EXPERT SESSIONS & CONTINUOUS CURATION",
+        "back": "Back to Vault",
+        "apply_retainer": "Apply for Access",
+        "inquire": "Inquire",
+        "secure_session": "Secure Session",
+        "suggested": "Suggested",
+        "whatsapp": "Direct WhatsApp Inquiry",
+        "corporate": "For corporate or bespoke projects, contact",
+        "no_sessions": "No sessions available at the moment."
+    },
+    "Courses": {
+        "title": "Standalone Courses",
+        "subtitle": "Individual lessons to refine specific aspects of your style.",
+        "back": "Back to Vault",
+        "no_courses": "No individual courses available.",
+        "lesson_label": "Single Lesson"
+    },
+    "Video": {
+        "language": "Video Language"
+    },
     "Contact": {
         "label": "Get in Touch",
         "title": "Elevate Your Style",

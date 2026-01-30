@@ -5,14 +5,14 @@
 
 @theme {
   /* Official AC Styling Palette */
-  --color-ac-taupe: #5A4F44;
-  /* Deep Taupe - Core Identity */
-  --color-ac-beige: #C4B29F;
-  /* Warm Beige - Foundation */
-  --color-ac-sand: #E6DED6;
-  /* Creamy Sand - Highlights/Balance */
-  --color-ac-gold: #D4AF37;
-  /* Gold - Luxury Accent */
+  --color-ac-taupe: #5A4F44; /* Deep Taupe */
+  --color-ac-espresso: #3D3630; /* Deep Espresso - Primary Interactive */
+  
+  --color-ac-beige: #C4B29F; /* Warm Beige */
+  --color-ac-sand: #E6DED6; /* Warm Sand - Background */
+  
+  --color-ac-gold: #D4AF37; /* Legacy Gold */
+  --color-ac-gold-muted: #C5A059; /* Muted Gold - Accents */
 
   /* Secondary & Accents */
   --color-ac-coffee: #8C847B;
