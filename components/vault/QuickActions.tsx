@@ -7,6 +7,8 @@ import { Link } from "@/i18n/routing";
 import { Calendar, MessageCircleQuestion, Archive, Tag, BookHeart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import AskAlejandraModal from "@/components/vault/AskAlejandraModal";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "@/i18n/routing";
 
 interface QuickActionsProps {
     isMasterclassComplete?: boolean;
@@ -23,9 +25,21 @@ export default function QuickActions({ isMasterclassComplete = false }: QuickAct
         { label: t('actions.ask.label'), subtitle: t('actions.ask.subtitle'), icon: MessageCircleQuestion, href: "#", action: "ask" },
     ];
 
-    const handleActionClick = (actionType: string | null, e: React.MouseEvent) => {
+    const router = useRouter();
+    const handleActionClick = async (actionType: string | null, e: React.MouseEvent) => {
         if (actionType === 'ask') {
             e.preventDefault();
+
+            // Check auth
+            const supabase = createClient();
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                // Redirect to login or show toaster
+                router.push('/login?next=/vault'); // Assuming login path
+                return;
+            }
+
             setIsAskModalOpen(true);
         }
     };

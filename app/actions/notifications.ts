@@ -3,7 +3,15 @@
 import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
-export type NotificationType = 'service_booking' | 'masterclass_purchase' | 'sale' | 'general';
+export type NotificationType =
+    | 'service_booking'
+    | 'wardrobe_item'
+    | 'general'
+    | 'masterclass_purchase'
+    | 'course_sale'
+    | 'offer_sale'
+    | 'sale'
+    | 'question';
 export type NotificationStatus = 'unread' | 'read' | 'actioned' | 'archived';
 
 export interface AdminNotification {

@@ -7,6 +7,7 @@ import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";
+import UserNotifications from "./UserNotifications";
 
 export default function Navbar() {
     const t = useTranslations('Navbar');
@@ -91,6 +92,7 @@ export default function Navbar() {
                             </a>
                         ))}
                         <div className="z-50 relative">
+                            <UserNotifications />
                             <LanguageSwitcher isScrolled={isScrolled} />
                         </div>
                     </div>

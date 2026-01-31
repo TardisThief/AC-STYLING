@@ -16,7 +16,8 @@ import {
     Mail,
     ChevronDown,
     Filter,
-    ShoppingBag
+    ShoppingBag,
+    MessageSquareReply
 } from "lucide-react";
 import {
     getAdminNotifications,
@@ -26,6 +27,7 @@ import {
     type AdminNotification,
     type NotificationStatus
 } from "@/app/actions/notifications";
+import { answerQuestion } from "@/app/actions/send-question";
 import { toast } from "sonner";
 
 // Simple relative time helper
@@ -191,13 +193,14 @@ export default function AdminNotificationsPanel() {
                     { id: 'sales', label: 'Sales' },
                     { id: 'services', label: 'Services' },
                     { id: 'inbox', label: 'Inbox' },
+                    { id: 'questions', label: 'Q&A' }, // Added Q&A tab
                 ].map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as FilterTab)}
                         className={`px-4 py-2 text-sm font-medium transition-colors relative ${activeTab === tab.id
-                                ? 'text-ac-taupe'
-                                : 'text-ac-taupe/40 hover:text-ac-taupe/70'
+                            ? 'text-ac-taupe'
+                            : 'text-ac-taupe/40 hover:text-ac-taupe/70'
                             }`}
                     >
                         {tab.label}
@@ -252,10 +255,29 @@ function NotificationCard({
     isProcessing: boolean;
 }) {
     const [expanded, setExpanded] = useState(false);
+    const [replying, setReplying] = useState(false);
+    const [replyText, setReplyText] = useState("");
     const isUnread = notification.status === 'unread';
     const isActioned = notification.status === 'actioned';
+    const isQuestion = notification.type === 'question';
 
     const metadata = notification.metadata || {};
+
+    const handleReply = async () => {
+        if (!replyText.trim()) return;
+
+        // Optimistic UI update could go here, but for now we wait
+        const res = await answerQuestion(notification.reference_id!, replyText);
+
+        if (res.success) {
+            toast.success("Answer sent!");
+            setReplying(false);
+            setReplyText("");
+            onMarkRead(notification.id); // Also mark notification as read
+        } else {
+            toast.error(res.error || "Failed to send answer");
+        }
+    };
 
     return (
         <motion.div
@@ -284,7 +306,7 @@ function NotificationCard({
                 <div className="flex items-start gap-3">
                     {/* Type Icon */}
                     <div className={`p-2 rounded-full ${typeColors[notification.type] || typeColors['general']}`}>
-                        {typeIcons[notification.type] || typeIcons['general']}
+                        {typeIcons[notification.type] || (isQuestion ? <MessageSquareReply size={16} /> : typeIcons['general'])}
                     </div>
 
                     {/* Content */}
@@ -309,6 +331,11 @@ function NotificationCard({
                         {isActioned && notification.action_taken && (
                             <span className="inline-block mt-1 px-2 py-0.5 bg-ac-olive/10 text-ac-olive text-[10px] uppercase tracking-wider rounded-sm">
                                 {notification.action_taken}
+                            </span>
+                        )}
+                        {notification.status === 'read' && isQuestion && (
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] uppercase tracking-wider rounded-sm">
+                                Answered
                             </span>
                         )}
                     </div>
@@ -377,6 +404,47 @@ function NotificationCard({
                             </button>
                         </div>
                     )}
+
+                    {/* Q&A Reply Action */}
+                    {isQuestion && (
+                        <div className="mt-4">
+                            {!replying ? (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setReplying(true); }}
+                                    className="w-full py-2 bg-ac-gold/10 text-ac-gold border border-ac-gold/20 text-xs uppercase tracking-widest rounded-sm hover:bg-ac-gold hover:text-white transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <MessageSquareReply size={14} /> Reply to User
+                                </button>
+                            ) : (
+                                <div className="bg-ac-taupe/5 p-3 rounded-sm border border-ac-taupe/10" onClick={(e) => e.stopPropagation()}>
+                                    <textarea
+                                        value={replyText}
+                                        onChange={(e) => setReplyText(e.target.value)}
+                                        placeholder="Type your answer here..."
+                                        className="w-full bg-white border border-ac-taupe/20 rounded-sm p-3 text-sm focus:outline-none focus:border-ac-gold mb-2"
+                                        rows={3}
+                                        autoFocus
+                                    />
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            onClick={() => setReplying(false)}
+                                            className="text-xs text-ac-taupe/60 hover:text-ac-taupe px-3 py-1"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleReply}
+                                            disabled={!replyText.trim()}
+                                            className="text-xs bg-ac-gold text-white px-3 py-1 rounded-sm hover:bg-ac-gold/90 disabled:opacity-50"
+                                        >
+                                            Send Answer
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                 </motion.div>
             )}
         </motion.div>

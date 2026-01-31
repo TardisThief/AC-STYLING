@@ -1,14 +1,12 @@
 "use server";
 
-import { Resend } from 'resend';
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-export async function sendQuestion(formData: FormData) {
+// 1. User Asks Question
+export async function askQuestion(formData: FormData) {
     const question = formData.get('question') as string;
 
-    // Get User Context
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -16,54 +14,111 @@ export async function sendQuestion(formData: FormData) {
         return { success: false, error: "Not authenticated" };
     }
 
-    // Fetch Profile for Name & Context
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, style_essentials')
-        .eq('id', user.id)
-        .single();
-
-    const userName = profile?.full_name || user.email; // Fallback to email if name missing
-    const userEmail = user.email || 'noreply@ac-styling.com'; // Should always exist for auth user
-    const essentials = profile?.style_essentials || {};
-
-    // Format Context
-    const contextHtml = `
-        <div style="background: #f4f4f4; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
-            <h3 style="margin-top: 0; color: #7F8968;">Styling Essence Context</h3>
-            <p><strong>Name:</strong> ${userName}</p>
-            <p><strong>Email:</strong> ${userEmail}</p>
-            <p><strong>Style Words:</strong> ${essentials.style_words || 'Not set'}</p>
-            <p><strong>Style Mood:</strong> ${essentials.style_mood || 'Not set'}</p>
-             <p><strong>Power Color:</strong> ${essentials.power_color || 'Not set'}</p>
-        </div>
-    `;
-
     try {
-        const { data, error } = await resend.emails.send({
-            from: 'AC Styling Lab <onboarding@resend.dev>',
-            to: ['magomezf94@gmail.com'],
-            replyTo: userEmail, // Valid Reply-To
-            subject: `[Vault Question] - ${userName}`,
-            html: `
-                <div style="font-family: sans-serif; color: #333;">
-                    <h1>New Question from ${userName}</h1>
-                    ${contextHtml}
-                    <div style="border-left: 4px solid #D4AF37; padding-left: 15px;">
-                        <p style="font-size: 16px; line-height: 1.5;">${question}</p>
-                    </div>
-                </div>
-            `
+        // A. Save to user_questions
+        const { data: questionData, error: questionError } = await supabase
+            .from('user_questions')
+            .insert({
+                user_id: user.id,
+                question: question,
+                status: 'pending'
+            })
+            .select()
+            .single();
+
+        if (questionError) throw new Error(questionError.message);
+
+        // B. Notify Admin (Using Admin Client to bypass RLS for admin_notifications if needed, 
+        // though authenticated users might be able to insert if policy allows. 
+        // Safer to use service role for admin_notifications insert to guarantee execution)
+        const supabaseAdmin = createAdminClient();
+
+        // Get user profile for name
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', user.id)
+            .single();
+
+        const userName = profile?.full_name || user.email || 'User';
+
+        await supabaseAdmin.from('admin_notifications').insert({
+            type: 'question',
+            title: `New Question from ${userName}`,
+            message: question, // Short preview
+            user_id: user.id, // For linkage
+            reference_id: questionData.id, // Link to the question ID
+            status: 'unread',
+            metadata: {
+                questionText: question,
+                userEmail: profile?.email
+            }
         });
 
-        if (error) {
-            console.error("Resend Error:", error);
-            return { success: false, error: error.message };
-        }
+        return { success: true };
+    } catch (e: any) {
+        console.error("Ask Question Error:", e);
+        return { success: false, error: e.message || "Failed to submit question" };
+    }
+}
+
+// 2. Admin Answers Question
+export async function answerQuestion(questionId: string, answer: string) {
+    const supabase = await createClient();
+    // Ideally check if user is admin, but admin panel is protected by middleware/layout.
+
+    // Use Admin Client to ensure we can update any user's question
+    const supabaseAdmin = createAdminClient();
+
+    try {
+        const { error } = await supabaseAdmin
+            .from('user_questions')
+            .update({
+                answer: answer,
+                status: 'answered',
+                answered_at: new Date().toISOString()
+            })
+            .eq('id', questionId);
+
+        if (error) throw new Error(error.message);
 
         return { success: true };
-    } catch (e) {
-        console.error("Server Error:", e);
-        return { success: false, error: "Failed to send email" };
+    } catch (e: any) {
+        console.error("Answer Error:", e);
+        return { success: false, error: e.message };
     }
+}
+
+// 3. User Marks as Read (Dismiss Notification)
+export async function markAnswerAsRead(questionId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { success: false, error: "Not authenticated" };
+
+    const { error } = await supabase
+        .from('user_questions')
+        .update({ status: 'read' })
+        .eq('id', questionId)
+        .eq('user_id', user.id); // Ensure ownership
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+}
+
+// 4. Get Unread Answers for User (For Bell Icon)
+export async function getUnreadAnswers() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { success: false, questions: [] };
+
+    const { data } = await supabase
+        .from('user_questions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'answered') // Only show 'answered', not 'read'
+        .order('answered_at', { ascending: false });
+
+    return { success: true, questions: data || [] };
 }
