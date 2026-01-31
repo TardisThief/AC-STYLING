@@ -266,12 +266,10 @@ export default function ServicesGrid({ sessionServices, retainerService, recomme
                                     </p>
 
                                     <div className="flex items-center justify-between mt-auto">
-                                        <span className="font-serif italic text-xs text-ac-taupe/60 group-hover:text-ac-taupe transition-colors">
-                                            {t('secure_session')}
-                                        </span>
+
                                         <div className="flex items-center gap-2">
                                             <span className="text-[9px] uppercase tracking-widest text-ac-taupe/40 group-hover:text-ac-gold transition-opacity">
-                                                {t('inquire')}
+                                                {t('secure_session')}
                                             </span>
                                             <ArrowUpRight size={14} className="text-ac-taupe/40 group-hover:text-ac-gold group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                                         </div>
