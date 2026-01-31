@@ -192,14 +192,20 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
     };
 
     // Redirect to signup/login with return URL
+    // After claiming wardrobe, send user to vault (their wardrobe) not back to upload
+    const vaultPath = `/${locale}/vault`;
     const currentPath = `/${locale}/studio/upload/${token}`;
 
     const handleCreateAccount = () => {
-        router.push(`/${locale}/signup?wardrobe=${token}&next=${encodeURIComponent(currentPath)}`);
+        // From thank-you modal: go to vault after signup
+        // For auth-required uploads: come back to upload page
+        const destination = showThankYou ? vaultPath : currentPath;
+        router.push(`/${locale}/signup?wardrobe=${token}&next=${encodeURIComponent(destination)}`);
     };
 
     const handleLogin = () => {
-        router.push(`/${locale}/login?wardrobe=${token}&next=${encodeURIComponent(currentPath)}`);
+        const destination = showThankYou ? vaultPath : currentPath;
+        router.push(`/${locale}/login?wardrobe=${token}&next=${encodeURIComponent(destination)}`);
     };
 
     // Loading state
