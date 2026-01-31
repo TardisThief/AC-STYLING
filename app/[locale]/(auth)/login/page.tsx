@@ -19,6 +19,7 @@ export default function LoginPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = searchParams.get('token');
+    const wardrobeToken = searchParams.get('wardrobe');
     const errorMsg = searchParams.get('error'); // 'auth_code_error'
     const errorDetails = searchParams.get('details');
 
@@ -28,10 +29,13 @@ export default function LoginPage() {
         if (token) {
             document.cookie = `intake_token=${token}; path=/; max-age=3600; SameSite=Lax`;
         }
+        if (wardrobeToken) {
+            document.cookie = `wardrobe_claim_token=${wardrobeToken}; path=/; max-age=3600; SameSite=Lax`;
+        }
         if (errorMsg) {
             toast.error(errorDetails ? `Login Failed: ${errorDetails}` : "Authentication failed. Please try again.");
         }
-    }, [token, errorMsg, errorDetails]);
+    }, [token, wardrobeToken, errorMsg, errorDetails]);
 
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();

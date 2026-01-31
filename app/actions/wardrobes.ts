@@ -210,6 +210,7 @@ export async function uploadToWardrobe(
     try {
         const file = formData.get('file') as File;
         const clientNote = formData.get('note') as string;
+        const category = formData.get('category') as string;
 
         if (!file) throw new Error("No file provided");
 
@@ -237,6 +238,7 @@ export async function uploadToWardrobe(
                 user_id: wardrobe.owner_id, // Keep for backward compat
                 image_url: publicUrl,
                 client_note: clientNote || "",
+                category: category || null,
                 status: 'inbox'
             });
 
