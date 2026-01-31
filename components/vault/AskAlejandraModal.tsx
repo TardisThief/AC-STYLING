@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, CheckCircle2, Sparkles } from "lucide-react";
-import { sendQuestion } from "@/app/actions/send-question";
+import { askQuestion } from "@/app/actions/send-question";
 
 interface AskAlejandraModalProps {
     isOpen: boolean;
@@ -19,7 +19,7 @@ export default function AskAlejandraModal({ isOpen, onClose }: AskAlejandraModal
         setStatus('sending');
 
         const formData = new FormData(e.currentTarget);
-        const result = await sendQuestion(formData);
+        const result = await askQuestion(formData);
 
         if (result.success) {
             setStatus('sent');
