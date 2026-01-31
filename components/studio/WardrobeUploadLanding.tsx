@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
-import { Check, Loader2, Camera, Sparkles, X, LogIn, ChevronRight } from "lucide-react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { Check, Loader2, Camera, Sparkles, X, LogIn, ChevronRight, ImagePlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { uploadToWardrobe } from "@/app/actions/wardrobes";
@@ -71,9 +70,15 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
         checkAuth();
     }, [supabase, wardrobe.owner_id]);
 
-    // Handle file selection
-    const onDrop = useCallback((acceptedFiles: File[]) => {
-        const newStaged = acceptedFiles.map(file => ({
+    // File input refs
+    const cameraInputRef = useRef<HTMLInputElement>(null);
+    const galleryInputRef = useRef<HTMLInputElement>(null);
+
+    // Handle file selection from any source
+    const handleFilesSelected = useCallback((files: FileList | null) => {
+        if (!files || files.length === 0) return;
+
+        const newStaged = Array.from(files).map(file => ({
             file,
             preview: URL.createObjectURL(file),
             category: 'Tops',
@@ -82,14 +87,19 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
         setStagedFiles(prev => [...prev, ...newStaged]);
     }, []);
 
-    const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
-        onDrop,
-        accept: {
-            'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.heic']
-        },
-        disabled: isUploading || authRequired,
-        noClick: stagedFiles.length > 0
-    });
+    // Camera input handler
+    const handleCameraChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        handleFilesSelected(e.target.files);
+        // Reset input so same file can be selected again
+        e.target.value = '';
+    };
+
+    // Gallery input handler
+    const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        handleFilesSelected(e.target.files);
+        // Reset input so same files can be selected again
+        e.target.value = '';
+    };
 
     // Remove staged file
     const removeStaged = (index: number) => {
@@ -234,32 +244,52 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                         </p>
                     </div>
 
-                    {/* Upload Zone */}
-                    <div
-                        {...getRootProps()}
-                        className={`
-                            border-2 border-dashed rounded-sm p-6 md:p-12 text-center cursor-pointer transition-all
-                            ${isDragActive ? 'border-ac-gold bg-ac-gold/10' : 'border-ac-taupe/20 hover:border-ac-gold/50 hover:bg-ac-taupe/5'}
-                            ${isUploading ? 'opacity-50 pointer-events-none' : ''}
-                        `}
-                    >
-                        {/* Hidden input with camera capture for mobile */}
-                        <input {...getInputProps()} capture="environment" />
-                        <div className="w-14 h-14 md:w-16 md:h-16 bg-ac-taupe/10 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                            {isUploading ? (
-                                <Loader2 className="w-6 h-6 md:w-8 md:h-8 text-ac-gold animate-spin" />
-                            ) : (
-                                <Camera className="w-6 h-6 md:w-8 md:h-8 text-ac-taupe/40" />
-                            )}
+                    {/* Upload Buttons */}
+                    <div className={`space-y-3 ${isUploading || authRequired ? 'opacity-50 pointer-events-none' : ''}`}>
+                        {/* Hidden file inputs */}
+                        <input
+                            ref={cameraInputRef}
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={handleCameraChange}
+                            className="hidden"
+                        />
+                        <input
+                            ref={galleryInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleGalleryChange}
+                            className="hidden"
+                        />
+
+                        {/* Two-button layout */}
+                        <div className="flex gap-3">
+                            {/* Take Photo Button */}
+                            <button
+                                type="button"
+                                onClick={() => cameraInputRef.current?.click()}
+                                className="flex-1 flex flex-col items-center justify-center gap-2 bg-ac-taupe text-white py-4 px-4 rounded-sm hover:bg-ac-gold transition-all"
+                            >
+                                <Camera className="w-6 h-6" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest">
+                                    {locale === 'es' ? 'Tomar Foto' : 'Take Photo'}
+                                </span>
+                            </button>
+
+                            {/* Upload from Gallery Button */}
+                            <button
+                                type="button"
+                                onClick={() => galleryInputRef.current?.click()}
+                                className="flex-1 flex flex-col items-center justify-center gap-2 border-2 border-ac-taupe/20 text-ac-taupe py-4 px-4 rounded-sm hover:border-ac-gold hover:text-ac-gold transition-all"
+                            >
+                                <ImagePlus className="w-6 h-6" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest">
+                                    {locale === 'es' ? 'Galería' : 'Gallery'}
+                                </span>
+                            </button>
                         </div>
-                        <p className="font-serif text-lg md:text-xl text-ac-taupe mb-1 md:mb-2">
-                            {isDragActive
-                                ? (locale === 'es' ? 'Suelta aquí' : 'Drop here')
-                                : (locale === 'es' ? 'Toma o selecciona fotos' : 'Take or select photos')}
-                        </p>
-                        <p className="text-xs md:text-sm text-ac-taupe/60">
-                            {locale === 'es' ? 'Toca para abrir la cámara' : 'Tap to open camera'}
-                        </p>
                     </div>
 
                     {/* Staged Files Preview */}
@@ -276,7 +306,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                                         {locale === 'es' ? 'Preparados para subir' : 'Ready to upload'} ({stagedFiles.length})
                                     </p>
                                     <button
-                                        onClick={open}
+                                        onClick={() => galleryInputRef.current?.click()}
                                         className="text-[10px] font-bold uppercase tracking-widest text-ac-gold hover:text-ac-taupe transition-colors"
                                     >
                                         {locale === 'es' ? '+ Añadir más' : '+ Add more'}
