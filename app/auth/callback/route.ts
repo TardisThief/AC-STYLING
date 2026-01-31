@@ -6,20 +6,26 @@ import { claimWardrobe } from '@/app/actions/wardrobes'
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
-    const next = searchParams.get('next') ?? '/en/vault'
 
     if (code) {
         const supabase = await createClient()
         const { data: { user }, error: authError } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!authError && user) {
-            // ... (Profile linking logic remains same - assuming it's above or I should include it?) 
-            // WAIT, replace_file_content replaces the WHOLE block. Be careful.
-            // I will target the error block primarily or use a broader replacement if I can't match easily.
-            // Let's stick to the failing part to minimize diff size risk, merging back.
+            const cookieStore = await cookies();
+
+            // Resolve redirect URL: URL param > cookie > default
+            let next = searchParams.get('next');
+            if (!next) {
+                const nextCookie = cookieStore.get('auth_next_url')?.value;
+                if (nextCookie) {
+                    next = nextCookie;
+                    cookieStore.delete('auth_next_url');
+                }
+            }
+            next = next || '/en/vault';
 
             // PROFILE LINKING LOGIC
-            const cookieStore = await cookies();
             const intakeToken = cookieStore.get('intake_token')?.value;
 
             if (intakeToken) {
@@ -68,8 +74,8 @@ export async function GET(request: Request) {
             return NextResponse.redirect(`${baseUrl}${next}`)
         } else {
             console.error('[AuthCallback] Exchange Error:', authError);
-            const locale = next.split('/')[1] || 'en'; // Extract 'en' from '/en/vault'
-            return NextResponse.redirect(`${origin}/${locale}/login?error=auth_code_error&details=${encodeURIComponent(authError?.message || 'Unknown error')}`);
+            // Default to 'en' locale on auth error
+            return NextResponse.redirect(`${origin}/en/login?error=auth_code_error&details=${encodeURIComponent(authError?.message || 'Unknown error')}`);
         }
     }
 

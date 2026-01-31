@@ -13,8 +13,14 @@ export default function SignupPage() {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
     const wardrobeToken = searchParams.get('wardrobe');
+    const nextUrl = searchParams.get('next');
 
     const supabase = createClient();
+
+    // Build auth callback URL with next parameter
+    const callbackUrl = nextUrl
+        ? `${location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`
+        : `${location.origin}/auth/callback`;
 
     useEffect(() => {
         if (token) {
@@ -24,7 +30,10 @@ export default function SignupPage() {
         if (wardrobeToken) {
             document.cookie = `wardrobe_claim_token=${wardrobeToken}; path=/; max-age=3600; SameSite=Lax`;
         }
-    }, [token, wardrobeToken]);
+        if (nextUrl) {
+            document.cookie = `auth_next_url=${nextUrl}; path=/; max-age=3600; SameSite=Lax`;
+        }
+    }, [token, wardrobeToken, nextUrl]);
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,7 +45,7 @@ export default function SignupPage() {
         const { error } = await supabase.auth.signInWithOtp({
             email,
             options: {
-                emailRedirectTo: `${location.origin}/auth/callback`,
+                emailRedirectTo: callbackUrl,
                 shouldCreateUser: true,
             },
         });
@@ -53,7 +62,7 @@ export default function SignupPage() {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${location.origin}/auth/callback`,
+                redirectTo: callbackUrl,
             },
         });
         if (error) {

@@ -20,10 +20,16 @@ export default function LoginPage() {
     const router = useRouter();
     const token = searchParams.get('token');
     const wardrobeToken = searchParams.get('wardrobe');
+    const nextUrl = searchParams.get('next');
     const errorMsg = searchParams.get('error'); // 'auth_code_error'
     const errorDetails = searchParams.get('details');
 
     const supabase = createClient();
+
+    // Build auth callback URL with next parameter
+    const callbackUrl = nextUrl
+        ? `${location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`
+        : `${location.origin}/auth/callback`;
 
     useEffect(() => {
         if (token) {
@@ -32,10 +38,13 @@ export default function LoginPage() {
         if (wardrobeToken) {
             document.cookie = `wardrobe_claim_token=${wardrobeToken}; path=/; max-age=3600; SameSite=Lax`;
         }
+        if (nextUrl) {
+            document.cookie = `auth_next_url=${nextUrl}; path=/; max-age=3600; SameSite=Lax`;
+        }
         if (errorMsg) {
             toast.error(errorDetails ? `Login Failed: ${errorDetails}` : "Authentication failed. Please try again.");
         }
-    }, [token, wardrobeToken, errorMsg, errorDetails]);
+    }, [token, wardrobeToken, nextUrl, errorMsg, errorDetails]);
 
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,7 +55,7 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signInWithOtp({
             email,
             options: {
-                emailRedirectTo: `${location.origin}/auth/callback`,
+                emailRedirectTo: callbackUrl,
             },
         });
 
@@ -65,7 +74,7 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${location.origin}/auth/callback`,
+                redirectTo: callbackUrl,
             },
         });
         if (error) {

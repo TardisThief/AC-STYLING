@@ -158,13 +158,15 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
         }
     };
 
-    // Redirect to signup/login
+    // Redirect to signup/login with return URL
+    const currentPath = `/${locale}/studio/upload/${token}`;
+
     const handleCreateAccount = () => {
-        router.push(`/${locale}/signup?wardrobe=${token}`);
+        router.push(`/${locale}/signup?wardrobe=${token}&next=${encodeURIComponent(currentPath)}`);
     };
 
     const handleLogin = () => {
-        router.push(`/${locale}/login?wardrobe=${token}`);
+        router.push(`/${locale}/login?wardrobe=${token}&next=${encodeURIComponent(currentPath)}`);
     };
 
     // Loading state
