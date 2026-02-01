@@ -481,6 +481,7 @@ WITH CHECK (
 -- 4.2 masterclasses
 -- -----------------------------------------------------------------------------
 DROP POLICY IF EXISTS "Anyone can view masterclasses" ON public.masterclasses;
+DROP POLICY IF EXISTS "Admins can manage masterclasses" ON public.masterclasses;
 DROP POLICY IF EXISTS "Admins can update masterclasses" ON public.masterclasses;
 DROP POLICY IF EXISTS "Admins can delete masterclasses" ON public.masterclasses;
 
@@ -511,6 +512,7 @@ WITH CHECK (
 -- 4.3 services
 -- -----------------------------------------------------------------------------
 DROP POLICY IF EXISTS "Public read services" ON public.services;
+DROP POLICY IF EXISTS "Admins can manage services" ON public.services;
 DROP POLICY IF EXISTS "Admins can update services" ON public.services;
 DROP POLICY IF EXISTS "Admins can delete services" ON public.services;
 

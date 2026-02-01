@@ -29,21 +29,26 @@ export async function GET(request: Request) {
             const intakeToken = cookieStore.get('intake_token')?.value;
 
             if (intakeToken) {
-                const { data: pendingProfile } = await supabase
+                // Use Admin Client to bypass RLS for profile linking and transfer
+                // (User cannot update another profile's data or claim ownership without RLS policies)
+                const { createAdminClient } = await import('@/utils/supabase/admin');
+                const adminSupabase = createAdminClient();
+
+                const { data: pendingProfile } = await adminSupabase
                     .from('profiles')
                     .select('*')
                     .eq('intake_token', intakeToken)
                     .single();
 
                 if (pendingProfile && pendingProfile.id !== user.id) {
-                    await supabase.from('profiles').update({ full_name: pendingProfile.full_name, is_guest: false, converted_at: new Date().toISOString() }).eq('id', user.id);
+                    await adminSupabase.from('profiles').update({ full_name: pendingProfile.full_name, is_guest: false, converted_at: new Date().toISOString() }).eq('id', user.id);
                     // Transfer Wardrobe Ownership
-                    await supabase.from('wardrobes').update({ owner_id: user.id }).eq('owner_id', pendingProfile.id);
+                    await adminSupabase.from('wardrobes').update({ owner_id: user.id }).eq('owner_id', pendingProfile.id);
                     // Transfer Items
-                    await supabase.from('wardrobe_items').update({ user_id: user.id }).eq('user_id', pendingProfile.id);
-                    await supabase.from('tailor_cards').update({ user_id: user.id }).eq('user_id', pendingProfile.id);
-                    await supabase.from('lookbooks').update({ user_id: user.id }).eq('user_id', pendingProfile.id);
-                    await supabase.from('profiles').delete().eq('id', pendingProfile.id);
+                    await adminSupabase.from('wardrobe_items').update({ user_id: user.id }).eq('user_id', pendingProfile.id);
+                    await adminSupabase.from('tailor_cards').update({ user_id: user.id }).eq('user_id', pendingProfile.id);
+                    await adminSupabase.from('lookbooks').update({ user_id: user.id }).eq('user_id', pendingProfile.id);
+                    await adminSupabase.from('profiles').delete().eq('id', pendingProfile.id);
                     cookieStore.delete('intake_token');
                 }
             }
