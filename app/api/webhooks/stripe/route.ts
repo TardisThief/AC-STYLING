@@ -128,18 +128,35 @@ export async function POST(req: Request) {
                     continue;
                 }
 
-                // 1. Log Purchase
-                const { error: purchaseError } = await supabase.from('purchases').insert({
-                    user_id: finalUserId,
-                    product_id: stripeProductId,
-                    amount_paid: item.amount_total ? item.amount_total / 100 : 0,
-                    currency: item.currency?.toUpperCase() || 'USD',
-                    status: 'completed'
-                });
+                // 1. Log Purchase (Idempotency Check)
+                // Check if a purchase for this product/user exists within the last 5 minutes (to catch duplicates)
+                // Or simply check if a purchase exists for this session_id IF we stored it.
+                // Since we don't store session_id in purchases, we check (user_id, product_id, created_at)
 
-                if (purchaseError) {
-                    console.error('[Stripe Webhook] Purchase Insert Error:', purchaseError);
-                    await logEvent('error', `Purchase Insert Failed: ${purchaseError.message}`);
+                const { data: recentPurchase } = await supabase
+                    .from('purchases')
+                    .select('id')
+                    .eq('user_id', finalUserId)
+                    .eq('product_id', stripeProductId)
+                    .gt('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // 5 mins ago
+                    .maybeSingle();
+
+                if (!recentPurchase) {
+                    const { error: purchaseError } = await supabase.from('purchases').insert({
+                        user_id: finalUserId,
+                        product_id: stripeProductId,
+                        amount_paid: item.amount_total ? item.amount_total / 100 : 0,
+                        currency: item.currency?.toUpperCase() || 'USD',
+                        status: 'completed'
+                    });
+
+                    if (purchaseError) {
+                        console.error('[Stripe Webhook] Purchase Insert Error:', purchaseError);
+                        await logEvent('error', `Purchase Insert Failed: ${purchaseError.message}`);
+                    }
+                } else {
+                    console.log(`[Stripe Webhook] Skipping duplicate purchase for product ${stripeProductId}`);
+                    await logEvent('info', `Duplicate purchase skipped: ${stripeProductId}`);
                 }
 
                 // 2. Grant Access Logic
