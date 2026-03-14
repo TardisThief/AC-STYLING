@@ -185,7 +185,12 @@ export async function getChapters() {
 
     const { data, error } = await supabase
         .from('chapters')
-        .select('*')
+        .select(`
+            *,
+            masterclasses (
+                title
+            )
+        `)
         .order('order_index', { ascending: true });
 
     if (error) {

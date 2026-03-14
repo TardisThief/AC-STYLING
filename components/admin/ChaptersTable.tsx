@@ -90,7 +90,7 @@ export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTa
                                         ? 'bg-ac-olive/10 text-ac-olive'
                                         : 'bg-ac-gold/10 text-ac-gold'
                                         }`}>
-                                        {chapter.category}
+                                        {chapter.masterclasses?.title || chapter.category}
                                     </span>
                                 </td>
                                 <td className="py-3 px-4 text-ac-taupe font-serif">{chapter.title}</td>
