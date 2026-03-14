@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Edit2, Trash2, Filter } from "lucide-react";
+import { Edit2, Trash2, Filter, ChevronUp, ChevronDown } from "lucide-react";
 import { deleteChapter } from "@/app/actions/admin/manage-chapters";
 import { toast } from "sonner";
 
@@ -11,8 +11,13 @@ interface ChaptersTableProps {
     onDelete: () => void;
 }
 
+type SortField = 'order_index' | 'category' | 'title' | 'slug' | 'video_id' | 'resources';
+type SortDirection = 'asc' | 'desc';
+
 export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTableProps) {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    const [sortField, setSortField] = useState<SortField>('category');
+    const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
     const handleDelete = async (id: string, title: string) => {
         if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
@@ -26,12 +31,57 @@ export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTa
         }
     };
 
-    // Calculate unique categories from data to ensure we catch any custom ones
-    const availableCategories = Array.from(new Set(chapters.map(c => c.category))).filter(c => c !== 'masterclass' && c !== 'course');
+    // Calculate unique categories from data to ensure we catch any custom ones.
+    // Also use the assigned masterclass title if category is masterclass.
+    const availableCategories = Array.from(
+        new Set(chapters.map(c => c.masterclasses?.title || c.category))
+    ).sort();
 
-    const filteredChapters = selectedCategory === 'all'
+    let filteredChapters = selectedCategory === 'all'
         ? chapters
-        : chapters.filter(c => c.category === selectedCategory);
+        : chapters.filter(c => (c.masterclasses?.title || c.category) === selectedCategory);
+
+    const getSortValue = (chapter: any, field: SortField) => {
+        if (field === 'category') {
+            return chapter.masterclasses?.title || chapter.category || '';
+        }
+        if (field === 'resources') {
+            return chapter.resource_urls?.length || 0;
+        }
+        return chapter[field] || '';
+    };
+
+    filteredChapters = [...filteredChapters].sort((a, b) => {
+        const valueA = getSortValue(a, sortField);
+        const valueB = getSortValue(b, sortField);
+
+        if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+        if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    const handleSort = (field: SortField) => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    const SortHeader = ({ field, label }: { field: SortField, label: string }) => (
+        <th 
+            className="text-left py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest cursor-pointer hover:bg-ac-taupe/5 transition-colors select-none"
+            onClick={() => handleSort(field)}
+        >
+            <div className="flex items-center gap-1">
+                {label}
+                {sortField === field && (
+                    sortDirection === 'asc' ? <ChevronUp size={14} className="text-ac-gold" /> : <ChevronDown size={14} className="text-ac-gold" />
+                )}
+            </div>
+        </th>
+    );
 
     if (chapters.length === 0) {
         return (
@@ -54,8 +104,6 @@ export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTa
                     className="bg-white/40 border border-ac-taupe/10 rounded-sm py-1.5 px-3 text-sm text-ac-taupe focus:outline-none focus:border-ac-gold cursor-pointer"
                 >
                     <option value="all">All Categories</option>
-                    <option value="masterclass">Masterclass</option>
-                    <option value="course">Course</option>
                     {availableCategories.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                     ))}
@@ -72,12 +120,12 @@ export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTa
                 <table className="w-full">
                     <thead>
                         <tr className="border-b border-ac-taupe/10">
-                            <th className="text-left py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">Order</th>
-                            <th className="text-left py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">Category</th>
-                            <th className="text-left py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">Title</th>
-                            <th className="text-left py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">Slug</th>
-                            <th className="text-left py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">Video ID</th>
-                            <th className="text-left py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">Resources</th>
+                            <SortHeader field="order_index" label="Order" />
+                            <SortHeader field="category" label="Category" />
+                            <SortHeader field="title" label="Title" />
+                            <SortHeader field="slug" label="Slug" />
+                            <SortHeader field="video_id" label="Video ID" />
+                            <SortHeader field="resources" label="Resources" />
                             <th className="text-right py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">Actions</th>
                         </tr>
                     </thead>
