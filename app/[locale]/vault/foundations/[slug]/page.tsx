@@ -3,8 +3,8 @@ import { Link } from "@/i18n/routing";
 import { ArrowLeft, FileText, CheckCircle2, Download, Lock } from "lucide-react";
 import { redirect } from "next/navigation";
 import VaultVideoPlayer from "@/components/vault/VaultVideoPlayer";
-
 import MarkComplete from "@/components/vault/MarkComplete";
+import CompleteChapterButton from "@/components/vault/CompleteChapterButton";
 import { createClient } from "@/utils/supabase/server";
 import { checkAccess } from "@/utils/access-control";
 
@@ -167,6 +167,19 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
 
                                 <div className="hidden lg:block ml-6">
                                     <MarkComplete slug={slug} isCompletedInitial={isCompleted} nextChapterSlug={nextChapterSlug} />
+                                    {nextChapterSlug && (
+                                        <div className="mt-6 flex justify-end">
+                                            <CompleteChapterButton 
+                                                slug={slug} 
+                                                chapterId={chapter.id} 
+                                                totalQuestions={labQuestions.length} 
+                                                nextChapterSlug={nextChapterSlug} 
+                                                isCompletedInitial={isCompleted} 
+                                                baseRoute="/vault/foundations" 
+                                                variant="subtle" 
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -176,6 +189,19 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                     {/* Mobile Completion Button */}
                     <div className="lg:hidden">
                         <MarkComplete slug={slug} isCompletedInitial={isCompleted} nextChapterSlug={nextChapterSlug} />
+                        {nextChapterSlug && (
+                            <div className="mt-6 flex justify-center">
+                                <CompleteChapterButton 
+                                    slug={slug} 
+                                    chapterId={chapter.id} 
+                                    totalQuestions={labQuestions.length} 
+                                    nextChapterSlug={nextChapterSlug} 
+                                    isCompletedInitial={isCompleted} 
+                                    baseRoute="/vault/foundations" 
+                                    variant="subtle" 
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 

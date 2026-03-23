@@ -78,34 +78,40 @@ export default async function FoundationsEssenceLabPage({ params }: { params: Pr
         placeholder: (locale === 'es' && q.placeholder_es) ? q.placeholder_es : q.placeholder
     }));
 
+    const totalQuestions = labQuestions.length;
+
     return (
-        <section className="min-h-screen pb-20 pt-8 max-w-4xl mx-auto px-4">
-            <div className="mb-12">
-                <Link
-                    href={`/vault/foundations/${slug}`}
-                    className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-8 group"
-                >
-                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Video
-                </Link>
-                
-                <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-ac-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <BookOpen size={32} className="text-ac-gold" />
-                    </div>
-                    <span className="text-ac-gold uppercase tracking-widest text-xs font-bold">
+        <section className="min-h-screen pb-20 pt-6 max-w-4xl mx-auto px-4">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8 gap-6 border-b border-ac-taupe/10 pb-6">
+                <div>
+                    <Link
+                        href={`/vault/foundations/${slug}`}
+                        className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-4 group w-fit"
+                    >
+                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        Back to Video
+                    </Link>
+                    <span className="text-ac-gold uppercase tracking-widest text-[10px] font-bold block mb-1">
                         Essence Lab
                     </span>
-                    <h1 className="font-serif text-3xl md:text-5xl text-ac-taupe">
+                    <h1 className="font-serif text-3xl md:text-4xl text-ac-taupe leading-none">
                         {title}
                     </h1>
-                    <p className="text-ac-taupe/60 max-w-lg mx-auto">
-                        Distill your learnings from this chapter. Answers are saved automatically. You may skip these questions if you prefer.
-                    </p>
+                </div>
+
+                <div className="w-full md:w-auto">
+                    <CompleteChapterButton
+                        slug={slug}
+                        chapterId={chapter.id}
+                        totalQuestions={totalQuestions}
+                        nextChapterSlug={nextChapterSlug}
+                        isCompletedInitial={isCompletedInitial}
+                        baseRoute="/vault/foundations"
+                    />
                 </div>
             </div>
 
-            <div className="bg-white/40 border border-ac-taupe/10 p-4 md:p-8 rounded-sm shadow-sm mb-12">
+            <div className="bg-white/40 border border-ac-taupe/10 p-4 md:p-8 rounded-sm shadow-sm">
                 <EssenceLab
                     masterclassId={chapter.masterclass_id || null}
                     chapterId={chapter.id}
@@ -113,18 +119,6 @@ export default async function FoundationsEssenceLabPage({ params }: { params: Pr
                     initialData={essenceMap}
                     questions={labQuestions}
                 />
-            </div>
-
-            <div className="flex flex-col items-center gap-4">
-                <CompleteChapterButton
-                    slug={slug}
-                    nextChapterSlug={nextChapterSlug}
-                    isCompletedInitial={isCompletedInitial}
-                    baseRoute="/vault/foundations"
-                />
-                <p className="text-xs text-ac-taupe/40 uppercase tracking-widest text-center mt-4">
-                    You can always return to edit these responses later.
-                </p>
             </div>
         </section>
     );
