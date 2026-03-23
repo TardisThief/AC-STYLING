@@ -42,32 +42,49 @@ export default function CompleteChapterButton({ slug, chapterId, totalQuestions,
         let isMastered = isCompleted; // Use local state for current completion status
 
         if (!isMastered && totalQuestions > 0) {
-            // Check if all questions are answered
-            const { count } = await supabase
+            // Fetch responses and count in JS to avoid JSONB string query issues
+            const { data: responses } = await supabase
                 .from('essence_responses')
-                .select('*', { count: 'exact', head: true })
+                .select('answer_value')
                 .eq('user_id', user.id)
-                .eq('chapter_id', chapterId)
-                .not('answer_value', 'is', null) // Avoid empty answers if possible
-                .neq('answer_value', ''); // Ensure not empty string
+                .eq('chapter_id', chapterId);
+            
+            let answeredCount = 0;
+            if (responses) {
+                answeredCount = responses.filter(r => {
+                    const val = r.answer_value;
+                    if (!val) return false;
+                    if (typeof val === 'string' && val.trim() === '') return false;
+                    return true;
+                }).length;
+            }
 
-            if (count !== null && count >= totalQuestions) {
+            if (answeredCount >= totalQuestions) {
                 isMastered = true;
-                await supabase.from('user_progress').insert({
-                    user_id: user.id,
-                    content_id: `foundations/${slug}` // Shared id format
-                });
             }
         } else if (!isMastered && totalQuestions === 0) {
             // Master automatically if no questions
             isMastered = true;
-            await supabase.from('user_progress').insert({
-                user_id: user.id,
-                content_id: `foundations/${slug}`
-            });
         }
 
         if (isMastered && !isCompleted) { // Check against local state
+            // Check if progress row already exists before inserting
+            const contentId = baseRoute.includes('courses') ? `courses/${slug}` : `foundations/${slug}`;
+            const { data: existingProgress } = await supabase
+                .from('user_progress')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('content_id', contentId)
+                .maybeSingle();
+            
+            if (!existingProgress) {
+                await supabase.from('user_progress').insert({
+                    user_id: user.id,
+                    content_id: contentId,
+                    completed_at: new Date().toISOString()
+                });
+            }
+
             triggerCelebration();
             setIsCompleted(true); // Update local state
             if (nextChapterSlug) {

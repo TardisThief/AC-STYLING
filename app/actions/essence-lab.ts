@@ -21,21 +21,31 @@ export async function markLabUnlocked(chapterSlug: string) {
 
     if (!user || !chapterSlug) return { success: false };
 
-    const { error } = await supabase
-        .from('user_progress')
-        .upsert({
-            user_id: user.id,
-            content_id: `lab_unlocked:${chapterSlug}`,
-            updated_at: new Date().toISOString()
-        }, {
-            onConflict: 'user_id, content_id'
-        });
+    const contentId = `lab_unlocked:${chapterSlug}`;
 
-    if (error) {
-        console.error("markLabUnlocked Error:", error);
-        return { success: false, error: error.message };
+    // Check existence
+    const { data: existing } = await supabase
+        .from('user_progress')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('content_id', contentId)
+        .maybeSingle();
+
+    if (!existing) {
+        const { error } = await supabase
+            .from('user_progress')
+            .insert({
+                user_id: user.id,
+                content_id: contentId,
+                completed_at: new Date().toISOString()
+            });
+
+        if (error) {
+            console.error("markLabUnlocked Error:", error);
+            return { success: false, error: error.message };
+        }
     }
-    
+
     return { success: true };
 }
 export async function saveEssenceResponse(
@@ -58,29 +68,45 @@ export async function saveEssenceResponse(
         targetMasterclassId = null;
     }
 
-    // Upsert logic
-    const { error } = await supabase
+    // Check existence
+    const { data: existing } = await supabase
         .from('essence_responses')
-        .upsert({
-            user_id: user.id,
-            masterclass_id: targetMasterclassId,
-            chapter_id: chapterId,
-            chapter_slug: chapterSlug,
-            question_key: questionKey,
-            answer_value: answerValue,
-            updated_at: new Date().toISOString()
-        }, {
-            onConflict: 'user_id, question_key, masterclass_id, chapter_id'
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('chapter_id', chapterId)
+        .eq('question_key', questionKey)
+        .maybeSingle();
+
+    let error;
+    if (existing) {
+        const { error: updateError } = await supabase
+            .from('essence_responses')
+            .update({
+                answer_value: answerValue,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', existing.id);
+        error = updateError;
+    } else {
+        const { error: insertError } = await supabase
+            .from('essence_responses')
+            .insert({
+                user_id: user.id,
+                masterclass_id: targetMasterclassId,
+                chapter_id: chapterId,
+                chapter_slug: chapterSlug,
+                question_key: questionKey,
+                answer_value: answerValue,
+                updated_at: new Date().toISOString(),
+                created_at: new Date().toISOString()
+            });
+        error = insertError;
+    }
 
     if (error) {
         console.error("Save Essence Error:", error);
         return { success: false, error: error.message };
     }
-
-    // Optional: Revalidate if we want immediate server-side reflection, 
-    // but client optimistic updates usually handle this better for inputs.
-    // revalidatePath(`/vault/foundations/${chapterSlug}`);
 
     return { success: true };
 }
@@ -140,7 +166,7 @@ export async function getAllEssenceData() {
         .like('content_id', 'lab_unlocked:%');
 
     if (!progressData || progressData.length === 0) return [];
-    
+
     // Parse chapter slugs out of the content_ids
     const unlockedChapterSlugs = progressData.map(p => p.content_id.split(':')[1]).filter(id => id && id.length > 0);
 
@@ -169,7 +195,7 @@ export async function getAllEssenceData() {
         .select('*')
         .eq('user_id', user.id)
         .in('chapter_id', unlockedChapterIds);
-    
+
     const masterclassGroups: Record<string, any> = {};
 
     for (const chapter of chaptersData) {
@@ -196,7 +222,7 @@ export async function getAllEssenceData() {
             if (typeof val === 'object' && val !== null) {
                 val = JSON.stringify(val);
             }
-            
+
             return {
                 key: q.key,
                 label: q.label || q.key,
@@ -224,7 +250,7 @@ export async function getAllEssenceData() {
  */
 export async function checkIncompleteMasterclassLabs(chapterId: string): Promise<boolean> {
     const supabase = await createClient();
-    
+
     const { data: chData } = await supabase.from('chapters').select('masterclass_id').eq('id', chapterId).single();
     if (!chData?.masterclass_id) return false;
 
