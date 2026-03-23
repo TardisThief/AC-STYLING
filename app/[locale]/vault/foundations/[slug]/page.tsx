@@ -3,7 +3,7 @@ import { Link } from "@/i18n/routing";
 import { ArrowLeft, FileText, CheckCircle2, Download, Lock } from "lucide-react";
 import { redirect } from "next/navigation";
 import VaultVideoPlayer from "@/components/vault/VaultVideoPlayer";
-import EssenceLab from "@/components/vault/EssenceLab";
+
 import MarkComplete from "@/components/vault/MarkComplete";
 import { createClient } from "@/utils/supabase/server";
 import { checkAccess } from "@/utils/access-control";
@@ -202,14 +202,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                         )}
                     </div>
 
-                    {/* 2. Styling Essence Lab (Always show - has fallback questions) */}
-                    <EssenceLab
-                        masterclassId={chapter.masterclass_id || null}
-                        chapterId={chapter.id}
-                        chapterSlug={slug}
-                        initialData={essenceMap}
-                        questions={labQuestions}
-                    />
+
 
                     {/* 3. Resources */}
                     <div className="bg-white/20 backdrop-blur-md border border-white/30 p-6 rounded-sm shadow-sm">

@@ -4,7 +4,6 @@ import { Link } from "@/i18n/routing";
 import { ArrowLeft, FileText, CheckCircle2, Download } from "lucide-react";
 import { redirect } from "next/navigation";
 import VaultVideoPlayer from "@/components/vault/VaultVideoPlayer";
-import EssenceLab from "@/components/vault/EssenceLab";
 import MarkComplete from "@/components/vault/MarkComplete";
 import { createClient } from "@/utils/supabase/server";
 import { checkAccess } from "@/utils/access-control";
@@ -161,7 +160,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
                             {/* Desktop Completion Button - Only show if accessible */}
                             {hasAccess && (
                                 <div className="hidden lg:block ml-6">
-                                    <MarkComplete slug={chapter.slug} isCompletedInitial={isCompleted} nextChapterSlug={nextChapterSlug} />
+                                    <MarkComplete slug={chapter.slug} isCompletedInitial={isCompleted} nextChapterSlug={nextChapterSlug} baseRoute="/vault/courses" />
                                 </div>
                             )}
                         </div>
@@ -170,7 +169,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
                     {/* Mobile Completion Button */}
                     {hasAccess && (
                         <div className="lg:hidden">
-                            <MarkComplete slug={chapter.slug} isCompletedInitial={isCompleted} nextChapterSlug={nextChapterSlug} />
+                            <MarkComplete slug={chapter.slug} isCompletedInitial={isCompleted} nextChapterSlug={nextChapterSlug} baseRoute="/vault/courses" />
                         </div>
                     )}
                 </div>
@@ -221,21 +220,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
                         </div>
                     )}
 
-                    {/* 2. Styling Essence Lab (GATED or Preview?) - Gated for now as it assumes watching */}
-                    {hasAccess ? (
-                        <EssenceLab
-                            masterclassId={null}
-                            chapterId={chapter.id}
-                            chapterSlug={chapter.slug}
-                            initialData={essenceMap}
-                            questions={labQuestions}
-                        />
-                    ) : (
-                        <div className="bg-white/20 backdrop-blur-md border border-white/30 p-6 rounded-sm shadow-sm opacity-50 cursor-not-allowed">
-                            <h3 className="font-serif text-xl text-ac-taupe mb-4 opacity-50">Essence Lab</h3>
-                            <p className="text-sm text-ac-taupe/60 italic">Unlock course to access lab questions.</p>
-                        </div>
-                    )}
+
 
                     {/* 3. Resources */}
                     {hasAccess ? (
