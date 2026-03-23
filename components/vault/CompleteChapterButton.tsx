@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { ArrowRight } from "lucide-react";
+import { getEssenceProgress, checkIncompleteMasterclassLabs } from "@/app/actions/essence-lab";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
@@ -19,17 +20,26 @@ interface CompleteChapterButtonProps {
 }
 
 export default function CompleteChapterButton({ slug, chapterId, totalQuestions, nextChapterSlug, isCompletedInitial, baseRoute = "/vault/foundations", variant = "default" }: CompleteChapterButtonProps) {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isCompleted, setIsCompleted] = useState(isCompletedInitial);
+    const [hasMissingLabs, setHasMissingLabs] = useState(false);
+
+    useEffect(() => {
+        if (!nextChapterSlug) {
+            checkIncompleteMasterclassLabs(chapterId).then(setHasMissingLabs);
+        }
+    }, [chapterId, nextChapterSlug]);
+
     const supabase = createClient();
     const router = useRouter();
 
     const handleComplete = async () => {
-        setIsLoading(true);
+        setIsSubmitting(true);
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) return;
 
-        let isMastered = isCompletedInitial;
+        let isMastered = isCompleted; // Use local state for current completion status
 
         if (!isMastered && totalQuestions > 0) {
             // Check if all questions are answered
@@ -57,8 +67,9 @@ export default function CompleteChapterButton({ slug, chapterId, totalQuestions,
             });
         }
 
-        if (isMastered && !isCompletedInitial) {
+        if (isMastered && !isCompleted) { // Check against local state
             triggerCelebration();
+            setIsCompleted(true); // Update local state
             if (nextChapterSlug) {
                 toast.success("Chapter Mastered!", {
                     description: "Excellent work completing the essence lab.",
@@ -78,6 +89,7 @@ export default function CompleteChapterButton({ slug, chapterId, totalQuestions,
         } else {
             router.push(baseRoute === "/vault/courses" ? "/vault/courses" : "/vault/foundations");
         }
+        setIsSubmitting(false);
     };
 
     const triggerCelebration = () => {
@@ -93,28 +105,59 @@ export default function CompleteChapterButton({ slug, chapterId, totalQuestions,
 
     if (variant === "subtle") {
         return (
-            <button
-                onClick={handleComplete}
-                disabled={isLoading}
-                className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors group disabled:opacity-50"
-            >
-                {isLoading ? "Loading..." : "Continue to Next Chapter"}
-                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </button>
+            <div className="flex flex-col items-center gap-2 mt-4">
+                <button
+                    onClick={handleComplete}
+                    disabled={isSubmitting}
+                    className="flex items-center gap-2 text-xs uppercase tracking-widest text-ac-taupe/60 hover:text-ac-taupe transition-colors group"
+                >
+                    {isSubmitting ? (
+                        <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                        <>Continue to Next Chapter <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" /></>
+                    )}
+                </button>
+                {!nextChapterSlug && (
+                    <button
+                       onClick={() => router.push('/vault/essence')}
+                       className="text-[10px] uppercase tracking-widest text-ac-gold hover:text-ac-olive transition-colors"
+                    >
+                       {hasMissingLabs ? "Review & Complete Missing Answers" : "Review your Essence Journal"}
+                    </button>
+                )}
+            </div>
         );
     }
 
     return (
-        <motion.button
-            layout
-            onClick={handleComplete}
-            disabled={isLoading}
-            className="group flex items-center justify-between gap-6 w-full md:w-auto bg-ac-olive text-white py-3 px-8 rounded-sm hover:bg-ac-olive/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
-        >
-            <span className="font-serif tracking-wide">
-                {isLoading ? "Saving..." : "Continue to Next Chapter"}
-            </span>
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-        </motion.button>
+        <div className="flex flex-col items-center">
+            <motion.button
+                layout
+                onClick={handleComplete}
+                disabled={isSubmitting}
+                className="group flex flex-col items-center justify-center gap-1 w-full md:w-auto bg-ac-olive text-white py-4 px-12 rounded-sm hover:bg-ac-olive/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed mx-auto min-w-[300px]"
+            >
+                {isSubmitting ? (
+                    <span className="flex items-center gap-2 font-serif tracking-wide">
+                        <Loader2 className="animate-spin" size={16} /> Finalizing
+                    </span>
+                ) : (
+                    <>
+                        <span className="flex items-center gap-2 mb-1 font-serif tracking-wide text-lg">
+                            {nextChapterSlug ? 'Complete & Master Chapter' : 'Master Masterclass'} <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                        </span>
+                        {isCompleted && <span className="text-[10px] text-white/70 font-sans tracking-widest uppercase">(Already Mastered)</span>}
+                    </>
+                )}
+            </motion.button>
+            {!nextChapterSlug && (
+                <button
+                    onClick={() => router.push('/vault/essence')}
+                    className="text-[10px] uppercase tracking-widest text-ac-taupe/60 hover:text-ac-gold transition-colors mt-3"
+                >
+                    {hasMissingLabs ? "Review & Complete Missing Answers" : "Review your Essence Journal"}
+                </button>
+            )}
+        </div>
     );
 }

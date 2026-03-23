@@ -86,8 +86,11 @@ export default function EssenceLab({ masterclassId, chapterId, chapterSlug, init
                             <label htmlFor={q.key} className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">
                                 {q.label}
                             </label>
-                            {savingStatus[q.key] === 'saving' && <Loader2 size={12} className="text-ac-gold animate-spin" />}
-                            {savingStatus[q.key] === 'saved' && <Check size={12} className="text-ac-olive" />}
+                            {savingStatus[q.key] === 'saving' ? (
+                                <Loader2 size={12} className="text-ac-gold animate-spin" />
+                            ) : (answers[q.key] || '').trim().length > 0 ? (
+                                <Check size={12} className="text-ac-olive" />
+                            ) : null}
                         </div>
 
                         <textarea

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle, ArrowRight, PlayCircle, BookOpen } from "lucide-react";
+import { markLabUnlocked } from "@/app/actions/essence-lab";
 import { Link } from "@/i18n/routing";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,13 +18,13 @@ export default function MarkComplete({ slug, isCompletedInitial, nextChapterSlug
     // If it was already completed in the DB, the video is considered completed.
     const [isVideoCompleted, setIsVideoCompleted] = useState(isCompletedInitial);
 
-    const handleVideoComplete = () => {
+    const handleVideoComplete = async () => {
         if (isVideoCompleted) return;
         setIsVideoCompleted(true);
-        toast.success("Video Completed!", {
-            description: "You have unlocked the Essence Lab for this chapter.",
-            duration: 3000,
+        toast.success("Video completed! Proceed to the Essence Lab to Master the chapter.", {
+            icon: "✅"
         });
+        await markLabUnlocked(slug);
     };
 
     return (
