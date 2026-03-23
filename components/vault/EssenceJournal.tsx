@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookHeart, Sparkles, ChevronDown, ChevronRight, Loader2, Check } from "lucide-react";
 import { saveEssenceResponse } from "@/app/actions/essence-lab";
@@ -43,6 +43,14 @@ function JournalQuestionRow({
 }) {
     const [val, setVal] = useState(question.value || '');
     const [status, setStatus] = useState<'idle'|'saving'|'saved'|'error'>('idle');
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [val]);
 
     const handleBlur = async () => {
         if (val === question.value && status === 'idle') return; // Didn't change
@@ -82,6 +90,7 @@ function JournalQuestionRow({
             </div>
 
             <textarea
+                ref={textareaRef}
                 id={question.key}
                 value={val}
                 onChange={(e) => {
@@ -90,8 +99,8 @@ function JournalQuestionRow({
                 }}
                 onBlur={handleBlur}
                 placeholder={question.placeholder || 'Your insights...'}
-                rows={3}
-                className="w-full bg-white/40 border border-white/50 rounded-sm p-3 text-sm text-ac-taupe placeholder:text-ac-taupe/40 focus:outline-none focus:border-ac-gold focus:ring-1 focus:ring-ac-gold transition-all resize-none font-serif"
+                rows={1}
+                className="w-full bg-white/40 border border-white/50 rounded-sm p-3 text-sm text-ac-taupe placeholder:text-ac-taupe/40 focus:outline-none focus:border-ac-gold focus:ring-1 focus:ring-ac-gold transition-colors resize-none font-serif overflow-hidden leading-relaxed"
             />
         </div>
     );
@@ -102,11 +111,22 @@ export default function EssenceJournal({ data }: EssenceJournalProps) {
     const [filterIncomplete, setFilterIncomplete] = useState<boolean>(false);
     
     const [openSections, setOpenSections] = useState<string[]>(
-        data && data.length > 0 ? [data[0].masterclassId] : []
+        data ? data.map(mc => mc.masterclassId) : []
     );
+    
+    // Chapters collapsed by default
+    const [openChapters, setOpenChapters] = useState<string[]>([]);
 
     const toggleSection = (id: string) => {
         setOpenSections(prev =>
+            prev.includes(id)
+                ? prev.filter(i => i !== id)
+                : [...prev, id]
+        );
+    };
+
+    const toggleChapter = (id: string) => {
+        setOpenChapters(prev =>
             prev.includes(id)
                 ? prev.filter(i => i !== id)
                 : [...prev, id]
@@ -235,25 +255,48 @@ export default function EssenceJournal({ data }: EssenceJournalProps) {
                                 >
                                     <div className="p-6 pt-0 border-t border-ac-taupe/5 space-y-8">
                                         <div className="h-2" />
-                                        {mc.chapters.map((ch: any) => (
-                                            <div key={ch.chapterId}>
-                                                <h3 className="font-serif text-lg text-ac-taupe/80 mb-4 pb-2 border-b border-ac-taupe/10 flex items-center gap-2">
-                                                    {ch.chapterTitle} 
-                                                    <span className="text-[10px] uppercase tracking-widest text-ac-taupe/30 font-bold">({ch.questions.length} Questions)</span>
-                                                </h3>
-                                                <div className="grid gap-4">
-                                                    {ch.questions.map((q: any) => (
-                                                        <JournalQuestionRow 
-                                                            key={q.key} 
-                                                            question={q} 
-                                                            chapterId={ch.chapterId} 
-                                                            chapterSlug={ch.chapterSlug}
-                                                            masterclassId={mc.masterclassId}
-                                                        />
-                                                    ))}
+                                        {mc.chapters.map((ch: any) => {
+                                            const isChapterOpen = openChapters.includes(ch.chapterId);
+                                            return (
+                                                <div key={ch.chapterId}>
+                                                    <h3 
+                                                        onClick={() => toggleChapter(ch.chapterId)}
+                                                        className="font-serif text-lg text-ac-taupe/80 mb-4 pb-2 border-b border-ac-taupe/10 flex items-center justify-between cursor-pointer hover:text-ac-taupe transition-colors group"
+                                                    >
+                                                        <span className="flex items-center gap-2">
+                                                            {ch.chapterTitle} 
+                                                            <span className="text-[10px] uppercase tracking-widest text-ac-taupe/40 font-bold group-hover:text-ac-taupe/60 transition-colors">
+                                                                ({ch.questions.length} Questions)
+                                                            </span>
+                                                        </span>
+                                                        {isChapterOpen ? <ChevronDown size={16} className="text-ac-taupe/50 group-hover:text-ac-taupe transition-colors" /> : <ChevronRight size={16} className="text-ac-taupe/50 group-hover:text-ac-taupe transition-colors" />}
+                                                    </h3>
+                                                    <AnimatePresence>
+                                                        {isChapterOpen && (
+                                                            <motion.div
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: "auto", opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                transition={{ duration: 0.2 }}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                <div className="grid gap-4 pb-4">
+                                                                    {ch.questions.map((q: any) => (
+                                                                        <JournalQuestionRow 
+                                                                            key={q.key} 
+                                                                            question={q} 
+                                                                            chapterId={ch.chapterId} 
+                                                                            chapterSlug={ch.chapterSlug}
+                                                                            masterclassId={mc.masterclassId}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </motion.div>
                             )}

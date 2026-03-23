@@ -18,9 +18,9 @@ export default async function EssencePage() {
     return (
         <section className="min-h-screen pb-20 pt-8 container mx-auto px-4">
             <div className="mb-8">
-                <Link href="/vault" className="inline-flex items-center text-ac-taupe/60 hover:text-ac-taupe mb-4 transition-colors">
+                <Link href="/profile" className="inline-flex items-center text-ac-taupe/60 hover:text-ac-taupe mb-4 transition-colors">
                     <ArrowLeft size={16} className="mr-2" />
-                    Back to Vault
+                    Back to Profile
                 </Link>
                 <h1 className="font-serif text-4xl md:text-5xl text-ac-taupe mb-2">
                     My Styling Essence
