@@ -5,10 +5,10 @@ import { User } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import UserNotifications from "./UserNotifications";
 
-export default function ConciergeNavbar({ isGuest }: { isGuest?: boolean }) {
+export default function ConciergeNavbar({ isGuest, isAdmin }: { isGuest?: boolean; isAdmin?: boolean }) {
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md py-4 shadow-sm text-ac-taupe">
-            <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
+            <div className="container mx-auto px-6 md:px-12 flex justify-between items-center relative">
                 {/* Logo */}
                 <Link href="/vault" className="flex items-center gap-4 group">
                     <div
@@ -29,6 +29,18 @@ export default function ConciergeNavbar({ isGuest }: { isGuest?: boolean }) {
                         <span className="hidden md:inline">AC Styling Lab</span>
                     </span>
                 </Link>
+
+                {/* Admin Quick Link */}
+                {isAdmin && (
+                    <div className="absolute left-1/2 -translate-x-1/2 hidden md:block">
+                        <Link
+                            href="/vault/admin"
+                            className="flex items-center gap-2 text-sm uppercase tracking-widest font-medium border border-ac-taupe/20 rounded-full px-5 py-2 hover:border-ac-gold hover:text-ac-gold transition-colors duration-300"
+                        >
+                            Admin Panel
+                        </Link>
+                    </div>
+                )}
 
                 {/* Right Side Actions */}
                 <div className="flex items-center space-x-4 md:space-x-6">
