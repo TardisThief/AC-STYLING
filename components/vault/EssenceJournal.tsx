@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookHeart, Sparkles, ChevronDown, ChevronRight, Loader2, Check } from "lucide-react";
+import { BookHeart, Sparkles, ChevronDown, ChevronRight, Loader2, CheckCircle2 } from "lucide-react";
 import { saveEssenceResponse } from "@/app/actions/essence-lab";
 
 type Question = {
@@ -81,11 +81,11 @@ function JournalQuestionRow({
                     {question.label}
                 </label>
                 {status === 'saving' ? (
-                    <Loader2 size={12} className="text-ac-gold animate-spin" />
+                    <Loader2 size={14} className="text-ac-gold animate-spin" />
                 ) : status === 'error' ? (
                     <span className="text-[10px] text-red-500">Error saving</span>
                 ) : isFilled ? (
-                    <Check size={12} className="text-ac-olive" />
+                    <CheckCircle2 size={16} className="text-ac-olive translate-y-2" strokeWidth={2.5} />
                 ) : null}
             </div>
 
@@ -257,6 +257,8 @@ export default function EssenceJournal({ data }: EssenceJournalProps) {
                                         <div className="h-2" />
                                         {mc.chapters.map((ch: any) => {
                                             const isChapterOpen = openChapters.includes(ch.chapterId);
+                                            const allAnswered = ch.questions.length > 0 && ch.questions.every((q: any) => (q.value || '').trim().length > 0);
+                                            
                                             return (
                                                 <div key={ch.chapterId}>
                                                     <h3 
@@ -268,6 +270,9 @@ export default function EssenceJournal({ data }: EssenceJournalProps) {
                                                             <span className="text-[10px] uppercase tracking-widest text-ac-taupe/40 font-bold group-hover:text-ac-taupe/60 transition-colors">
                                                                 ({ch.questions.length} Questions)
                                                             </span>
+                                                            {allAnswered && (
+                                                                <CheckCircle2 size={16} className="text-ac-olive" strokeWidth={2.5} />
+                                                            )}
                                                         </span>
                                                         {isChapterOpen ? <ChevronDown size={16} className="text-ac-taupe/50 group-hover:text-ac-taupe transition-colors" /> : <ChevronRight size={16} className="text-ac-taupe/50 group-hover:text-ac-taupe transition-colors" />}
                                                     </h3>
