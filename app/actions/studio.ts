@@ -170,11 +170,18 @@ export async function processWardrobeItem(
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
     if (profile?.role !== 'admin') return { success: false, error: "Unauthorized" };
 
-    // 2. Update
+    // 2. Validate Payload
     const updates: any = { status };
-    if (metadata?.tags) updates.tags = metadata.tags;
-    if (metadata?.brand) updates.brand = metadata.brand;
-    if (metadata?.notes) updates.notes = metadata.notes;
+    if (metadata?.tags) {
+        if (!Array.isArray(metadata.tags) || metadata.tags.length > 50) return { success: false, error: "Invalid tags format or too many tags" };
+        updates.tags = metadata.tags.map(t => String(t).substring(0, 50));
+    }
+    if (metadata?.brand) {
+        updates.brand = String(metadata.brand).substring(0, 100);
+    }
+    if (metadata?.notes) {
+        updates.notes = String(metadata.notes).substring(0, 1000);
+    }
 
     const { error } = await supabase
         .from('wardrobe_items')
@@ -261,6 +268,17 @@ export async function uploadGuestWardrobeItem(formData: FormData, token: string)
         const clientNote = formData.get('note') as string;
 
         if (!file) throw new Error("No file provided");
+
+        // VALIDATION: File type and size
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+        if (!allowedTypes.includes(file.type)) {
+            throw new Error(`Invalid file type: ${file.type}. Only JPG, PNG, WEBP, and HEIC are allowed.`);
+        }
+
+        const MAX_SIZE = 20 * 1024 * 1024; // 20 MB
+        if (file.size > MAX_SIZE) {
+            throw new Error(`File is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum allowed size is 20MB.`);
+        }
 
         // 2. Upload to Storage (Using Invite Profile ID)
         const fileExt = file.name.split('.').pop() || 'jpg';
