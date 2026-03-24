@@ -31,7 +31,7 @@ export default async function BoutiquePage({ params }: { params: Promise<{ local
                             The Boutique
                         </h1>
                         <p className="text-xl text-ac-coffee font-light max-w-2xl leading-relaxed">
-                            A curated selection of the pieces that define the Alejandra Cuesta aesthetic.
+                            A curated selection of the pieces that define Alejandra's aesthetic.
                             Approved by the stylist, ready for your wardrobe.
                         </p>
                     </div>

@@ -38,7 +38,7 @@ export default async function GalleryPage() {
                             Style is a Language. <br /><span className="italic opacity-80">Learn to Speak It.</span>
                         </h1>
                         <div className="text-[#3D3630]/70 text-lg font-light leading-relaxed mb-8 max-w-md">
-                            Join Alejandra Carrillo in this exclusive masterclass series. Move beyond trends and discover the timeless architectural principles of personal style.
+                            Join Alejandra in this exclusive masterclass series. Move beyond trends and discover the timeless architectural principles of personal style.
                         </div>
                         <div className="flex gap-4">
                             <Link
@@ -60,7 +60,7 @@ export default async function GalleryPage() {
                                 className="absolute top-0 left-0 w-full h-full relative z-10"
                                 frameBorder="0"
                                 allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
-                                title="Alejandra Carrillo Intro"
+                                title="Alejandra Intro"
                             ></iframe>
                         </div>
                     </div>
