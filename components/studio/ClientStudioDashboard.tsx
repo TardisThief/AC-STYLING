@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Shirt, BookOpen, Ruler } from "lucide-react";
+import { Sparkles, Shirt, BookOpen, Ruler, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import VirtualWardrobe from "@/components/studio/VirtualWardrobe";
 import DigitalLookbook from "@/components/studio/DigitalLookbook";
@@ -15,6 +15,7 @@ interface ClientStudioDashboardProps {
 
 export default function ClientStudioDashboard({ clientId, initialMeasurements, userName }: ClientStudioDashboardProps) {
     const [activeTab, setActiveTab] = useState<'lookbooks' | 'wardrobe'>('lookbooks');
+    const [isTailorCardOpen, setIsTailorCardOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-ac-sand/30 pb-20">
@@ -42,66 +43,100 @@ export default function ClientStudioDashboard({ clientId, initialMeasurements, u
                             <Shirt size={14} />
                             Wardrobe
                         </button>
+                        <div className="w-px h-4 bg-ac-taupe/20 hidden md:block" />
+                        <button
+                            onClick={() => setIsTailorCardOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest transition-all text-ac-taupe/40 hover:bg-white hover:text-ac-taupe"
+                        >
+                            <Ruler size={14} />
+                            Measurements
+                        </button>
                     </div>
                 </div>
             </header>
 
             <div className="container mx-auto px-6 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Main Content Area */}
-                    <div className="lg:col-span-8 order-2 lg:order-1">
-                        <AnimatePresence mode="wait">
-                            {activeTab === 'lookbooks' ? (
-                                <motion.div
-                                    key="lookbooks"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    <DigitalLookbook clientId={clientId} isClientView={true} />
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    key="wardrobe"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    <VirtualWardrobe clientId={clientId} isClientView={true} />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-
-                    {/* Side Panel (Contextual or Persistent) */}
-                    <div className="lg:col-span-4 order-1 lg:order-2 space-y-8">
-                        {/* Tailor Card is always visible as a reference */}
-                        <div className="h-fit">
-                            <TailorCardUser
-                                userId={clientId}
-                                initialMeasurements={initialMeasurements}
-                                isActiveClient={true} // Always true here since route is protected
-                            />
-                        </div>
-
-                        {/* Stylist Contact / Status (Placeholder for now) */}
-                        <div className="bg-ac-taupe text-white p-6 rounded-sm">
-                            <div className="flex items-center gap-3 mb-4">
-                                <Sparkles size={20} className="text-ac-gold" />
-                                <h3 className="font-serif text-xl">Stylist Status</h3>
-                            </div>
-                            <p className="text-xs leading-relaxed opacity-80 mb-4">
-                                Your stylist is currently curating new items for your review. Check back soon for updates.
-                            </p>
-                            <div className="text-[10px] font-bold uppercase tracking-widest opacity-60">
-                                Last Active: Today
-                            </div>
-                        </div>
-                    </div>
+                {/* Main Content Area */}
+                <div className="w-full">
+                    <AnimatePresence mode="wait">
+                        {activeTab === 'lookbooks' ? (
+                            <motion.div
+                                key="lookbooks"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <DigitalLookbook clientId={clientId} isClientView={true} />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="wardrobe"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <VirtualWardrobe clientId={clientId} isClientView={true} />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
+
+            {/* Tailor Card Modal */}
+            <AnimatePresence>
+                {isTailorCardOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-ac-taupe/80 backdrop-blur-md flex items-center justify-center p-6"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="bg-white max-w-lg w-full max-h-[90vh] rounded-sm shadow-2xl overflow-y-auto relative custom-scrollbar"
+                        >
+                            <button
+                                onClick={() => setIsTailorCardOpen(false)}
+                                className="absolute top-6 right-6 z-50 text-ac-taupe/40 hover:text-ac-taupe transition-colors bg-white/50 backdrop-blur-sm rounded-full p-1"
+                            >
+                                <X size={24} />
+                            </button>
+
+                            <div className="p-8 space-y-8">
+                                <div className="pr-12">
+                                    <h3 className="font-serif text-3xl text-ac-taupe">Your Measurements</h3>
+                                    <p className="text-[10px] uppercase tracking-widest font-bold text-ac-taupe/40 mt-1">Review your tailoring profile</p>
+                                </div>
+
+                                <div className="h-fit">
+                                    <TailorCardUser
+                                        userId={clientId}
+                                        initialMeasurements={initialMeasurements}
+                                        isActiveClient={true} // Always true here since route is protected
+                                    />
+                                </div>
+                                
+                                {/* Stylist Contact / Status */}
+                                <div className="bg-ac-taupe text-white p-6 rounded-sm mt-8">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <Sparkles size={20} className="text-ac-gold" />
+                                        <h3 className="font-serif text-xl">Stylist Status</h3>
+                                    </div>
+                                    <p className="text-xs leading-relaxed opacity-80 mb-4">
+                                        Your stylist is currently curating new items for your review. Check back soon for updates.
+                                    </p>
+                                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                                        Last Active: Today
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
