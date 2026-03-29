@@ -184,7 +184,7 @@ export default function AdminDashboard() {
 
             {/* Action Bar */}
             {
-                activeTab !== 'clients' && activeTab !== 'boutique' && activeTab !== 'notifications' && (
+                activeTab !== 'clients' && activeTab !== 'boutique' && activeTab !== 'notifications' && activeTab !== 'trustedby' && (
                     <div className="flex justify-end items-center">
                         <div className="flex gap-3">
                             {activeTab === 'masterclasses' && (
@@ -219,7 +219,7 @@ export default function AdminDashboard() {
 
             {/* Form Area */}
             {
-                (isCreating || editingItem || editingOfferSlug) && activeTab !== 'clients' && activeTab !== 'boutique' && activeTab !== 'notifications' && (
+                (isCreating || editingItem || editingOfferSlug) && activeTab !== 'clients' && activeTab !== 'boutique' && activeTab !== 'notifications' && activeTab !== 'trustedby' && (
                     <div ref={formRef} className="bg-white/40 backdrop-blur-md border border-ac-gold shadow-lg rounded-sm p-8">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-serif text-xl text-ac-taupe">
