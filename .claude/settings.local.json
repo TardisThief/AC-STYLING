@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s \"https://raw.githubusercontent.com/obra/superpowers/main/commands/execute-plan.md\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/obra/superpowers/main/commands/write-plan.md\")",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(ls -la /c/Users/magom/Dev/AC-STYLING/app/[locale]/)",
+      "Bash(ls -la /c/Users/magom/Dev/AC-STYLING/app/[locale]/vault/admin/)",
+      "Bash(find /c/Users/magom/Dev/AC-STYLING/app/[locale]/vault/foundations -name \"*.tsx\")"
+    ]
+  }
+}

@@ -28,6 +28,7 @@ type MasterclassGroup = {
 
 interface EssenceJournalProps {
     data: MasterclassGroup[] | null;
+    allMasterclasses?: { id: string; title: string }[];
 }
 
 function JournalQuestionRow({ 
@@ -106,7 +107,7 @@ function JournalQuestionRow({
     );
 }
 
-export default function EssenceJournal({ data }: EssenceJournalProps) {
+export default function EssenceJournal({ data, allMasterclasses }: EssenceJournalProps) {
     const [filterMc, setFilterMc] = useState<string>('ALL');
     const [filterIncomplete, setFilterIncomplete] = useState<boolean>(false);
     
@@ -171,17 +172,20 @@ export default function EssenceJournal({ data }: EssenceJournalProps) {
                     <label className="text-[10px] uppercase tracking-widest font-bold text-ac-taupe/60">
                         Filter by Masterclass:
                     </label>
-                    <select 
+                    <select
                         value={filterMc}
                         onChange={(e) => setFilterMc(e.target.value)}
                         className="text-xs border border-ac-taupe/20 rounded p-1.5 focus:outline-none focus:border-ac-gold bg-white text-ac-taupe"
                     >
                         <option value="ALL">All Masterclasses</option>
-                        {data.map(mc => (
-                            <option key={mc.masterclassId} value={mc.masterclassId}>
-                                {mc.masterclassTitle}
-                            </option>
-                        ))}
+                        {(allMasterclasses && allMasterclasses.length > 0 ? allMasterclasses : data.map(mc => ({ id: mc.masterclassId, title: mc.masterclassTitle }))).map(mc => {
+                            const hasEntries = data.some(d => d.masterclassId === mc.id);
+                            return (
+                                <option key={mc.id} value={mc.id}>
+                                    {mc.title}{!hasEntries ? ' (not started)' : ''}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
 

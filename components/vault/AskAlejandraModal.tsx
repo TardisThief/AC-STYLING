@@ -13,12 +13,21 @@ interface AskAlejandraModalProps {
 export default function AskAlejandraModal({ isOpen, onClose }: AskAlejandraModalProps) {
     const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState("");
+    const [fieldError, setFieldError] = useState("");
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setStatus('sending');
+        setFieldError("");
 
         const formData = new FormData(e.currentTarget);
+        const question = (formData.get("question") as string)?.trim();
+        if (!question) {
+            setFieldError("Please write your question before sending.");
+            return;
+        }
+
+        setStatus('sending');
+
         const result = await askQuestion(formData);
 
         if (result.success) {
@@ -96,10 +105,13 @@ export default function AskAlejandraModal({ isOpen, onClose }: AskAlejandraModal
                                                 name="question"
                                                 id="question"
                                                 rows={4}
-                                                required
+                                                onChange={() => fieldError && setFieldError("")}
                                                 placeholder="How do I balance my capsule if I love both structure and flow?"
-                                                className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-4 text-ac-taupe placeholder:text-ac-taupe/30 focus:outline-none focus:border-ac-gold focus:ring-1 focus:ring-ac-gold transition-all resize-none font-serif text-lg leading-relaxed shadow-inner"
+                                                className={`w-full bg-white/40 border rounded-sm p-4 text-ac-taupe placeholder:text-ac-taupe/30 focus:outline-none focus:ring-1 transition-all resize-none font-serif text-lg leading-relaxed shadow-inner ${fieldError ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : 'border-ac-taupe/10 focus:border-ac-gold focus:ring-ac-gold'}`}
                                             />
+                                            {fieldError && (
+                                                <p className="text-red-500 text-xs">{fieldError}</p>
+                                            )}
                                         </div>
 
                                         {status === 'error' && (

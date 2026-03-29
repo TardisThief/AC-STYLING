@@ -63,9 +63,9 @@ export default function QuickActions({ isMasterclassComplete = false, isGuest = 
 
                 {/* 1. Permanent Collection (Primary Action) - COMPRESSED */}
                 <motion.div
-                    initial={{ opacity: 0, x: 20 }}
+                    initial={{ opacity: 1, x: 0 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
+                    transition={{ delay: 0, duration: 0 }}
                     className="col-span-2 lg:col-span-1"
                 >
                     <Link
@@ -97,9 +97,9 @@ export default function QuickActions({ isMasterclassComplete = false, isGuest = 
                         key={action.label}
                         href={action.href}
                         onClick={(e) => handleActionClick(action.action, e)}
-                        initial={{ opacity: 0, x: 20 }}
+                        initial={{ opacity: 1, x: 0 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 * index + 0.3, duration: 0.5, ease: "easeOut" }}
+                        transition={{ delay: 0, duration: 0 }}
                         className="group relative flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-start 
                                  p-4 lg:p-3 rounded-sm
                                  bg-white/40 backdrop-blur-md border border-white/20 shadow-sm

@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { getAllEssenceData } from "@/app/actions/essence-lab"; // Ensure this path is correct
+import { getAllEssenceData } from "@/app/actions/essence-lab";
 import EssenceJournal from "@/components/vault/EssenceJournal";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/routing";
@@ -13,7 +13,27 @@ export default async function EssencePage() {
         redirect('/login');
     }
 
-    const journalData = await getAllEssenceData();
+    // Fetch journal data and accessible masterclasses in parallel
+    const [journalData, profileRes, grantsRes, allMcRes] = await Promise.all([
+        getAllEssenceData(),
+        supabase.from('profiles').select('has_full_unlock').eq('id', user.id).single(),
+        supabase.from('user_access_grants').select('masterclass_id').eq('user_id', user.id).not('masterclass_id', 'is', null),
+        supabase.from('masterclasses').select('id, title').order('order_index', { ascending: true }),
+    ]);
+
+    const hasFullUnlock = profileRes.data?.has_full_unlock || false;
+    const allMasterclasses = allMcRes.data || [];
+
+    // Build set of accessible masterclass IDs
+    const accessibleMcIds = new Set<string>();
+    if (hasFullUnlock) {
+        allMasterclasses.forEach(mc => accessibleMcIds.add(mc.id));
+    } else {
+        grantsRes.data?.forEach(g => { if (g.masterclass_id) accessibleMcIds.add(g.masterclass_id); });
+    }
+
+    // Filter to only masterclasses user can actually access
+    const accessibleMasterclasses = allMasterclasses.filter(mc => accessibleMcIds.has(mc.id));
 
     return (
         <section className="min-h-screen pb-20 pt-8 container mx-auto px-4">
@@ -30,7 +50,7 @@ export default async function EssencePage() {
                 </p>
             </div>
 
-            <EssenceJournal data={journalData} />
+            <EssenceJournal data={journalData} allMasterclasses={accessibleMasterclasses} />
         </section>
     );
 }

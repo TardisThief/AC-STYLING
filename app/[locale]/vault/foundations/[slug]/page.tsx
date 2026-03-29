@@ -106,7 +106,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                 </Link>
                 {/* ... header ... */}
                 <div className="flex items-baseline gap-4">
-                    <span className="font-serif text-5xl text-ac-taupe/20 font-bold">#</span>
+                    <span className="font-serif text-5xl text-ac-taupe/20 font-bold">{chapter.order_index + 1}</span>
                     <div>
                         <h1 className="font-serif text-3xl md:text-5xl text-ac-taupe">
                             {title}

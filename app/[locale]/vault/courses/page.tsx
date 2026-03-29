@@ -1,10 +1,11 @@
 
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
-import { ArrowLeft, PlayCircle, Check } from "lucide-react";
+import { ArrowLeft, PlayCircle, Check, Lock } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import CoursePassUnlock from "@/components/vault/CoursePassUnlock";
 import SafeImage from "@/components/ui/SafeImage";
+import CheckoutSyncHandler from "@/components/monetization/CheckoutSyncHandler";
 
 export default async function CoursesPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
@@ -48,6 +49,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
 
     return (
         <section className="min-h-screen">
+            <CheckoutSyncHandler />
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 border-b border-ac-taupe/10 pb-4">
                 <div>
@@ -77,36 +79,54 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
                         const isCompleted = completedChapters.has(chapter.slug);
                         const displayTitle = locale === 'es' && chapter.title_es ? chapter.title_es : chapter.title;
                         const displayThumb = chapter.thumbnail_url;
+                        const isLocked = !hasCourseAccess;
 
-                        return (
-                            <Link href={`/vault/courses/${chapter.slug}`} key={chapter.id} className="group block">
+                        const cardContent = (
+                            <>
                                 <div className="relative aspect-[4/3] overflow-hidden rounded-sm mb-3 bg-ac-sand/20">
                                     <div className="absolute inset-0 bg-ac-taupe/10 group-hover:bg-transparent transition-colors z-10" />
                                     <SafeImage
                                         src={displayThumb}
                                         alt={displayTitle}
-                                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+                                        className={`w-full h-full object-cover transition-all duration-700 ${isLocked ? 'grayscale' : 'grayscale group-hover:grayscale-0 group-hover:scale-105'}`}
                                     />
 
-                                    {/* Completion Badge */}
                                     <div className="absolute top-4 right-4 z-30">
-                                        {isCompleted && (
+                                        {isLocked ? (
+                                            <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center">
+                                                <Lock size={14} className="text-white/80" />
+                                            </div>
+                                        ) : isCompleted ? (
                                             <div className="w-8 h-8 rounded-full bg-ac-olive flex items-center justify-center shadow-md ring-1 ring-white/20">
                                                 <Check size={16} className="text-ac-gold" />
                                             </div>
-                                        )}
+                                        ) : null}
                                     </div>
 
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                                        <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full border border-white/40">
-                                            <PlayCircle size={32} className="text-white" />
+                                    {!isLocked && (
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                                            <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full border border-white/40">
+                                                <PlayCircle size={32} className="text-white" />
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
-                                <h3 className="font-serif text-xl text-ac-taupe group-hover:text-ac-olive transition-colors">
+                                <h3 className={`font-serif text-xl transition-colors ${isLocked ? 'text-ac-taupe/40' : 'text-ac-taupe group-hover:text-ac-olive'}`}>
                                     {displayTitle}
                                 </h3>
-                                <p className="text-[10px] text-ac-taupe/40 uppercase tracking-widest mt-1">{t('lesson_label')}</p>
+                                <p className="text-[10px] text-ac-taupe/40 uppercase tracking-widest mt-1">
+                                    {isLocked ? 'Locked — Course Pass Required' : t('lesson_label')}
+                                </p>
+                            </>
+                        );
+
+                        return isLocked ? (
+                            <div key={chapter.id} className="group block cursor-default">
+                                {cardContent}
+                            </div>
+                        ) : (
+                            <Link href={`/vault/courses/${chapter.slug}`} key={chapter.id} className="group block">
+                                {cardContent}
                             </Link>
                         );
                     })}

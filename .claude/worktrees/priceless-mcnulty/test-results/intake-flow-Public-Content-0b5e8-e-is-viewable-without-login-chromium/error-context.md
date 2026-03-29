@@ -1,0 +1,51 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e6] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e7]:
+      - img [ref=e8]
+    - generic [ref=e11]:
+      - button "Open issues overlay" [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e14]: "0"
+          - generic [ref=e15]: "1"
+        - generic [ref=e16]: Issue
+      - button "Collapse issues badge" [ref=e17]:
+        - img [ref=e18]
+  - generic [ref=e20]:
+    - generic [ref=e24]:
+      - heading "AC Styling" [level=2] [ref=e26]
+      - generic [ref=e28]:
+        - heading "Elevate your personal style journey." [level=1] [ref=e29]
+        - paragraph [ref=e30]: Learning • Styling • Services
+      - generic [ref=e31]: © 2026 AC Styling. All Rights Reserved.
+    - generic [ref=e33]:
+      - generic [ref=e34]:
+        - paragraph [ref=e35]: Welcome Back
+        - heading "Access your Vault" [level=2] [ref=e36]
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - generic [ref=e40]: Email Address
+            - textbox "Email Address" [ref=e42]:
+              - /placeholder: client@acstyling.com
+          - button "Continue with Email" [ref=e43]:
+            - generic [ref=e44]: Continue with Email
+            - img [ref=e45]
+        - generic [ref=e52]: Or
+        - generic [ref=e53]:
+          - button "Google" [ref=e54]:
+            - img [ref=e55]
+            - text: Google
+          - button "Guest" [ref=e60]:
+            - generic [ref=e61]: Guest
+            - img [ref=e62]
+      - paragraph [ref=e65]:
+        - text: By continuing, you agree to our Terms of Service.
+        - text: New to the Vault?
+        - link "Start your membership" [ref=e66] [cursor=pointer]:
+          - /url: /vault/join
+  - region "Notifications alt+T"
+  - alert [ref=e67]
+```

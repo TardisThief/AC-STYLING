@@ -90,19 +90,8 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
     isCompleted = !!progress;
 
 
-    // Calculate Next Standalone Chapter
-    let nextChapterSlug: string | null = null;
-    if (chapter.is_standalone) {
-        const { data: next } = await supabase
-            .from('chapters')
-            .select('slug')
-            .eq('is_standalone', true)
-            .gt('order_index', chapter.order_index)
-            .order('order_index', { ascending: true })
-            .limit(1)
-            .single();
-        if (next) nextChapterSlug = next.slug;
-    }
+    // Standalone courses are single lessons — no sequential next chapter
+    const nextChapterSlug: string | null = null;
 
     return (
         <section className="min-h-screen pb-20">

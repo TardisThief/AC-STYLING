@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Ruler, Loader2, Lock } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { Ruler, Loader2, Lock, Check } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -24,14 +24,12 @@ const MEASUREMENT_FIELDS = [
 
 export default function TailorCardUser({ initialMeasurements, userId, isActiveClient }: TailorCardUserProps) {
     const [measurements, setMeasurements] = useState<Record<string, string>>(initialMeasurements || {});
-    const [saving, setSaving] = useState(false);
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
     const supabase = createClient();
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const handleUpdate = async (key: string, value: string) => {
-        const newMeasurements = { ...measurements, [key]: value };
-        setMeasurements(newMeasurements);
-
-        setSaving(true);
+    const persistMeasurements = useCallback(async (newMeasurements: Record<string, string>) => {
+        setSaveStatus('saving');
         const { error } = await supabase
             .from('tailor_cards')
             .upsert({
@@ -41,9 +39,20 @@ export default function TailorCardUser({ initialMeasurements, userId, isActiveCl
             }, { onConflict: 'user_id' });
 
         if (error) {
-            toast.error("Failed to save measurement");
+            toast.error("Failed to save measurements");
+            setSaveStatus('idle');
+        } else {
+            setSaveStatus('saved');
+            setTimeout(() => setSaveStatus('idle'), 2000);
         }
-        setSaving(false);
+    }, [userId, supabase]);
+
+    const handleUpdate = (key: string, value: string) => {
+        const newMeasurements = { ...measurements, [key]: value };
+        setMeasurements(newMeasurements);
+
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => persistMeasurements(newMeasurements), 600);
     };
 
     // -- LOCKED STATE --
@@ -79,7 +88,12 @@ export default function TailorCardUser({ initialMeasurements, userId, isActiveCl
                     <Ruler className="text-ac-gold" size={20} />
                     <h3 className="font-serif text-2xl text-ac-taupe">Tailor's Card</h3>
                 </div>
-                {saving && <Loader2 size={14} className="animate-spin text-ac-gold" />}
+                {saveStatus === 'saving' && <Loader2 size={14} className="animate-spin text-ac-gold" />}
+                {saveStatus === 'saved' && (
+                    <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-ac-olive font-bold">
+                        <Check size={12} strokeWidth={3} /> Saved
+                    </span>
+                )}
             </div>
 
             <p className="text-[10px] uppercase tracking-widest text-ac-taupe/40 font-bold mb-8 leading-relaxed">

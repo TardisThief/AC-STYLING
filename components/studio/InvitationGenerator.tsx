@@ -15,9 +15,14 @@ export default function InvitationGenerator({ onClose }: { onClose: () => void }
     const [note, setNote] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [generatedLink, setGeneratedLink] = useState("");
+    const [nameError, setNameError] = useState("");
 
     const handleGenerate = async () => {
-        if (!name) return toast.error("Client Name is required");
+        if (!name.trim()) {
+            setNameError("Client name is required.");
+            return;
+        }
+        setNameError("");
         setIsLoading(true);
 
         try {
@@ -72,10 +77,11 @@ export default function InvitationGenerator({ onClose }: { onClose: () => void }
                         <input
                             type="text"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => { setName(e.target.value); if (nameError) setNameError(""); }}
                             placeholder="e.g. Maria Design"
-                            className="w-full bg-ac-taupe/5 border border-ac-taupe/10 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-ac-gold transition-all"
+                            className={`w-full bg-ac-taupe/5 border rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-ac-gold transition-all ${nameError ? 'border-red-400' : 'border-ac-taupe/10'}`}
                         />
+                        {nameError && <p className="text-red-500 text-xs mt-1">{nameError}</p>}
                     </div>
                     <div>
                         <label className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-2">Email (Optional)</label>

@@ -1,5 +1,5 @@
 import { Link } from "@/i18n/routing";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen, Lock } from "lucide-react";
 import { redirect } from "next/navigation";
 import EssenceLab from "@/components/vault/EssenceLab";
 import CompleteChapterButton from "@/components/vault/CompleteChapterButton";
@@ -25,7 +25,44 @@ export default async function FoundationsEssenceLabPage({ params }: { params: Pr
     if (!user) redirect('/login');
 
     const hasAccess = await checkAccess(user.id, chapter.id);
-    if (!hasAccess) redirect(`/vault/foundations/${slug}`);
+
+    if (!hasAccess) {
+        return (
+            <section className="min-h-screen pb-20 pt-6 max-w-4xl mx-auto px-4">
+                <Link
+                    href={`/vault/foundations/${slug}`}
+                    className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-8 group w-fit"
+                >
+                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                    Back to Video
+                </Link>
+                <div className="flex flex-col items-center justify-center text-center py-24 bg-white/40 backdrop-blur-md border border-ac-taupe/10 rounded-sm">
+                    <div className="w-14 h-14 bg-ac-taupe/10 rounded-full flex items-center justify-center mb-6">
+                        <Lock size={24} className="text-ac-taupe/50" />
+                    </div>
+                    <h2 className="font-serif text-3xl text-ac-taupe mb-3">Essence Lab Locked</h2>
+                    <p className="text-ac-taupe/60 text-sm max-w-sm mb-8">
+                        Unlock this masterclass to access the Essence Lab and start your personal style journal.
+                    </p>
+                    {chapter.masterclass_id ? (
+                        <Link
+                            href={`/vault/foundations/masterclass/${chapter.masterclass_id}`}
+                            className="bg-ac-gold text-white px-8 py-3 rounded-sm uppercase tracking-widest text-xs font-bold hover:bg-ac-gold/80 transition-colors"
+                        >
+                            Unlock Masterclass
+                        </Link>
+                    ) : (
+                        <Link
+                            href="/vault/foundations"
+                            className="bg-ac-taupe text-white px-8 py-3 rounded-sm uppercase tracking-widest text-xs font-bold hover:bg-ac-taupe/80 transition-colors"
+                        >
+                            Browse Collections
+                        </Link>
+                    )}
+                </div>
+            </section>
+        );
+    }
 
     let nextChapterSlug: string | null = null;
     if (chapter.masterclass_id) {

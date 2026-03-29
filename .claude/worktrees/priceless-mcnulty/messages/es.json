@@ -1,0 +1,166 @@
+{
+    "Navbar": {
+        "about": "Acerca",
+        "services": "Servicios",
+        "contact": "Contacto"
+    },
+    "Hero": {
+        "label": "Estilismo Personal y Editorial",
+        "headline": "Estilo, Confianza,",
+        "headline_accent": "TÚ.",
+        "subheadline": "Donde tu estilo comunica tu esencia. Eleva tu presencia con un guardarropa que habla antes de que digas una palabra.",
+        "cta": "Reservar Sesión de Introducción"
+    },
+    "About": {
+        "title": "Artesanos del Estilo para Comunicar",
+        "title_accent": "tu Esencia Personal",
+        "description": "AC Styling es tu destino para experiencias de estilismo personalizadas. Empoderamos a las personas para abrazar su singularidad curando looks personalizados que reflejan su verdadera esencia. Con pasión por la moda y buen ojo para los detalles, nos esforzamos por ofrecer soluciones de estilo excepcionales adaptadas a las preferencias, necesidades y personalidad de cada cliente.",
+        "cta": "Reservar Sesión de Introducción"
+    },
+    "Services": {
+        "section_title": "Nuestra Experiencia",
+        "headline": "Servicios de Estilismo",
+        "personal_stylist": {
+            "title": "Estilista Personal",
+            "description": "Eleva tu guardarropa con un estilista que te ayuda a refinar tu look y crear outfits que coincidan con tu estilo de vida."
+        },
+        "personal_shopping": {
+            "title": "Compras Personales",
+            "description": "Sáltate el estrés — curaremos piezas que se ajusten a tu estilo, forma y presupuesto, en línea o en tienda."
+        },
+        "closet_detox": {
+            "title": "Detox de Clóset",
+            "description": "Despeja y organiza tu clóset. Te ayudaremos a decidir qué guardar, arreglar o dejar ir con facilidad."
+        },
+        "corporate_consulting": {
+            "title": "Consultoría Corporativa",
+            "description": "Mejora la presencia de tu equipo a través de estrategias de código de vestimenta, apoyo de estilismo y talleres de imagen."
+        },
+        "learn_more": "Saber Más"
+    },
+    "Catalogs": {
+        "title": "Descarga nuestros Catálogos",
+        "online": "Servicios Online",
+        "in_person": "Servicios Presenciales",
+        "corporate": "Corporativo"
+    },
+    "Testimonials": {
+        "title": "Testimonios",
+        "t1": {
+            "text": "Recientemente tuve a mi bebé y cambié de trabajo. AC Styling le dio a mi clóset una actualización para mi nuevo estilo de vida. Ahora me visto para lo que traiga el día sin perder mi propio ser."
+        },
+        "t2": {
+            "text": "Alejandra me ayudó a no perder mi estilo mientras hago la transición al mundo profesional. Ahora siento que traigo mi verdadero yo al lugar de trabajo."
+        },
+        "t3": {
+            "text": "Alejandra me construyó un clóset de verano con piezas fáciles de combinar y outfits prefabricados. Me ayuda a no pensar en qué ponerme y aún así obtener los asentimientos de aprobación de mi esposa."
+        }
+    },
+    "Foundations": {
+        "title": "La Colección de Masterclasses",
+        "subtitle": "Principios y Fundamentos de Estilo",
+        "back": "Volver al Vault",
+        "resources": "Recursos del Capítulo",
+        "takeaways": "Puntos Clave",
+        "start": "Reanudar Capítulo",
+        "collections": "Colecciones Curadas",
+        "view": "VER COLECCIÓN",
+        "masterclass_number": "Clase Magistral {number}",
+        "no_foundations": "No se encontraron colecciones.",
+        "admin_link": "Ir al Panel de Administración",
+        "chapters": {
+            "dna": {
+                "title": "ADN de Estilo",
+                "description": "Decodifica tus inputs estéticos personales.",
+                "videoId": "76979871"
+            },
+            "architecture": {
+                "title": "Arquitectura de Silueta",
+                "description": "Entendiendo proporción y balance.",
+                "videoId": "76979871"
+            },
+            "color": {
+                "title": "Teoría del Color",
+                "description": "Encontrando tu paleta de poder.",
+                "videoId": "76979871"
+            },
+            "detox": {
+                "title": "El Gran Detox",
+                "description": "Editando tu guardarropa con determinación y gracia.",
+                "videoId": "76979871"
+            },
+            "capsule": {
+                "title": "Creación de Cápsula",
+                "description": "Construyendo un guardarropa funcional y rotativo.",
+                "videoId": "76979871"
+            }
+        }
+    },
+    "Vault": {
+        "welcome": "Bienvenido de nuevo, {name}",
+        "quick_actions": "Acciones Rápidas",
+        "pulse": "El Pulso",
+        "masterclasses": {
+            "title": "Clases Magistrales",
+            "subtitle": "Fundamentos de Estilo"
+        },
+        "actions": {
+            "courses": {
+                "label": "Cursos",
+                "subtitle": "Biblioteca"
+            },
+            "studio": {
+                "label": "El Studio",
+                "subtitle": "Reservar un servicio"
+            },
+            "boutique": {
+                "label": "La Boutique",
+                "subtitle": "Tienda Curada"
+            },
+            "essence": {
+                "label": "Mi Esencia de Estilo",
+                "subtitle": "Diario"
+            },
+            "ask": {
+                "label": "Preguntar a Ale",
+                "subtitle": "Conserjería"
+            }
+        }
+    },
+    "Studio": {
+        "title": "El Studio",
+        "subtitle": "SESIONES EXPERTAS Y CURACIÓN CONTINUA",
+        "back": "Volver al Vault",
+        "apply_retainer": "Solicitar Acceso",
+        "inquire": "Consultar",
+        "secure_session": "Sesión Segura",
+        "suggested": "Sugerido",
+        "whatsapp": "Consulta Directa por WhatsApp",
+        "corporate": "Para proyectos corporativos o personalizados, contacta a",
+        "no_sessions": "No hay sesiones disponibles en este momento."
+    },
+    "Courses": {
+        "title": "Cursos Individuales",
+        "subtitle": "Lecciones individuales para refinar aspectos específicos de tu estilo.",
+        "back": "Volver al Vault",
+        "no_courses": "No hay cursos individuales disponibles.",
+        "lesson_label": "Lección Única"
+    },
+    "Video": {
+        "language": "Idioma del Video"
+    },
+    "Contact": {
+        "label": "Ponte en Contacto",
+        "title": "Eleva Tu Estilo",
+        "description": "¿Listo para definir tu marca personal? Contáctanos para programar una consulta o saber más sobre nuestros servicios de estilismo editorial.",
+        "cta": "Reservar Sesión de Introducción"
+    },
+    "Footer": {
+        "tagline": "¿Listo para ser visto?",
+        "subtagline": "Deja que tu estilo hable por ti.",
+        "explore": "Explorar",
+        "studios": "Estudios",
+        "connect": "Conectar",
+        "rights": "Todos los Derechos Reservados."
+    }
+}
