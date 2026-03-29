@@ -47,6 +47,26 @@ export async function getActiveBrands() {
 }
 
 /**
+ * Fetch active collections with their assigned item IDs.
+ */
+export async function getActiveCollections() {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('boutique_collections')
+        .select('id, title, title_es, cover_image_url, items:boutique_collection_items(item_id)')
+        .eq('active', true)
+        .order('order_index', { ascending: true });
+
+    if (error) {
+        console.error("Fetch Collections Error:", error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true, collections: data || [] };
+}
+
+/**
  * Fetch all active boutique items, optionally filtered by brand.
  */
 export async function getBoutiqueItems(brandId?: string) {

@@ -6,6 +6,7 @@ import ChaptersTable from "./ChaptersTable";
 import MasterclassForm from "./MasterclassForm";
 import OfferForm from "./OfferForm"; // Generic offer form
 import BoutiqueManager from "./BoutiqueManager";
+import TrustedByManager from "./TrustedByManager";
 import ClientList from "./ClientList";
 import ClientDossier from "./ClientDossier";
 import { getServices, deleteService } from "@/app/actions/admin/manage-services";
@@ -14,13 +15,13 @@ import { getMasterclasses, deleteMasterclass } from "@/app/actions/admin/manage-
 import ServicesList from "./ServicesList";
 import ServiceForm from "./ServiceForm";
 import { toast } from "sonner";
-import { Folder, FileVideo, Plus, Users, Tag, Sparkles } from "lucide-react";
+import { Folder, FileVideo, Plus, Users, Tag, Sparkles, Globe } from "lucide-react";
 
 import AdminNotificationsPanel from "./AdminNotificationsPanel";
 import { getUnreadNotificationCount } from "@/app/actions/notifications";
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'notifications' | 'masterclasses' | 'chapters' | 'clients' | 'boutique' | 'services'>('notifications');
+    const [activeTab, setActiveTab] = useState<'notifications' | 'masterclasses' | 'chapters' | 'clients' | 'boutique' | 'services' | 'trustedby'>('notifications');
 
     // Data
     const [chapters, setChapters] = useState<any[]>([]);
@@ -169,6 +170,16 @@ export default function AdminDashboard() {
                     <Users size={18} />
                     Clients
                 </button>
+                <button
+                    onClick={() => { setActiveTab('trustedby'); setIsCreating(false); setEditingItem(null); setEditingOfferSlug(null); }}
+                    className={`pb-4 px-4 flex items-center gap-2 font-serif text-sm md:text-lg transition-colors whitespace-nowrap ${activeTab === 'trustedby'
+                        ? 'text-ac-taupe border-b-2 border-ac-gold'
+                        : 'text-ac-taupe/40 hover:text-ac-taupe/60'
+                        }`}
+                >
+                    <Globe size={18} />
+                    Trusted By
+                </button>
             </div>
 
             {/* Action Bar */}
@@ -307,6 +318,14 @@ export default function AdminDashboard() {
             {
                 activeTab === 'boutique' && (
                     <BoutiqueManager />
+                )
+            }
+
+            {
+                activeTab === 'trustedby' && (
+                    <div className="bg-white/40 backdrop-blur-md border border-white/30 rounded-sm p-6">
+                        <TrustedByManager />
+                    </div>
                 )
             }
 

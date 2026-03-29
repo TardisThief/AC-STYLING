@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from "react";
 import { getClientDossier } from "@/app/actions/admin/manage-clients";
-import { X, Sparkles } from "lucide-react";
+import { getJourneyStats, JourneyStats } from "@/app/actions/vault/journey";
+import { X, Sparkles, Calendar, BookOpen, Trophy } from "lucide-react";
 import VirtualWardrobe from "@/components/studio/VirtualWardrobe";
 
 
@@ -15,11 +16,16 @@ interface ClientDossierProps {
 export default function ClientDossier({ client, onClose }: ClientDossierProps) {
     const [dossier, setDossier] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [journey, setJourney] = useState<JourneyStats | null>(null);
 
     useEffect(() => {
         if (client?.id) {
-            getClientDossier(client.id).then(res => {
-                if (res.success) setDossier(res.dossier || []);
+            Promise.all([
+                getClientDossier(client.id),
+                getJourneyStats(client.id),
+            ]).then(([dossierRes, journeyRes]) => {
+                if (dossierRes.success) setDossier(dossierRes.dossier || []);
+                setJourney(journeyRes);
                 setLoading(false);
             });
         }
@@ -60,6 +66,31 @@ export default function ClientDossier({ client, onClose }: ClientDossierProps) {
                 </div>
 
                 <div className="p-8 space-y-12">
+                    {/* Journey Stats */}
+                    {journey && (
+                        <div className="grid grid-cols-3 gap-3 -mb-6">
+                            <div className="bg-ac-taupe/5 rounded-sm p-3 text-center">
+                                <Calendar size={14} className="mx-auto text-ac-taupe/30 mb-1" />
+                                <div className="text-xs font-serif text-ac-taupe">
+                                    {journey.memberSince ? new Date(journey.memberSince).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—'}
+                                </div>
+                                <div className="text-[9px] uppercase tracking-widest text-ac-taupe/40">Member Since</div>
+                            </div>
+                            <div className="bg-ac-taupe/5 rounded-sm p-3 text-center">
+                                <BookOpen size={14} className="mx-auto text-ac-taupe/30 mb-1" />
+                                <div className="text-xs font-serif text-ac-taupe">
+                                    {journey.hasFullAccess ? 'Full Vault' : `${journey.masterclassesAccessCount} / ${journey.totalMasterclasses}`}
+                                </div>
+                                <div className="text-[9px] uppercase tracking-widest text-ac-taupe/40">Masterclasses</div>
+                            </div>
+                            <div className="bg-ac-taupe/5 rounded-sm p-3 text-center">
+                                <Sparkles size={14} className="mx-auto text-ac-gold/50 mb-1" />
+                                <div className="text-xs font-serif text-ac-taupe">{journey.essenceLabsCompleted}</div>
+                                <div className="text-[9px] uppercase tracking-widest text-ac-taupe/40">Labs Done</div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex gap-4 border-b border-ac-taupe/10 mb-6">
                         <button
                             onClick={() => setActiveTab('essence')}

@@ -1,21 +1,24 @@
 
-import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import BoutiqueInterface from "@/components/boutique/BoutiqueInterface";
-import { getActiveBrands, getBoutiqueItems } from "@/app/actions/boutique";
+import { getActiveBrands, getBoutiqueItems, getActiveCollections } from "@/app/actions/boutique";
+import { getUserSavedItemIds } from "@/app/actions/boutique-saves";
 
 export default async function BoutiquePage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
 
     // Fetch Data
-    const [brandsRes, itemsRes] = await Promise.all([
+    const [brandsRes, itemsRes, collectionsRes, savedIds] = await Promise.all([
         getActiveBrands(),
-        getBoutiqueItems()
+        getBoutiqueItems(),
+        getActiveCollections(),
+        getUserSavedItemIds(),
     ]);
 
     const brands = brandsRes.success ? brandsRes.brands || [] : [];
     const items = itemsRes.success ? itemsRes.items || [] : [];
+    const collections = collectionsRes.success ? collectionsRes.collections || [] : [];
 
     return (
         <main className="bg-[#E6DED6]/30 min-h-screen">
@@ -39,7 +42,7 @@ export default async function BoutiquePage({ params }: { params: Promise<{ local
             </div>
 
             {/* Interactive Interface */}
-            <BoutiqueInterface initialBrands={brands} initialItems={items} />
+            <BoutiqueInterface initialBrands={brands} initialItems={items} initialCollections={collections} locale={locale} initialSavedIds={savedIds} />
         </main>
     );
 }

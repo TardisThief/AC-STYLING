@@ -9,9 +9,10 @@ import ItemForm from "./ItemForm";
 import { Plus, Tag, Trash2, Edit2 } from "lucide-react";
 
 import BoutiqueItemUploader from "./BoutiqueItemUploader";
+import CollectionsManager from "./CollectionsManager";
 
 export default function BoutiqueManager() {
-    const [view, setView] = useState<'brands' | 'items' | 'bulk_upload'>('items');
+    const [view, setView] = useState<'brands' | 'items' | 'collections' | 'bulk_upload'>('items');
     const [brands, setBrands] = useState<any[]>([]);
     const [items, setItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -63,6 +64,12 @@ export default function BoutiqueManager() {
                     >
                         Partner Brands
                     </button>
+                    <button
+                        onClick={() => { setView('collections'); setIsCreating(false); setEditingItem(null); }}
+                        className={`text-sm uppercase tracking-widest font-bold ${view === 'collections' ? 'text-ac-gold' : 'text-ac-taupe/40'}`}
+                    >
+                        Collections
+                    </button>
                 </div>
 
                 {/* Bulk Upload Toggle */}
@@ -75,7 +82,7 @@ export default function BoutiqueManager() {
                 </button>
             </div>
 
-            {view !== 'bulk_upload' && (
+            {view !== 'bulk_upload' && view !== 'collections' && (
                 <div className="flex justify-end">
                     <button
                         onClick={() => { setIsCreating(true); setEditingItem(null); }}
@@ -98,8 +105,13 @@ export default function BoutiqueManager() {
                 </div>
             )}
 
+            {/* Collections View */}
+            {view === 'collections' && (
+                <CollectionsManager items={items} />
+            )}
+
             {/* Form */}
-            {(isCreating || editingItem) && view !== 'bulk_upload' && (
+            {(isCreating || editingItem) && view !== 'bulk_upload' && view !== 'collections' && (
                 <div className="bg-white/60 p-6 rounded-sm border border-ac-gold/30">
                     <h3 className="font-serif text-xl text-ac-taupe mb-4">{editingItem ? 'Edit' : 'Create New'}</h3>
                     {view === 'brands' ? (
@@ -111,7 +123,7 @@ export default function BoutiqueManager() {
             )}
 
             {/* List */}
-            {view !== 'bulk_upload' && (
+            {view !== 'bulk_upload' && view !== 'collections' && (
                 <div className="bg-white/40 border border-white/30 rounded-sm overflow-hidden">
                     {loading ? <div className="p-8 text-center text-ac-taupe/40">Loading...</div> : (
                         <table className="w-full text-left text-sm text-ac-taupe">

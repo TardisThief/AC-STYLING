@@ -138,8 +138,28 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
 
     if (loading) return <div className="p-8 text-center text-ac-taupe/40">Loading Wardrobe...</div>;
 
+    // Status summary counts
+    const statusCounts = STATUSES.reduce((acc, s) => {
+        acc[s] = items.filter(i => i.status === s).length;
+        return acc;
+    }, {} as Record<string, number>);
+    const untagged = items.filter(i => !i.status).length;
+
     return (
         <div className="space-y-8">
+            {/* Status Summary Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {STATUSES.map(s => (
+                    <div key={s} className="bg-white/40 border border-white/50 rounded-sm p-4 text-center">
+                        <div className="text-2xl font-serif text-ac-taupe">{statusCounts[s]}</div>
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mt-1">{s}</div>
+                    </div>
+                ))}
+            </div>
+            {untagged > 0 && (
+                <p className="text-[10px] text-ac-taupe/30 text-right -mt-4">{untagged} item{untagged !== 1 ? 's' : ''} not yet reviewed</p>
+            )}
+
             {/* Filter Bar */}
             <div className="flex flex-wrap items-center gap-4 bg-white/40 backdrop-blur-md border border-white/50 p-4 rounded-sm">
                 <div className="flex items-center gap-2 text-ac-taupe/40 px-2">
@@ -384,18 +404,34 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
                                             </select>
                                         </div>
                                     )}
-                                    {isClientView && selectedItem.product_link_id && (
-                                        <div className="pt-4 border-t border-ac-taupe/10">
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <ShoppingBag size={12} className="text-ac-olive" />
-                                                <label className="text-[10px] font-bold uppercase tracking-widest text-ac-olive">Shop This Look</label>
+                                    {isClientView && selectedItem.product_link_id && (() => {
+                                        const linked = boutiqueItems.find(b => b.id === selectedItem.product_link_id);
+                                        const shopUrl = linked?.affiliate_url_usa || linked?.affiliate_url_es || null;
+                                        return (
+                                            <div className="pt-4 border-t border-ac-taupe/10">
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <ShoppingBag size={12} className="text-ac-olive" />
+                                                    <label className="text-[10px] font-bold uppercase tracking-widest text-ac-olive">Shop This Look</label>
+                                                </div>
+                                                {shopUrl ? (
+                                                    <a
+                                                        href={shopUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="bg-ac-olive/5 border border-ac-olive/20 hover:border-ac-olive/60 p-3 rounded-sm text-xs text-ac-taupe flex justify-between items-center transition-colors group"
+                                                    >
+                                                        <span>{linked?.name || 'Linked Product'}</span>
+                                                        <ExternalLink size={14} className="text-ac-olive group-hover:scale-110 transition-transform" />
+                                                    </a>
+                                                ) : (
+                                                    <div className="bg-ac-olive/5 border border-ac-olive/10 p-3 rounded-sm text-xs text-ac-taupe flex justify-between items-center">
+                                                        <span>{linked?.name || 'Linked Product'}</span>
+                                                        <ExternalLink size={14} className="text-ac-olive/40" />
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="bg-ac-olive/5 border border-ac-olive/10 p-3 rounded-sm text-xs text-ac-taupe flex justify-between items-center">
-                                                <span>{boutiqueItems.find(b => b.id === selectedItem.product_link_id)?.name || 'Linked Product'}</span>
-                                                <ExternalLink size={14} className="text-ac-olive" />
-                                            </div>
-                                        </div>
-                                    )}
+                                        );
+                                    })()}
                                 </div>
                             </motion.div>
                         ) : (
