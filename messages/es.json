@@ -102,20 +102,20 @@
         "pulse": "El Pulso",
         "masterclasses": {
             "title": "Clases Magistrales",
-            "subtitle": "Fundamentos de Estilo"
+            "subtitle": "Tu educación de estilo completa"
         },
         "actions": {
             "courses": {
                 "label": "Cursos",
-                "subtitle": "Biblioteca"
+                "subtitle": "Profundiza por tema"
             },
             "studio": {
                 "label": "El Studio",
-                "subtitle": "Reservar un servicio"
+                "subtitle": "Sesiones 1-a-1 con Ale"
             },
             "boutique": {
                 "label": "La Boutique",
-                "subtitle": "Tienda Curada"
+                "subtitle": "Piezas que Ale elige"
             },
             "essence": {
                 "label": "Mi Esencia de Estilo",
@@ -123,7 +123,7 @@
             },
             "ask": {
                 "label": "Preguntar a Ale",
-                "subtitle": "Conserjería"
+                "subtitle": "Escríbele directamente"
             }
         }
     },

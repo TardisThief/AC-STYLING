@@ -1,9 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import VaultHero from "@/components/vault/VaultHero";
 import QuickActions from "@/components/vault/QuickActions";
 import WhatsNew from "@/components/vault/WhatsNew";
-import { getDashboardPulse, getMasterclassCompletionStatus } from "@/app/actions/dashboard";
+import { getDashboardPulse, getMasterclassCompletionStatus, getEditorialContent } from "@/app/actions/dashboard";
 import { getTranslations } from "next-intl/server";
 
 export default async function VaultPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -17,10 +16,11 @@ export default async function VaultPage({ params }: { params: Promise<{ locale: 
     }
 
     // Fetch profile and dynamic content concurrently
-    const [profileRes, pulse, completion] = await Promise.all([
+    const [profileRes, pulse, completion, editorial] = await Promise.all([
         supabase.from('profiles').select('full_name, is_guest').eq('id', user.id).single(),
         getDashboardPulse(),
-        getMasterclassCompletionStatus()
+        getMasterclassCompletionStatus(),
+        getEditorialContent(locale),
     ]);
 
     const profile = profileRes.data;
@@ -47,7 +47,7 @@ export default async function VaultPage({ params }: { params: Promise<{ locale: 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
                 {/* Main: What's New takes 3 cols - Order 2 on mobile, 1 on desktop */}
                 <div className="lg:col-span-3 order-2 lg:order-1">
-                    <WhatsNew pulse={pulse} />
+                    <WhatsNew pulse={pulse} editorial={editorial} />
                 </div>
 
                 {/* Sidebar: Quick Actions - Order 1 on mobile, 2 on desktop */}

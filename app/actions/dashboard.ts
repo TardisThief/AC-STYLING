@@ -131,6 +131,172 @@ export async function getDashboardPulse(): Promise<PulseContent[]> {
     return items.slice(0, 3);
 }
 
+// ─── Editorial Panel ──────────────────────────────────────────────────────────
+
+export type EditorialContent = {
+    continueCourse: {
+        masterclassTitle: string;
+        chapterTitle: string;
+        chapterNum: number;
+        totalChapters: number;
+        progressPct: number;
+        imageUrl: string;
+        href: string;
+    } | null;
+    styleOfWeek: {
+        title: string;
+        coverImageUrl: string;
+        href: string;
+    } | null;
+    alesPick: {
+        itemName: string;
+        brandName: string;
+        imageUrl: string;
+        href: string;
+    } | null;
+};
+
+export async function getEditorialContent(locale: string = 'en'): Promise<EditorialContent> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // ── 1. Continue Course ────────────────────────────────────────────────────
+    let continueCourse: EditorialContent['continueCourse'] = null;
+
+    if (user) {
+        const { data: progress } = await supabase
+            .from('user_progress')
+            .select('content_id, completed_at')
+            .eq('user_id', user.id)
+            .like('content_id', 'foundations/%')
+            .order('completed_at', { ascending: false })
+            .limit(1);
+
+        if (progress && progress.length > 0) {
+            const lastSlug = progress[0].content_id.split('/').pop();
+
+            if (lastSlug) {
+                const { data: lastChapter } = await supabase
+                    .from('chapters')
+                    .select('id, slug, order_index, masterclass_id')
+                    .eq('slug', lastSlug)
+                    .single();
+
+                if (lastChapter?.masterclass_id) {
+                    const masterclassId = lastChapter.masterclass_id;
+
+                    // Fetch masterclass title + all its chapter slugs + next chapter in parallel
+                    const [masterclassRes, allChaptersRes, nextChapterRes] = await Promise.all([
+                        supabase
+                            .from('masterclasses')
+                            .select('title, title_es')
+                            .eq('id', masterclassId)
+                            .single(),
+                        supabase
+                            .from('chapters')
+                            .select('slug')
+                            .eq('masterclass_id', masterclassId),
+                        supabase
+                            .from('chapters')
+                            .select('id, title, thumbnail_url, slug, order_index')
+                            .eq('masterclass_id', masterclassId)
+                            .gt('order_index', lastChapter.order_index)
+                            .order('order_index', { ascending: true })
+                            .limit(1)
+                            .single(),
+                    ]);
+
+                    const allSlugs = new Set((allChaptersRes.data ?? []).map(c => c.slug));
+                    const totalChapters = allSlugs.size;
+
+                    // Count completed in this masterclass
+                    const { data: allProgress } = await supabase
+                        .from('user_progress')
+                        .select('content_id')
+                        .eq('user_id', user.id)
+                        .like('content_id', 'foundations/%');
+
+                    const completedCount = (allProgress ?? []).filter(p =>
+                        allSlugs.has(p.content_id.split('/').pop() ?? '')
+                    ).length;
+
+                    const progressPct = totalChapters > 0
+                        ? Math.round((completedCount / totalChapters) * 100)
+                        : 0;
+
+                    const masterclass = masterclassRes.data;
+                    const masterclassTitle = locale === 'es' && masterclass?.title_es
+                        ? masterclass.title_es
+                        : (masterclass?.title ?? 'Masterclass');
+
+                    // Use next chapter if available, otherwise the last completed one
+                    const targetChapter = nextChapterRes.data ?? lastChapter as any;
+
+                    continueCourse = {
+                        masterclassTitle,
+                        chapterTitle: targetChapter.title ?? '',
+                        chapterNum: completedCount + (nextChapterRes.data ? 1 : 0),
+                        totalChapters,
+                        progressPct,
+                        imageUrl: targetChapter.thumbnail_url ?? 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=2070&auto=format&fit=crop',
+                        href: `/vault/foundations/${targetChapter.slug}`,
+                    };
+                }
+            }
+        }
+    }
+
+    // ── 2. Style of the Week + Ale's Pick (first active collection) ──────────
+    let styleOfWeek: EditorialContent['styleOfWeek'] = null;
+    let alesPick: EditorialContent['alesPick'] = null;
+
+    const { data: featuredCollection } = await supabase
+        .from('boutique_collections')
+        .select('id, title, title_es, cover_image_url')
+        .eq('active', true)
+        .order('order_index', { ascending: true })
+        .limit(1)
+        .single();
+
+    if (featuredCollection) {
+        styleOfWeek = {
+            title: locale === 'es' && featuredCollection.title_es
+                ? featuredCollection.title_es
+                : featuredCollection.title,
+            coverImageUrl: featuredCollection.cover_image_url ?? '',
+            href: '/vault/boutique',
+        };
+
+        // First item in collection by position
+        const { data: collectionItem } = await supabase
+            .from('boutique_collection_items')
+            .select('item_id')
+            .eq('collection_id', featuredCollection.id)
+            .order('position', { ascending: true })
+            .limit(1)
+            .single();
+
+        if (collectionItem) {
+            const { data: boutiqueItem } = await supabase
+                .from('boutique_items')
+                .select('name, image_url, brand:partner_brands(name)')
+                .eq('id', collectionItem.item_id)
+                .single();
+
+            if (boutiqueItem) {
+                alesPick = {
+                    itemName: boutiqueItem.name,
+                    brandName: (boutiqueItem.brand as any)?.name ?? '',
+                    imageUrl: boutiqueItem.image_url ?? '',
+                    href: '/vault/boutique',
+                };
+            }
+        }
+    }
+
+    return { continueCourse, styleOfWeek, alesPick };
+}
+
 export async function getMasterclassCompletionStatus() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

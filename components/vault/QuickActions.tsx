@@ -3,8 +3,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "@/i18n/routing";
-import { Calendar, MessageCircleQuestion, Archive, Tag, BookHeart } from "lucide-react";
+import { Calendar, MessageCircleQuestion, Archive, Tag, GraduationCap } from "lucide-react";
 import { useTranslations } from "next-intl";
 import AskAlejandraModal from "@/components/vault/AskAlejandraModal";
 import { createClient } from "@/utils/supabase/client";
@@ -61,36 +60,31 @@ export default function QuickActions({ isMasterclassComplete = false, isGuest = 
             */}
             <div className="grid grid-cols-2 lg:flex lg:flex-col gap-3 h-full">
 
-                {/* 1. Permanent Collection (Primary Action) - COMPRESSED */}
-                <motion.div
+                {/* 1. Masterclasses (Primary Action) — same motion.a structure as siblings */}
+                <motion.a
+                    href="/vault/foundations"
                     initial={{ opacity: 1, x: 0 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0, duration: 0 }}
-                    className="col-span-2 lg:col-span-1"
+                    className="group relative flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-start
+                             col-span-2 p-4 lg:p-4 rounded-sm
+                             bg-ac-taupe/[0.08] backdrop-blur-md border border-ac-taupe/20 shadow-sm
+                             hover:bg-ac-taupe/[0.13] hover:shadow-md transition-all duration-300
+                             overflow-hidden flex-1 min-h-[60px] lg:w-full"
                 >
-                    <Link
-                        href="/vault/foundations"
-                        className={`group relative flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-start 
-                                    p-4 lg:p-3 rounded-sm
-                                    border border-ac-sand shadow-sm
-                                    bg-white/40 backdrop-blur-md
-                                    hover:bg-ac-taupe/5 hover:shadow-md transition-all duration-300
-                                    overflow-hidden lg:h-20 lg:w-full block h-full w-full`}
-                    >
-                        <Archive
-                            size={20}
-                            className="text-ac-taupe mb-2 lg:mb-0 lg:mr-3 transition-transform duration-300 group-hover:scale-110"
-                        />
-                        <div className="text-center lg:text-left">
-                            <span className="block font-serif text-base lg:text-lg leading-tight text-ac-taupe group-hover:text-ac-taupe/80 transition-colors">
-                                {t('masterclasses.title')}
-                            </span>
-                            <span className="text-[9px] uppercase tracking-widest text-ac-taupe/60 font-bold">
-                                {t('masterclasses.subtitle')}
-                            </span>
-                        </div>
-                    </Link>
-                </motion.div>
+                    <GraduationCap
+                        size={30}
+                        className="text-ac-taupe mb-2 lg:mb-0 lg:mr-4 transition-transform duration-300 group-hover:scale-110 flex-shrink-0"
+                    />
+                    <div className="text-center lg:text-left">
+                        <span className="block font-serif text-lg leading-tight text-ac-taupe group-hover:text-ac-taupe/80 transition-colors">
+                            {t('masterclasses.title')}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-widest text-ac-taupe/60 font-bold">
+                            {t('masterclasses.subtitle')}
+                        </span>
+                    </div>
+                </motion.a>
 
                 {actions.map((action, index) => (
                     <motion.a
@@ -100,24 +94,24 @@ export default function QuickActions({ isMasterclassComplete = false, isGuest = 
                         initial={{ opacity: 1, x: 0 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0, duration: 0 }}
-                        className="group relative flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-start 
-                                 p-4 lg:p-3 rounded-sm
+                        className="group relative flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-start
+                                 p-4 lg:p-4 rounded-sm
                                  bg-white/40 backdrop-blur-md border border-white/20 shadow-sm
                                  hover:bg-white/60 hover:shadow-md transition-all duration-300
-                                 overflow-hidden lg:h-20 lg:w-full cursor-pointer"
+                                 overflow-hidden flex-1 min-h-[60px] lg:w-full cursor-pointer"
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                         <action.icon
-                            size={20}
-                            className="text-ac-gold mb-2 lg:mb-0 lg:mr-3 transition-transform duration-300 group-hover:scale-110"
+                            size={30}
+                            className="text-ac-gold mb-2 lg:mb-0 lg:mr-4 transition-transform duration-300 group-hover:scale-110 flex-shrink-0"
                         />
 
                         <div className="relative z-10 text-center lg:text-left">
-                            <span className="block font-serif text-xs lg:text-sm text-ac-taupe leading-tight group-hover:text-ac-taupe/80 transition-colors">
+                            <span className="block font-serif text-lg text-ac-taupe leading-tight group-hover:text-ac-taupe/80 transition-colors">
                                 {action.label}
                             </span>
-                            <span className="block text-[9px] uppercase tracking-widest text-ac-taupe/40 font-bold mt-0.5">
+                            <span className="block text-[10px] uppercase tracking-widest text-ac-taupe/40 font-bold mt-0.5">
                                 {action.subtitle}
                             </span>
                         </div>

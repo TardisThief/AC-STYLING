@@ -102,20 +102,20 @@
         "pulse": "The Pulse",
         "masterclasses": {
             "title": "Masterclasses",
-            "subtitle": "Styling Foundations"
+            "subtitle": "Your complete style education"
         },
         "actions": {
             "courses": {
                 "label": "Courses",
-                "subtitle": "Library"
+                "subtitle": "Deep-dives by topic"
             },
             "studio": {
                 "label": "The Studio",
-                "subtitle": "Book a service"
+                "subtitle": "1-on-1 sessions with Ale"
             },
             "boutique": {
                 "label": "The Boutique",
-                "subtitle": "Curated Shop"
+                "subtitle": "Pieces Ale hand-picks"
             },
             "essence": {
                 "label": "My Styling Essence",
@@ -123,7 +123,7 @@
             },
             "ask": {
                 "label": "Ask Ale a Question",
-                "subtitle": "Concierge"
+                "subtitle": "Send her a direct question"
             }
         }
     },

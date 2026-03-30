@@ -6,15 +6,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
-import VaultHero from "./VaultHero";
-import { PulseContent } from "@/app/actions/dashboard";
+import EditorialPanel from "./EditorialPanel";
+import { PulseContent, EditorialContent } from "@/app/actions/dashboard";
 import SafeImage from "@/components/ui/SafeImage";
 
 interface WhatsNewProps {
     pulse?: PulseContent[] | null;
+    editorial: EditorialContent;
 }
 
-export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
+export default function WhatsNew({ pulse = [], editorial }: WhatsNewProps) {
     const t = useTranslations('Vault');
     const items = pulse && pulse.length > 0 ? pulse : [];
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -30,7 +31,6 @@ export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
 
     const activeItem = items[currentIndex];
 
-    // Fallback if no items at all (should be covered by server action but safe to have)
     const fallbackItem = {
         id: 'default',
         type: 'news',
@@ -46,19 +46,14 @@ export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
     return (
         <section className="flex flex-col gap-4">
 
-            {/* 1. Static Editorial Banner - Compressed Height (~350px max) */}
-            <div className="relative w-full overflow-hidden rounded-sm shadow-md group cursor-pointer h-[320px] md:h-[380px]">
-                <div className="absolute inset-0 top-[-10%]">
-                    <VaultHero />
-                </div>
-            </div>
+            {/* 1. Editorial Panel */}
+            <EditorialPanel editorial={editorial} />
 
-            {/* 2. Pulse Card (Single Rotating Card) - Partially Visible at Bottom */}
+            {/* 2. The Pulse */}
             <div className="relative">
                 <div className="flex justify-between items-end mb-1 px-1">
                     <h3 className="font-serif text-base text-ac-taupe/60 italic">{t('pulse')}</h3>
 
-                    {/* Dots */}
                     {items.length > 1 && (
                         <div className="flex gap-1.5">
                             {items.map((_, idx) => (
@@ -85,7 +80,6 @@ export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
                                 transition={{ duration: 0.5 }}
                                 className="flex flex-col md:flex-row gap-4 items-center w-full"
                             >
-                                {/* Image */}
                                 <div className="relative w-full md:w-24 h-24 flex-shrink-0 overflow-hidden rounded-sm bg-ac-taupe/5">
                                     <SafeImage
                                         src={displayItem.image_url}
@@ -101,7 +95,6 @@ export default function WhatsNew({ pulse = [] }: WhatsNewProps) {
                                     )}
                                 </div>
 
-                                {/* Text */}
                                 <div className="flex-grow text-center md:text-left">
                                     <span className="text-ac-olive font-bold text-[10px] uppercase tracking-wider mb-0.5 block">
                                         {displayItem.label}
