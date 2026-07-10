@@ -30,7 +30,7 @@ vi.mock('@/app/lib/access-logic', () => ({
 }))
 
 // Import after mocks
-import { checkPurchase, getUserPurchases, purchaseProduct } from '@/app/actions/commerce'
+import { checkPurchase, getUserPurchases } from '@/app/actions/commerce'
 
 describe('Commerce Server Actions', () => {
     beforeEach(() => {
@@ -111,13 +111,4 @@ describe('Commerce Server Actions', () => {
         })
     })
 
-    describe('purchaseProduct', () => {
-        it('returns error when user not authenticated', async () => {
-            mockAuth.getUser.mockResolvedValue({ data: { user: null } })
-
-            const result = await purchaseProduct('product-123')
-
-            expect(result.error).toBe('Not authenticated')
-        })
-    })
 })

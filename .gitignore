@@ -39,6 +39,11 @@ yarn-error.log*
 # claude code (local settings, worktrees, scratch)
 .claude/
 
+# claude code skills / tooling installed at repo root (not project code)
+/claude-mem/
+/superpowers/
+/impeccable/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

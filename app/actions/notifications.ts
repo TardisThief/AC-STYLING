@@ -1,6 +1,7 @@
 'use server';
 
 import { createAdminClient } from '@/utils/supabase/admin';
+import { requireAdmin } from '@/app/lib/auth-guards';
 import { revalidatePath } from 'next/cache';
 
 export type NotificationType =
@@ -45,6 +46,9 @@ export async function getAdminNotifications(filter?: GetNotificationsFilter): Pr
     data?: AdminNotification[];
     error?: string;
 }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
     const supabase = createAdminClient();
 
     let query = supabase
@@ -126,6 +130,9 @@ export async function getAdminNotifications(filter?: GetNotificationsFilter): Pr
  * Get count of unread notifications
  */
 export async function getUnreadNotificationCount(): Promise<number> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return 0;
+
     const supabase = createAdminClient();
 
     // 1. Unread Admin Notifications
@@ -153,6 +160,9 @@ export async function getUnreadNotificationCount(): Promise<number> {
  * For wardrobe items, this sets status to 'keep' (Approve)
  */
 export async function markNotificationAsRead(id: string, type?: NotificationType): Promise<{ success: boolean; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
     const supabase = createAdminClient();
 
     if (type === 'wardrobe_item') {
@@ -190,6 +200,9 @@ export async function updateNotificationStatus(
     actionTaken?: string,
     type?: NotificationType
 ): Promise<{ success: boolean; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
     const supabase = createAdminClient();
 
     if (type === 'wardrobe_item') {
@@ -230,8 +243,7 @@ export async function updateNotificationStatus(
  * Archive a notification
  */
 export async function archiveNotification(id: string, type?: NotificationType): Promise<{ success: boolean; error?: string }> {
-    // For wardrobe items, 'archive' might mean 'donate' or just ignoring?
-    // Let's assume 'donate' for now or just generic update
+    // Delegates to updateNotificationStatus (which enforces requireAdmin).
     return updateNotificationStatus(id, 'archived', undefined, type);
 }
 
@@ -239,6 +251,9 @@ export async function archiveNotification(id: string, type?: NotificationType): 
  * Mark all unread notifications as read
  */
 export async function markAllAsRead(): Promise<{ success: boolean; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
     const supabase = createAdminClient();
 
     const { error } = await supabase

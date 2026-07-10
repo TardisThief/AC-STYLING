@@ -1,7 +1,21 @@
 "use server";
 
+import { requireAdmin } from '@/app/lib/auth-guards';
+import { assertPublicUrl } from '@/app/lib/ssrf-guard';
+
 export async function extractUrlMetadata(url: string) {
     if (!url) return null;
+
+    // Boutique/product scraping is an admin-only tool. Gate the caller and
+    // block SSRF before navigating to a caller-supplied URL.
+    const auth = await requireAdmin();
+    if (!auth.ok) return null;
+
+    try {
+        await assertPublicUrl(url);
+    } catch {
+        return null;
+    }
 
     // Helper to clean text
     const clean = (str: string | undefined | null) => str ? str.trim().replace(/\n/g, ' ').replace(/\s+/g, ' ') : "";

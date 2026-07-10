@@ -43,6 +43,21 @@ describe('Boutique Server Actions', () => {
             expect(result.success).toBe(false)
             expect(result.error).toBe('DB Error')
         })
+
+        it('requests only public display columns (never sensitive fields)', async () => {
+            const selectSpy = vi.fn((_columns: string) => createChainableMock({ data: [], error: null }))
+            mockFrom.mockReturnValue({ select: selectSpy })
+
+            await getActiveBrands()
+
+            expect(selectSpy).toHaveBeenCalledTimes(1)
+            const columns = selectSpy.mock.calls[0][0]
+            expect(columns).not.toBe('*')
+            expect(columns).toContain('name')
+            for (const sensitive of ['internal_notes', 'commission_rate', 'contact_email', 'contact_name']) {
+                expect(columns).not.toContain(sensitive)
+            }
+        })
     })
 
     describe('getBoutiqueItems', () => {

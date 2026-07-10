@@ -68,6 +68,18 @@ export const getPasswordResetHtml = (url: string) => `
 </html>
 `;
 
+/**
+ * Escape user-supplied text before interpolating it into email HTML, to prevent
+ * HTML/markup injection into transactional emails.
+ */
+export const escapeHtml = (value: string): string =>
+    String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
 export const getAnswerNotificationHtml = (question: string, answer: string) => `
 <!DOCTYPE html>
 <html lang="en">
@@ -97,12 +109,12 @@ export const getAnswerNotificationHtml = (question: string, answer: string) => `
             
             <div class="message-box">
                 <span class="label">Your Question</span>
-                <p style="font-style: italic;">"${question}"</p>
+                <p style="font-style: italic;">"${escapeHtml(question)}"</p>
             </div>
 
             <div class="message-box" style="border-left-color: #3D3630; background-color: #E6DED6;">
                 <span class="label">Alejandra's Answer</span>
-                <p>${answer}</p>
+                <p>${escapeHtml(answer)}</p>
             </div>
 
             <a href="https://ac-styling.com/vault" class="button">Go to Vault</a>

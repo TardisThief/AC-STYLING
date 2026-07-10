@@ -23,18 +23,21 @@ export type BoutiqueItem = {
     };
 };
 
+// Public display columns only. Sensitive fields (internal_notes,
+// commission_rate, contact_email, contact_name) are intentionally excluded and
+// are also column-revoked at the DB level for anon/authenticated. Admin tooling
+// reads the full row via getAdminBrands (service role).
+const PUBLIC_BRAND_COLUMNS = 'id, name, logo_url, website_url, partnership_status, active, order_index';
+
 /**
- * Fetch all active partner brands for the Atelier bar.
+ * Fetch all active partner brands for the Atelier bar (public, display-only).
  */
 export async function getActiveBrands() {
     const supabase = await createClient();
 
-    // Check user for RLS (implicitly handled by supabase client but good form)
-    // Actually public read so no user check needed for display.
-
     const { data: brands, error } = await supabase
         .from('partner_brands')
-        .select('*')
+        .select(PUBLIC_BRAND_COLUMNS)
         .eq('active', true)
         .order('order_index', { ascending: true });
 

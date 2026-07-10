@@ -2,14 +2,40 @@
 'use server';
 
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
+import { requireAdmin } from "@/app/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 
 // --- Brands ---
 
+/**
+ * Fetch full partner_brand rows (including internal_notes / commission_rate /
+ * contact_email) for the admin editor. Uses the service-role client so it can
+ * read the sensitive columns that are column-revoked from anon/authenticated;
+ * gated by requireAdmin so only admins reach it.
+ */
+export async function getAdminBrands() {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    const supabase = createAdminClient();
+    const { data: brands, error } = await supabase
+        .from('partner_brands')
+        .select('*')
+        .order('order_index', { ascending: true });
+
+    if (error) {
+        console.error("Fetch Admin Brands Error:", error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true, brands };
+}
+
 export async function createBrand(data: any) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('partner_brands').insert({
         name: data.name,
@@ -29,9 +55,9 @@ export async function createBrand(data: any) {
 }
 
 export async function updateBrand(id: string, data: any) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('partner_brands').update({
         name: data.name,
@@ -51,9 +77,9 @@ export async function updateBrand(id: string, data: any) {
 }
 
 export async function deleteBrand(id: string) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('partner_brands').delete().eq('id', id);
 
@@ -65,9 +91,9 @@ export async function deleteBrand(id: string) {
 // --- Items ---
 
 export async function createBoutiqueItem(data: any) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('boutique_items').insert({
         name: data.name,
@@ -86,9 +112,9 @@ export async function createBoutiqueItem(data: any) {
 }
 
 export async function updateBoutiqueItem(id: string, data: any) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('boutique_items').update({
         name: data.name,
@@ -107,9 +133,9 @@ export async function updateBoutiqueItem(id: string, data: any) {
 }
 
 export async function deleteBoutiqueItem(id: string) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('boutique_items').delete().eq('id', id);
 
@@ -131,9 +157,9 @@ export async function getCollections() {
 }
 
 export async function createCollection(data: any) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { data: created, error } = await supabase.from('boutique_collections').insert({
         title: data.title,
@@ -151,9 +177,9 @@ export async function createCollection(data: any) {
 }
 
 export async function updateCollection(id: string, data: any) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('boutique_collections').update({
         title: data.title,
@@ -172,9 +198,9 @@ export async function updateCollection(id: string, data: any) {
 }
 
 export async function deleteCollection(id: string) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('boutique_collections').delete().eq('id', id);
     if (error) return { success: false, error: error.message };
@@ -183,9 +209,9 @@ export async function deleteCollection(id: string) {
 }
 
 export async function setCollectionItems(collectionId: string, itemIds: string[]) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     // Replace all items for this collection
     await supabase.from('boutique_collection_items').delete().eq('collection_id', collectionId);
@@ -213,9 +239,9 @@ export async function getTrustedByLogos() {
 }
 
 export async function createTrustedByLogo(data: { name: string; logo_url: string; order_index?: number }) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('trusted_by_logos').insert({
         name: data.name,
@@ -229,9 +255,9 @@ export async function createTrustedByLogo(data: { name: string; logo_url: string
 }
 
 export async function updateTrustedByLogo(id: string, data: Partial<{ name: string; logo_url: string; order_index: number; active: boolean }>) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('trusted_by_logos').update(data).eq('id', id);
     if (error) return { success: false, error: error.message };
@@ -240,9 +266,9 @@ export async function updateTrustedByLogo(id: string, data: Partial<{ name: stri
 }
 
 export async function deleteTrustedByLogo(id: string) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { error } = await supabase.from('trusted_by_logos').delete().eq('id', id);
     if (error) return { success: false, error: error.message };

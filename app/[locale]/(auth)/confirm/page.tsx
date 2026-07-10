@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { processOnboarding } from "@/app/actions/onboarding";
+import { safeNextPath } from "@/app/lib/safe-redirect";
 
 export default function AuthConfirmPage() {
     const router = useRouter();
@@ -33,8 +34,7 @@ export default function AuthConfirmPage() {
                 console.error("Onboarding failed:", err);
             }
 
-            const target = nextUrl || '/vault';
-            console.log('[Confirm] Redirecting to:', target);
+            const target = safeNextPath(nextUrl, '/vault');
             router.replace(target);
         };
 

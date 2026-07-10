@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { requireAdmin } from '@/app/lib/auth-guards';
 
 // 1. User Asks Question
 export async function askQuestion(formData: FormData) {
@@ -64,7 +65,9 @@ export async function askQuestion(formData: FormData) {
 
 // 2. Admin Answers Question
 export async function answerQuestion(questionId: string, answer: string) {
-    const supabase = await createClient();
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
     const supabaseAdmin = createAdminClient();
 
     try {

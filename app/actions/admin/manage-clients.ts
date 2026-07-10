@@ -2,6 +2,7 @@
 'use server';
 
 import { createClient } from "@/utils/supabase/server";
+import { requireAdmin } from "@/app/lib/auth-guards";
 
 export type ClientProfile = {
     id: string;
@@ -25,11 +26,9 @@ export type DossierEntry = {
  * (Note: In a large app, we'd paginate this. For now, fetch all.)
  */
 export async function getClients() {
-    const supabase = await createClient();
-
-    // Check Admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     // We can't access auth.users directly via client library usually unless using service role
     // But we have a public profiles table trigger-synced.
@@ -60,9 +59,9 @@ export async function getClients() {
  * Groups essence responses by Masterclass.
  */
 export async function getClientDossier(userId: string) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     // Fetch all responses joined with masterclass info
     // Note: We need to know the question LABEL to make it readable, 

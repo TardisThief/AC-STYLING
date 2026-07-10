@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getActiveBrands, getBoutiqueItems } from "@/app/actions/boutique";
-import { deleteBrand, deleteBoutiqueItem } from "@/app/actions/admin/manage-boutique"; // Need to make delete public or fetch all
+import { getBoutiqueItems } from "@/app/actions/boutique";
+import { getAdminBrands, deleteBrand, deleteBoutiqueItem } from "@/app/actions/admin/manage-boutique";
 import BrandForm from "./BrandForm";
 import ItemForm from "./ItemForm";
 import { Plus, Tag, Trash2, Edit2 } from "lucide-react";
@@ -21,7 +21,7 @@ export default function BoutiqueManager() {
     const [isCreating, setIsCreating] = useState(false);
 
     const loadData = async () => {
-        const [bRes, iRes] = await Promise.all([getActiveBrands(), getBoutiqueItems()]);
+        const [bRes, iRes] = await Promise.all([getAdminBrands(), getBoutiqueItems()]);
         if (bRes.success) setBrands(bRes.brands || []);
         if (iRes.success) setItems(iRes.items || []);
         setLoading(false);
