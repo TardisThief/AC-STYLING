@@ -53,33 +53,30 @@ export async function POST(req: Request) {
 
         console.log(`[Stripe Webhook] Session Info: SessionID=${session.id}, UserID=${finalUserId}`);
 
-        // Idempotency: Check if we already processed this session successfully
-        // We use the reference_id in admin_notifications or check our own log if needed.
-        // A simple check is to look for an existing 'completed' purchase with this session ID in metadata?
-        // Or better, check our webhook_events log if we log it with session_id.
-        // We logged it above, but we want to check if a PREVIOUS execution succeeded.
+        // Idempotency gate: record this Stripe event.id once. Stripe delivers
+        // at-least-once and retries non-2xx deliveries for up to 3 days, so the
+        // same event can arrive multiple times. The upsert-with-ignoreDuplicates
+        // atomically inserts the id; an empty result means the row already
+        // existed (a retry/duplicate) and we skip reprocessing. Marked here at
+        // the start and rolled back on a 500 (see the catch) so a genuine
+        // failure can still be retried. Fails OPEN if the table is absent (e.g.
+        // migration not yet applied) so the code can ship before the migration.
+        try {
+            const { data: gateRows, error: gateError } = await supabase
+                .from('stripe_processed_events')
+                .upsert({ event_id: event.id }, { onConflict: 'event_id', ignoreDuplicates: true })
+                .select('event_id');
 
-        // Since we don't have a dedicated idempotency key column easily accessible without parsing json,
-        // we can check if a purchase exists for this session.
-        // But purchases don't store session_id directly in a column (maybe in metadata?).
-        // Let's check admin_notifications references.
-
-        /* 
-        const { data: existingNotification } = await supabase
-            .from('admin_notifications')
-            .select('id')
-            .eq('reference_id', session.id)
-            .single();
-
-        if (existingNotification) {
-             console.log(`[Stripe Webhook] Duplicate Session ${session.id} - Already processed.`);
-             return new Response('Already processed', { status: 200 });
+            if (!gateError && Array.isArray(gateRows) && gateRows.length === 0) {
+                console.log(`[Stripe Webhook] Duplicate event ${event.id} — already processed, skipping.`);
+                return new Response('Already processed', { status: 200 });
+            }
+        } catch (gateErr) {
+            console.warn('[Stripe Webhook] Idempotency gate error, proceeding:', gateErr);
         }
-        */
-        // Actually, let's use the explicit check closer to the insert points, OR just rely on the fact that
-        // grants are idempotent (updates) but NOTIFICATIONS are inserts.
 
-        // We will check for existing notification with this reference_id
+        // Secondary guard: skip re-inserting the admin notification if one for
+        // this session already exists (belt-and-suspenders alongside the gate).
         const { data: existingNotif } = await supabase
             .from('admin_notifications')
             .select('id')
@@ -128,35 +125,20 @@ export async function POST(req: Request) {
                     continue;
                 }
 
-                // 1. Log Purchase (Idempotency Check)
-                // Check if a purchase for this product/user exists within the last 5 minutes (to catch duplicates)
-                // Or simply check if a purchase exists for this session_id IF we stored it.
-                // Since we don't store session_id in purchases, we check (user_id, product_id, created_at)
+                // 1. Log Purchase. Retries of this same Stripe event are already
+                // prevented by the event-level idempotency gate above, so the
+                // old fragile 5-minute time-window dedup is no longer needed.
+                const { error: purchaseError } = await supabase.from('purchases').insert({
+                    user_id: finalUserId,
+                    product_id: stripeProductId,
+                    amount_paid: item.amount_total ? item.amount_total / 100 : 0,
+                    currency: item.currency?.toUpperCase() || 'USD',
+                    status: 'completed'
+                });
 
-                const { data: recentPurchase } = await supabase
-                    .from('purchases')
-                    .select('id')
-                    .eq('user_id', finalUserId)
-                    .eq('product_id', stripeProductId)
-                    .gt('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // 5 mins ago
-                    .maybeSingle();
-
-                if (!recentPurchase) {
-                    const { error: purchaseError } = await supabase.from('purchases').insert({
-                        user_id: finalUserId,
-                        product_id: stripeProductId,
-                        amount_paid: item.amount_total ? item.amount_total / 100 : 0,
-                        currency: item.currency?.toUpperCase() || 'USD',
-                        status: 'completed'
-                    });
-
-                    if (purchaseError) {
-                        console.error('[Stripe Webhook] Purchase Insert Error:', purchaseError);
-                        await logEvent('error', `Purchase Insert Failed: ${purchaseError.message}`);
-                    }
-                } else {
-                    console.log(`[Stripe Webhook] Skipping duplicate purchase for product ${stripeProductId}`);
-                    await logEvent('info', `Duplicate purchase skipped: ${stripeProductId}`);
+                if (purchaseError) {
+                    console.error('[Stripe Webhook] Purchase Insert Error:', purchaseError);
+                    await logEvent('error', `Purchase Insert Failed: ${purchaseError.message}`);
                 }
 
                 // 2. Grant Access Logic
@@ -278,6 +260,13 @@ export async function POST(req: Request) {
             const error = err as Error;
             console.error('Error processing checkout session:', err);
             await logEvent('fatal_error', error.message);
+            // Roll back the idempotency mark so Stripe's retry can reprocess this
+            // event (we return 500, which Stripe treats as a failed delivery).
+            try {
+                await supabase.from('stripe_processed_events').delete().eq('event_id', event.id);
+            } catch (rollbackErr) {
+                console.warn('[Stripe Webhook] Failed to roll back idempotency mark:', rollbackErr);
+            }
             return new Response('Error processing session', { status: 500 });
         }
     }

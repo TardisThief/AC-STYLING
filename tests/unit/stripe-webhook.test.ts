@@ -182,6 +182,32 @@ describe('Stripe Webhook Handler', () => {
             expect(response.status).toBe(200)
         })
 
+        it('skips a duplicate event (already-processed event.id) without reprocessing', async () => {
+            mockConstructEvent.mockReturnValue({
+                id: 'evt_dup_123',
+                type: 'checkout.session.completed',
+                data: { object: mockSession },
+            })
+
+            // Idempotency gate upsert returns an empty array => the event_id row
+            // already existed (duplicate delivery / retry).
+            mockFrom.mockReturnValue(createChainableMock({ data: [], error: null }))
+
+            const { POST } = await import('@/app/api/webhooks/stripe/route')
+
+            const request = new Request('http://localhost:3000/api/webhooks/stripe', {
+                method: 'POST',
+                body: JSON.stringify({}),
+            })
+
+            const response = await POST(request)
+
+            expect(response.status).toBe(200)
+            expect(await response.text()).toBe('Already processed')
+            expect(mockListLineItems).not.toHaveBeenCalled()
+            expect(grantAccessForProduct).not.toHaveBeenCalled()
+        })
+
         it('creates admin notification for service booking', async () => {
             mockListLineItems.mockResolvedValue({
                 data: [{
