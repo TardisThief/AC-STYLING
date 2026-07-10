@@ -119,7 +119,7 @@ Exactly one real TODO (`studio.ts`). Dead `components/vault/EditorialDraft.tsx` 
 
 ### P1 — next
 
-~~Signed-URL bucket code~~ (done: `lib/wardrobe-images.ts` + migration 03); ~~rate limiting on email actions~~ (done: `app/lib/rate-limit.ts` + migration 04; CAPTCHA deferred); ~~CI (GitHub Actions running test:run)~~ (done: `.github/workflows/ci.yml`; lint is informational until the `no-explicit-any` backlog is cleared); ~~fix the 3 pre-existing broken test files~~ (done: suite is green, 154 tests); webhook idempotency finalization + verify the `handle_new_purchase` trigger doesn't double-grant; `npm audit` / `npm outdated`; re-version the full schema/RLS/triggers under `supabase/migrations/`; remove committed test artifacts.
+~~Signed-URL bucket code~~ (done: `lib/wardrobe-images.ts` + migration 03); ~~rate limiting on email actions~~ (done: `app/lib/rate-limit.ts` + migration 04; CAPTCHA deferred); ~~CI (GitHub Actions running test:run)~~ (done: `.github/workflows/ci.yml`; lint is informational until the `no-explicit-any` backlog is cleared); ~~fix the 3 pre-existing broken test files~~ (done: suite is green, 154 tests); ~~webhook idempotency finalization~~ (done: event-`id` gate + `stripe_processed_events` migration 05; the fragile 5-min purchase window removed) + ~~verify the `handle_new_purchase` trigger doesn't double-grant~~ (verified: no double-grant — the trigger grants *studio* access for service purchases and is idempotent, complementary to `grantAccessForProduct`'s content grants); `npm audit` / `npm outdated`; re-version the full schema/RLS/triggers under `supabase/migrations/`; remove committed test artifacts.
 
 ### P2 — roadmap
 
