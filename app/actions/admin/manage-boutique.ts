@@ -2,10 +2,35 @@
 'use server';
 
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/app/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 
 // --- Brands ---
+
+/**
+ * Fetch full partner_brand rows (including internal_notes / commission_rate /
+ * contact_email) for the admin editor. Uses the service-role client so it can
+ * read the sensitive columns that are column-revoked from anon/authenticated;
+ * gated by requireAdmin so only admins reach it.
+ */
+export async function getAdminBrands() {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    const supabase = createAdminClient();
+    const { data: brands, error } = await supabase
+        .from('partner_brands')
+        .select('*')
+        .order('order_index', { ascending: true });
+
+    if (error) {
+        console.error("Fetch Admin Brands Error:", error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true, brands };
+}
 
 export async function createBrand(data: any) {
     const auth = await requireAdmin();
