@@ -1,29 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock Supabase
-const mockFrom = vi.fn()
-const mockAuth = {
-    getUser: vi.fn(),
-    signUp: vi.fn(),
-}
-
-vi.mock('@/utils/supabase/server', () => ({
-    createClient: vi.fn(() => ({
-        auth: mockAuth,
-        from: mockFrom,
-    })),
+// linkIntakeProfile is a thin wrapper that dynamically imports and delegates to
+// activateStudioAccess (the robust activation logic lives in the studio actions).
+// The deep transfer/merge behavior is that function's responsibility; here we
+// verify the delegation contract.
+vi.mock('@/app/actions/studio', () => ({
+    activateStudioAccess: vi.fn(),
 }))
 
-vi.mock('next/navigation', () => ({
-    redirect: vi.fn(),
-}))
-
-vi.mock('next/headers', () => ({
-    headers: vi.fn(),
-}))
-
-// Import after mocks
 import { linkIntakeProfile } from '@/app/actions/auth'
+import { activateStudioAccess } from '@/app/actions/studio'
 
 describe('Auth Server Actions', () => {
     beforeEach(() => {
@@ -31,92 +17,21 @@ describe('Auth Server Actions', () => {
     })
 
     describe('linkIntakeProfile', () => {
-        it('returns error when user not authenticated', async () => {
-            mockAuth.getUser.mockResolvedValue({ data: { user: null } })
+        it('delegates to activateStudioAccess with the token and returns its result', async () => {
+            vi.mocked(activateStudioAccess).mockResolvedValue({ success: true })
 
-            const result = await linkIntakeProfile('test-token-123')
+            const result = await linkIntakeProfile('token-abc')
 
-            expect(result.error).toBe('Not authenticated')
+            expect(activateStudioAccess).toHaveBeenCalledWith('token-abc')
+            expect(result).toEqual({ success: true })
         })
 
-        it('returns message when token not found or already processed', async () => {
-            mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
+        it('propagates an error result from activateStudioAccess', async () => {
+            vi.mocked(activateStudioAccess).mockResolvedValue({ success: false, error: 'Unauthorized' })
 
-            // Mock profile lookup - not found
-            mockFrom.mockReturnValue({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                neq: vi.fn().mockReturnThis(),
-                single: vi.fn().mockResolvedValue({ data: null, error: null }),
-            })
+            const result = await linkIntakeProfile('token-xyz')
 
-            const result = await linkIntakeProfile('invalid-token')
-
-            expect(result.message).toContain('Token already processed')
-        })
-
-        it('transfers data and returns success for valid token', async () => {
-            mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
-
-            // Mock invite profile lookup - found
-            const mockInviteProfile = {
-                id: 'invite-profile-456',
-                studio_permissions: { lookbook: true, wardrobe: true },
-            }
-
-            // First call: profile lookup
-            mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                neq: vi.fn().mockReturnThis(),
-                single: vi.fn().mockResolvedValue({ data: mockInviteProfile, error: null }),
-            })
-
-            // Transfer calls (wardrobe_items, tailor_cards, lookbooks)
-            mockFrom.mockReturnValue({
-                update: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({ error: null }),
-                })),
-                delete: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({ error: null }),
-                })),
-            })
-
-            const result = await linkIntakeProfile('valid-token-123')
-
-            expect(result.success).toBe(true)
-        })
-
-        it('archives invite profile if delete fails', async () => {
-            mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
-
-            const mockInviteProfile = {
-                id: 'invite-profile-456',
-                studio_permissions: {},
-            }
-
-            // Mock profile lookup
-            mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                neq: vi.fn().mockReturnThis(),
-                single: vi.fn().mockResolvedValue({ data: mockInviteProfile, error: null }),
-            })
-
-            // Mock transfer updates
-            mockFrom.mockReturnValue({
-                update: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({ error: null }),
-                })),
-                delete: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({ error: { message: 'FK Violation' } }),
-                })),
-            })
-
-            const result = await linkIntakeProfile('valid-token-123')
-
-            // Should still return success (fallback archives)
-            expect(result.success).toBe(true)
+            expect(result).toEqual({ success: false, error: 'Unauthorized' })
         })
     })
 })
