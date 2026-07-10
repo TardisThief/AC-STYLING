@@ -199,15 +199,29 @@ export async function processWardrobeItem(
 
 export async function uploadRemoteImage(imageUrl: string, userId: string) {
     const { createClient } = await import("@/utils/supabase/server");
-    const supabase = await createClient();
+    const { requireUser, requireAdmin } = await import("@/app/lib/auth-guards");
+    const { assertPublicUrl } = await import("@/app/lib/ssrf-guard");
 
     // 1. Auth Check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
+    const auth = await requireUser();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    // 2. Determine target folder. A normal user may only write to their own
+    // folder; targeting another user's folder (stylist uploading for a client)
+    // requires admin.
+    let targetUserId = auth.user.id;
+    if (userId && userId !== auth.user.id) {
+        const adminCheck = await requireAdmin();
+        if (!adminCheck.ok) return { success: false, error: 'Forbidden' };
+        targetUserId = userId;
+    }
+
+    const supabase = await createClient();
 
     try {
-        // 2. Fetch the remote image
-        const response = await fetch(imageUrl);
+        // 3. Validate the URL (SSRF guard), then fetch the remote image
+        const safeUrl = await assertPublicUrl(imageUrl);
+        const response = await fetch(safeUrl.toString());
         if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
 
         const blob = await response.blob();
@@ -217,7 +231,7 @@ export async function uploadRemoteImage(imageUrl: string, userId: string) {
         // Determine extension
         const ext = contentType.split('/')[1] || 'jpg';
         const fileName = `${Date.now()}-remote.${ext}`;
-        const filePath = `${userId}/${fileName}`;
+        const filePath = `${targetUserId}/${fileName}`;
 
         // 3. Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage

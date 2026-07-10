@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { claimWardrobe } from '@/app/actions/wardrobes'
+import { safeNextPath } from '@/app/lib/safe-redirect'
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
@@ -23,7 +24,8 @@ export async function GET(request: Request) {
                     cookieStore.delete('auth_next_url');
                 }
             }
-            next = next || '/en/vault';
+            // Constrain to a same-origin relative path to prevent open redirects.
+            next = safeNextPath(next, '/en/vault');
 
             // PROFILE LINKING LOGIC
             // Try cookie first, then URL param (more robust)
@@ -95,11 +97,8 @@ export async function GET(request: Request) {
             if (!wardrobeClaimToken) {
                 wardrobeClaimToken = searchParams.get('wardrobe_claim') || undefined;
             }
-            console.log('[AuthCallback] Wardrobe claim token:', wardrobeClaimToken ? 'FOUND' : 'NOT FOUND');
             if (wardrobeClaimToken) {
-                console.log('[AuthCallback] Attempting to claim wardrobe with token:', wardrobeClaimToken.substring(0, 8) + '...');
-                const claimResult = await claimWardrobe(wardrobeClaimToken);
-                console.log('[AuthCallback] Claim result:', claimResult);
+                await claimWardrobe(wardrobeClaimToken);
                 cookieStore.delete('wardrobe_claim_token');
             }
 

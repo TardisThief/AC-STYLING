@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Mail, Loader2, User, ChevronRight } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { safeNextPath } from "@/app/lib/safe-redirect";
 
 export default function LoginPage() {
     const [loginMethod, setLoginMethod] = useState<'magic' | 'password'>('magic');
@@ -39,7 +40,7 @@ export default function LoginPage() {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 // Determine redirect path
-                const target = nextUrl || '/vault';
+                const target = safeNextPath(nextUrl, '/vault');
                 // Avoid double-toast if we dealt with it in handle functions
                 if (!isLoading) {
                     toast.success("Successfully signed in.");
@@ -103,7 +104,7 @@ export default function LoginPage() {
                 toast.error(error.message);
             } else {
                 toast.success("Welcome back!");
-                router.push(nextUrl || '/vault');
+                router.push(safeNextPath(nextUrl, '/vault'));
             }
         }
 

@@ -9,6 +9,23 @@ vi.mock('@/utils/supabase/admin', () => ({
     })),
 }))
 
+// Mock the RLS-respecting server client used by requireAdmin. Default: an
+// authenticated admin caller. Tests override mockGetUser / mockRole to exercise
+// the unauthorized / forbidden paths.
+const mockGetUser = vi.fn()
+let mockRole: string | null = 'admin'
+
+vi.mock('@/utils/supabase/server', () => ({
+    createClient: vi.fn(async () => ({
+        auth: { getUser: mockGetUser },
+        from: vi.fn(() => ({
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({ data: { role: mockRole }, error: null }),
+        })),
+    })),
+}))
+
 vi.mock('next/cache', () => ({
     revalidatePath: vi.fn(),
 }))
@@ -26,18 +43,71 @@ import {
 describe('Admin Notifications Server Actions', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        // Default to an authenticated admin caller.
+        mockGetUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } })
+        mockRole = 'admin'
+    })
+
+    describe('authorization', () => {
+        it('rejects unauthenticated callers', async () => {
+            mockGetUser.mockResolvedValue({ data: { user: null } })
+
+            const result = await getAdminNotifications()
+
+            expect(result.success).toBe(false)
+            expect(result.error).toBe('Unauthorized')
+        })
+
+        it('rejects authenticated non-admin callers', async () => {
+            mockRole = 'user'
+
+            const result = await getAdminNotifications()
+
+            expect(result.success).toBe(false)
+            expect(result.error).toBe('Forbidden')
+        })
+
+        it('returns 0 unread count for non-admin callers', async () => {
+            mockRole = 'user'
+
+            const result = await getUnreadNotificationCount()
+
+            expect(result).toBe(0)
+        })
+
+        it('refuses to mutate notifications for non-admin callers', async () => {
+            mockRole = 'user'
+
+            const result = await markAllAsRead()
+
+            expect(result.success).toBe(false)
+            expect(result.error).toBe('Forbidden')
+            expect(mockFrom).not.toHaveBeenCalled()
+        })
     })
 
     describe('getAdminNotifications', () => {
         it('returns notifications list', async () => {
             const mockNotifications = [
-                { id: '1', type: 'service_booking', title: 'New Booking', status: 'unread' },
-                { id: '2', type: 'sale', title: 'New Sale', status: 'read' },
+                { id: '1', type: 'service_booking', title: 'New Booking', status: 'unread', created_at: '2026-01-02' },
+                { id: '2', type: 'sale', title: 'New Sale', status: 'read', created_at: '2026-01-01' },
             ]
 
-            mockFrom.mockReturnValue({
-                select: vi.fn().mockReturnThis(),
-                order: vi.fn().mockResolvedValue({ data: mockNotifications, error: null }),
+            // getAdminNotifications reads two sources: admin_notifications and
+            // (for the unread/all view) wardrobe_items in 'inbox' status.
+            mockFrom.mockImplementation((table: string) => {
+                if (table === 'wardrobe_items') {
+                    return {
+                        select: vi.fn().mockReturnThis(),
+                        eq: vi.fn().mockReturnThis(),
+                        order: vi.fn().mockReturnThis(),
+                        limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+                    }
+                }
+                return {
+                    select: vi.fn().mockReturnThis(),
+                    order: vi.fn().mockResolvedValue({ data: mockNotifications, error: null }),
+                }
             })
 
             const result = await getAdminNotifications()
@@ -84,15 +154,19 @@ describe('Admin Notifications Server Actions', () => {
     })
 
     describe('getUnreadNotificationCount', () => {
-        it('returns count of unread notifications', async () => {
-            mockFrom.mockReturnValue({
+        it('returns combined count of unread notifications and inbox items', async () => {
+            // Count = unread admin_notifications (5) + inbox wardrobe_items (3).
+            mockFrom.mockImplementation((table: string) => ({
                 select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue({ count: 5, error: null }),
-            })
+                eq: vi.fn().mockResolvedValue({
+                    count: table === 'wardrobe_items' ? 3 : 5,
+                    error: null,
+                }),
+            }))
 
             const result = await getUnreadNotificationCount()
 
-            expect(result).toBe(5)
+            expect(result).toBe(8)
         })
 
         it('returns 0 on error', async () => {

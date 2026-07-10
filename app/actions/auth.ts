@@ -169,8 +169,7 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
 
     // 3. Send Email
     if (properties?.action_link) {
-        console.log('Sending Signup Email via Resend to:', email);
-        console.log('Action Link:', properties.action_link);
+        // NB: never log properties.action_link — it contains a usable auth token.
         const { success, error: emailError } = await sendEmail({
             to: email,
             subject: 'Welcome to AC Styling',
