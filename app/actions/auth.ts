@@ -4,10 +4,17 @@ import { createClient } from '@/utils/supabase/server';
 import { sendEmail } from '@/lib/resend';
 import { getMagicLinkHtml, getPasswordResetHtml } from '@/lib/email-templates';
 import { headers } from 'next/headers';
+import { checkEmailRateLimit } from '@/app/lib/rate-limit';
 
 export async function signInWithMagicLink(email: string, redirectTo?: string) {
     console.log('--- signInWithMagicLink START ---', email);
-    const origin = (await headers()).get('origin');
+    const hdrs = await headers();
+    const origin = hdrs.get('origin');
+    const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || hdrs.get('x-real-ip') || null;
+    const rate = await checkEmailRateLimit(email, ip);
+    if (!rate.allowed) {
+        return { error: 'Too many requests. Please try again in a few minutes.' };
+    }
     const { createAdminClient } = await import("@/utils/supabase/admin");
     const supabase = createAdminClient();
 
@@ -55,7 +62,13 @@ export async function signInWithMagicLink(email: string, redirectTo?: string) {
 
 export async function requestPasswordReset(email: string) {
     console.log('--- requestPasswordReset START ---', email);
-    const origin = (await headers()).get('origin');
+    const hdrs = await headers();
+    const origin = hdrs.get('origin');
+    const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || hdrs.get('x-real-ip') || null;
+    const rate = await checkEmailRateLimit(email, ip);
+    if (!rate.allowed) {
+        return { error: 'Too many requests. Please try again in a few minutes.' };
+    }
     const { createAdminClient } = await import("@/utils/supabase/admin");
     const supabase = createAdminClient();
 
@@ -98,7 +111,13 @@ export async function requestPasswordReset(email: string) {
 
 export async function signUpWithMagicLink(email: string, redirectTo?: string) {
     console.log('--- signUpWithMagicLink START ---', email);
-    const origin = (await headers()).get('origin');
+    const hdrs = await headers();
+    const origin = hdrs.get('origin');
+    const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || hdrs.get('x-real-ip') || null;
+    const rate = await checkEmailRateLimit(email, ip);
+    if (!rate.allowed) {
+        return { error: 'Too many requests. Please try again in a few minutes.' };
+    }
     const { createAdminClient } = await import("@/utils/supabase/admin");
     const adminSupabase = createAdminClient();
 
@@ -200,7 +219,13 @@ export async function signUpSeamless(formData: FormData, redirectTo: string) {
 
     const { createAdminClient } = await import("@/utils/supabase/admin");
     const adminSupabase = createAdminClient();
-    const origin = (await headers()).get('origin');
+    const hdrs = await headers();
+    const origin = hdrs.get('origin');
+    const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || hdrs.get('x-real-ip') || null;
+    const rate = await checkEmailRateLimit(email, ip);
+    if (!rate.allowed) {
+        return { error: 'Too many requests. Please try again in a few minutes.' };
+    }
 
     // 1. Create User (Admin)
     // We set email_confirm: false to require verification (standard security)
