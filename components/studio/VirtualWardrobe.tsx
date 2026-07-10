@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { uploadRemoteImage } from "@/app/actions/studio";
 import { extractUrlMetadata } from "@/app/actions/scraper";
+import { signWardrobeItems } from "@/lib/wardrobe-images";
 
 interface VirtualWardrobeProps {
     clientId: string;
@@ -58,7 +59,8 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
             if (wardrobeRes.error) {
                 toast.error("Failed to load wardrobe");
             } else {
-                setItems(wardrobeRes.data || []);
+                // Sign private-bucket image URLs for display.
+                setItems(await signWardrobeItems(supabase, wardrobeRes.data || []));
             }
 
             setBoutiqueItems(boutiqueRes.data || []);
@@ -526,7 +528,7 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
 
                                                             if (error) toast.error("Failed to import item");
                                                             else {
-                                                                setItems([data, ...items]);
+                                                                setItems([(await signWardrobeItems(supabase, [data]))[0], ...items]);
                                                                 toast.success("Item imported from Boutique");
                                                                 setIsAdding(false);
                                                             }
@@ -616,7 +618,7 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
 
                                                             if (dbError) throw dbError;
 
-                                                            setItems([dbData, ...items]);
+                                                            setItems([(await signWardrobeItems(supabase, [dbData]))[0], ...items]);
                                                             toast.success("Item uploaded successfully");
                                                             setIsAdding(false);
                                                             setUploadFile(null);

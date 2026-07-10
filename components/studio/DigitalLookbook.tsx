@@ -6,6 +6,7 @@ import { Plus, LayoutGrid, Save, Share2, Download, Trash2, X, Move, Type, Image 
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import html2canvas from "html2canvas";
+import { signWardrobeItems } from "@/lib/wardrobe-images";
 
 interface DigitalLookbookProps {
     clientId: string;
@@ -37,10 +38,12 @@ export default function DigitalLookbook({ clientId, isClientView = false }: Digi
 
     useEffect(() => {
         if (activeLookbook) {
-            setCanvasItems(activeLookbook.lookbook_items || []);
+            // Re-sign saved canvas image URLs for the private bucket.
+            signWardrobeItems(supabase, activeLookbook.lookbook_items || []).then(setCanvasItems);
         } else {
             setCanvasItems([]);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeLookbook]);
 
     async function loadData() {
@@ -57,7 +60,7 @@ export default function DigitalLookbook({ clientId, isClientView = false }: Digi
             .eq('user_id', clientId);
 
         if (lbData) setLookbooks(lbData);
-        if (wData) setWardrobeItems(wData);
+        if (wData) setWardrobeItems(await signWardrobeItems(supabase, wData));
         setLoading(false);
     }
 

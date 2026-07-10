@@ -119,11 +119,13 @@ Exactly one real TODO (`studio.ts`). Dead `components/vault/EditorialDraft.tsx` 
 
 ### P1 — next
 
-Signed-URL bucket code; rate limiting / CAPTCHA on email actions; CI (GitHub Actions running lint + test:run); webhook idempotency finalization + verify the `handle_new_purchase` trigger doesn't double-grant; `npm audit` / `npm outdated`; re-version the full schema/RLS/triggers under `supabase/migrations/`; remove committed test artifacts.
+~~Signed-URL bucket code~~ (done: `lib/wardrobe-images.ts` + migration 03); rate limiting / CAPTCHA on email actions; CI (GitHub Actions running lint + test:run); webhook idempotency finalization + verify the `handle_new_purchase` trigger doesn't double-grant; `npm audit` / `npm outdated`; re-version the full schema/RLS/triggers under `supabase/migrations/`; remove committed test artifacts.
 
 ### P2 — roadmap
 
 `zod` input validation; de-duplicate profile-merge + admin-check logic; caching / `<Suspense>` / static generation where safe; a11y sweep (roles, aria-labels, focus); dead-code cleanup; consolidate the two Tailwind token systems.
+
+**Normalize the wardrobe storage folder convention.** The `clientId` prop is a client `user.id` in some entry points ([my-studio](app/[locale]/vault/my-studio/page.tsx)) but a `wardrobe_id` in the stylist dashboard ([StudioDashboard.tsx](components/studio/StudioDashboard.tsx)); files are uploaded under `${clientId}/`, so the folder is inconsistently a user id or a wardrobe UUID (and `VirtualWardrobe` even inserts `user_id: clientId`). Because of this, migration 03 uses an authenticated-only storage policy rather than a strict per-owner one. Once the convention always uses the client's `user_id`, tighten the `studio-wardrobe` policy to owner-or-admin (SQL stub is in the migration file).
 
 ### Scope guardrails
 

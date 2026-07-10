@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Lock, Plus, Camera, Loader2, Check, Trash2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import { signWardrobeItems } from '@/lib/wardrobe-images';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -23,6 +24,16 @@ export default function GatedWardrobe({ isActiveClient, userId, initialItems = [
     const [isSaving, setIsSaving] = useState(false);
 
     const supabase = createClient();
+
+    // Sign the server-provided image URLs once on mount (private bucket).
+    useEffect(() => {
+        let active = true;
+        signWardrobeItems(supabase, initialItems).then((signed) => {
+            if (active) setItems(signed);
+        });
+        return () => { active = false; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // -- LOCKED STATE --
     if (!isActiveClient) {
@@ -77,7 +88,7 @@ export default function GatedWardrobe({ isActiveClient, userId, initialItems = [
 
             if (dbError) throw dbError;
 
-            setItems([newItem, ...items]);
+            setItems([(await signWardrobeItems(supabase, [newItem]))[0], ...items]);
             toast.success("Item added to your wardrobe!");
             setIsUploading(false);
             setUploadFile(null);

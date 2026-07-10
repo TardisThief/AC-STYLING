@@ -17,6 +17,13 @@ const nextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        // Signed URLs for the now-private studio-wardrobe bucket.
+        protocol: 'https',
+        hostname: 'vitrtidtvkdoghcwgxjl.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/sign/**',
+      },
     ],
   },
   async headers() {
