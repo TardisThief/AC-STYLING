@@ -3,6 +3,17 @@
 These SQL files re-establish version control for schema/RLS/trigger/storage
 changes (the historical migrations were reset in the 2026-07 cleanup).
 
+## Baseline snapshot
+
+`00000000000000_baseline.sql` is a machine-generated `pg_dump --schema-only`
+snapshot of the live `public` schema (2026-07-10), captured **after** the dated
+change-migrations below were applied. It is the version-controlled source of
+truth for the current DB structure (tables, RLS, triggers, functions, grants) —
+for drift detection, schema review, and disaster recovery. It intentionally
+overlaps with the dated migrations, which remain the reviewable changelog of how
+the security posture got here. Regenerate it after future schema changes with
+`pg_dump --schema-only --schema=public "$DATABASE_URL"` (write UTF-8).
+
 ## ⚠️ These are NOT auto-applied
 
 The Supabase project is a **single shared instance** — running SQL here hits
