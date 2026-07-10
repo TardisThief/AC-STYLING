@@ -29,6 +29,16 @@ vi.mock('@/app/actions/stripe', () => ({
     createCheckoutSession: vi.fn(() => Promise.resolve({ url: 'https://stripe.com/checkout' }))
 }))
 
+// FullAccessUnlock imports useRouter from @/i18n/routing, which pulls in
+// next-intl's client navigation (and next/navigation) — unresolvable under
+// vitest. Stub the routing module the component actually uses.
+vi.mock('@/i18n/routing', () => ({
+    useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+    Link: ({ children }: any) => children,
+    redirect: vi.fn(),
+    usePathname: () => '/',
+}))
+
 // Mock framer-motion to simplify testing
 vi.mock('framer-motion', () => ({
     motion: {
@@ -71,7 +81,7 @@ describe('Paywall Guard Components', () => {
         it('returns null when no offer exists', async () => {
             // Override mock to return no offer
             const { getOffer } = await import('@/app/actions/admin/manage-offers')
-            vi.mocked(getOffer).mockResolvedValueOnce({ offer: null })
+            vi.mocked(getOffer).mockResolvedValueOnce({ success: true, offer: null })
 
             const { container } = render(
                 <FullAccessUnlock userId="user-456" hasFullAccess={false} />

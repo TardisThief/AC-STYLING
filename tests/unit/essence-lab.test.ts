@@ -32,8 +32,12 @@ describe('Essence Lab Server Actions', () => {
         it('saves response for authenticated user', async () => {
             mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
 
+            // No existing row -> insert path.
             mockFrom.mockReturnValue({
-                upsert: vi.fn().mockResolvedValue({ error: null }),
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockReturnThis(),
+                maybeSingle: vi.fn().mockResolvedValue({ data: null }),
+                insert: vi.fn().mockResolvedValue({ error: null }),
             })
 
             const result = await saveEssenceResponse(
@@ -50,15 +54,19 @@ describe('Essence Lab Server Actions', () => {
         it('handles standalone masterclass ID', async () => {
             mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
 
-            const mockUpsert = vi.fn().mockResolvedValue({ error: null })
-            mockFrom.mockReturnValue({ upsert: mockUpsert })
+            const mockInsert = vi.fn().mockResolvedValue({ error: null })
+            mockFrom.mockReturnValue({
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockReturnThis(),
+                maybeSingle: vi.fn().mockResolvedValue({ data: null }),
+                insert: mockInsert,
+            })
 
             await saveEssenceResponse('standalone', 'chapter-1', 'intro', 'key', 'value')
 
-            // Should convert 'standalone' to null
-            expect(mockUpsert).toHaveBeenCalledWith(
-                expect.objectContaining({ masterclass_id: null }),
-                expect.any(Object)
+            // 'standalone' should be normalized to a null masterclass_id.
+            expect(mockInsert).toHaveBeenCalledWith(
+                expect.objectContaining({ masterclass_id: null })
             )
         })
     })

@@ -68,19 +68,19 @@ export default function QuickActions({ isMasterclassComplete = false, isGuest = 
                     transition={{ delay: 0, duration: 0 }}
                     className="group relative flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-start
                              col-span-2 p-4 lg:p-4 rounded-sm
-                             bg-ac-taupe/[0.08] backdrop-blur-md border border-ac-taupe/20 shadow-sm
-                             hover:bg-ac-taupe/[0.13] hover:shadow-md transition-all duration-300
+                             bg-ac-espresso border border-ac-espresso shadow-md
+                             hover:bg-ac-taupe hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300
                              overflow-hidden flex-1 min-h-[60px] lg:w-full"
                 >
                     <GraduationCap
                         size={30}
-                        className="text-ac-taupe mb-2 lg:mb-0 lg:mr-4 transition-transform duration-300 group-hover:scale-110 flex-shrink-0"
+                        className="text-ac-gold mb-2 lg:mb-0 lg:mr-4 transition-transform duration-300 group-hover:scale-110 flex-shrink-0"
                     />
                     <div className="text-center lg:text-left">
-                        <span className="block font-serif text-lg leading-tight text-ac-taupe group-hover:text-ac-taupe/80 transition-colors">
+                        <span className="block font-serif text-lg leading-tight text-white transition-colors">
                             {t('masterclasses.title')}
                         </span>
-                        <span className="text-[10px] uppercase tracking-widest text-ac-taupe/60 font-bold">
+                        <span className="text-[10px] uppercase tracking-widest text-ac-sand/80 font-bold">
                             {t('masterclasses.subtitle')}
                         </span>
                     </div>
