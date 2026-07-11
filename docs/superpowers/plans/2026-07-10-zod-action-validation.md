@@ -43,12 +43,12 @@
 - `jsonArray(label: string)` — array passes; string is safely JSON.parsed ("<Label> contains invalid JSON" / "<Label> must be a list"); ''/null/undefined → `[]`
 - `booleanish` — `true`/`'true'` → true, anything else → false
 
-- [ ] **Step 1: Install zod**
+- [x] **Step 1: Install zod**
 
 Run: `npm i zod`
 Expected: zod v4.x added to `dependencies`, no peer-dependency errors.
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 Create `tests/unit/validation.test.ts`:
 
@@ -180,12 +180,12 @@ describe('field primitives', () => {
 })
 ```
 
-- [ ] **Step 3: Run the tests to verify they fail**
+- [x] **Step 3: Run the tests to verify they fail**
 
 Run: `npx vitest run tests/unit/validation.test.ts`
 Expected: FAIL — cannot resolve `@/app/lib/validation/parse`.
 
-- [ ] **Step 4: Write the implementation**
+- [x] **Step 4: Write the implementation**
 
 Create `app/lib/validation/parse.ts`:
 
@@ -293,12 +293,12 @@ export const booleanish = z.preprocess(
 );
 ```
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `npx vitest run tests/unit/validation.test.ts`
 Expected: PASS (13 tests). If a zod v4 API mismatch surfaces (e.g. `error` param or `z.uuid` shape), fix the implementation — not the intent of the test.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add package.json package-lock.json app/lib/validation/parse.ts tests/unit/validation.test.ts
@@ -318,7 +318,7 @@ git commit -m "P1: add zod validation core (parseInput + shared field primitives
 - Consumes: Task 1 exports from `@/app/lib/validation/parse`.
 - Produces from `@/app/lib/validation/boutique`: `brandSchema`, `boutiqueItemSchema`, `collectionSchema`, `trustedByLogoSchema`, `trustedByLogoUpdateSchema`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Replace the mock header of `tests/unit/manage-boutique.test.ts` so non-`profiles` tables route to a controllable `mockWriteFrom`, and add write-action suites. Full new file content:
 
@@ -586,12 +586,12 @@ describe('trusted-by logos', () => {
 })
 ```
 
-- [ ] **Step 2: Run the tests to verify the new ones fail**
+- [x] **Step 2: Run the tests to verify the new ones fail**
 
 Run: `npx vitest run tests/unit/manage-boutique.test.ts`
 Expected: the 3 `getAdminBrands` tests PASS; the new suites FAIL (no validation yet — e.g. `createBrand({name:''})` currently reaches the DB mock and "succeeds", and `@/app/lib/validation/boutique` doesn't exist).
 
-- [ ] **Step 3: Write the schemas**
+- [x] **Step 3: Write the schemas**
 
 Create `app/lib/validation/boutique.ts`:
 
@@ -653,7 +653,7 @@ export const trustedByLogoUpdateSchema = trustedByLogoSchema
     .partial();
 ```
 
-- [ ] **Step 4: Rewrite `app/actions/admin/manage-boutique.ts`**
+- [x] **Step 4: Rewrite `app/actions/admin/manage-boutique.ts`**
 
 Full new content (reads unchanged; every write guarded then parsed; ids validated):
 
@@ -950,12 +950,12 @@ export async function deleteTrustedByLogo(id: string) {
 
 (Note: `createTrustedByLogo`/`updateTrustedByLogo` keep their existing typed signatures — they're already narrow — but now actually validate at runtime.)
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `npx vitest run tests/unit/manage-boutique.test.ts`
 Expected: PASS (3 existing + 14 new).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/lib/validation/boutique.ts app/actions/admin/manage-boutique.ts tests/unit/manage-boutique.test.ts
@@ -975,7 +975,7 @@ git commit -m "P1: zod-validate all manage-boutique writes (brands, items, colle
 - Consumes: Task 1 exports.
 - Produces: `offerSchema` from `@/app/lib/validation/offers`, `serviceSchema` from `@/app/lib/validation/services`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `tests/unit/manage-offers.test.ts`:
 
@@ -1196,12 +1196,12 @@ describe('deleteService', () => {
 })
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 Run: `npx vitest run tests/unit/manage-offers.test.ts tests/unit/manage-services.test.ts`
 Expected: FAIL — schemas don't exist; current actions pass tampered keys straight through.
 
-- [ ] **Step 3: Write the schemas**
+- [x] **Step 3: Write the schemas**
 
 Create `app/lib/validation/offers.ts`:
 
@@ -1266,7 +1266,7 @@ export const serviceSchema = z.object({
 });
 ```
 
-- [ ] **Step 4: Rewrite the two actions**
+- [x] **Step 4: Rewrite the two actions**
 
 `app/actions/admin/manage-offers.ts` — full new content:
 
@@ -1398,12 +1398,12 @@ export async function deleteService(serviceId: string) {
 
 (Note: `getServices`' unused `locale` param stays — signature is public; the old `upsertOffer` "Force slug if new" check is subsumed by `slug: requiredText`, which OfferForm always sends.)
 
-- [ ] **Step 5: Run to verify they pass**
+- [x] **Step 5: Run to verify they pass**
 
 Run: `npx vitest run tests/unit/manage-offers.test.ts tests/unit/manage-services.test.ts`
 Expected: PASS (5 + 5 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/lib/validation/offers.ts app/lib/validation/services.ts app/actions/admin/manage-offers.ts app/actions/admin/manage-services.ts tests/unit/manage-offers.test.ts tests/unit/manage-services.test.ts
@@ -1423,7 +1423,7 @@ git commit -m "P1: zod-validate offers/services upserts (mass-assignment fix, re
 - Consumes: Task 1 exports.
 - Produces: `chapterSchema` from `@/app/lib/validation/chapters`, `masterclassSchema` from `@/app/lib/validation/masterclasses`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `tests/unit/manage-chapters.test.ts`:
 
@@ -1679,12 +1679,12 @@ describe('updateMasterclass / deleteMasterclass', () => {
 })
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 Run: `npx vitest run tests/unit/manage-chapters.test.ts tests/unit/manage-masterclasses.test.ts`
 Expected: FAIL — schemas don't exist; malformed-JSON test currently makes the action THROW.
 
-- [ ] **Step 3: Write the schemas**
+- [x] **Step 3: Write the schemas**
 
 Create `app/lib/validation/chapters.ts`:
 
@@ -1758,7 +1758,7 @@ export const masterclassSchema = z.object({
 });
 ```
 
-- [ ] **Step 4: Rewrite the two actions**
+- [x] **Step 4: Rewrite the two actions**
 
 `app/actions/admin/manage-chapters.ts` — full new content:
 
@@ -2008,12 +2008,12 @@ export async function getMasterclasses() {
 
 (Behavior note: non-admin error strings change from "Unauthorized" to `requireAdmin`'s "Unauthorized"/"Forbidden" split — consistent with the rest of the admin layer.)
 
-- [ ] **Step 5: Run to verify they pass**
+- [x] **Step 5: Run to verify they pass**
 
 Run: `npx vitest run tests/unit/manage-chapters.test.ts tests/unit/manage-masterclasses.test.ts`
 Expected: PASS (7 + 5 tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/lib/validation/chapters.ts app/lib/validation/masterclasses.ts app/actions/admin/manage-chapters.ts app/actions/admin/manage-masterclasses.ts tests/unit/manage-chapters.test.ts tests/unit/manage-masterclasses.test.ts
@@ -2027,14 +2027,14 @@ git commit -m "P1: zod-validate chapters/masterclasses (safe JSON parsing, requi
 **Files:**
 - Modify: `ROADMAP.md` (Phase 1 section), `AUDIT.md` (P2 roadmap line)
 
-- [ ] **Step 1: Full verification**
+- [x] **Step 1: Full verification**
 
 Run, in order:
 1. `npm run test:run` — expected: all tests green (161 prior + ~34 new ≈ 195).
 2. `npm run lint` — expected: no NEW errors in the touched files (repo has ~1500 pre-existing `no-explicit-any` errors elsewhere; do not touch them).
 3. `npx tsc --noEmit` — expected: clean (strict TS).
 
-- [ ] **Step 2: Update ROADMAP.md**
+- [x] **Step 2: Update ROADMAP.md**
 
 Change the Phase 1 zod bullet to:
 
@@ -2046,7 +2046,7 @@ Change the Phase 1 zod bullet to:
   rollout to non-admin actions rides the P2 `any` cleanup.
 ```
 
-- [ ] **Step 3: Update AUDIT.md**
+- [x] **Step 3: Update AUDIT.md**
 
 In the `### P2 — roadmap` paragraph, change `` `zod` input validation `` to:
 
@@ -2054,7 +2054,7 @@ In the `### P2 — roadmap` paragraph, change `` `zod` input validation `` to:
 `zod` input validation (admin actions done 2026-07-10, see `app/lib/validation/`)
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add ROADMAP.md AUDIT.md

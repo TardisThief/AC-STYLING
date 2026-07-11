@@ -28,7 +28,7 @@ import { upsertOffer } from '@/app/actions/admin/manage-offers'
 function upsertChain() {
     const single = vi.fn().mockResolvedValue({ data: {}, error: null })
     const select = vi.fn(() => ({ single }))
-    const upsert = vi.fn(() => ({ select }))
+    const upsert = vi.fn((_row: Record<string, unknown>) => ({ select }))
     return { upsert }
 }
 

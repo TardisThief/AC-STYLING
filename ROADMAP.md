@@ -17,8 +17,12 @@ Next 16 `serverActions.bodySizeLimit` upload fix.
 
 ## Phase 1 — Robustness & Correctness (current)
 
-- **zod input validation** on server actions, starting with admin writes that
-  spread `data: any` into inserts with no validation.
+- ~~**zod input validation** on server actions~~ — **done (2026-07-10)** for the
+  admin write layer: `app/lib/validation/` (parseInput + per-domain schemas),
+  the five `manage-*` actions validate at the boundary, mass assignment in the
+  offers/services upserts closed, chapter JSON crash path fixed, inline admin
+  checks in those files consolidated onto `requireAdmin`. Broader rollout to
+  non-admin actions rides the P2 `any` cleanup.
 - **Wardrobe storage folder normalization** — resolve the `clientId` = user_id
   vs wardrobe_id inconsistency (and the latent `user_id: clientId` bug in
   `VirtualWardrobe`), then tighten migration 03's storage RLS from
