@@ -41,6 +41,7 @@ Always run `npm run lint` and `npm run test:run` before considering a change don
 - **Routing**: everything lives under `app/[locale]/`. Route groups: `(marketing)`, `(auth)`. App sections: `vault/`, `studio/`, `vault/admin/`, `legal/`.
 - **Server Actions are the RPC layer** — mutations/data-access live in `app/actions/` (top-level per-domain files, plus `admin/` and `vault/` subfolders). Prefer adding an action over an API route. Actions dynamically `import` `@/utils/supabase/server` and start with `"use server"`.
 - **API routes** are only for external callers: `app/api/webhooks/stripe/route.ts` (Stripe) and `app/api/boutique/track/route.ts` (click tracking).
+- **Input validation**: action payloads are validated at the boundary with **zod**. Schemas live in `app/lib/validation/` (per-domain files; schema output keys = DB column names) — never inside `"use server"` files (Next requires their exports to be async). Pattern: `requireAdmin()`/`requireUser()` → `parseInput(schema, input)` → write **only** `parsed.data` (never spread raw client objects into inserts/upserts). Failures return one readable string in the `{ success, error }` shape that forms surface via `toast.error`. Shared primitives (`requiredText`, `optionalText`, `jsonArray`, `upsertId`, …) are in `app/lib/validation/parse.ts`. Admin `manage-*` actions are done; extend the same pattern to any new/edited action.
 - **Supabase clients** (`utils/supabase/`):
   - `client.ts` — browser (anon key)
   - `server.ts` — server components / actions (anon key, cookie-aware)
