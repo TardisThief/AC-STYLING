@@ -36,6 +36,15 @@ describe('parseInput', () => {
         const result = parseInput(schema, null)
         expect(result.ok).toBe(false)
     })
+
+    it('strips keys that resolve to undefined so "absent key" is a real guarantee', () => {
+        const s = z.object({ id: upsertId('Offer id'), name: requiredText('Name') })
+        const result = parseInput(s, { id: '', name: 'X' })
+        expect(result.ok).toBe(true)
+        if (result.ok) {
+            expect(Object.prototype.hasOwnProperty.call(result.data, 'id')).toBe(false)
+        }
+    })
 })
 
 describe('field primitives', () => {

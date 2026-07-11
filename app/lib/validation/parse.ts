@@ -14,10 +14,26 @@ export type ParseResult<T> =
  */
 export function parseInput<S extends z.ZodType>(schema: S, input: unknown): ParseResult<z.output<S>> {
     const result = schema.safeParse(input);
-    if (result.success) return { ok: true, data: result.data };
+    if (result.success) return { ok: true, data: stripUndefined(result.data) };
 
     const messages = [...new Set(result.error.issues.map(issue => issue.message))];
     return { ok: false, error: `Please fix the following: ${messages.join('; ')}` };
+}
+
+/**
+ * Drop keys whose value is undefined: zod keeps a key present in its output
+ * when the input had it, even if the schema resolved it to undefined (e.g.
+ * upsertId on ''). Stripping here makes "absent key = column untouched" an
+ * explicit guarantee of validated payloads, not a JSON-serializer detail.
+ */
+function stripUndefined<T>(data: T): T {
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+        const record = data as Record<string, unknown>;
+        for (const key of Object.keys(record)) {
+            if (record[key] === undefined) delete record[key];
+        }
+    }
+    return data;
 }
 
 // --- Shared field primitives ---

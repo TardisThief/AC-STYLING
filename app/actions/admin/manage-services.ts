@@ -1,6 +1,9 @@
 'use server'
 
 import { createClient } from "@/utils/supabase/server";
+import { requireAdmin } from "@/app/lib/auth-guards";
+import { parseInput, uuid } from "@/app/lib/validation/parse";
+import { serviceSchema } from "@/app/lib/validation/services";
 import { revalidatePath } from "next/cache";
 
 export async function getServices(locale: string = 'en') {
@@ -23,24 +26,17 @@ export async function getServices(locale: string = 'en') {
     return { success: true, services };
 }
 
-export async function upsertService(serviceData: any) {
-    const supabase = await createClient();
+export async function upsertService(serviceData: unknown) {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
-    // Auth check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const parsed = parseInput(serviceSchema, serviceData);
+    if (!parsed.ok) return { success: false, error: parsed.error };
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') return { success: false, error: 'Forbidden' };
-
-    const { error } = await supabase
+    // Row comes from the schema output only — unknown keys never reach the DB.
+    const { error } = await auth.supabase
         .from('services')
-        .upsert(serviceData)
+        .upsert(parsed.data)
         .select()
         .single();
 
@@ -54,24 +50,16 @@ export async function upsertService(serviceData: any) {
 }
 
 export async function deleteService(serviceId: string) {
-    const supabase = await createClient();
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
-    // Auth check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const idParsed = parseInput(uuid('Service id'), serviceId);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') return { success: false, error: 'Forbidden' };
-
-    const { error } = await supabase
+    const { error } = await auth.supabase
         .from('services')
         .delete()
-        .eq('id', serviceId);
+        .eq('id', idParsed.data);
 
     if (error) {
         console.error("Error deleting service:", error);

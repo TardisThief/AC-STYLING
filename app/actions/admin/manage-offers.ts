@@ -1,6 +1,9 @@
 'use server'
 
 import { createClient } from "@/utils/supabase/server";
+import { requireAdmin } from "@/app/lib/auth-guards";
+import { parseInput } from "@/app/lib/validation/parse";
+import { offerSchema } from "@/app/lib/validation/offers";
 import { revalidatePath } from "next/cache";
 
 export async function getOffer(slug: string) {
@@ -20,29 +23,17 @@ export async function getOffer(slug: string) {
     return { success: true, offer };
 }
 
-export async function upsertOffer(offerData: any) {
-    const supabase = await createClient();
+export async function upsertOffer(offerData: unknown) {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
-    // Admin Check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    const parsed = parseInput(offerSchema, offerData);
+    if (!parsed.ok) return { success: false, error: parsed.error };
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') return { success: false, error: 'Forbidden' };
-
-    // Force slug if new
-    if (!offerData.slug && !offerData.id) {
-        return { success: false, error: "Slug is required" };
-    }
-
-    const { error } = await supabase
+    // Row comes from the schema output only — unknown keys never reach the DB.
+    const { error } = await auth.supabase
         .from('offers')
-        .upsert(offerData)
+        .upsert(parsed.data)
         .select()
         .single();
 
