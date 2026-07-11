@@ -5,10 +5,11 @@ import { motion } from "framer-motion";
 import { useLocale } from "next-intl";
 import { Globe, Lock } from "lucide-react";
 import Player from '@vimeo/player';
+import { parseVimeoId } from '@/app/lib/vimeo';
 
 interface VaultVideoPlayerProps {
-    videoId: string; // Vimeo ID (Default/EN)
-    videoIdEs?: string; // Vimeo ID (Spanish)
+    videoId: string; // Vimeo ID or vimeo.com URL (Default/EN)
+    videoIdEs?: string; // Vimeo ID or vimeo.com URL (Spanish)
     title?: string;
     locale?: string;
 }
@@ -26,7 +27,8 @@ export default function VaultVideoPlayer({ videoId, videoIdEs, title, locale: in
     const playerRef = useRef<Player | null>(null);
 
     // Automatically select video based on locale. Fallback to EN if ES is not available.
-    const currentVideoId = (currentLocale === 'es' && videoIdEs) ? videoIdEs : videoId;
+    // Admin data holds either a bare ID or a full vimeo.com URL — normalize both.
+    const currentVideoId = parseVimeoId((currentLocale === 'es' && videoIdEs) ? videoIdEs : videoId);
 
     useEffect(() => {
         if (!containerRef.current || !currentVideoId) return;
