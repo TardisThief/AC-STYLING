@@ -1,82 +1,49 @@
 "use server";
 
 import { createClient } from '@/utils/supabase/server';
+import { requireAdmin } from '@/app/lib/auth-guards';
+import { parseInput, uuid } from '@/app/lib/validation/parse';
+import { chapterSchema } from '@/app/lib/validation/chapters';
 import { revalidatePath } from 'next/cache';
 
-async function checkAdmin() {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return { authorized: false, supabase, userId: null };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
+// Map the admin form's FormData field names onto DB column names; validation
+// and coercion happen in chapterSchema. (Module-private sync helpers are fine
+// in a "use server" file — only exports must be async.)
+function chapterInput(formData: FormData) {
     return {
-        authorized: profile?.role === 'admin',
-        supabase,
-        userId: user.id
+        slug: formData.get('slug'),
+        title: formData.get('title'),
+        subtitle: formData.get('subtitle'),
+        description: formData.get('description'),
+        title_es: formData.get('titleEs'),
+        subtitle_es: formData.get('subtitleEs'),
+        description_es: formData.get('descriptionEs'),
+        video_id: formData.get('videoId'),
+        video_id_es: formData.get('videoIdEs'),
+        thumbnail_url: formData.get('thumbnailUrl'),
+        category: formData.get('category'),
+        order_index: formData.get('orderIndex'),
+        masterclass_id: formData.get('masterclassId'),
+        is_standalone: formData.get('isStandalone'),
+        lab_questions: formData.get('labQuestions'),
+        takeaways: formData.get('takeaways'),
+        takeaways_es: formData.get('takeawaysEs'),
+        resource_urls: formData.get('resourceUrls'),
+        stripe_product_id: formData.get('stripeProductId'),
+        price_id: formData.get('priceId'),
     };
 }
 
 export async function createChapter(formData: FormData) {
-    const { authorized, supabase } = await checkAdmin();
-    if (!authorized) {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
-    const slug = formData.get('slug') as string;
-    const title = formData.get('title') as string;
-    const subtitle = formData.get('subtitle') as string;
-    const description = formData.get('description') as string;
-    const titleEs = formData.get('titleEs') as string;
-    const subtitleEs = formData.get('subtitleEs') as string;
-    const descriptionEs = formData.get('descriptionEs') as string;
-    const videoId = formData.get('videoId') as string;
-    const videoIdEs = formData.get('videoIdEs') as string || null;
-    const thumbnailUrl = formData.get('thumbnailUrl') as string;
-    const category = formData.get('category') as string || 'masterclass';
-    const orderIndex = parseInt(formData.get('orderIndex') as string) || 0;
-    const masterclassId = formData.get('masterclassId') as string || null;
-    // If masterclassId is present, it's NOT standalone. If absent, check explicit toggle or default to true.
-    const isStandalone = masterclassId ? false : (formData.get('isStandalone') === 'true');
-    const stripeProductId = formData.get('stripeProductId') as string;
-    const priceId = formData.get('priceId') as string;
+    const parsed = parseInput(chapterSchema, chapterInput(formData));
+    if (!parsed.ok) return { success: false, error: parsed.error };
 
-    // Parse JSON fields
-    const labQuestions = JSON.parse(formData.get('labQuestions') as string || '[]');
-    const takeaways = JSON.parse(formData.get('takeaways') as string || '[]');
-    const takeawaysEs = JSON.parse(formData.get('takeawaysEs') as string || '[]');
-    const resourceUrls = JSON.parse(formData.get('resourceUrls') as string || '[]');
-
-    // Insert chapter with all data
-    const { data: chapter, error: chapterError } = await supabase
+    const { data: chapter, error: chapterError } = await auth.supabase
         .from('chapters')
-        .insert({
-            slug,
-            title,
-            subtitle,
-            description,
-            title_es: titleEs,
-            subtitle_es: subtitleEs,
-            description_es: descriptionEs,
-            video_id: videoId,
-            video_id_es: videoIdEs,
-            thumbnail_url: thumbnailUrl,
-            category,
-            order_index: orderIndex,
-            masterclass_id: masterclassId,
-            is_standalone: isStandalone,
-            lab_questions: labQuestions,
-            takeaways: takeaways,
-            takeaways_es: takeawaysEs,
-            resource_urls: resourceUrls,
-            stripe_product_id: stripeProductId,
-            price_id: priceId
-        })
+        .insert(parsed.data)
         .select()
         .single();
     if (chapterError) {
@@ -86,66 +53,25 @@ export async function createChapter(formData: FormData) {
 
     revalidatePath('/vault/admin');
     revalidatePath('/vault/foundations');
-    revalidatePath(`/vault/foundations/${slug}`);
-    revalidatePath(`/${formData.get('locale') || 'en'}/vault/foundations/${slug}`);
+    revalidatePath(`/vault/foundations/${parsed.data.slug}`);
+    revalidatePath(`/${formData.get('locale') || 'en'}/vault/foundations/${parsed.data.slug}`);
 
     return { success: true, chapter };
 }
+
 export async function updateChapter(chapterId: string, formData: FormData) {
-    const { authorized, supabase } = await checkAdmin();
-    if (!authorized) {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
-    const slug = formData.get('slug') as string;
-    const title = formData.get('title') as string;
-    const subtitle = formData.get('subtitle') as string;
-    const description = formData.get('description') as string;
-    const titleEs = formData.get('titleEs') as string;
-    const subtitleEs = formData.get('subtitleEs') as string;
-    const descriptionEs = formData.get('descriptionEs') as string;
-    const videoId = formData.get('videoId') as string;
-    const videoIdEs = formData.get('videoIdEs') as string || null;
-    const thumbnailUrl = formData.get('thumbnailUrl') as string;
-    const category = formData.get('category') as string || 'masterclass';
-    const orderIndex = parseInt(formData.get('orderIndex') as string) || 0;
-    const masterclassId = formData.get('masterclassId') as string || null;
-    const isStandalone = masterclassId ? false : (formData.get('isStandalone') === 'true');
-    const stripeProductId = formData.get('stripeProductId') as string;
-    const priceId = formData.get('priceId') as string;
+    const idParsed = parseInput(uuid('Chapter id'), chapterId);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+    const parsed = parseInput(chapterSchema, chapterInput(formData));
+    if (!parsed.ok) return { success: false, error: parsed.error };
 
-    const labQuestions = JSON.parse(formData.get('labQuestions') as string || '[]');
-    const takeaways = JSON.parse(formData.get('takeaways') as string || '[]');
-    const takeawaysEs = JSON.parse(formData.get('takeawaysEs') as string || '[]');
-    const resourceUrls = JSON.parse(formData.get('resourceUrls') as string || '[]');
-
-    // Update chapter with all data
-    const { error: chapterError } = await supabase
+    const { error: chapterError } = await auth.supabase
         .from('chapters')
-        .update({
-            slug,
-            title,
-            subtitle,
-            description,
-            title_es: titleEs,
-            subtitle_es: subtitleEs,
-            description_es: descriptionEs,
-            video_id: videoId,
-            video_id_es: videoIdEs,
-            thumbnail_url: thumbnailUrl,
-            category,
-            order_index: orderIndex,
-            masterclass_id: masterclassId,
-            is_standalone: isStandalone,
-            lab_questions: labQuestions,
-            takeaways: takeaways,
-            takeaways_es: takeawaysEs,
-            resource_urls: resourceUrls,
-            stripe_product_id: stripeProductId,
-            price_id: priceId,
-            updated_at: new Date().toISOString()
-        })
-        .eq('id', chapterId);
+        .update({ ...parsed.data, updated_at: new Date().toISOString() })
+        .eq('id', idParsed.data);
 
     if (chapterError) {
         return { success: false, error: chapterError.message };
@@ -153,22 +79,23 @@ export async function updateChapter(chapterId: string, formData: FormData) {
 
     revalidatePath('/vault/admin');
     revalidatePath('/vault/foundations');
-    revalidatePath(`/vault/foundations/${slug}`);
-    revalidatePath(`/${formData.get('locale') || 'en'}/vault/foundations/${slug}`);
+    revalidatePath(`/vault/foundations/${parsed.data.slug}`);
+    revalidatePath(`/${formData.get('locale') || 'en'}/vault/foundations/${parsed.data.slug}`);
 
     return { success: true };
 }
 
 export async function deleteChapter(chapterId: string) {
-    const { authorized, supabase } = await checkAdmin();
-    if (!authorized) {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
-    const { error } = await supabase
+    const idParsed = parseInput(uuid('Chapter id'), chapterId);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+
+    const { error } = await auth.supabase
         .from('chapters')
         .delete()
-        .eq('id', chapterId);
+        .eq('id', idParsed.data);
 
     if (error) {
         return { success: false, error: error.message };

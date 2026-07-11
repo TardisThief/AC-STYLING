@@ -1,59 +1,38 @@
 "use server";
 
 import { createClient } from '@/utils/supabase/server';
+import { requireAdmin } from '@/app/lib/auth-guards';
+import { parseInput, uuid } from '@/app/lib/validation/parse';
+import { masterclassSchema } from '@/app/lib/validation/masterclasses';
 import { revalidatePath } from 'next/cache';
 
-async function checkAdmin() {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return { authorized: false, supabase };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
+// Map the admin form's FormData field names onto DB column names.
+function masterclassInput(formData: FormData) {
     return {
-        authorized: profile?.role === 'admin',
-        supabase
+        title: formData.get('title'),
+        subtitle: formData.get('subtitle'),
+        description: formData.get('description'),
+        title_es: formData.get('titleEs'),
+        subtitle_es: formData.get('subtitleEs'),
+        description_es: formData.get('descriptionEs'),
+        thumbnail_url: formData.get('thumbnailUrl'),
+        video_url: formData.get('videoUrl'),
+        order_index: formData.get('orderIndex'),
+        stripe_product_id: formData.get('stripeProductId'),
+        price_id: formData.get('priceId'),
     };
 }
 
 export async function createMasterclass(formData: FormData) {
-    const { authorized, supabase } = await checkAdmin();
-    if (!authorized) {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
-    const title = formData.get('title') as string;
-    const subtitle = formData.get('subtitle') as string;
-    const description = formData.get('description') as string;
-    const titleEs = formData.get('titleEs') as string;
-    const subtitleEs = formData.get('subtitleEs') as string;
-    const descriptionEs = formData.get('descriptionEs') as string;
-    const thumbnailUrl = formData.get('thumbnailUrl') as string;
-    const orderIndex = parseInt(formData.get('orderIndex') as string) || 0;
-    const stripeProductId = formData.get('stripeProductId') as string;
-    const priceId = formData.get('priceId') as string;
-    const videoUrl = formData.get('videoUrl') as string;
+    const parsed = parseInput(masterclassSchema, masterclassInput(formData));
+    if (!parsed.ok) return { success: false, error: parsed.error };
 
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
         .from('masterclasses')
-        .insert({
-            title,
-            subtitle,
-            description,
-            title_es: titleEs,
-            subtitle_es: subtitleEs,
-            description_es: descriptionEs,
-            thumbnail_url: thumbnailUrl,
-            video_url: videoUrl,
-            order_index: orderIndex,
-            stripe_product_id: stripeProductId,
-            price_id: priceId
-        })
+        .insert(parsed.data)
         .select()
         .single();
     if (error) {
@@ -65,41 +44,20 @@ export async function createMasterclass(formData: FormData) {
 
     return { success: true, masterclass: data };
 }
+
 export async function updateMasterclass(id: string, formData: FormData) {
-    const { authorized, supabase } = await checkAdmin();
-    if (!authorized) {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
-    const title = formData.get('title') as string;
-    const subtitle = formData.get('subtitle') as string;
-    const description = formData.get('description') as string;
-    const titleEs = formData.get('titleEs') as string;
-    const subtitleEs = formData.get('subtitleEs') as string;
-    const descriptionEs = formData.get('descriptionEs') as string;
-    const thumbnailUrl = formData.get('thumbnailUrl') as string;
-    const orderIndex = parseInt(formData.get('orderIndex') as string) || 0;
-    const stripeProductId = formData.get('stripeProductId') as string;
-    const priceId = formData.get('priceId') as string;
-    const videoUrl = formData.get('videoUrl') as string;
+    const idParsed = parseInput(uuid('Masterclass id'), id);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+    const parsed = parseInput(masterclassSchema, masterclassInput(formData));
+    if (!parsed.ok) return { success: false, error: parsed.error };
 
-    const { error } = await supabase
+    const { error } = await auth.supabase
         .from('masterclasses')
-        .update({
-            title,
-            subtitle,
-            description,
-            title_es: titleEs,
-            subtitle_es: subtitleEs,
-            description_es: descriptionEs,
-            thumbnail_url: thumbnailUrl,
-            video_url: videoUrl,
-            order_index: orderIndex,
-            stripe_product_id: stripeProductId,
-            price_id: priceId,
-            updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
+        .update({ ...parsed.data, updated_at: new Date().toISOString() })
+        .eq('id', idParsed.data);
 
     if (error) {
         return { success: false, error: error.message };
@@ -112,15 +70,16 @@ export async function updateMasterclass(id: string, formData: FormData) {
 }
 
 export async function deleteMasterclass(id: string) {
-    const { authorized, supabase } = await checkAdmin();
-    if (!authorized) {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
-    const { error } = await supabase
+    const idParsed = parseInput(uuid('Masterclass id'), id);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+
+    const { error } = await auth.supabase
         .from('masterclasses')
         .delete()
-        .eq('id', id);
+        .eq('id', idParsed.data);
 
     if (error) {
         return { success: false, error: error.message };
