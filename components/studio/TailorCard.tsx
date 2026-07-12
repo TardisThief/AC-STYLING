@@ -6,7 +6,8 @@ import { Ruler, Sparkles, Check, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
 
 interface TailorCardProps {
-    clientId: string;
+    wardrobeId: string;        // kept for parity/logging; not queried
+    ownerId: string | null;
 }
 
 const MEASUREMENT_FIELDS = [
@@ -19,7 +20,7 @@ const MEASUREMENT_FIELDS = [
     { key: 'shoe_size', label: 'Shoe Size', unit: 'US/EU' },
 ];
 
-export default function TailorCard({ clientId }: TailorCardProps) {
+export default function TailorCard({ ownerId: ownerIdProp }: TailorCardProps) {
     const [measurements, setMeasurements] = useState<Record<string, string>>({});
     const [dna, setDna] = useState<any[]>([]);
     const [isActiveClient, setIsActiveClient] = useState(false);
@@ -32,19 +33,7 @@ export default function TailorCard({ clientId }: TailorCardProps) {
         async function loadData() {
             setLoading(true);
 
-            // First, get the wardrobe to find the owner_id (clientId is now a wardrobe ID)
-            const { data: wardrobe, error: wardrobeError } = await supabase
-                .from('wardrobes')
-                .select('owner_id')
-                .eq('id', clientId)
-                .single();
-
-            if (wardrobeError || !wardrobe) {
-                setLoading(false);
-                return;
-            }
-
-            const ownerId = wardrobe.owner_id;
+            const ownerId = ownerIdProp;
 
             // If no owner, show empty state
             if (!ownerId) {
@@ -75,7 +64,7 @@ export default function TailorCard({ clientId }: TailorCardProps) {
         }
 
         loadData();
-    }, [clientId, supabase]);
+    }, [ownerIdProp, supabase]);
 
     const handleUpdate = async (key: string, value: string) => {
         if (!ownerId) return; // Can't save without an owner

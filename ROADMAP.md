@@ -17,12 +17,24 @@ Next 16 `serverActions.bodySizeLimit` upload fix.
 
 ## Phase 1 — Robustness & Correctness (current)
 
-- **zod input validation** on server actions, starting with admin writes that
-  spread `data: any` into inserts with no validation.
-- **Wardrobe storage folder normalization** — resolve the `clientId` = user_id
-  vs wardrobe_id inconsistency (and the latent `user_id: clientId` bug in
-  `VirtualWardrobe`), then tighten migration 03's storage RLS from
-  authenticated-only to strict per-owner.
+- ~~**zod input validation** on server actions~~ — **done (2026-07-10)** for the
+  admin write layer: `app/lib/validation/` (parseInput + per-domain schemas),
+  the five `manage-*` actions validate at the boundary, mass assignment in the
+  offers/services upserts closed, chapter JSON crash path fixed, inline admin
+  checks in those files consolidated onto `requireAdmin`. Broader rollout to
+  non-admin actions rides the P2 `any` cleanup.
+- ~~**Wardrobe storage folder normalization**~~ — **code-complete (2026-07-12,
+  unmerged on Dev)**. Studio components (`VirtualWardrobe`, `TailorCard`,
+  `DigitalLookbook`) now take an explicit `{ wardrobeId, ownerId }` pair instead
+  of the ambiguous `clientId`; the `user_id: clientId` corruption and the empty
+  client-wardrobe/lookbook views are fixed; all uploads route through
+  `lib/wardrobe-paths.ts`; guest intake uploads go direct-to-storage (no Vercel
+  4.5 MB cap); lookbooks work against the real schema. **Pending user apply:**
+  migration 06 (lookbooks canvas columns + user_id heal) and migration 07
+  (owner-or-admin `studio-wardrobe` policy). Then run
+  `scripts/verify_wardrobe_policy.ts` and optionally
+  `scripts/cleanup_orphaned_wardrobe_files.ts` (44 orphaned files, dry-run
+  first). Spec + plan: `docs/superpowers/{specs,plans}/2026-07-11-wardrobe-storage-normalization*`.
 
 ## Phase 2 — Code Health & Dev Velocity
 

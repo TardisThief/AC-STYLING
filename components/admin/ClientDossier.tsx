@@ -4,7 +4,8 @@
 import { useState, useEffect } from "react";
 import { getClientDossier } from "@/app/actions/admin/manage-clients";
 import { getJourneyStats, JourneyStats } from "@/app/actions/vault/journey";
-import { X, Sparkles, Calendar, BookOpen, Trophy } from "lucide-react";
+import { X, Sparkles, Calendar, BookOpen, Trophy, Loader2 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 import VirtualWardrobe from "@/components/studio/VirtualWardrobe";
 
 
@@ -162,10 +163,45 @@ export default function ClientDossier({ client, onClose }: ClientDossierProps) {
     );
 }
 
+// Admin dossier: `clientId` here is the client's profile/user id. VirtualWardrobe
+// now keys on the wardrobe, so resolve the client's wardrobe first.
 function VirtualWardrobeWrapper({ clientId }: { clientId: string }) {
+    const [wardrobeId, setWardrobeId] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const supabase = createClient();
+
+    useEffect(() => {
+        let active = true;
+        supabase
+            .from('wardrobes')
+            .select('id')
+            .eq('owner_id', clientId)
+            .eq('status', 'active')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+            .then(({ data }) => {
+                if (active) {
+                    setWardrobeId(data?.id ?? null);
+                    setLoading(false);
+                }
+            });
+        return () => { active = false; };
+    }, [clientId, supabase]);
+
     return (
         <div className="bg-ac-taupe/5 p-4 rounded-sm -mx-4">
-            <VirtualWardrobe clientId={clientId} />
+            {loading ? (
+                <div className="flex items-center justify-center py-12 text-ac-taupe/40">
+                    <Loader2 className="animate-spin" size={20} />
+                </div>
+            ) : wardrobeId ? (
+                <VirtualWardrobe wardrobeId={wardrobeId} ownerId={clientId} />
+            ) : (
+                <p className="text-center py-12 text-ac-taupe/40 italic text-sm">
+                    This client has no wardrobe yet.
+                </p>
+            )}
         </div>
     );
 }

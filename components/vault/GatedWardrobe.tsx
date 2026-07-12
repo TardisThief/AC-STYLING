@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Lock, Plus, Camera, Loader2, Check, Trash2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { signWardrobeItems } from '@/lib/wardrobe-images';
+import { wardrobeUploadPath } from '@/lib/wardrobe-paths';
+import { getMyWardrobe } from '@/app/actions/wardrobes';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -67,19 +69,23 @@ export default function GatedWardrobe({ isActiveClient, userId, initialItems = [
         if (!uploadFile) return toast.error("Please select a photo.");
         setIsSaving(true);
         try {
-            const fileName = `${Date.now()}-${uploadFile.name}`;
+            const { wardrobe } = await getMyWardrobe();
+            if (!wardrobe) throw new Error("Could not access your wardrobe.");
+
+            const path = wardrobeUploadPath(userId, wardrobe.id, uploadFile.name);
             const { error: uploadError } = await supabase.storage
                 .from('studio-wardrobe')
-                .upload(`${userId}/${fileName}`, uploadFile);
+                .upload(path, uploadFile);
 
             if (uploadError) throw uploadError;
 
             const { data: { publicUrl } } = supabase.storage
                 .from('studio-wardrobe')
-                .getPublicUrl(`${userId}/${fileName}`);
+                .getPublicUrl(path);
 
             const { data: newItem, error: dbError } = await supabase.from('wardrobe_items').insert({
                 user_id: userId,
+                wardrobe_id: wardrobe.id,
                 image_url: publicUrl,
                 client_note: clientNote,
                 status: 'Keep', // Default status

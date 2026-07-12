@@ -8,12 +8,13 @@ import DigitalLookbook from "@/components/studio/DigitalLookbook";
 import TailorCardUser from "@/components/vault/TailorCardUser";
 
 interface ClientStudioDashboardProps {
-    clientId: string;
+    wardrobeId: string;
+    ownerId: string;
     initialMeasurements: any;
     userName: string;
 }
 
-export default function ClientStudioDashboard({ clientId, initialMeasurements, userName }: ClientStudioDashboardProps) {
+export default function ClientStudioDashboard({ wardrobeId, ownerId, initialMeasurements, userName }: ClientStudioDashboardProps) {
     const [activeTab, setActiveTab] = useState<'lookbooks' | 'wardrobe'>('lookbooks');
     const [isTailorCardOpen, setIsTailorCardOpen] = useState(false);
 
@@ -67,7 +68,7 @@ export default function ClientStudioDashboard({ clientId, initialMeasurements, u
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <DigitalLookbook clientId={clientId} isClientView={true} />
+                                <DigitalLookbook wardrobeId={wardrobeId} ownerId={ownerId} isClientView={true} />
                             </motion.div>
                         ) : (
                             <motion.div
@@ -77,7 +78,7 @@ export default function ClientStudioDashboard({ clientId, initialMeasurements, u
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <VirtualWardrobe clientId={clientId} isClientView={true} />
+                                <VirtualWardrobe wardrobeId={wardrobeId} ownerId={ownerId} isClientView={true} />
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -113,7 +114,7 @@ export default function ClientStudioDashboard({ clientId, initialMeasurements, u
 
                                 <div className="h-fit">
                                     <TailorCardUser
-                                        userId={clientId}
+                                        userId={ownerId}
                                         initialMeasurements={initialMeasurements}
                                         isActiveClient={true} // Always true here since route is protected
                                     />

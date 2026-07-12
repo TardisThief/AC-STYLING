@@ -123,9 +123,9 @@ Exactly one real TODO (`studio.ts`). Dead `components/vault/EditorialDraft.tsx` 
 
 ### P2 — roadmap
 
-`zod` input validation; de-duplicate profile-merge + admin-check logic; caching / `<Suspense>` / static generation where safe; a11y sweep (roles, aria-labels, focus); dead-code cleanup; consolidate the two Tailwind token systems.
+~~`zod` input validation~~ (admin actions done 2026-07-10: `app/lib/validation/` + the five `manage-*` actions; non-admin actions ride the `any` cleanup); de-duplicate profile-merge + admin-check logic (partially done: the five `manage-*` files now use `requireAdmin`); caching / `<Suspense>` / static generation where safe; a11y sweep (roles, aria-labels, focus); dead-code cleanup; consolidate the two Tailwind token systems.
 
-**Normalize the wardrobe storage folder convention.** The `clientId` prop is a client `user.id` in some entry points ([my-studio](app/[locale]/vault/my-studio/page.tsx)) but a `wardrobe_id` in the stylist dashboard ([StudioDashboard.tsx](components/studio/StudioDashboard.tsx)); files are uploaded under `${clientId}/`, so the folder is inconsistently a user id or a wardrobe UUID (and `VirtualWardrobe` even inserts `user_id: clientId`). Because of this, migration 03 uses an authenticated-only storage policy rather than a strict per-owner one. Once the convention always uses the client's `user_id`, tighten the `studio-wardrobe` policy to owner-or-admin (SQL stub is in the migration file).
+~~**Normalize the wardrobe storage folder convention.**~~ **Resolved in code (2026-07-12, Dev, unmerged).** Studio components take an explicit `{ wardrobeId, ownerId }` pair; uploads route through `lib/wardrobe-paths.ts` (owner folder `<user_id>/…`, ownerless intake under `wardrobe/<id>/…`); the `user_id: clientId` insert corruption is gone. Migration 07 replaces migration 03's authenticated-only policy with owner-or-admin via `public.can_access_wardrobe_object(...)`. **Pending user apply:** migrations 06 + 07, then `scripts/verify_wardrobe_policy.ts`. Spec/plan under `docs/superpowers/{specs,plans}/2026-07-11-wardrobe-storage-normalization*`.
 
 ### Scope guardrails
 

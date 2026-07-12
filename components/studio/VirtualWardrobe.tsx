@@ -8,16 +8,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { uploadRemoteImage } from "@/app/actions/studio";
 import { extractUrlMetadata } from "@/app/actions/scraper";
 import { signWardrobeItems } from "@/lib/wardrobe-images";
+import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 
 interface VirtualWardrobeProps {
-    clientId: string;
+    wardrobeId: string;
+    ownerId: string | null; // null = unassigned wardrobe (stylist-only)
     isClientView?: boolean;
 }
 
 const CATEGORIES = ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Accessories', 'Bags'];
 const STATUSES = ['Keep', 'Tailor', 'Donate', 'Archive'];
 
-export default function VirtualWardrobe({ clientId, isClientView = false }: VirtualWardrobeProps) {
+export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = false }: VirtualWardrobeProps) {
     const [items, setItems] = useState<any[]>([]);
     const [boutiqueItems, setBoutiqueItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
         async function loadData() {
             setLoading(true);
             const [wardrobeRes, boutiqueRes] = await Promise.all([
-                supabase.from('wardrobe_items').select('*').eq('wardrobe_id', clientId).order('created_at', { ascending: false }),
+                supabase.from('wardrobe_items').select('*').eq('wardrobe_id', wardrobeId).order('created_at', { ascending: false }),
                 supabase.from('boutique_items').select('*')
             ]);
 
@@ -67,7 +69,7 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
 
             // Allow cloning to other profiles (only if NOT client view)
             if (!isClientView) {
-                const { data: clients } = await supabase.from('profiles').select('id, full_name').neq('id', clientId);
+                const { data: clients } = await supabase.from('profiles').select('id, full_name').neq('id', ownerId ?? '');
                 setAllClients(clients || []);
             }
 
@@ -75,7 +77,7 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
         }
 
         loadData();
-    }, [clientId, supabase, isClientView]);
+    }, [wardrobeId, ownerId, supabase, isClientView]);
 
     const handleUpdateItem = async (itemId: string, updates: any) => {
         const { error } = await supabase
@@ -119,7 +121,7 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
             const { data, error } = await supabase.from('wardrobe_items').insert({
                 ...itemToClone,
                 user_id: targetClient,
-                internal_note: `Cloned from ${clientId}'s wardrobe. Original note: ${itemToClone.internal_note || ''}`
+                internal_note: `Cloned from wardrobe ${wardrobeId}. Original note: ${itemToClone.internal_note || ''}`
             }).select().single();
 
             if (error) throw error;
@@ -518,7 +520,8 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
                                                         onClick={async () => {
                                                             setIsSaving(true);
                                                             const { data, error } = await supabase.from('wardrobe_items').insert({
-                                                                user_id: clientId,
+                                                                user_id: ownerId,
+                                                                wardrobe_id: wardrobeId,
                                                                 image_url: bi.image_url,
                                                                 category: bi.category,
                                                                 product_link_id: bi.id,
@@ -596,19 +599,20 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
                                                         if (!uploadFile) return toast.error("Please select a file");
                                                         setIsSaving(true);
                                                         try {
-                                                            const fileName = `${Date.now()}-${uploadFile.name}`;
-                                                            const { data: uploadData, error: uploadError } = await supabase.storage
+                                                            const path = wardrobeUploadPath(ownerId, wardrobeId, uploadFile.name);
+                                                            const { error: uploadError } = await supabase.storage
                                                                 .from('studio-wardrobe')
-                                                                .upload(`${clientId}/${fileName}`, uploadFile);
+                                                                .upload(path, uploadFile);
 
                                                             if (uploadError) throw uploadError;
 
                                                             const { data: { publicUrl } } = supabase.storage
                                                                 .from('studio-wardrobe')
-                                                                .getPublicUrl(`${clientId}/${fileName}`);
+                                                                .getPublicUrl(path);
 
                                                             const { data: dbData, error: dbError } = await supabase.from('wardrobe_items').insert({
-                                                                user_id: clientId,
+                                                                user_id: ownerId,
+                                                                wardrobe_id: wardrobeId,
                                                                 image_url: publicUrl,
                                                                 category: uploadForm.category,
 
@@ -748,25 +752,28 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
                                                         if (!linkForm.imageUrl) return toast.error("Image URL is required");
                                                         setIsSaving(true);
 
-                                                        // 1. Secure Upload
+                                                        // 1. Secure Upload (owner folder; unassigned wardrobes keep the external link)
                                                         let finalImageUrl = linkForm.imageUrl;
-                                                        try {
-                                                            const uploadRes = await uploadRemoteImage(linkForm.imageUrl, clientId);
-                                                            if (uploadRes.success && uploadRes.url) {
-                                                                finalImageUrl = uploadRes.url;
-                                                            } else {
-                                                                console.warn("Remote upload failed, falling back to direct link:", uploadRes.error);
-                                                                // Optional: Fail hard? Or allow fallback? 
-                                                                // User requested sustainability, so maybe we should warn better.
-                                                                toast.warning("Could not save image locally. Using external link.");
+                                                        if (ownerId) {
+                                                            try {
+                                                                const uploadRes = await uploadRemoteImage(linkForm.imageUrl, ownerId);
+                                                                if (uploadRes.success && uploadRes.url) {
+                                                                    finalImageUrl = uploadRes.url;
+                                                                } else {
+                                                                    console.warn("Remote upload failed, falling back to direct link:", uploadRes.error);
+                                                                    toast.warning("Could not save image locally. Using external link.");
+                                                                }
+                                                            } catch (err) {
+                                                                console.error("Upload Error", err);
                                                             }
-                                                        } catch (err) {
-                                                            console.error("Upload Error", err);
+                                                        } else {
+                                                            toast.info("Unassigned wardrobe — storing the external image link.");
                                                         }
 
                                                         // 2. Save Item
                                                         const { data, error } = await supabase.from('wardrobe_items').insert({
-                                                            user_id: clientId,
+                                                            user_id: ownerId,
+                                                            wardrobe_id: wardrobeId,
                                                             image_url: finalImageUrl,
                                                             category: linkForm.category,
                                                             notes: linkForm.internalNote,
@@ -868,16 +875,16 @@ export default function VirtualWardrobe({ clientId, isClientView = false }: Virt
                                                 if (!updateFile) return toast.error("Please select a file");
                                                 setIsSaving(true);
                                                 try {
-                                                    const fileName = `${Date.now()}-UPDATE-${updateFile.name}`;
+                                                    const path = wardrobeUploadPath(ownerId, wardrobeId, `UPDATE-${updateFile.name}`);
                                                     const { error: uploadError } = await supabase.storage
                                                         .from('studio-wardrobe')
-                                                        .upload(`${clientId}/${fileName}`, updateFile);
+                                                        .upload(path, updateFile);
 
                                                     if (uploadError) throw uploadError;
 
                                                     const { data: { publicUrl } } = supabase.storage
                                                         .from('studio-wardrobe')
-                                                        .getPublicUrl(`${clientId}/${fileName}`);
+                                                        .getPublicUrl(path);
 
                                                     // Update DB
                                                     await handleUpdateItem(selectedItem.id, { image_url: publicUrl });

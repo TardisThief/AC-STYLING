@@ -4,7 +4,16 @@
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/app/lib/auth-guards";
+import { parseInput, uuid } from "@/app/lib/validation/parse";
+import {
+    brandSchema,
+    boutiqueItemSchema,
+    collectionSchema,
+    trustedByLogoSchema,
+    trustedByLogoUpdateSchema,
+} from "@/app/lib/validation/boutique";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 // --- Brands ---
 
@@ -32,44 +41,33 @@ export async function getAdminBrands() {
     return { success: true, brands };
 }
 
-export async function createBrand(data: any) {
+export async function createBrand(data: unknown) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('partner_brands').insert({
-        name: data.name,
-        logo_url: data.logo_url,
-        website_url: data.website_url,
-        active: data.active !== false,
-        contact_name: data.contact_name || null,
-        contact_email: data.contact_email || null,
-        commission_rate: data.commission_rate ? parseFloat(data.commission_rate) : null,
-        partnership_status: data.partnership_status || 'active',
-        internal_notes: data.internal_notes || null,
-    });
+    const parsed = parseInput(brandSchema, data);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const { error } = await auth.supabase.from('partner_brands').insert(parsed.data);
 
     if (error) return { success: false, error: error.message };
     revalidatePath('/vault/boutique');
     return { success: true };
 }
 
-export async function updateBrand(id: string, data: any) {
+export async function updateBrand(id: string, data: unknown) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('partner_brands').update({
-        name: data.name,
-        logo_url: data.logo_url,
-        website_url: data.website_url,
-        active: data.active,
-        contact_name: data.contact_name || null,
-        contact_email: data.contact_email || null,
-        commission_rate: data.commission_rate ? parseFloat(data.commission_rate) : null,
-        partnership_status: data.partnership_status || 'active',
-        internal_notes: data.internal_notes || null,
-    }).eq('id', id);
+    const idParsed = parseInput(uuid('Brand id'), id);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+    const parsed = parseInput(brandSchema, data);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const { error } = await auth.supabase
+        .from('partner_brands')
+        .update(parsed.data)
+        .eq('id', idParsed.data);
 
     if (error) return { success: false, error: error.message };
     revalidatePath('/vault/boutique');
@@ -79,9 +77,11 @@ export async function updateBrand(id: string, data: any) {
 export async function deleteBrand(id: string) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('partner_brands').delete().eq('id', id);
+    const idParsed = parseInput(uuid('Brand id'), id);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+
+    const { error } = await auth.supabase.from('partner_brands').delete().eq('id', idParsed.data);
 
     if (error) return { success: false, error: error.message };
     revalidatePath('/vault/boutique');
@@ -90,42 +90,33 @@ export async function deleteBrand(id: string) {
 
 // --- Items ---
 
-export async function createBoutiqueItem(data: any) {
+export async function createBoutiqueItem(data: unknown) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('boutique_items').insert({
-        name: data.name,
-        brand_id: data.brand_id || null, // Handle empty string
-        image_url: data.image_url,
-        curator_note: data.curator_note,
-        affiliate_url_usa: data.affiliate_url_usa,
-        affiliate_url_es: data.affiliate_url_es,
-        category: data.category,
-        active: data.active !== false
-    });
+    const parsed = parseInput(boutiqueItemSchema, data);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const { error } = await auth.supabase.from('boutique_items').insert(parsed.data);
 
     if (error) return { success: false, error: error.message };
     revalidatePath('/vault/boutique');
     return { success: true };
 }
 
-export async function updateBoutiqueItem(id: string, data: any) {
+export async function updateBoutiqueItem(id: string, data: unknown) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('boutique_items').update({
-        name: data.name,
-        brand_id: data.brand_id || null, // Handle empty string
-        image_url: data.image_url,
-        curator_note: data.curator_note,
-        affiliate_url_usa: data.affiliate_url_usa,
-        affiliate_url_es: data.affiliate_url_es,
-        category: data.category,
-        active: data.active
-    }).eq('id', id);
+    const idParsed = parseInput(uuid('Item id'), id);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+    const parsed = parseInput(boutiqueItemSchema, data);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const { error } = await auth.supabase
+        .from('boutique_items')
+        .update(parsed.data)
+        .eq('id', idParsed.data);
 
     if (error) return { success: false, error: error.message };
     revalidatePath('/vault/boutique');
@@ -135,9 +126,11 @@ export async function updateBoutiqueItem(id: string, data: any) {
 export async function deleteBoutiqueItem(id: string) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('boutique_items').delete().eq('id', id);
+    const idParsed = parseInput(uuid('Item id'), id);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+
+    const { error } = await auth.supabase.from('boutique_items').delete().eq('id', idParsed.data);
 
     if (error) return { success: false, error: error.message };
     revalidatePath('/vault/boutique');
@@ -156,41 +149,37 @@ export async function getCollections() {
     return { success: true, collections: data || [] };
 }
 
-export async function createCollection(data: any) {
+export async function createCollection(data: unknown) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { data: created, error } = await supabase.from('boutique_collections').insert({
-        title: data.title,
-        title_es: data.title_es || null,
-        description: data.description || null,
-        description_es: data.description_es || null,
-        cover_image_url: data.cover_image_url || null,
-        active: data.active !== false,
-        order_index: data.order_index || 0,
-    }).select('id').single();
+    const parsed = parseInput(collectionSchema, data);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const { data: created, error } = await auth.supabase
+        .from('boutique_collections')
+        .insert(parsed.data)
+        .select('id')
+        .single();
 
     if (error) return { success: false, error: error.message };
     revalidatePath('/vault/boutique');
     return { success: true, id: created.id };
 }
 
-export async function updateCollection(id: string, data: any) {
+export async function updateCollection(id: string, data: unknown) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('boutique_collections').update({
-        title: data.title,
-        title_es: data.title_es || null,
-        description: data.description || null,
-        description_es: data.description_es || null,
-        cover_image_url: data.cover_image_url || null,
-        active: data.active,
-        order_index: data.order_index,
-        updated_at: new Date().toISOString(),
-    }).eq('id', id);
+    const idParsed = parseInput(uuid('Collection id'), id);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+    const parsed = parseInput(collectionSchema, data);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const { error } = await auth.supabase
+        .from('boutique_collections')
+        .update({ ...parsed.data, updated_at: new Date().toISOString() })
+        .eq('id', idParsed.data);
 
     if (error) return { success: false, error: error.message };
     revalidatePath('/vault/boutique');
@@ -200,9 +189,14 @@ export async function updateCollection(id: string, data: any) {
 export async function deleteCollection(id: string) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('boutique_collections').delete().eq('id', id);
+    const idParsed = parseInput(uuid('Collection id'), id);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+
+    const { error } = await auth.supabase
+        .from('boutique_collections')
+        .delete()
+        .eq('id', idParsed.data);
     if (error) return { success: false, error: error.message };
     revalidatePath('/vault/boutique');
     return { success: true };
@@ -211,14 +205,22 @@ export async function deleteCollection(id: string) {
 export async function setCollectionItems(collectionId: string, itemIds: string[]) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
+
+    const idParsed = parseInput(uuid('Collection id'), collectionId);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+    const itemsParsed = parseInput(z.array(uuid('Item id')), itemIds);
+    if (!itemsParsed.ok) return { success: false, error: itemsParsed.error };
 
     // Replace all items for this collection
-    await supabase.from('boutique_collection_items').delete().eq('collection_id', collectionId);
+    await auth.supabase.from('boutique_collection_items').delete().eq('collection_id', idParsed.data);
 
-    if (itemIds.length > 0) {
-        const rows = itemIds.map((item_id, idx) => ({ collection_id: collectionId, item_id, position: idx }));
-        const { error } = await supabase.from('boutique_collection_items').insert(rows);
+    if (itemsParsed.data.length > 0) {
+        const rows = itemsParsed.data.map((item_id, idx) => ({
+            collection_id: idParsed.data,
+            item_id,
+            position: idx,
+        }));
+        const { error } = await auth.supabase.from('boutique_collection_items').insert(rows);
         if (error) return { success: false, error: error.message };
     }
 
@@ -241,12 +243,12 @@ export async function getTrustedByLogos() {
 export async function createTrustedByLogo(data: { name: string; logo_url: string; order_index?: number }) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('trusted_by_logos').insert({
-        name: data.name,
-        logo_url: data.logo_url,
-        order_index: data.order_index || 0,
+    const parsed = parseInput(trustedByLogoSchema, data);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const { error } = await auth.supabase.from('trusted_by_logos').insert({
+        ...parsed.data,
         active: true,
     });
     if (error) return { success: false, error: error.message };
@@ -257,9 +259,16 @@ export async function createTrustedByLogo(data: { name: string; logo_url: string
 export async function updateTrustedByLogo(id: string, data: Partial<{ name: string; logo_url: string; order_index: number; active: boolean }>) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('trusted_by_logos').update(data).eq('id', id);
+    const idParsed = parseInput(uuid('Logo id'), id);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+    const parsed = parseInput(trustedByLogoUpdateSchema, data);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const { error } = await auth.supabase
+        .from('trusted_by_logos')
+        .update(parsed.data)
+        .eq('id', idParsed.data);
     if (error) return { success: false, error: error.message };
     revalidatePath('/');
     return { success: true };
@@ -268,9 +277,11 @@ export async function updateTrustedByLogo(id: string, data: Partial<{ name: stri
 export async function deleteTrustedByLogo(id: string) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
 
-    const { error } = await supabase.from('trusted_by_logos').delete().eq('id', id);
+    const idParsed = parseInput(uuid('Logo id'), id);
+    if (!idParsed.ok) return { success: false, error: idParsed.error };
+
+    const { error } = await auth.supabase.from('trusted_by_logos').delete().eq('id', idParsed.data);
     if (error) return { success: false, error: error.message };
     revalidatePath('/');
     return { success: true };

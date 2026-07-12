@@ -7,13 +7,15 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import html2canvas from "html2canvas";
 import { signWardrobeItems } from "@/lib/wardrobe-images";
+import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 
 interface DigitalLookbookProps {
-    clientId: string;
+    wardrobeId: string;
+    ownerId: string | null; // null = unassigned wardrobe (stylist-only)
     isClientView?: boolean;
 }
 
-export default function DigitalLookbook({ clientId, isClientView = false }: DigitalLookbookProps) {
+export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = false }: DigitalLookbookProps) {
     const [lookbooks, setLookbooks] = useState<any[]>([]);
     const [activeLookbook, setActiveLookbook] = useState<any>(null);
     const [wardrobeItems, setWardrobeItems] = useState<any[]>([]);
@@ -34,7 +36,8 @@ export default function DigitalLookbook({ clientId, isClientView = false }: Digi
 
     useEffect(() => {
         loadData();
-    }, [clientId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [wardrobeId]);
 
     useEffect(() => {
         if (activeLookbook) {
@@ -51,13 +54,13 @@ export default function DigitalLookbook({ clientId, isClientView = false }: Digi
         const { data: lbData } = await supabase
             .from('lookbooks')
             .select('*')
-            .eq('user_id', clientId)
+            .eq('wardrobe_id', wardrobeId)
             .order('created_at', { ascending: false });
 
         const { data: wData } = await supabase
             .from('wardrobe_items')
             .select('*')
-            .eq('user_id', clientId);
+            .eq('wardrobe_id', wardrobeId);
 
         if (lbData) setLookbooks(lbData);
         if (wData) setWardrobeItems(await signWardrobeItems(supabase, wData));
@@ -68,7 +71,8 @@ export default function DigitalLookbook({ clientId, isClientView = false }: Digi
         if (!newTitle) return toast.error("Title required");
         setIsSaving(true);
         const { data, error } = await supabase.from('lookbooks').insert({
-            user_id: clientId,
+            user_id: ownerId,
+            wardrobe_id: wardrobeId,
             title: newTitle,
             collection_name: newCollection,
             status: 'Draft',
@@ -98,10 +102,15 @@ export default function DigitalLookbook({ clientId, isClientView = false }: Digi
                 const canvas = await html2canvas(canvasRef.current, { backgroundColor: '#F5F5F0', scale: 0.5 });
                 const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
                 if (blob) {
-                    const fileName = `thumb_${activeLookbook.id}_${Date.now()}.jpg`;
-                    await supabase.storage.from('lookbooks').upload(`${clientId}/${fileName}`, blob);
-                    const { data } = supabase.storage.from('lookbooks').getPublicUrl(`${clientId}/${fileName}`);
-                    thumbnailUrl = data.publicUrl;
+                    const thumbPath = wardrobeUploadPath(ownerId, wardrobeId, `lookbook-thumbs/thumb_${activeLookbook.id}.jpg`);
+                    const { error: thumbError } = await supabase.storage
+                        .from('studio-wardrobe')
+                        .upload(thumbPath, blob, { upsert: true });
+                    if (thumbError) {
+                        toast.warning("Lookbook saved, but the thumbnail could not be updated.");
+                    } else {
+                        thumbnailUrl = supabase.storage.from('studio-wardrobe').getPublicUrl(thumbPath).data.publicUrl;
+                    }
                 }
             } catch (e) {
                 console.error("Thumbnail gen failed", e);
