@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import ClientStudioDashboard from "@/components/studio/ClientStudioDashboard";
+import { getMyWardrobe } from "@/app/actions/wardrobes";
 
 export default async function MyStudioPage({
     params
@@ -32,9 +33,17 @@ export default async function MyStudioPage({
         .eq('user_id', user.id)
         .single();
 
+    // The client's own wardrobe (auto-created on first visit) — studio
+    // components key on { wardrobeId, ownerId }.
+    const { wardrobe } = await getMyWardrobe();
+    if (!wardrobe) {
+        redirect('/vault');
+    }
+
     return (
         <ClientStudioDashboard
-            clientId={user.id}
+            wardrobeId={wardrobe.id}
+            ownerId={user.id}
             initialMeasurements={tailorCard?.measurements}
             userName={profile.full_name?.split(' ')[0] || "Client"}
         />

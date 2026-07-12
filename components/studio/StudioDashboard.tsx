@@ -315,7 +315,7 @@ export default function StudioDashboard({ locale }: StudioDashboardProps) {
                             {/* Tab Content */}
                             <div className="min-h-[500px]">
                                 {activeTab === 'tailor' && <TailorCard clientId={selectedWardrobe.id} />}
-                                {activeTab === 'wardrobe' && <VirtualWardrobe clientId={selectedWardrobe.id} />}
+                                {activeTab === 'wardrobe' && <VirtualWardrobe wardrobeId={selectedWardrobe.id} ownerId={selectedWardrobe.owner_id ?? null} />}
                                 {activeTab === 'lookbook' && <DigitalLookbook clientId={selectedWardrobe.id} />}
                             </div>
                         </motion.div>
