@@ -68,7 +68,7 @@ export default function ClientStudioDashboard({ wardrobeId, ownerId, initialMeas
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <DigitalLookbook clientId={ownerId} isClientView={true} />
+                                <DigitalLookbook wardrobeId={wardrobeId} ownerId={ownerId} isClientView={true} />
                             </motion.div>
                         ) : (
                             <motion.div
