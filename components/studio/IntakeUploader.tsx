@@ -14,8 +14,13 @@ interface FileEntry {
     id?: string;
 }
 
-import { uploadGuestWardrobeItem } from "@/app/actions/studio";
+import { createIntakeUploadUrl, createIntakeItem } from "@/app/actions/intake";
 import { getMyWardrobe } from "@/app/actions/wardrobes";
+import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
+
+// Enforced client-side: the old server-side check sat behind Vercel's 4.5MB
+// request-body cap, which rejected large photos before it could ever run.
+const MAX_INTAKE_BYTES = 20 * 1024 * 1024;
 
 interface IntakeUploaderProps {
     token: string;
@@ -74,22 +79,28 @@ export default function IntakeUploader({ token, isGuest, locale, onUploadSuccess
                     const entry = files[i];
                     if (entry.status === 'success') continue;
 
+                    if (entry.file.size > MAX_INTAKE_BYTES) {
+                        throw new Error(`"${entry.file.name}" is too large (max 20MB).`);
+                    }
+
                     setFiles(prev => {
                         const next = [...prev];
                         next[i].status = 'uploading';
                         return next;
                     });
 
-                    // Use Server Action
-                    const formData = new FormData();
-                    formData.append('file', entry.file);
-                    formData.append('note', entry.note);
+                    // Direct browser -> storage upload; only the token
+                    // validation and DB record go through server actions.
+                    const authorized = await createIntakeUploadUrl(token, entry.file.name);
+                    if (!authorized.success) throw new Error(authorized.error);
 
-                    const result = await uploadGuestWardrobeItem(formData, token);
+                    const { error: uploadError } = await supabase.storage
+                        .from('studio-wardrobe')
+                        .uploadToSignedUrl(authorized.path, authorized.token, entry.file);
+                    if (uploadError) throw new Error(uploadError.message);
 
-                    if (!result.success) {
-                        throw new Error(result.error);
-                    }
+                    const recorded = await createIntakeItem(token, authorized.path, entry.note);
+                    if (!recorded.success) throw new Error(recorded.error);
 
                     setFiles(prev => {
                         const next = [...prev];
@@ -121,9 +132,7 @@ export default function IntakeUploader({ token, isGuest, locale, onUploadSuccess
                         return next;
                     });
 
-                    const fileExt = entry.file.name.split('.').pop();
-                    const fileName = `${user.id}/${Math.random().toString(36).substring(2)}.${fileExt}`;
-                    const filePath = `wardrobe/${fileName}`;
+                    const filePath = wardrobeUploadPath(user.id, wardrobe.id, entry.file.name);
 
                     const { error: uploadError } = await supabase.storage
                         .from('studio-wardrobe')
