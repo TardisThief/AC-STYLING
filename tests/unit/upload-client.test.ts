@@ -1,8 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mockUploadFile = vi.fn()
+const mockCreateVaultUploadUrl = vi.fn()
 vi.mock('@/app/actions/admin/upload-file', () => ({
-    uploadFile: (...args: unknown[]) => mockUploadFile(...args),
+    createVaultUploadUrl: (...args: unknown[]) => mockCreateVaultUploadUrl(...args),
+}))
+
+const mockUploadToSignedUrl = vi.fn()
+const mockGetPublicUrl = vi.fn()
+vi.mock('@/utils/supabase/client', () => ({
+    createClient: () => ({
+        storage: {
+            from: () => ({
+                uploadToSignedUrl: mockUploadToSignedUrl,
+                getPublicUrl: mockGetPublicUrl,
+            }),
+        },
+    }),
 }))
 
 const mockToastSuccess = vi.fn()
@@ -25,29 +38,42 @@ const makeFile = (size = 1024, name = 'photo.jpg') => {
 describe('uploadAssetWithToast', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        mockCreateVaultUploadUrl.mockResolvedValue({ success: true, path: '123-photo.jpg', token: 'tok' })
+        mockUploadToSignedUrl.mockResolvedValue({ data: { path: '123-photo.jpg' }, error: null })
+        mockGetPublicUrl.mockReturnValue({ data: { publicUrl: 'https://cdn/123-photo.jpg' } })
     })
 
-    it('returns the url and shows a success toast on success', async () => {
-        mockUploadFile.mockResolvedValue({ success: true, url: 'https://cdn/x.jpg' })
-
+    it('uploads directly to storage via a signed URL and returns the public url', async () => {
         const url = await uploadAssetWithToast(makeFile(), 'Thumbnail uploaded')
 
-        expect(url).toBe('https://cdn/x.jpg')
+        expect(mockCreateVaultUploadUrl).toHaveBeenCalledWith('photo.jpg')
+        expect(mockUploadToSignedUrl).toHaveBeenCalledWith('123-photo.jpg', 'tok', expect.any(File))
+        expect(url).toBe('https://cdn/123-photo.jpg')
         expect(mockToastSuccess).toHaveBeenCalledWith('Thumbnail uploaded')
         expect(mockToastError).not.toHaveBeenCalled()
     })
 
-    it('returns null and shows the action error on failure result', async () => {
-        mockUploadFile.mockResolvedValue({ success: false, error: 'Unauthorized' })
+    it('returns null and shows the action error when authorization fails', async () => {
+        mockCreateVaultUploadUrl.mockResolvedValue({ success: false, error: 'Forbidden' })
 
         const url = await uploadAssetWithToast(makeFile(), 'Thumbnail uploaded')
 
         expect(url).toBeNull()
-        expect(mockToastError).toHaveBeenCalledWith('Unauthorized')
+        expect(mockUploadToSignedUrl).not.toHaveBeenCalled()
+        expect(mockToastError).toHaveBeenCalledWith('Forbidden')
     })
 
-    it('returns null and shows a toast when the server action throws', async () => {
-        mockUploadFile.mockRejectedValue(new Error('fetch failed'))
+    it('returns null and shows the storage error when the direct upload fails', async () => {
+        mockUploadToSignedUrl.mockResolvedValue({ data: null, error: { message: 'quota exceeded' } })
+
+        const url = await uploadAssetWithToast(makeFile(), 'Thumbnail uploaded')
+
+        expect(url).toBeNull()
+        expect(mockToastError).toHaveBeenCalledWith('quota exceeded')
+    })
+
+    it('returns null and shows a toast when the flow throws', async () => {
+        mockCreateVaultUploadUrl.mockRejectedValue(new Error('fetch failed'))
 
         const url = await uploadAssetWithToast(makeFile(), 'Thumbnail uploaded')
 
@@ -60,7 +86,7 @@ describe('uploadAssetWithToast', () => {
         const url = await uploadAssetWithToast(makeFile(MAX_UPLOAD_BYTES + 1), 'Thumbnail uploaded')
 
         expect(url).toBeNull()
-        expect(mockUploadFile).not.toHaveBeenCalled()
+        expect(mockCreateVaultUploadUrl).not.toHaveBeenCalled()
         expect(String(mockToastError.mock.calls[0][0])).toMatch(/15\s?MB/i)
     })
 })

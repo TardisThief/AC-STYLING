@@ -1,49 +1,35 @@
 "use server";
 
-import { createClient } from '@/utils/supabase/server';
+import { requireAdmin } from '@/app/lib/auth-guards';
 
-export async function uploadFile(formData: FormData) {
-    const supabase = await createClient();
+/**
+ * Authorize a direct browser → Supabase Storage upload to `vault-assets`.
+ *
+ * File bytes must NOT travel through a server action: Vercel caps request
+ * bodies at 4.5 MB regardless of `serverActions.bodySizeLimit`, so routing the
+ * file here fails in production for anything larger. Instead this action only
+ * verifies the caller is an admin and mints a signed upload URL; the client
+ * then PUTs the file straight to storage (app/lib/upload-client.ts).
+ */
+export async function createVaultUploadUrl(fileName: string) {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false as const, error: auth.error };
 
-    // Check admin role
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        return { success: false, error: "Not authenticated" };
-    }
+    // Keep the object key flat inside the bucket: no path separators, no
+    // traversal sequences, and a sane length cap.
+    const safeName = String(fileName)
+        .replace(/[/\\]/g, '_')
+        .replace(/\.\./g, '_')
+        .slice(0, 100) || 'upload';
+    const path = `${Date.now()}-${safeName}`;
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') {
-        return { success: false, error: "Unauthorized" };
-    }
-
-    const file = formData.get('file') as File;
-    if (!file) {
-        return { success: false, error: "No file provided" };
-    }
-
-    // Upload to Supabase Storage
-    const fileName = `${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage
+    const { data, error } = await auth.supabase.storage
         .from('vault-assets')
-        .upload(fileName, file, {
-            cacheControl: '3600',
-            upsert: false
-        });
+        .createSignedUploadUrl(path);
 
-    if (error) {
-        console.error("Upload error:", error);
-        return { success: false, error: error.message };
+    if (error || !data) {
+        return { success: false as const, error: error?.message || 'Could not authorize upload' };
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-        .from('vault-assets')
-        .getPublicUrl(data.path);
-
-    return { success: true, url: publicUrl, path: data.path };
+    return { success: true as const, path: data.path, token: data.token };
 }
