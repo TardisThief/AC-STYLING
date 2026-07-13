@@ -90,7 +90,7 @@ export async function answerQuestion(questionId: string, answer: string) {
         const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
 
         // Fallback to profile if auth fails or is inconsistent
-        let userEmail = userData?.user?.email;
+        const userEmail = userData?.user?.email;
 
         // C. Send Email Notification
         if (userEmail) {

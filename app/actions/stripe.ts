@@ -20,7 +20,7 @@ export async function createCheckoutSession(priceId: string, returnUrl: string) 
     const headersList = await headers();
     const origin = headersList.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
-    let email = user.email;
+    const email = user.email;
 
     // Fallback: If user.email is missing, try fetching from profiles or metadata?
     // Supabase Auth usually guarantees email unless anonymous.

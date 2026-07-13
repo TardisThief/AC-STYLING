@@ -41,7 +41,7 @@ async function main() {
 
     if (process.env.STRIPE_SECRET_KEY) {
         console.log('Stripe Key found. Verifying against Stripe API...');
-        const Stripe = require('stripe');
+        const { default: Stripe } = await import('stripe');
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }); // Use version roughly matching project
 
         // Check one masterclass as example

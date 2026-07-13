@@ -409,7 +409,7 @@ export async function getMyWardrobe(): Promise<{
     if (!user) return { success: false, error: "Unauthorized" };
 
     // First check if user has a wardrobe
-    let { data: wardrobe, error } = await supabase
+    let { data: wardrobe } = await supabase
         .from('wardrobes')
         .select('*')
         .eq('owner_id', user.id)

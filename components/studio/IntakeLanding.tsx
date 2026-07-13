@@ -23,7 +23,7 @@ export default function IntakeLanding({ token, clientName, locale, user }: Intak
 
     // Effect: If User is logged in, validate token and unlock studio
     useEffect(() => {
-        let mounted = true;
+        const mounted = true;
 
         const unlockStudio = async () => {
             if (!user) return;

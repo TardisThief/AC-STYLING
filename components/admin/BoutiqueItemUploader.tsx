@@ -109,7 +109,7 @@ export default function BoutiqueItemUploader({ brands, onSuccess, onCancel }: Bo
         }
 
         setIsPublishing(true);
-        let successCount = 0;
+        const successCount = 0;
         const itemsToCreate: BoutiqueItemPayload[] = [];
 
         // Step A: Upload Files individually (concurrently or sequentially)
