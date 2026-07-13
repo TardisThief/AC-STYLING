@@ -169,7 +169,7 @@ export default function TailorCard({ ownerId: ownerIdProp }: TailorCardProps) {
                                         {entry.question_key.replace(/_/g, ' ')}
                                     </h4>
                                     <p className="font-serif text-lg italic leading-relaxed">
-                                        "{entry.response_value || entry.answer_value}"
+                                        &quot;{entry.response_value || entry.answer_value}&quot;
                                     </p>
                                 </div>
                             )) : (
@@ -184,7 +184,7 @@ export default function TailorCard({ ownerId: ownerIdProp }: TailorCardProps) {
                 <div className="bg-white/40 border border-white/50 p-6 rounded-sm flex gap-4">
                     <Info className="text-ac-taupe/40 shrink-0" size={20} />
                     <p className="text-xs text-ac-taupe/60 italic leading-relaxed">
-                        Toggle "Active Client" to unlock their Wardrobe features in the Vault.
+                        Toggle &quot;Active Client&quot; to unlock their Wardrobe features in the Vault.
                     </p>
                 </div>
             </div>

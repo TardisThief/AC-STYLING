@@ -71,7 +71,7 @@ export default function UserAssignmentModal({ isOpen, onClose, wardrobeId, wardr
                         <div className="bg-ac-taupe p-4 flex items-center justify-between text-white">
                             <div>
                                 <h3 className="font-serif text-lg">Assign Wardrobe</h3>
-                                <p className="text-xs opacity-60">Assigning "{wardrobeTitle}"</p>
+                                <p className="text-xs opacity-60">Assigning &quot;{wardrobeTitle}&quot;</p>
                             </div>
                             <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full transition-colors">
                                 <X size={20} />

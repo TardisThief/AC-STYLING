@@ -162,7 +162,7 @@ export default function IntakeLanding({ token, clientName, locale, user }: Intak
                     >
                         <p className="text-red-500 font-bold mb-4">Access Issue</p>
                         <p className="text-sm text-ac-taupe/70 mb-6">
-                            We couldn't activate access with this link. It may be expired or already claimed.
+                            We couldn&apos;t activate access with this link. It may be expired or already claimed.
                         </p>
                         <button
                             onClick={() => window.location.reload()}

@@ -138,7 +138,7 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
             </div>
 
             <p className="font-serif text-lg leading-relaxed text-ac-taupe mb-6 italic line-clamp-4">
-                "{testimonial.text}"
+                &quot;{testimonial.text}&quot;
             </p>
 
             <div>

@@ -69,10 +69,10 @@ export default function ProductGrid({ items, locale, savedIds, onSaveToggle }: P
                                     <div className="absolute inset-0 bg-ac-taupe/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-8 text-center">
                                         <Sparkles className="text-ac-gold mb-3" size={24} />
                                         <p className="text-ac-beige font-serif text-lg italic leading-relaxed">
-                                            "{item.curator_note}"
+                                            &quot;{item.curator_note}&quot;
                                         </p>
                                         <div className="mt-4 w-8 h-[1px] bg-ac-gold/50" />
-                                        <p className="text-xs uppercase tracking-widest text-ac-gold/80 mt-2">Alejandra's Note</p>
+                                        <p className="text-xs uppercase tracking-widest text-ac-gold/80 mt-2">Alejandra&apos;s Note</p>
                                     </div>
                                 )}
 

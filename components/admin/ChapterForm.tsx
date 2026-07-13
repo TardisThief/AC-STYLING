@@ -651,7 +651,7 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
                                                     <option value="color_energy">Color Energy - Supporting Details</option>
                                                 </select>
                                                 <p className="text-[9px] text-ac-taupe/50 mt-1 italic">
-                                                    Answers to this question will dynamically appear in the User's Profile Header.
+                                                    Answers to this question will dynamically appear in the User&apos;s Profile Header.
                                                 </p>
                                             </div>
                                         )}

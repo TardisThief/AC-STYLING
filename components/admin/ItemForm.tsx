@@ -93,7 +93,7 @@ export default function ItemForm({ item, brands, onSuccess, onCancel }: ItemForm
             </div>
 
             <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-ac-taupe/60 mb-1">Alejandra's Tip (Curator Note)</label>
+                <label className="block text-xs font-bold uppercase tracking-widest text-ac-taupe/60 mb-1">Alejandra&apos;s Tip (Curator Note)</label>
                 <textarea
                     placeholder="Why this item?"
                     value={formData.curator_note}

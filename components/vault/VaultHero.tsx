@@ -49,7 +49,7 @@ export default function VaultHero() {
                                 Editorial
                             </span>
                             <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-4 drop-shadow-md">
-                                The Spring '26 Capsule: Refined utility.
+                                The Spring &apos;26 Capsule: Refined utility.
                             </h2>
                             <Link
                                 href="/vault/boutique"

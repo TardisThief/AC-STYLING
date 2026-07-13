@@ -67,7 +67,7 @@ export default function StudioInbox() {
                 <div className="inline-block p-4 bg-ac-olive/10 rounded-full mb-4 text-ac-olive">
                     <Check size={32} />
                 </div>
-                <h3 className="font-serif text-2xl text-ac-taupe mb-2">You're all caught up!</h3>
+                <h3 className="font-serif text-2xl text-ac-taupe mb-2">You&apos;re all caught up!</h3>
                 <p className="text-ac-taupe/60">No new wardrobe items in the inbox.</p>
                 <button onClick={loadInbox} className="mt-6 text-xs uppercase tracking-widest text-ac-gold hover:text-ac-olive flex items-center justify-center gap-2">
                     <RefreshCw size={14} /> Refresh Feed

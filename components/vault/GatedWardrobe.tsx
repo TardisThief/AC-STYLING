@@ -182,7 +182,7 @@ export default function GatedWardrobe({ isActiveClient, userId, initialItems = [
 
                                 <p className="text-[10px] uppercase tracking-widest font-bold mb-1">{item.category || 'Uncategorized'}</p>
                                 {item.client_note && (
-                                    <p className="text-[10px] italic opacity-80 line-clamp-2">"{item.client_note}"</p>
+                                    <p className="text-[10px] italic opacity-80 line-clamp-2">&quot;{item.client_note}&quot;</p>
                                 )}
                             </div>
                         </div>

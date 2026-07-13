@@ -473,7 +473,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                             <div className="p-8 border-b border-ac-taupe/10 flex items-center justify-between">
                                 <div>
                                     <h3 className="font-serif text-3xl text-ac-taupe">Curation Ingestion</h3>
-                                    <p className="text-[10px] uppercase tracking-widest font-bold text-ac-taupe/40 mt-1">Source items for the client's virtual wardrobe</p>
+                                    <p className="text-[10px] uppercase tracking-widest font-bold text-ac-taupe/40 mt-1">Source items for the client&apos;s virtual wardrobe</p>
                                 </div>
                             </div>
 
