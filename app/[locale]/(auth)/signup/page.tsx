@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Link } from "@/i18n/routing";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { Mail, Loader2, Sparkles } from "lucide-react";
@@ -149,7 +150,7 @@ export default function SignupPage() {
                 </button>
 
                 <p className="text-center text-[10px] text-ac-taupe/40 uppercase tracking-widest mt-6">
-                    Already have an account? <a href="/login" className="text-ac-taupe font-bold hover:text-ac-gold transition-colors">Sign In</a>
+                    Already have an account? <Link href="/login" className="text-ac-taupe font-bold hover:text-ac-gold transition-colors">Sign In</Link>
                 </p>
 
                 {message && (

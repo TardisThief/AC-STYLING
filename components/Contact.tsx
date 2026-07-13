@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Instagram } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 
 const TikTokIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
@@ -54,12 +54,12 @@ export default function Contact() {
                         {t('description')}
                     </p>
 
-                    <a
+                    <Link
                         href="/book"
                         className="inline-block px-8 py-3 border border-ac-sand text-ac-sand font-sans text-xs uppercase tracking-[0.2em] hover:bg-ac-sand hover:text-ac-taupe transition-all duration-300 mb-12"
                     >
                         {t('cta')}
-                    </a>
+                    </Link>
 
                     <div className="flex flex-col items-center space-y-6">
                         <a
