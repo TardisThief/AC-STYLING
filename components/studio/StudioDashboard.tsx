@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Wardrobe } from "@/app/lib/types";
 import { User, Ruler, Shirt, Layout, ChevronRight, Menu, X, Check, Loader2, UserPlus, Archive } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import WardrobeSwitcher from "./WardrobeSwitcher";
@@ -22,7 +23,7 @@ interface StudioDashboardProps {
 export type StudioTab = 'tailor' | 'wardrobe' | 'lookbook';
 
 export default function StudioDashboard({ locale }: StudioDashboardProps) {
-    const [selectedWardrobe, setSelectedWardrobe] = useState<any>(null);
+    const [selectedWardrobe, setSelectedWardrobe] = useState<Wardrobe | null>(null);
     const [activeTab, setActiveTab] = useState<StudioTab>('wardrobe');
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -78,7 +79,7 @@ export default function StudioDashboard({ locale }: StudioDashboardProps) {
                 </div>
 
                 <WardrobeSwitcher
-                    onSelect={(wardrobe: any) => {
+                    onSelect={(wardrobe: Wardrobe) => {
                         setSelectedWardrobe(wardrobe);
                         setMobileSidebarOpen(false);
                     }}

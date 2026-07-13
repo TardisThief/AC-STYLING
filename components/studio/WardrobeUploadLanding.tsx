@@ -188,7 +188,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                 } else {
                     toast.error(`Failed to save ${staged.file.name}`);
                 }
-            } catch (err: any) {
+            } catch (err) {
                 console.error('Upload error:', err);
                 toast.error(`Error uploading ${staged.file.name}`);
             }

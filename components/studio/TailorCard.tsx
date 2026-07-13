@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { EssenceResponse } from "@/app/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { Ruler, Sparkles, Check, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
@@ -22,7 +23,7 @@ const MEASUREMENT_FIELDS = [
 
 export default function TailorCard({ ownerId: ownerIdProp }: TailorCardProps) {
     const [measurements, setMeasurements] = useState<Record<string, string>>({});
-    const [dna, setDna] = useState<any[]>([]);
+    const [dna, setDna] = useState<EssenceResponse[]>([]);
     const [isActiveClient, setIsActiveClient] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -169,7 +170,7 @@ export default function TailorCard({ ownerId: ownerIdProp }: TailorCardProps) {
                                         {entry.question_key.replace(/_/g, ' ')}
                                     </h4>
                                     <p className="font-serif text-lg italic leading-relaxed">
-                                        &quot;{entry.response_value || entry.answer_value}&quot;
+                                        &quot;{String(entry.response_value || entry.answer_value || '')}&quot;
                                     </p>
                                 </div>
                             )) : (

@@ -8,6 +8,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import html2canvas from "html2canvas";
 import { signWardrobeItems } from "@/lib/wardrobe-images";
 import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
+import type { Lookbook, WardrobeItem } from "@/app/lib/types";
+
+// Draggable image placed on the lookbook canvas (persisted in lookbooks.lookbook_items).
+interface CanvasItem {
+    id: string;
+    x?: number;
+    y?: number;
+    width?: number;
+    image_url?: string | null;
+    [key: string]: unknown;
+}
 
 interface DigitalLookbookProps {
     wardrobeId: string;
@@ -16,15 +27,15 @@ interface DigitalLookbookProps {
 }
 
 export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = false }: DigitalLookbookProps) {
-    const [lookbooks, setLookbooks] = useState<any[]>([]);
-    const [activeLookbook, setActiveLookbook] = useState<any>(null);
-    const [wardrobeItems, setWardrobeItems] = useState<any[]>([]);
+    const [lookbooks, setLookbooks] = useState<Lookbook[]>([]);
+    const [activeLookbook, setActiveLookbook] = useState<Lookbook | null>(null);
+    const [wardrobeItems, setWardrobeItems] = useState<WardrobeItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     // Canvas State
-    const [canvasItems, setCanvasItems] = useState<any[]>([]);
+    const [canvasItems, setCanvasItems] = useState<CanvasItem[]>([]);
     const [selectedCanvasItem, setSelectedCanvasItem] = useState<string | null>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +53,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
     useEffect(() => {
         if (activeLookbook) {
             // Re-sign saved canvas image URLs for the private bucket.
-            signWardrobeItems(supabase, activeLookbook.lookbook_items || []).then(setCanvasItems);
+            signWardrobeItems(supabase, (activeLookbook.lookbook_items as CanvasItem[]) || []).then(setCanvasItems);
         } else {
             setCanvasItems([]);
         }
@@ -142,7 +153,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
         toast.success("Lookbook deleted");
     };
 
-    const handleCloneLookbook = async (lookbook: any) => {
+    const handleCloneLookbook = async (lookbook: Lookbook) => {
         const { id, created_at, ...rest } = lookbook;
         const { data, error } = await supabase.from('lookbooks').insert({
             ...rest,
@@ -313,7 +324,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                         className={`absolute cursor-move ${selectedCanvasItem === index.toString() && !isClientView ? 'ring-1 ring-ac-gold ring-offset-2' : ''}`}
                                         style={{ left: item.x || '10%', top: item.y || '10%', width: item.width || 150 }}
                                     >
-                                        <img src={item.image_url} alt="" className="w-full h-full object-contain pointer-events-none drop-shadow-xl" />
+                                        <img src={item.image_url ?? undefined} alt="" className="w-full h-full object-contain pointer-events-none drop-shadow-xl" />
 
                                         {/* Resize / Remove Handles - Only for Admin */}
                                         {selectedCanvasItem === index.toString() && !isClientView && (
@@ -354,7 +365,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                                 onClick={() => setCanvasItems([...canvasItems, { ...item, x: 50, y: 50, width: 150 }])}
                                                 className="aspect-[3/4] border border-ac-taupe/10 rounded-sm overflow-hidden hover:border-ac-gold transition-all relative group"
                                             >
-                                                <img src={item.image_url} alt="" className="w-full h-full object-cover" />
+                                                <img src={item.image_url ?? undefined} alt="" className="w-full h-full object-cover" />
                                                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                     <Plus size={16} className="text-white" />
                                                 </div>

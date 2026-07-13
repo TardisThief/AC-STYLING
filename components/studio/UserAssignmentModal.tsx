@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Profile } from "@/app/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, User, Check, Loader2, AlertCircle } from "lucide-react";
 import { searchProfiles, assignWardrobe } from "@/app/actions/wardrobes";
@@ -15,7 +16,7 @@ interface UserAssignmentModalProps {
 
 export default function UserAssignmentModal({ isOpen, onClose, wardrobeId, wardrobeTitle }: UserAssignmentModalProps) {
     const [query, setQuery] = useState("");
-    const [results, setResults] = useState<any[]>([]);
+    const [results, setResults] = useState<Pick<Profile, 'id' | 'full_name' | 'email' | 'avatar_url'>[]>([]);
     const [searching, setSearching] = useState(false);
     const [assigning, setAssigning] = useState<string | null>(null); // ID of user being assigned
 
@@ -39,7 +40,7 @@ export default function UserAssignmentModal({ isOpen, onClose, wardrobeId, wardr
         return () => clearTimeout(timer);
     }, [query]);
 
-    const handleAssign = async (user: any) => {
+    const handleAssign = async (user: Pick<Profile, 'id' | 'full_name' | 'email' | 'avatar_url'>) => {
         const displayName = user.full_name || user.email;
         if (!confirm(`Are you sure you want to assign "${wardrobeTitle}" to ${displayName}? This will enable Studio access for them.`)) {
             return;

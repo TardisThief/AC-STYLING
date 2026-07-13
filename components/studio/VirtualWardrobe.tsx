@@ -9,6 +9,8 @@ import { uploadRemoteImage } from "@/app/actions/studio";
 import { extractUrlMetadata } from "@/app/actions/scraper";
 import { signWardrobeItems } from "@/lib/wardrobe-images";
 import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
+import { getErrorMessage } from "@/app/lib/errors";
+import type { WardrobeItem, BoutiqueItem, Profile } from "@/app/lib/types";
 
 interface VirtualWardrobeProps {
     wardrobeId: string;
@@ -20,11 +22,11 @@ const CATEGORIES = ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Accesso
 const STATUSES = ['Keep', 'Tailor', 'Donate', 'Archive'];
 
 export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = false }: VirtualWardrobeProps) {
-    const [items, setItems] = useState<any[]>([]);
-    const [boutiqueItems, setBoutiqueItems] = useState<any[]>([]);
+    const [items, setItems] = useState<WardrobeItem[]>([]);
+    const [boutiqueItems, setBoutiqueItems] = useState<BoutiqueItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterCategory, setFilterCategory] = useState<string | null>(null);
-    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [selectedItem, setSelectedItem] = useState<WardrobeItem | null>(null);
     const [isAdding, setIsAdding] = useState(false);
     const [addMode, setAddMode] = useState<'boutique' | 'upload' | 'link'>('boutique');
     const [isSaving, setIsSaving] = useState(false);
@@ -46,7 +48,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
     // Clone Item State
     const [isCloning, setIsCloning] = useState(false);
     const [targetClient, setTargetClient] = useState("");
-    const [allClients, setAllClients] = useState<any[]>([]);
+    const [allClients, setAllClients] = useState<Pick<Profile, 'id' | 'full_name'>[]>([]);
 
     const supabase = createClient();
 
@@ -79,7 +81,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
         loadData();
     }, [wardrobeId, ownerId, supabase, isClientView]);
 
-    const handleUpdateItem = async (itemId: string, updates: any) => {
+    const handleUpdateItem = async (itemId: string, updates: Partial<WardrobeItem>) => {
         const { error } = await supabase
             .from('wardrobe_items')
             .update(updates)
@@ -129,8 +131,8 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
             toast.success(`Item cloned to ${allClients.find(c => c.id === targetClient)?.full_name || 'another client'}'s wardrobe!`);
             setIsCloning(false);
             setTargetClient("");
-        } catch (err: any) {
-            toast.error("Failed to clone item: " + err.message);
+        } catch (err) {
+            toast.error("Failed to clone item: " + getErrorMessage(err));
         } finally {
             setIsSaving(false);
         }
@@ -209,7 +211,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                 ${selectedItem?.id === item.id ? 'ring-2 ring-ac-gold border-transparent shadow-xl' : 'border-white/50 hover:border-ac-gold/30'}
                             `}
                         >
-                            <img src={item.image_url} alt="" className="w-full h-full object-cover" />
+                            <img src={item.image_url ?? undefined} alt="" className="w-full h-full object-cover" />
                             <div className="absolute top-2 left-2 flex gap-1">
                                 {item.status === 'Keep' && <div className="bg-ac-olive text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">Keep</div>}
                                 {item.status === 'Tailor' && <div className="bg-ac-gold text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">Tailor</div>}
@@ -275,7 +277,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                 </div>
 
                                 <div className="aspect-[3/4] w-full bg-ac-taupe/5 rounded-sm overflow-hidden border border-ac-taupe/10 relative group">
-                                    <img src={selectedItem.image_url} className="w-full h-full object-cover" alt="" />
+                                    <img src={selectedItem.image_url ?? undefined} className="w-full h-full object-cover" alt="" />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button
                                             onClick={() => setIsUpdatingImage(true)}
@@ -487,7 +489,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                     ].map(mode => (
                                         <button
                                             key={mode.id}
-                                            onClick={() => setAddMode(mode.id as any)}
+                                            onClick={() => setAddMode(mode.id as 'boutique' | 'upload' | 'link')}
                                             className={`
                                                 w-full flex items-center gap-3 px-4 py-3 rounded-sm text-xs font-bold uppercase tracking-widest transition-all
                                                 ${addMode === mode.id ? 'bg-ac-taupe text-white shadow-lg' : 'text-ac-taupe/40 hover:bg-ac-taupe/5'}
@@ -626,8 +628,8 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                             toast.success("Item uploaded successfully");
                                                             setIsAdding(false);
                                                             setUploadFile(null);
-                                                        } catch (err: any) {
-                                                            toast.error(err.message || "Failed to upload");
+                                                        } catch (err) {
+                                                            toast.error(getErrorMessage(err) || "Failed to upload");
                                                         } finally {
                                                             setIsSaving(false);
                                                         }
@@ -891,8 +893,8 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                     setIsUpdatingImage(false);
                                                     setUpdateFile(null);
                                                     toast.success("Image Updated");
-                                                } catch (err: any) {
-                                                    toast.error("Error: " + err.message);
+                                                } catch (err) {
+                                                    toast.error("Error: " + getErrorMessage(err));
                                                 } finally {
                                                     setIsSaving(false);
                                                 }

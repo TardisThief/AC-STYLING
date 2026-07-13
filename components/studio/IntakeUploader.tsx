@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { getErrorMessage } from "@/app/lib/errors";
 import { Upload, X, Plus, Check, Loader2, Sparkles, Image as ImageIcon } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -167,9 +168,9 @@ export default function IntakeUploader({ token, isGuest, locale, onUploadSuccess
                 toast.success("Successfully uploaded your style assets!");
             }
 
-        } catch (error: any) {
+        } catch (error) {
             console.error("Upload Error:", error);
-            toast.error(`Upload Failed: ${error.message || "Unknown error"}`);
+            toast.error(`Upload Failed: ${getErrorMessage(error) || "Unknown error"}`);
         } finally {
             setIsProcessing(false);
         }

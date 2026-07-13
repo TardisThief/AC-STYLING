@@ -44,7 +44,7 @@ export default async function MyStudioPage({
         <ClientStudioDashboard
             wardrobeId={wardrobe.id}
             ownerId={user.id}
-            initialMeasurements={tailorCard?.measurements}
+            initialMeasurements={(tailorCard?.measurements ?? {}) as Record<string, string>}
             userName={profile.full_name?.split(' ')[0] || "Client"}
         />
     );

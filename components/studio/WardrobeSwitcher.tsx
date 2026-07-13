@@ -1,18 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Wardrobe } from "@/app/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { Search, FolderOpen, Plus, Link as LinkIcon, User } from "lucide-react";
 import { toast } from "sonner";
 
 interface WardrobeSwitcherProps {
-    onSelect: (wardrobe: any) => void;
+    onSelect: (wardrobe: Wardrobe) => void;
     onAddWardrobe: () => void;
     selectedId?: string;
 }
 
 export default function WardrobeSwitcher({ onSelect, onAddWardrobe, selectedId }: WardrobeSwitcherProps) {
-    const [wardrobes, setWardrobes] = useState<any[]>([]);
+    const [wardrobes, setWardrobes] = useState<Wardrobe[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const supabase = createClient();
@@ -115,7 +116,7 @@ export default function WardrobeSwitcher({ onSelect, onAddWardrobe, selectedId }
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                copyUploadLink(wardrobe.upload_token);
+                                copyUploadLink(wardrobe.upload_token ?? '');
                             }}
                             className={`
                                 absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-sm transition-all
