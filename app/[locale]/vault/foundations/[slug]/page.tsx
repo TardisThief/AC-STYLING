@@ -55,7 +55,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     const description = locale === 'es' && chapter.description_es ? chapter.description_es : chapter.description;
     const labQuestionsRaw = chapter.lab_questions || [];
     // Shared Key Strategy: We map over the SINGLE array of questions, but swap the label/placeholder if locale is ES.
-    const labQuestions = labQuestionsRaw.map((q: any) => ({
+    const labQuestions = labQuestionsRaw.map((q: Record<string, unknown>) => ({
         ...q,
         label: (locale === 'es' && q.label_es) ? q.label_es : q.label,
         placeholder: (locale === 'es' && q.placeholder_es) ? q.placeholder_es : q.placeholder

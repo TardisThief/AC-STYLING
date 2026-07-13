@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 
 export type EssenceResponse = {
     question_key: string;
-    answer_value: any;
+    answer_value: unknown;
     chapter_slug?: string;
     updated_at: string;
 };
@@ -53,7 +53,7 @@ export async function saveEssenceResponse(
     chapterId: string,
     chapterSlug: string,
     questionKey: string,
-    answerValue: any
+    answerValue: unknown
 ) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -187,7 +187,7 @@ export async function getAllEssenceData() {
 
     if (!chaptersData) return [];
 
-    const unlockedChapterIds = chaptersData.map((c: any) => c.id);
+    const unlockedChapterIds = chaptersData.map((c: { id: string }) => c.id);
 
     // 3. Fetch essence_responses for this user
     const { data: responsesData } = await supabase
@@ -196,7 +196,12 @@ export async function getAllEssenceData() {
         .eq('user_id', user.id)
         .in('chapter_id', unlockedChapterIds);
 
-    const masterclassGroups: Record<string, any> = {};
+    // Shapes mirror components/vault/EssenceJournal.tsx (structural match).
+    type EssenceQuestion = { key: string; label: string; placeholder: string; value: string; updated_at: string | null };
+    type EssenceChapter = { chapterId: string; chapterTitle: string; chapterSlug: string; questions: EssenceQuestion[] };
+    type EssenceMasterclassGroup = { masterclassId: string; masterclassTitle: string; chapters: EssenceChapter[] };
+
+    const masterclassGroups: Record<string, EssenceMasterclassGroup> = {};
 
     for (const chapter of chaptersData) {
         const mcId = chapter.masterclass_id || 'standalone';
@@ -216,18 +221,18 @@ export async function getAllEssenceData() {
 
         if (questions.length === 0) continue;
 
-        const chapterQuestions = questions.map((q: any) => {
+        const chapterQuestions: EssenceQuestion[] = questions.map((q: Record<string, unknown>) => {
             const resp = responsesData?.find(r => r.chapter_id === chapter.id && r.question_key === q.key);
-            let val = resp?.answer_value || '';
+            let val: unknown = resp?.answer_value || '';
             if (typeof val === 'object' && val !== null) {
                 val = JSON.stringify(val);
             }
 
             return {
-                key: q.key,
-                label: q.label || q.key,
-                placeholder: q.placeholder || '',
-                value: val,
+                key: String(q.key ?? ''),
+                label: String(q.label ?? q.key ?? ''),
+                placeholder: String(q.placeholder ?? ''),
+                value: typeof val === 'string' ? val : String(val ?? ''),
                 updated_at: resp?.updated_at || null
             };
         });
@@ -257,7 +262,7 @@ export async function checkIncompleteMasterclassLabs(chapterId: string): Promise
     const allData = await getAllEssenceData();
     if (!allData) return false;
 
-    const mcBlock = allData.find((a: any) => a.masterclassId === chData.masterclass_id);
+    const mcBlock = allData.find(a => a.masterclassId === chData.masterclass_id);
     if (!mcBlock) return false;
 
     for (const ch of mcBlock.chapters) {

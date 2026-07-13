@@ -17,7 +17,7 @@ export type DossierEntry = {
     masterclass_title: string;
     chapter_title: string;
     question_key: string;
-    answer_value: any;
+    answer_value: unknown;
     updated_at: string;
 }
 

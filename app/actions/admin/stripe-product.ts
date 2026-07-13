@@ -2,6 +2,7 @@
 
 import { stripe } from '@/utils/stripe';
 import { createClient } from '@/utils/supabase/server';
+import { getErrorMessage } from '@/app/lib/errors';
 
 async function checkAdmin() {
     const supabase = await createClient();
@@ -51,8 +52,8 @@ export async function createStripeProduct(name: string, amountInDollars: number,
             productId: product.id,
             priceId: price.id
         };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Stripe Generation Error:", error);
-        return { success: false, error: error.message };
+        return { success: false, error: getErrorMessage(error) };
     }
 }

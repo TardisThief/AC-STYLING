@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { getErrorMessage } from "@/app/lib/errors";
 
 // =============================================================================
 // Types
@@ -112,9 +113,9 @@ export async function createWardrobe(
 
         revalidatePath('/vault/studio');
         return { success: true, wardrobe: data as Wardrobe };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Critical Error in createWardrobe:", error);
-        return { success: false, error: error.message || "Internal Server Error" };
+        return { success: false, error: getErrorMessage(error) || "Internal Server Error" };
     }
 }
 
@@ -231,9 +232,9 @@ export async function getSignedUploadUrl(
             filePath: filePath
         };
 
-    } catch (error: any) {
+    } catch (error) {
         console.error("Signed URL Error:", error);
-        return { success: false, error: error.message || "Failed to prepare upload" };
+        return { success: false, error: getErrorMessage(error) || "Failed to prepare upload" };
     }
 }
 
@@ -282,9 +283,9 @@ export async function createWardrobeItem(
 
         return { success: true };
 
-    } catch (error: any) {
+    } catch (error) {
         console.error("Create Item Error:", error);
-        return { success: false, error: error.message || "Failed to save item" };
+        return { success: false, error: getErrorMessage(error) || "Failed to save item" };
     }
 }
 
@@ -347,9 +348,9 @@ export async function uploadToWardrobe(
 
         return { success: true };
 
-    } catch (error: any) {
+    } catch (error) {
         console.error("Wardrobe Upload Error:", error);
-        return { success: false, error: error.message || "Upload failed" };
+        return { success: false, error: getErrorMessage(error) || "Upload failed" };
     }
 }
 
@@ -607,7 +608,7 @@ export async function deleteWardrobe(
 // Helper: Search Profiles (for assignment)
 // =============================================================================
 
-export async function searchProfiles(query: string): Promise<{ success: boolean; profiles?: any[]; error?: string }> {
+export async function searchProfiles(query: string): Promise<{ success: boolean; profiles?: { id: string; full_name: string | null; email: string | null; avatar_url: string | null }[]; error?: string }> {
     const supabase = await createClient();
 
     // Check admin

@@ -25,7 +25,7 @@ export interface AdminNotification {
     reference_id: string | null;
     status: NotificationStatus;
     action_taken: string | null;
-    metadata: Record<string, any>;
+    metadata: Record<string, unknown>;
     profiles?: {
         full_name: string | null;
         avatar_url: string | null;
@@ -219,7 +219,7 @@ export async function updateNotificationStatus(
 
         if (error) return { success: false, error: error.message };
     } else {
-        const updateData: any = { status: newStatus };
+        const updateData: { status: NotificationStatus; action_taken?: string } = { status: newStatus };
         if (actionTaken) {
             updateData.action_taken = actionTaken;
         }

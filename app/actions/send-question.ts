@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { requireAdmin } from '@/app/lib/auth-guards';
+import { getErrorMessage } from '@/app/lib/errors';
 
 // 1. User Asks Question
 export async function askQuestion(formData: FormData) {
@@ -57,9 +58,9 @@ export async function askQuestion(formData: FormData) {
         });
 
         return { success: true };
-    } catch (e: any) {
+    } catch (e) {
         console.error("Ask Question Error:", e);
-        return { success: false, error: e.message || "Failed to submit question" };
+        return { success: false, error: getErrorMessage(e) || "Failed to submit question" };
     }
 }
 
@@ -118,9 +119,9 @@ export async function answerQuestion(questionId: string, answer: string) {
         if (notifError) console.error("Failed to update related notification:", notifError);
 
         return { success: true };
-    } catch (e: any) {
+    } catch (e) {
         console.error("Answer Error:", e);
-        return { success: false, error: e.message };
+        return { success: false, error: getErrorMessage(e) };
     }
 }
 

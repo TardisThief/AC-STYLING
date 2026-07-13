@@ -17,7 +17,7 @@ export async function updateSession(request: NextRequest) {
                 getAll() {
                     return request.cookies.getAll()
                 },
-                setAll(cookiesToSet: any[]) {
+                setAll(cookiesToSet: Array<{ name: string; value: string; options?: object }>) {
                     cookiesToSet.forEach(({ name, value, options }) =>
                         request.cookies.set(name, value)
                     )
@@ -65,7 +65,7 @@ export async function updateSession(request: NextRequest) {
         const firstSegment = pathSegments[1];
 
         // Check if the first segment is a supported locale
-        const locale = routing.locales.includes(firstSegment as any) ? firstSegment : 'en';
+        const locale = routing.locales.includes(firstSegment as typeof routing.locales[number]) ? firstSegment : 'en';
 
         url.pathname = `/${locale}/login`
         url.searchParams.set('next', request.nextUrl.pathname)

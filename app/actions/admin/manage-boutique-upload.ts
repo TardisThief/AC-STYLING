@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getErrorMessage } from "@/app/lib/errors";
 
 // =============================================================================
 // Boutique Bulk Upload Actions
@@ -58,9 +59,9 @@ export async function getSignedBoutiqueUploadUrl(
             publicUrl: publicUrl
         };
 
-    } catch (error: any) {
+    } catch (error) {
         console.error("Signed URL Error:", error);
-        return { success: false, error: error.message || "Failed to prepare upload" };
+        return { success: false, error: getErrorMessage(error) || "Failed to prepare upload" };
     }
 }
 
@@ -110,8 +111,8 @@ export async function createBoutiqueItemsBatch(
 
         return { success: true, count: count || items.length };
 
-    } catch (error: any) {
+    } catch (error) {
         console.error("Batch Create Error:", error);
-        return { success: false, error: error.message || "Failed to create items" };
+        return { success: false, error: getErrorMessage(error) || "Failed to create items" };
     }
 }

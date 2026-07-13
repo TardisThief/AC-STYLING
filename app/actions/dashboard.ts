@@ -230,7 +230,7 @@ export async function getEditorialContent(locale: string = 'en'): Promise<Editor
                         : (masterclass?.title ?? 'Masterclass');
 
                     // Use next chapter if available, otherwise the last completed one
-                    const targetChapter = nextChapterRes.data ?? lastChapter as any;
+                    const targetChapter = (nextChapterRes.data ?? lastChapter) as { title?: string; thumbnail_url?: string; slug?: string };
 
                     continueCourse = {
                         masterclassTitle,
@@ -286,7 +286,7 @@ export async function getEditorialContent(locale: string = 'en'): Promise<Editor
             if (boutiqueItem) {
                 alesPick = {
                     itemName: boutiqueItem.name,
-                    brandName: (boutiqueItem.brand as any)?.name ?? '',
+                    brandName: (boutiqueItem.brand as { name?: string } | null)?.name ?? '',
                     imageUrl: boutiqueItem.image_url ?? '',
                     href: '/vault/boutique',
                 };

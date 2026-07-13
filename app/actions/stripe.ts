@@ -1,5 +1,6 @@
 'use server';
 
+import type Stripe from 'stripe';
 import { stripe } from '@/utils/stripe';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
@@ -34,7 +35,7 @@ export async function createCheckoutSession(priceId: string, returnUrl: string) 
     }
 
     try {
-        const sessionPayload: any = {
+        const sessionPayload: Stripe.Checkout.SessionCreateParams = {
             mode: 'payment',
             line_items: [
                 {
