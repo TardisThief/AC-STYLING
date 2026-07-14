@@ -82,10 +82,10 @@ export interface Chapter {
     order_index: number;
     category: string | null;
     thumbnail_url: string | null;
-    lab_questions: unknown;
-    takeaways: unknown;
-    takeaways_es: unknown;
-    resource_urls: unknown;
+    lab_questions: unknown[] | null;
+    takeaways: unknown[] | null;
+    takeaways_es: unknown[] | null;
+    resource_urls: unknown[] | null;
     masterclass_id: string | null;
     is_standalone: boolean | null;
     stripe_product_id: string | null;
@@ -95,6 +95,8 @@ export interface Chapter {
     description_es: string | null;
     created_at: string | null;
     updated_at: string | null;
+    // Supabase join alias (masterclass:masterclasses(title)); may be object or array.
+    masterclasses?: { title: string } | { title: string }[] | null;
 }
 
 export interface Masterclass {
@@ -151,6 +153,8 @@ export interface BoutiqueItem {
     active: boolean | null;
     created_at: string | null;
     updated_at: string | null;
+    // Supabase join alias (brand:partner_brands(name)).
+    brand?: { name: string } | null;
 }
 
 export interface PartnerBrand {

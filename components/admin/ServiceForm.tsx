@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Service } from "@/app/lib/types";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, ImageIcon, Plus, Trash2 } from "lucide-react";
 import { upsertService } from "@/app/actions/admin/manage-services";
@@ -8,7 +9,7 @@ import { uploadFile } from "@/app/actions/admin/upload-file";
 import { toast } from "sonner";
 
 interface ServiceFormProps {
-    service?: any;
+    service?: Service;
     onSuccess: () => void;
     onCancel?: () => void;
 }
@@ -111,7 +112,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
         // Remove camelCase keys that don't match DB columns if upsert is strict, 
         // but Supabase JS client usually ignores extra fields if not in schema? 
         // Safer to map explicitly.
-        const dbPayload: any = {
+        const dbPayload: Record<string, unknown> = {
             title: payload.title,
             subtitle: payload.subtitle,
             description: payload.description,

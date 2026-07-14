@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { BoutiqueItem, BoutiqueCollection } from "@/app/lib/types";
 import { Plus, Trash2, Edit2, Loader2, ChevronDown, ChevronUp, Check } from "lucide-react";
 import { toast } from "sonner";
 import ImageUpload from "./ImageUpload";
@@ -13,7 +14,7 @@ import {
 } from "@/app/actions/admin/manage-boutique";
 
 interface CollectionsManagerProps {
-    items: any[];
+    items: BoutiqueItem[];
 }
 
 const EMPTY_FORM = {
@@ -26,7 +27,7 @@ const EMPTY_FORM = {
 };
 
 export default function CollectionsManager({ items }: CollectionsManagerProps) {
-    const [collections, setCollections] = useState<any[]>([]);
+    const [collections, setCollections] = useState<BoutiqueCollection[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isCreating, setIsCreating] = useState(false);
@@ -43,7 +44,7 @@ export default function CollectionsManager({ items }: CollectionsManagerProps) {
 
     useEffect(() => { load(); }, []);
 
-    const startEdit = (col: any) => {
+    const startEdit = (col: BoutiqueCollection) => {
         setEditingId(col.id);
         setIsCreating(false);
         setFormData({
@@ -54,7 +55,7 @@ export default function CollectionsManager({ items }: CollectionsManagerProps) {
             cover_image_url: col.cover_image_url || "",
             active: col.active ?? true,
         });
-        setSelectedItems((col.items || []).map((i: any) => i.item_id));
+        setSelectedItems((col.items || []).map((i) => i.item_id));
     };
 
     const startCreate = () => {
@@ -69,7 +70,7 @@ export default function CollectionsManager({ items }: CollectionsManagerProps) {
         setIsCreating(false);
     };
 
-    const set = (key: string, val: any) => setFormData(prev => ({ ...prev, [key]: val }));
+    const set = (key: string, val: unknown) => setFormData(prev => ({ ...prev, [key]: val }));
 
     const toggleItem = (itemId: string) => {
         setSelectedItems(prev =>

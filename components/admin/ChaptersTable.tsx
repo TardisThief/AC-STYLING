@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import type { Chapter } from "@/app/lib/types";
 import { Edit2, Trash2, Filter, ChevronUp, ChevronDown } from "lucide-react";
 import { deleteChapter } from "@/app/actions/admin/manage-chapters";
 import { toast } from "sonner";
 
 interface ChaptersTableProps {
-    chapters: any[];
-    onEdit: (chapter: any) => void;
+    chapters: Chapter[];
+    onEdit: (chapter: Chapter) => void;
     onDelete: () => void;
 }
 
@@ -31,19 +32,25 @@ export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTa
         }
     };
 
+    // Supabase to-one join may arrive as object or single-element array.
+    const mcTitleOf = (c: Chapter): string | undefined => {
+        const m = Array.isArray(c.masterclasses) ? c.masterclasses[0] : c.masterclasses;
+        return m?.title;
+    };
+
     // Calculate unique categories from data to ensure we catch any custom ones.
     // Also use the assigned masterclass title if category is masterclass.
     const availableCategories = Array.from(
-        new Set(chapters.map(c => c.masterclasses?.title || c.category))
+        new Set(chapters.map(c => mcTitleOf(c) || c.category).filter((v): v is string => !!v))
     ).sort();
 
     let filteredChapters = selectedCategory === 'all'
         ? chapters
-        : chapters.filter(c => (c.masterclasses?.title || c.category) === selectedCategory);
+        : chapters.filter(c => (mcTitleOf(c) || c.category) === selectedCategory);
 
-    const getSortValue = (chapter: any, field: SortField) => {
+    const getSortValue = (chapter: Chapter, field: SortField) => {
         if (field === 'category') {
-            return chapter.masterclasses?.title || chapter.category || '';
+            return mcTitleOf(chapter) || chapter.category || '';
         }
         if (field === 'resources') {
             return chapter.resource_urls?.length || 0;
@@ -138,7 +145,7 @@ export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTa
                                         ? 'bg-ac-olive/10 text-ac-olive'
                                         : 'bg-ac-gold/10 text-ac-gold'
                                         }`}>
-                                        {chapter.masterclasses?.title || chapter.category}
+                                        {mcTitleOf(chapter) || chapter.category}
                                     </span>
                                 </td>
                                 <td className="py-3 px-4 text-ac-taupe font-serif">{chapter.title}</td>

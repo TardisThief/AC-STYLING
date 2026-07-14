@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ComponentProps } from "react";
 import ChapterForm from "./ChapterForm";
 import ChaptersTable from "./ChaptersTable";
 import MasterclassForm from "./MasterclassForm";
@@ -19,22 +19,23 @@ import { Folder, FileVideo, Plus, Users, Tag, Sparkles, Globe } from "lucide-rea
 
 import AdminNotificationsPanel from "./AdminNotificationsPanel";
 import { getUnreadNotificationCount } from "@/app/actions/notifications";
+import type { Chapter, Masterclass, Service, Profile } from "@/app/lib/types";
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<'notifications' | 'masterclasses' | 'chapters' | 'clients' | 'boutique' | 'services' | 'trustedby'>('notifications');
 
     // Data
-    const [chapters, setChapters] = useState<any[]>([]);
-    const [masterclasses, setMasterclasses] = useState<any[]>([]);
-    const [services, setServices] = useState<any[]>([]);
+    const [chapters, setChapters] = useState<Chapter[]>([]);
+    const [masterclasses, setMasterclasses] = useState<Masterclass[]>([]);
+    const [services, setServices] = useState<Service[]>([]);
 
     // Notifications Count
     const [notificationsCount, setNotificationsCount] = useState(0);
 
     // Forms & Modals
     const [isCreating, setIsCreating] = useState(false);
-    const [editingItem, setEditingItem] = useState<any | null>(null);
-    const [selectedClient, setSelectedClient] = useState<any | null>(null);
+    const [editingItem, setEditingItem] = useState<Chapter | Masterclass | Service | null>(null);
+    const [selectedClient, setSelectedClient] = useState<Profile | null>(null);
 
     // Offer Management State
     const [editingOfferSlug, setEditingOfferSlug] = useState<string | null>(null);
@@ -237,19 +238,19 @@ export default function AdminDashboard() {
                             />
                         ) : activeTab === 'masterclasses' ? (
                             <MasterclassForm
-                                masterclass={editingItem}
+                                masterclass={editingItem as Masterclass | undefined}
                                 onSuccess={handleSuccess}
                                 onCancel={() => { setIsCreating(false); setEditingItem(null); }}
                             />
                         ) : activeTab === 'chapters' ? (
                             <ChapterForm
-                                chapter={editingItem}
+                                chapter={editingItem as ComponentProps<typeof ChapterForm>['chapter']}
                                 onSuccess={handleSuccess}
                                 onCancel={() => { setIsCreating(false); setEditingItem(null); }}
                             />
                         ) : (
                             <ServiceForm
-                                service={editingItem}
+                                service={editingItem as Service | undefined}
                                 onSuccess={handleSuccess}
                                 onCancel={() => { setIsCreating(false); setEditingItem(null); }}
                             />

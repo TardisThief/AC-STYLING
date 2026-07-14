@@ -2,14 +2,15 @@
 "use client";
 
 import { useState } from "react";
+import type { BoutiqueItem, PartnerBrand } from "@/app/lib/types";
 import { createBoutiqueItem, updateBoutiqueItem } from "@/app/actions/admin/manage-boutique";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "./ImageUpload";
 
 interface ItemFormProps {
-    item?: any;
-    brands: any[];
+    item?: BoutiqueItem;
+    brands: PartnerBrand[];
     onSuccess: () => void;
     onCancel: () => void;
 }

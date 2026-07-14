@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { WardrobeItem } from "@/app/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, Tag, Sparkles, Loader2, RefreshCw, MessageSquare } from "lucide-react";
 import { getStudioInboxItems, processWardrobeItem } from "@/app/actions/studio";
@@ -19,7 +20,7 @@ function formatDistanceToNow(date: Date | string) {
 }
 
 export default function StudioInbox() {
-    const [items, setItems] = useState<any[]>([]);
+    const [items, setItems] = useState<WardrobeItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -41,7 +42,7 @@ export default function StudioInbox() {
         setLoading(false);
     };
 
-    const handleAction = async (itemId: string, status: 'keep' | 'donate' | 'repair', metadata?: any) => {
+    const handleAction = async (itemId: string, status: 'keep' | 'donate' | 'repair', metadata?: Record<string, unknown>) => {
         setProcessingId(itemId);
         try {
             const res = await processWardrobeItem(itemId, status, metadata);
@@ -104,7 +105,7 @@ export default function StudioInbox() {
     );
 }
 
-function InboxCard({ item, onAction, isProcessing }: { item: any, onAction: any, isProcessing: boolean }) {
+function InboxCard({ item, onAction, isProcessing }: { item: WardrobeItem, onAction: (itemId: string, status: 'keep' | 'donate' | 'repair', metadata?: Record<string, unknown>) => void, isProcessing: boolean }) {
     const [showNotes, setShowNotes] = useState(false);
     const [notes, setNotes] = useState(item.client_note || "");
 
@@ -118,7 +119,7 @@ function InboxCard({ item, onAction, isProcessing }: { item: any, onAction: any,
         >
             {/* Image */}
             <div className="aspect-[3/4] relative">
-                <img src={item.image_url} alt="Wardrobe Item" className="w-full h-full object-cover" />
+                <img src={item.image_url ?? undefined} alt="Wardrobe Item" className="w-full h-full object-cover" />
 
                 {/* Client Info Badge */}
                 <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider text-ac-taupe border border-ac-taupe/10 shadow-sm z-10">
@@ -161,7 +162,7 @@ function InboxCard({ item, onAction, isProcessing }: { item: any, onAction: any,
             {/* Footer Info */}
             <div className="p-3 border-t border-ac-taupe/10 bg-[#fcfbf9]">
                 <div className="flex justify-between items-center text-[10px] text-ac-taupe/50 uppercase tracking-wider">
-                    <span>{formatDistanceToNow(new Date(item.created_at))} ago</span>
+                    <span>{formatDistanceToNow(new Date(item.created_at ?? Date.now()))} ago</span>
                     {item.client_note && <MessageSquare size={12} className="text-ac-gold" />}
                 </div>
             </div>

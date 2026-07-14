@@ -1,10 +1,11 @@
 "use client";
 
 import { Edit, Trash2, Check, X as XIcon, DollarSign } from "lucide-react";
+import type { Service } from "@/app/lib/types";
 
 interface ServicesListProps {
-    services: any[];
-    onEdit: (service: any) => void;
+    services: Service[];
+    onEdit: (service: Service) => void;
     onDelete: (id: string) => void;
 }
 

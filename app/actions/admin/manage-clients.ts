@@ -14,11 +14,12 @@ export type ClientProfile = {
 };
 
 export type DossierEntry = {
-    masterclass_title: string;
-    chapter_title: string;
     question_key: string;
     answer_value: unknown;
     updated_at: string;
+    chapter_slug: string | null;
+    // Supabase to-one join; may arrive as an object or a single-element array.
+    masterclass: { title: string } | { title: string }[] | null;
 }
 
 /**

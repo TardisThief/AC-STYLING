@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Masterclass } from "@/app/lib/types";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
@@ -76,7 +77,7 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
         priceId: chapter?.price_id || '',
     });
 
-    const [masterclasses, setMasterclasses] = useState<any[]>([]);
+    const [masterclasses, setMasterclasses] = useState<Masterclass[]>([]);
 
     useEffect(() => {
         getMasterclasses().then(res => {
@@ -634,11 +635,11 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
                                             </label>
                                         </div>
 
-                                        {(q as any).mapToEssence && (
+                                        {(q as { mapToEssence?: boolean; mappingCategory?: string }).mapToEssence && (
                                             <div className="pl-6 animate-in slide-in-from-top-2 fade-in duration-200">
                                                 <label className="text-[10px] text-ac-taupe/40 uppercase font-bold block mb-1">Target Category</label>
                                                 <select
-                                                    value={(q as any).mappingCategory || 'style_words'}
+                                                    value={(q as { mapToEssence?: boolean; mappingCategory?: string }).mappingCategory || 'style_words'}
                                                     onChange={(e) => {
                                                         const val = e.target.value;
                                                         setLabQuestions(prev => prev.map((item, idx) => idx === i ? { ...item, mappingCategory: val } : item));
@@ -805,7 +806,7 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
                                         const toastId = toast.loading("Generating Stripe Product...");
                                         const { createStripeProduct } = await import('@/app/actions/admin/stripe-product');
                                         // Use category as type (masterclass/course) or default to chapter
-                                        const type = (formData.category === 'course' ? 'course' : 'chapter') as any;
+                                        const type = formData.category === 'course' ? 'course' : 'chapter';
                                         const res = await createStripeProduct(formData.title, price, type);
 
                                         if (res.success && res.productId && res.priceId) {

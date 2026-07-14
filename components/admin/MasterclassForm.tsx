@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Masterclass } from "@/app/lib/types";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { createMasterclass, updateMasterclass } from "@/app/actions/admin/manage-masterclasses";
@@ -8,7 +9,7 @@ import { uploadFile } from "@/app/actions/admin/upload-file";
 import { toast } from "sonner";
 
 interface MasterclassFormProps {
-    masterclass?: any;
+    masterclass?: Masterclass;
     onSuccess: () => void;
     onCancel?: () => void;
 }

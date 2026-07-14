@@ -2,13 +2,14 @@
 "use client";
 
 import { useState } from "react";
+import type { PartnerBrand } from "@/app/lib/types";
 import { createBrand, updateBrand } from "@/app/actions/admin/manage-boutique";
 import { toast } from "sonner";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import ImageUpload from "./ImageUpload";
 
 interface BrandFormProps {
-    brand?: any;
+    brand?: PartnerBrand;
     onSuccess: () => void;
     onCancel: () => void;
 }
@@ -36,7 +37,7 @@ export default function BrandForm({ brand, onSuccess, onCancel }: BrandFormProps
         internal_notes: brand?.internal_notes || "",
     });
 
-    const set = (key: string, value: any) => setFormData(prev => ({ ...prev, [key]: value }));
+    const set = (key: string, value: unknown) => setFormData(prev => ({ ...prev, [key]: value }));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
