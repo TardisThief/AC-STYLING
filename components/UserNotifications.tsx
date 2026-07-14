@@ -24,6 +24,7 @@ export default function UserNotifications() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- load-on-mount data fetch
         fetchNotifications();
 
         // Optional: Poll every 60s

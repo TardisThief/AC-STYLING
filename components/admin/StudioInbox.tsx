@@ -162,7 +162,7 @@ function InboxCard({ item, onAction, isProcessing }: { item: WardrobeItem, onAct
             {/* Footer Info */}
             <div className="p-3 border-t border-ac-taupe/10 bg-[#fcfbf9]">
                 <div className="flex justify-between items-center text-[10px] text-ac-taupe/50 uppercase tracking-wider">
-                    <span>{formatDistanceToNow(new Date(item.created_at ?? Date.now()))} ago</span>
+                    <span>{item.created_at ? `${formatDistanceToNow(new Date(item.created_at))} ago` : ''}</span>
                     {item.client_note && <MessageSquare size={12} className="text-ac-gold" />}
                 </div>
             </div>

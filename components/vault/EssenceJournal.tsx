@@ -45,6 +45,8 @@ function JournalQuestionRow({
     const [val, setVal] = useState(question.value || '');
     const [status, setStatus] = useState<'idle'|'saving'|'saved'|'error'>('idle');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    // Track the last saved value locally instead of mutating the question prop.
+    const savedValRef = useRef(question.value || '');
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -54,7 +56,7 @@ function JournalQuestionRow({
     }, [val]);
 
     const handleBlur = async () => {
-        if (val === question.value && status === 'idle') return; // Didn't change
+        if (val === savedValRef.current && status === 'idle') return; // Didn't change
         setStatus('saving');
         const res = await saveEssenceResponse(
             masterclassId === 'standalone' ? null : masterclassId, 
@@ -65,7 +67,7 @@ function JournalQuestionRow({
         );
         if (res.success) {
             setStatus('saved');
-            question.value = val;
+            savedValRef.current = val;
         } else {
             setStatus('error');
         }

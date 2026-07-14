@@ -29,6 +29,7 @@ export default function BoutiqueManager() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- load-on-mount data fetch
         loadData();
     }, []);
 

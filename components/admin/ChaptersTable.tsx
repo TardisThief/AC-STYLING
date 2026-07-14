@@ -15,6 +15,29 @@ interface ChaptersTableProps {
 type SortField = 'order_index' | 'category' | 'title' | 'slug' | 'video_id' | 'resources';
 type SortDirection = 'asc' | 'desc';
 
+// Module-scope so it isn't recreated each render (react-hooks/static-components).
+function SortHeader({ field, label, sortField, sortDirection, onSort }: {
+    field: SortField;
+    label: string;
+    sortField: SortField;
+    sortDirection: SortDirection;
+    onSort: (field: SortField) => void;
+}) {
+    return (
+        <th
+            className="text-left py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest cursor-pointer hover:bg-ac-taupe/5 transition-colors select-none"
+            onClick={() => onSort(field)}
+        >
+            <div className="flex items-center gap-1">
+                {label}
+                {sortField === field && (
+                    sortDirection === 'asc' ? <ChevronUp size={14} className="text-ac-gold" /> : <ChevronDown size={14} className="text-ac-gold" />
+                )}
+            </div>
+        </th>
+    );
+}
+
 export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTableProps) {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [sortField, setSortField] = useState<SortField>('category');
@@ -76,19 +99,6 @@ export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTa
         }
     };
 
-    const SortHeader = ({ field, label }: { field: SortField, label: string }) => (
-        <th 
-            className="text-left py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest cursor-pointer hover:bg-ac-taupe/5 transition-colors select-none"
-            onClick={() => handleSort(field)}
-        >
-            <div className="flex items-center gap-1">
-                {label}
-                {sortField === field && (
-                    sortDirection === 'asc' ? <ChevronUp size={14} className="text-ac-gold" /> : <ChevronDown size={14} className="text-ac-gold" />
-                )}
-            </div>
-        </th>
-    );
 
     if (chapters.length === 0) {
         return (
@@ -127,12 +137,12 @@ export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTa
                 <table className="w-full">
                     <thead>
                         <tr className="border-b border-ac-taupe/10">
-                            <SortHeader field="order_index" label="Order" />
-                            <SortHeader field="category" label="Category" />
-                            <SortHeader field="title" label="Title" />
-                            <SortHeader field="slug" label="Slug" />
-                            <SortHeader field="video_id" label="Video ID" />
-                            <SortHeader field="resources" label="Resources" />
+                            <SortHeader field="order_index" label="Order" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                            <SortHeader field="category" label="Category" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                            <SortHeader field="title" label="Title" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                            <SortHeader field="slug" label="Slug" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                            <SortHeader field="video_id" label="Video ID" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
+                            <SortHeader field="resources" label="Resources" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                             <th className="text-right py-3 px-4 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">Actions</th>
                         </tr>
                     </thead>

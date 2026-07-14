@@ -74,10 +74,6 @@ export default function AdminNotificationsPanel() {
     const [activeTab, setActiveTab] = useState<FilterTab>('all');
     const [showRead, setShowRead] = useState(false); // Default to unread only initially? Or generic filter.
 
-    useEffect(() => {
-        loadNotifications();
-    }, []);
-
     const loadNotifications = async () => {
         setLoading(true);
         // Load ALL notifications initially to allow client-side filtering responsiveness
@@ -90,6 +86,11 @@ export default function AdminNotificationsPanel() {
         }
         setLoading(false);
     };
+
+    useEffect(() => {
+        loadNotifications();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleMarkRead = async (id: string, type?: string) => {
         setProcessingId(id);

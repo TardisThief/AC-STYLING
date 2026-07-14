@@ -25,6 +25,7 @@ export default function TrustedByManager() {
         setLoading(false);
     };
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load-on-mount data fetch
     useEffect(() => { load(); }, []);
 
     const handleAdd = async (e: React.FormEvent) => {

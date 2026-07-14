@@ -18,6 +18,7 @@ export default function JoinPage() {
     useEffect(() => {
         const stored = localStorage.getItem('redirect_to');
         if (stored) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only localStorage read on mount
             setRedirectTo(stored);
         }
     }, []);

@@ -20,15 +20,6 @@ export default function TestimonialCarousel({ items }: TestimonialCarouselProps)
     const [direction, setDirection] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
 
-    // Speed optimization: 4.5s for "slightly above average reading speed" per set of cards.
-    useEffect(() => {
-        if (isPaused) return;
-        const timer = setInterval(() => {
-            nextSlide();
-        }, 4500);
-        return () => clearInterval(timer);
-    }, [currentIndex, isPaused]);
-
     const nextSlide = () => {
         setDirection(1);
         setCurrentIndex((prev) => (prev + 2) % items.length);
@@ -38,6 +29,16 @@ export default function TestimonialCarousel({ items }: TestimonialCarouselProps)
         setDirection(-1);
         setCurrentIndex((prev) => (prev - 2 + items.length) % items.length);
     };
+
+    // Speed optimization: 4.5s for "slightly above average reading speed" per set of cards.
+    useEffect(() => {
+        if (isPaused) return;
+        const timer = setInterval(() => {
+            nextSlide();
+        }, 4500);
+        return () => clearInterval(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex, isPaused]);
 
     const variants = {
         enter: (direction: number) => ({
