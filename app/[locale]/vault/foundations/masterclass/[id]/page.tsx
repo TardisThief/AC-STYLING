@@ -9,6 +9,7 @@ import RestorePurchasesButton from "@/components/monetization/RestorePurchasesBu
 import CheckoutSyncHandler from "@/components/monetization/CheckoutSyncHandler";
 import VaultVideoPlayer from "@/components/vault/VaultVideoPlayer";
 import SafeImage from "@/components/ui/SafeImage";
+import { parseVimeoId } from "@/app/lib/vimeo";
 
 export const dynamic = 'force-dynamic';
 
@@ -69,6 +70,10 @@ export default async function MasterclassPage({ params }: { params: Promise<{ id
     const completedCount = chapters?.filter(c => completedChapters.has(c.slug)).length || 0;
     const progressPercent = totalChapters > 0 ? (completedCount / totalChapters) * 100 : 0;
 
+    // Teaser only renders when video_url actually contains a Vimeo video —
+    // placeholder or malformed values fall back to the cover image.
+    const teaserVideoId = parseVimeoId(masterclass.video_url);
+
     // Localize Masterclass Info
     const mcTitle = locale === 'es' && masterclass.title_es ? masterclass.title_es : masterclass.title;
     const mcDescription = locale === 'es' && masterclass.description_es ? masterclass.description_es : masterclass.description;
@@ -86,10 +91,10 @@ export default async function MasterclassPage({ params }: { params: Promise<{ id
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
                     {/* Thumbnail / Video */}
                     <div className="lg:col-span-3 aspect-video rounded-sm overflow-hidden shadow-lg relative group bg-black">
-                        {masterclass.video_url ? (
+                        {teaserVideoId ? (
                             <div className="w-full h-full relative group/video">
                                 <VaultVideoPlayer
-                                    videoId={masterclass.video_url}
+                                    videoId={teaserVideoId}
                                     locale={locale}
                                     title={mcTitle} // Optional: Pass title for tracking or logging if needed by player
                                 />

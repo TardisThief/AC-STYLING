@@ -5,7 +5,7 @@ import type { Service } from "@/app/lib/types";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, ImageIcon, Plus, Trash2 } from "lucide-react";
 import { upsertService } from "@/app/actions/admin/manage-services";
-import { uploadFile } from "@/app/actions/admin/upload-file";
+import { uploadAssetWithToast } from "@/app/lib/upload-client";
 import { toast } from "sonner";
 
 interface ServiceFormProps {
@@ -66,18 +66,8 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             if (acceptedFiles.length === 0) return;
 
             setUploadingImage(true);
-            const file = acceptedFiles[0];
-            const fd = new FormData();
-            fd.append('file', file);
-
-            const result = await uploadFile(fd);
-
-            if (result.success) {
-                setFormData(prev => ({ ...prev, imageUrl: result.url! }));
-                toast.success('Image uploaded');
-            } else {
-                toast.error(result.error || 'Upload failed');
-            }
+            const url = await uploadAssetWithToast(acceptedFiles[0], 'Image uploaded');
+            if (url) setFormData(prev => ({ ...prev, imageUrl: url }));
             setUploadingImage(false);
         }
     });

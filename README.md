@@ -1,4 +1,4 @@
-# AC Styling - Premier Personal Styling Platform
+# AC Styling - Premier Personal Styling Platform 
 
 **AC Styling** is a high-end personal styling website built with modern web technologies, designed to reflect elegance, minimalism, and professional expertise.
 

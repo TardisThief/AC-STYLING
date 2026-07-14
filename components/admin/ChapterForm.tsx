@@ -7,7 +7,7 @@ import { Upload, X, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { createChapter, updateChapter } from "@/app/actions/admin/manage-chapters";
 import { getMasterclasses } from "@/app/actions/admin/manage-masterclasses";
-import { uploadFile } from "@/app/actions/admin/upload-file";
+import { uploadAssetWithToast } from "@/app/lib/upload-client";
 import { toast } from "sonner";
 
 interface Chapter {
@@ -135,18 +135,8 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
             if (acceptedFiles.length === 0) return;
 
             setUploadingThumbnail(true);
-            const file = acceptedFiles[0];
-            const fd = new FormData();
-            fd.append('file', file);
-
-            const result = await uploadFile(fd);
-
-            if (result.success) {
-                setFormData({ ...formData, thumbnailUrl: result.url! });
-                toast.success('Thumbnail uploaded');
-            } else {
-                toast.error(result.error || 'Upload failed. Check storage permissions.');
-            }
+            const url = await uploadAssetWithToast(acceptedFiles[0], 'Thumbnail uploaded');
+            if (url) setFormData({ ...formData, thumbnailUrl: url });
             setUploadingThumbnail(false);
         }
     });
@@ -160,17 +150,8 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
 
             setUploadingFile(true);
             const file = acceptedFiles[0];
-            const fd = new FormData();
-            fd.append('file', file);
-
-            const result = await uploadFile(fd);
-
-            if (result.success) {
-                setResourceUrls([...resourceUrls, { name: file.name, url: result.url! }]);
-                toast.success('File uploaded');
-            } else {
-                toast.error(result.error || 'Upload failed. Check storage permissions.');
-            }
+            const url = await uploadAssetWithToast(file, 'File uploaded');
+            if (url) setResourceUrls([...resourceUrls, { name: file.name, url }]);
             setUploadingFile(false);
         }
     });

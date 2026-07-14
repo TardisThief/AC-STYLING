@@ -5,7 +5,7 @@ import type { Masterclass } from "@/app/lib/types";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { createMasterclass, updateMasterclass } from "@/app/actions/admin/manage-masterclasses";
-import { uploadFile } from "@/app/actions/admin/upload-file";
+import { uploadAssetWithToast } from "@/app/lib/upload-client";
 import { toast } from "sonner";
 
 interface MasterclassFormProps {
@@ -60,15 +60,8 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
         onDrop: async (acceptedFiles) => {
             if (acceptedFiles.length === 0) return;
             setUploadingThumbnail(true);
-            const fd = new FormData();
-            fd.append('file', acceptedFiles[0]);
-            const result = await uploadFile(fd);
-            if (result.success) {
-                setFormData({ ...formData, thumbnailUrl: result.url! });
-                toast.success('Thumbnail uploaded');
-            } else {
-                toast.error(result.error || 'Upload failed');
-            }
+            const url = await uploadAssetWithToast(acceptedFiles[0], 'Thumbnail uploaded');
+            if (url) setFormData({ ...formData, thumbnailUrl: url });
             setUploadingThumbnail(false);
         }
     });
