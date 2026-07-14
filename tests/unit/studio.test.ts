@@ -59,7 +59,7 @@ describe('Studio Server Actions', () => {
             const result = await updateProfileStatus('profile-123', 'active')
 
             expect(result.success).toBe(false)
-            expect(result.error).toBe('Unauthorized')
+            expect(result.error).toBe('Forbidden')
         })
 
         it('updates profile status when admin', async () => {

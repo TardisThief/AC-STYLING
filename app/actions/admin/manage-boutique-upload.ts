@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { requireAdmin } from "@/app/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import { getErrorMessage } from "@/app/lib/errors";
 
@@ -16,21 +16,9 @@ export async function getSignedBoutiqueUploadUrl(
     fileName: string,
     fileType: string
 ): Promise<{ success: boolean; signedUrl?: string; filePath?: string; publicUrl?: string; error?: string }> {
-    const supabase = await createClient();
-
-    // Check admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     try {
         // 1. Generate unique file path
@@ -82,21 +70,9 @@ export type BoutiqueItemPayload = {
 export async function createBoutiqueItemsBatch(
     items: BoutiqueItemPayload[]
 ): Promise<{ success: boolean; error?: string; count?: number }> {
-    const supabase = await createClient();
-
-    // Check admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     try {
         const { error, count } = await supabase

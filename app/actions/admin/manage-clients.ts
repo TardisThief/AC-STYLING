@@ -1,7 +1,6 @@
 
 'use server';
 
-import { createClient } from "@/utils/supabase/server";
 import { requireAdmin } from "@/app/lib/auth-guards";
 
 export type ClientProfile = {
@@ -94,19 +93,9 @@ export async function getClientDossier(userId: string) {
  * Manual Override for Admins.
  */
 export async function toggleStudioAccess(userId: string, hasAccess: boolean) {
-    const supabase = await createClient();
-
-    // Auth check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') return { success: false, error: 'Forbidden' };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const permissions = hasAccess
         ? { lookbook: true, wardrobe: true }

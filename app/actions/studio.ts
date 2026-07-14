@@ -1,22 +1,17 @@
 "use server";
 
 import { getErrorMessage } from "@/app/lib/errors";
+import { requireAdmin } from "@/app/lib/auth-guards";
 
 // ... extractUrlMetadata MOVED to scraper.ts ...
 
 // ... updateProfileStatus remains unchanged ...
 
 export async function updateProfileStatus(profileId: string, status: 'active' | 'archived') {
-    const { createClient } = await import("@/utils/supabase/server");
     const { revalidatePath } = await import("next/cache");
-    const supabase = await createClient();
-
-    // 1. Check if Admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return { success: false, error: "Unauthorized" };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     try {
         const { error } = await supabase
@@ -36,16 +31,10 @@ export async function updateProfileStatus(profileId: string, status: 'active' | 
 
 // ... permanentDeleteProfile remains unchanged ...
 export async function permanentDeleteProfile(profileId: string) {
-    const { createClient } = await import("@/utils/supabase/server");
     const { revalidatePath } = await import("next/cache");
-    const supabase = await createClient();
-
-    // 1. Check if Admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return { success: false, error: "Unauthorized" };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     try {
         // FKs are ON DELETE CASCADE in studio_schema, so this should wipe assets/lookbooks too
@@ -126,15 +115,9 @@ export async function deleteWardrobeItem(itemId: string) {
 // --- NEW ACTIONS FOR STUDIO INBOX ---
 
 export async function getStudioInboxItems() {
-    const { createClient } = await import("@/utils/supabase/server");
-    const supabase = await createClient();
-
-    // 1. Auth Check (Admin Only)
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return { success: false, error: "Unauthorized" };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     // 2. Fetch Inbox Items
     // Use select with join to get profile full_name
@@ -161,16 +144,10 @@ export async function processWardrobeItem(
     status: 'keep' | 'donate' | 'repair' | 'inbox',
     metadata?: { tags?: string[], brand?: string, notes?: string }
 ) {
-    const { createClient } = await import("@/utils/supabase/server");
     const { revalidatePath } = await import("next/cache");
-    const supabase = await createClient();
-
-    // 1. Auth Check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return { success: false, error: "Unauthorized" };
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     // 2. Validate Payload
     const updates: Record<string, unknown> = { status };
