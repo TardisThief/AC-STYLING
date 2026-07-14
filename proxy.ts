@@ -4,9 +4,9 @@ import { routing } from './i18n/routing';
 import { type NextRequest } from 'next/server';
 import { updateSession } from '@/utils/supabase/middleware';
 
-export async function middleware(request: NextRequest) {
-    // 1. Run Supabase middleware (Refresh session, protect routes)
-    // This will check if we are in /vault and redirect if not logged in
+export async function proxy(request: NextRequest) {
+    // 1. Run Supabase session refresh + route protection
+    //    (checks /vault auth and redirects if not logged in)
     const response = await updateSession(request);
 
     // If Supabase Redirected (Status 307 etc), return that response immediately
