@@ -24,10 +24,7 @@ jobs:
       - name: Run unit tests
         run: npm run test:run
 
-      # Lint is currently informational: the codebase has a large pre-existing
-      # backlog of no-explicit-any errors (tracked as a P2 cleanup). Surfacing
-      # them without blocking lets new issues be seen while the backlog is
-      # worked down. Flip continue-on-error to false once lint is green.
-      - name: Lint (informational)
+      # Lint is a blocking gate (P2 backlog cleared 2026-07-14). Errors fail the
+      # build; warnings (e.g. no-img-element) remain non-blocking.
+      - name: Lint
         run: npm run lint
-        continue-on-error: true

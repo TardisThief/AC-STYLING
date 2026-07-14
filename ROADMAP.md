@@ -38,10 +38,19 @@ Vimeo teaser handling.
   Remaining optional cleanup: `scripts/cleanup_orphaned_wardrobe_files.ts` (44
   orphaned files, dry-run first).
 
-## Phase 2 — Code Health & Dev Velocity (next)
+## Phase 2 — Code Health & Dev Velocity (current)
 
-- `no-explicit-any` cleanup (~1500 errors) → flip CI's lint step from
-  informational (`continue-on-error`) to a blocking gate.
+- ~~`no-explicit-any` cleanup → flip CI's lint step to a blocking gate~~ —
+  **done (2026-07-14, unmerged on Dev)**. The "~1500 errors" were mostly ESLint
+  linting gitignored tooling dirs (`claude-mem/`, `superpowers/`, `impeccable/`);
+  scoping ESLint to `.gitignore` via `@eslint/compat` removed ~1,250, leaving
+  ~250 real app-source errors, all now fixed: `no-explicit-any` (shared row
+  types in `app/lib/types.ts` + `getErrorMessage` helper; `tests/**` relaxed),
+  `no-unescaped-entities`, `no-html-link-for-pages` (→ i18n `Link`), and the
+  react-hooks rules (incl. a real rules-of-hooks bug in `InteractiveGate`).
+  `npm run lint` is now 0 errors and CI enforces it. Warnings (~9k, mostly
+  `no-img-element`) stay non-blocking — a separate future effort. Spec + plan:
+  `docs/superpowers/{specs,plans}/2026-07-12-lint-to-blocking-gate*`.
 - De-duplicate the profile-merge logic + remaining inline admin checks.
 - Tailwind token consolidation (brand tokens vs. dead shadcn oklch); dead-code
   cleanup.
