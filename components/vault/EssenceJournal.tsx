@@ -45,6 +45,8 @@ function JournalQuestionRow({
     const [val, setVal] = useState(question.value || '');
     const [status, setStatus] = useState<'idle'|'saving'|'saved'|'error'>('idle');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    // Track the last saved value locally instead of mutating the question prop.
+    const savedValRef = useRef(question.value || '');
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -54,7 +56,7 @@ function JournalQuestionRow({
     }, [val]);
 
     const handleBlur = async () => {
-        if (val === question.value && status === 'idle') return; // Didn't change
+        if (val === savedValRef.current && status === 'idle') return; // Didn't change
         setStatus('saving');
         const res = await saveEssenceResponse(
             masterclassId === 'standalone' ? null : masterclassId, 
@@ -65,7 +67,7 @@ function JournalQuestionRow({
         );
         if (res.success) {
             setStatus('saved');
-            question.value = val;
+            savedValRef.current = val;
         } else {
             setStatus('error');
         }
@@ -157,11 +159,11 @@ export default function EssenceJournal({ data, allMasterclasses }: EssenceJourna
             });
             if (filteredQuestions.length === 0) return null;
             return { ...ch, questions: filteredQuestions };
-        }).filter(Boolean);
+        }).filter((x): x is NonNullable<typeof x> => x !== null);
 
         if (filteredChapters.length === 0) return null;
         return { ...mc, chapters: filteredChapters };
-    }).filter(Boolean);
+    }).filter((x): x is NonNullable<typeof x> => x !== null);
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto pb-12">
@@ -208,7 +210,7 @@ export default function EssenceJournal({ data, allMasterclasses }: EssenceJourna
                 </div>
             )}
 
-            {filteredData.map((mc: any) => {
+            {filteredData.map((mc) => {
                 const isOpen = openSections.includes(mc.masterclassId);
                 let totalQs = 0;
                 let answQs = 0;
@@ -259,9 +261,9 @@ export default function EssenceJournal({ data, allMasterclasses }: EssenceJourna
                                 >
                                     <div className="p-6 pt-0 border-t border-ac-taupe/5 space-y-8">
                                         <div className="h-2" />
-                                        {mc.chapters.map((ch: any) => {
+                                        {mc.chapters.map((ch) => {
                                             const isChapterOpen = openChapters.includes(ch.chapterId);
-                                            const allAnswered = ch.questions.length > 0 && ch.questions.every((q: any) => (q.value || '').trim().length > 0);
+                                            const allAnswered = ch.questions.length > 0 && ch.questions.every((q) => (q.value || '').trim().length > 0);
                                             
                                             return (
                                                 <div key={ch.chapterId}>
@@ -290,7 +292,7 @@ export default function EssenceJournal({ data, allMasterclasses }: EssenceJourna
                                                                 className="overflow-hidden"
                                                             >
                                                                 <div className="grid gap-4 pb-4">
-                                                                    {ch.questions.map((q: any) => (
+                                                                    {ch.questions.map((q) => (
                                                                         <JournalQuestionRow 
                                                                             key={q.key} 
                                                                             question={q} 

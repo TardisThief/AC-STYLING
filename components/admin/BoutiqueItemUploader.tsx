@@ -109,7 +109,7 @@ export default function BoutiqueItemUploader({ brands, onSuccess, onCancel }: Bo
         }
 
         setIsPublishing(true);
-        let successCount = 0;
+        const successCount = 0;
         const itemsToCreate: BoutiqueItemPayload[] = [];
 
         // Step A: Upload Files individually (concurrently or sequentially)
@@ -157,10 +157,10 @@ export default function BoutiqueItemUploader({ brands, onSuccess, onCancel }: Bo
             return;
         }
 
-        const payload: BoutiqueItemPayload[] = validItems.map((item: any) => ({
+        const payload: BoutiqueItemPayload[] = validItems.map((item) => ({
             brand_id: selectedBrandId,
             name: item.name,
-            image_url: item.publicUrl,
+            image_url: item.publicUrl ?? '',
             category: item.category,
             curator_note: item.curator_note,
             affiliate_url_usa: item.affiliate_url_usa,

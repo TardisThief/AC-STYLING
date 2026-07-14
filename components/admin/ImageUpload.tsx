@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { getErrorMessage } from "@/app/lib/errors";
 import { createClient } from "@/utils/supabase/client";
 import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -48,9 +49,9 @@ export default function ImageUpload({ value, onChange, bucket = 'boutique', plac
 
             onChange(publicUrl);
             toast.success("Image uploaded successfully");
-        } catch (error: any) {
+        } catch (error) {
             console.error(error);
-            toast.error("Error uploading image: " + error.message);
+            toast.error("Error uploading image: " + getErrorMessage(error));
         } finally {
             setUploading(false);
             if (fileInputRef.current) {

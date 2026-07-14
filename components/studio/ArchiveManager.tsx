@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
+import type { Wardrobe } from "@/app/lib/types";
 import { RefreshCw, Trash2, X, Search, Loader2, Shirt, User } from "lucide-react";
 import { updateWardrobe, deleteWardrobe } from "@/app/actions/wardrobes";
 import { toast } from "sonner";
@@ -13,7 +14,7 @@ interface ArchiveManagerProps {
 }
 
 export default function ArchiveManager({ onClose, onRefresh, locale }: ArchiveManagerProps) {
-    const [archivedWardrobes, setArchivedWardrobes] = useState<any[]>([]);
+    const [archivedWardrobes, setArchivedWardrobes] = useState<Wardrobe[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [actionId, setActionId] = useState<string | null>(null);
@@ -37,6 +38,7 @@ export default function ArchiveManager({ onClose, onRefresh, locale }: ArchiveMa
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- load-on-mount data fetch
         fetchArchived();
     }, []);
 

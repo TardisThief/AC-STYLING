@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { PartnerBrand, BoutiqueItem } from "@/app/lib/types";
 import { getBoutiqueItems } from "@/app/actions/boutique";
 import { getAdminBrands, deleteBrand, deleteBoutiqueItem } from "@/app/actions/admin/manage-boutique";
 import BrandForm from "./BrandForm";
@@ -13,11 +14,11 @@ import CollectionsManager from "./CollectionsManager";
 
 export default function BoutiqueManager() {
     const [view, setView] = useState<'brands' | 'items' | 'collections' | 'bulk_upload'>('items');
-    const [brands, setBrands] = useState<any[]>([]);
-    const [items, setItems] = useState<any[]>([]);
+    const [brands, setBrands] = useState<PartnerBrand[]>([]);
+    const [items, setItems] = useState<BoutiqueItem[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [editingItem, setEditingItem] = useState<PartnerBrand | BoutiqueItem | null>(null);
     const [isCreating, setIsCreating] = useState(false);
 
     const loadData = async () => {
@@ -28,6 +29,7 @@ export default function BoutiqueManager() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- load-on-mount data fetch
         loadData();
     }, []);
 
@@ -115,9 +117,9 @@ export default function BoutiqueManager() {
                 <div className="bg-white/60 p-6 rounded-sm border border-ac-gold/30">
                     <h3 className="font-serif text-xl text-ac-taupe mb-4">{editingItem ? 'Edit' : 'Create New'}</h3>
                     {view === 'brands' ? (
-                        <BrandForm brand={editingItem} onSuccess={handleSuccess} onCancel={() => { setIsCreating(false); setEditingItem(null); }} />
+                        <BrandForm brand={editingItem as PartnerBrand | undefined} onSuccess={handleSuccess} onCancel={() => { setIsCreating(false); setEditingItem(null); }} />
                     ) : (
-                        <ItemForm item={editingItem} brands={brands} onSuccess={handleSuccess} onCancel={() => { setIsCreating(false); setEditingItem(null); }} />
+                        <ItemForm item={editingItem as BoutiqueItem | undefined} brands={brands} onSuccess={handleSuccess} onCancel={() => { setIsCreating(false); setEditingItem(null); }} />
                     )}
                 </div>
             )}
@@ -138,13 +140,13 @@ export default function BoutiqueManager() {
                                 {(view === 'brands' ? brands : items).map((obj) => (
                                     <tr key={obj.id} className="hover:bg-white/40">
                                         <td className="p-4 flex items-center gap-3">
-                                            {(obj.logo_url || obj.image_url) && (
-                                                <img src={obj.logo_url || obj.image_url} className="w-8 h-8 object-cover rounded-sm bg-white" />
+                                            {((obj as PartnerBrand).logo_url || (obj as BoutiqueItem).image_url) && (
+                                                <img src={((obj as PartnerBrand).logo_url || (obj as BoutiqueItem).image_url) ?? undefined} className="w-8 h-8 object-cover rounded-sm bg-white" />
                                             )}
                                             {obj.name}
                                         </td>
                                         {view === 'items' && (
-                                            <td className="p-4 opacity-60">{obj.brand?.name}</td>
+                                            <td className="p-4 opacity-60">{(obj as BoutiqueItem).brand?.name}</td>
                                         )}
                                         <td className="p-4 text-right flex justify-end gap-2">
                                             <button onClick={() => setEditingItem(obj)} className="p-2 hover:bg-black/5 rounded-full"><Edit2 size={14} /></button>

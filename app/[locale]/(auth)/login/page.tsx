@@ -7,6 +7,7 @@ import { Mail, Loader2, User, ChevronRight } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { safeNextPath } from "@/app/lib/safe-redirect";
+import { Link } from "@/i18n/routing";
 
 export default function LoginPage() {
     const [loginMethod, setLoginMethod] = useState<'magic' | 'password'>('magic');
@@ -255,9 +256,9 @@ export default function LoginPage() {
                                         <label htmlFor="password" className="block text-[10px] font-bold uppercase tracking-widest text-[#3D3630]/40">
                                             Password
                                         </label>
-                                        <a href="/forgot-password" className="text-[10px] text-[#3D3630]/60 hover:text-[#3D3630] underline uppercase tracking-widest">
+                                        <Link href="/forgot-password" className="text-[10px] text-[#3D3630]/60 hover:text-[#3D3630] underline uppercase tracking-widest">
                                             Forgot?
-                                        </a>
+                                        </Link>
                                     </div>
                                     <div className="relative group">
                                         <input
@@ -345,7 +346,7 @@ export default function LoginPage() {
 
                     <p className="text-center text-[10px] text-[#3D3630]/40 leading-relaxed max-w-xs mx-auto">
                         By continuing, you agree to our Terms of Service. <br />
-                        New to the Vault? <a href="/vault/join" className="text-[#3D3630] border-b border-[#3D3630]/30 hover:border-[#3D3630] transition-colors pb-0.5">Start your membership</a>
+                        New to the Vault? <Link href="/vault/join" className="text-[#3D3630] border-b border-[#3D3630]/30 hover:border-[#3D3630] transition-colors pb-0.5">Start your membership</Link>
                     </p>
                 </motion.div>
 

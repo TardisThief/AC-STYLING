@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Link } from "@/i18n/routing";
 import { motion } from "framer-motion";
 import { Loader2, Mail, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -55,9 +56,9 @@ export default function ForgotPasswordPage() {
                     className="w-full max-w-md space-y-8"
                 >
                     <div className="space-y-2">
-                        <a href="/login" className="flex items-center text-[10px] uppercase tracking-widest text-[#3D3630]/60 hover:text-[#3D3630] transition-colors mb-4">
+                        <Link href="/login" className="flex items-center text-[10px] uppercase tracking-widest text-[#3D3630]/60 hover:text-[#3D3630] transition-colors mb-4">
                             <ArrowLeft size={12} className="mr-1" /> Back to Login
-                        </a>
+                        </Link>
                         <h2 className="font-serif text-3xl text-[#3D3630]">Reset Password</h2>
                         <p className="text-sm text-[#3D3630]/60">Enter your email to receive a password reset link.</p>
                     </div>

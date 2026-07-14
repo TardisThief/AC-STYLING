@@ -11,10 +11,10 @@ export default async function TrustedBy() {
     const res = await getTrustedByLogos();
 
     const logos =
-        res.success && res.logos && res.logos.filter((l: any) => l.active).length > 0
+        res.success && res.logos && res.logos.filter((l) => l.active).length > 0
             ? res.logos
-                  .filter((l: any) => l.active)
-                  .map((l: any) => ({ id: l.id, src: l.logo_url, alt: l.name }))
+                  .filter((l) => l.active)
+                  .map((l) => ({ id: l.id, src: l.logo_url, alt: l.name }))
             : STATIC_FALLBACK;
 
     return (

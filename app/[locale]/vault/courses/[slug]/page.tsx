@@ -29,7 +29,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
         return (
             <div className="p-20 text-center">
                 <h1 className="text-2xl font-serif text-ac-taupe mb-4">Course Not Found</h1>
-                <p className="text-ac-taupe/60 mb-8">The requested course "{decodedSlug}" could not be located.</p>
+                <p className="text-ac-taupe/60 mb-8">The requested course &quot;{decodedSlug}&quot; could not be located.</p>
                 <Link href="/vault/courses" className="px-6 py-3 bg-ac-taupe text-white rounded-sm">
                     Return to Courses
                 </Link>
@@ -43,7 +43,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
     const description = locale === 'es' && chapter.description_es ? chapter.description_es : chapter.description;
     const labQuestionsRaw = chapter.lab_questions || [];
     // Shared Key Strategy: We map over the SINGLE array of questions, but swap the label/placeholder if locale is ES.
-    const labQuestions = labQuestionsRaw.map((q: any) => ({
+    const labQuestions = labQuestionsRaw.map((q: Record<string, unknown>) => ({
         ...q,
         label: (locale === 'es' && q.label_es) ? q.label_es : q.label,
         placeholder: (locale === 'es' && q.placeholder_es) ? q.placeholder_es : q.placeholder

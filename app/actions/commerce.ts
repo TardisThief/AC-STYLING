@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { stripe } from '@/utils/stripe';
+import { getErrorMessage } from '@/app/lib/errors';
 import { grantAccessForProduct } from '@/app/lib/access-logic';
 
 /**
@@ -75,7 +76,7 @@ export async function syncStripePurchases() {
                 for (const item of lineItems) {
                     const stripeProductId = typeof item.price?.product === 'string'
                         ? item.price?.product
-                        : (item.price?.product as any)?.id;
+                        : (item.price?.product as { id?: string } | null)?.id;
 
                     if (stripeProductId) {
                         const granted = await grantAccessForProduct(supabase, user.id, stripeProductId);
@@ -92,8 +93,8 @@ export async function syncStripePurchases() {
             return { success: true, message: "No new purchases found to restore." };
         }
 
-    } catch (err: any) {
+    } catch (err) {
         console.error("Sync Error:", err);
-        return { error: err.message };
+        return { error: getErrorMessage(err) };
     }
 }

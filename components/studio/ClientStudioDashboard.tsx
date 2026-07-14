@@ -10,7 +10,7 @@ import TailorCardUser from "@/components/vault/TailorCardUser";
 interface ClientStudioDashboardProps {
     wardrobeId: string;
     ownerId: string;
-    initialMeasurements: any;
+    initialMeasurements: Record<string, string>;
     userName: string;
 }
 

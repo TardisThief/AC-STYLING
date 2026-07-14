@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import path from 'path';
+import { getErrorMessage } from '../app/lib/errors';
 
 // Load env vars
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
@@ -41,8 +42,8 @@ async function main() {
 
     if (process.env.STRIPE_SECRET_KEY) {
         console.log('Stripe Key found. Verifying against Stripe API...');
-        const Stripe = require('stripe');
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }); // Use version roughly matching project
+        const { default: Stripe } = await import('stripe');
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // SDK default apiVersion
 
         // Check one masterclass as example
         if (mcs && mcs.length > 0) {
@@ -65,8 +66,8 @@ async function main() {
                         console.log('  match verified.');
                     }
 
-                } catch (e: any) {
-                    console.error('  Stripe API Error:', e.message);
+                } catch (e) {
+                    console.error('  Stripe API Error:', getErrorMessage(e));
                 }
             }
         }

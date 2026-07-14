@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getClientDossier } from "@/app/actions/admin/manage-clients";
+import { getClientDossier, type DossierEntry } from "@/app/actions/admin/manage-clients";
+import type { Profile } from "@/app/lib/types";
 import { getJourneyStats, JourneyStats } from "@/app/actions/vault/journey";
 import { X, Sparkles, Calendar, BookOpen, Trophy, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
@@ -10,12 +11,12 @@ import VirtualWardrobe from "@/components/studio/VirtualWardrobe";
 
 
 interface ClientDossierProps {
-    client: any;
+    client: Profile;
     onClose: () => void;
 }
 
 export default function ClientDossier({ client, onClose }: ClientDossierProps) {
-    const [dossier, setDossier] = useState<any[]>([]);
+    const [dossier, setDossier] = useState<DossierEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [journey, setJourney] = useState<JourneyStats | null>(null);
 
@@ -34,11 +35,12 @@ export default function ClientDossier({ client, onClose }: ClientDossierProps) {
 
     // Group by Masterclass
     const grouped = dossier.reduce((acc, item) => {
-        const mcTitle = item.masterclass?.title || 'Standalone / Other';
+        const mc = Array.isArray(item.masterclass) ? item.masterclass[0] : item.masterclass;
+        const mcTitle = mc?.title || 'Standalone / Other';
         if (!acc[mcTitle]) acc[mcTitle] = [];
         acc[mcTitle].push(item);
         return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, DossierEntry[]>);
 
     const [activeTab, setActiveTab] = useState<'essence' | 'wardrobe'>('essence');
 
@@ -117,14 +119,14 @@ export default function ClientDossier({ client, onClose }: ClientDossierProps) {
                                 <p className="text-ac-taupe/60">No essence data recorded yet.</p>
                             </div>
                         ) : (
-                            (Object.entries(grouped) as [string, any[]][]).map(([mcTitle, items]) => (
+                            (Object.entries(grouped) as [string, DossierEntry[]][]).map(([mcTitle, items]) => (
                                 <div key={mcTitle} className="space-y-6">
                                     <h3 className="font-serif text-2xl text-ac-taupe border-b border-ac-taupe/10 pb-2">
                                         {mcTitle}
                                     </h3>
 
                                     <div className="grid gap-6">
-                                        {items.map((item: any, i: number) => (
+                                        {items.map((item: DossierEntry, i: number) => (
                                             <div key={i} className="bg-white p-6 rounded-sm shadow-sm border border-ac-taupe/5">
                                                 <div className="flex justify-between items-start mb-3">
                                                     <span className="text-xs uppercase tracking-widest text-ac-taupe/40 bg-ac-taupe/5 px-2 py-1 rounded-sm">

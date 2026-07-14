@@ -27,7 +27,7 @@ Guidance for Claude Code (and humans) working in this repository.
 ```bash
 npm run dev          # local dev server
 npm run build        # production build
-npm run lint         # eslint (flat config: eslint.config.mjs)
+npm run lint         # eslint (flat config: eslint.config.mjs) — blocking CI gate; must be 0 errors
 npm test             # vitest (watch)
 npm run test:run     # vitest (once, CI)
 npm run test:e2e     # playwright

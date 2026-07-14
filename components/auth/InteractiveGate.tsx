@@ -36,15 +36,21 @@ export default function InteractiveGate({
         router.push("/vault/join");
     };
 
+    // Redirect Mode fires the navigation on mount. The effect must run
+    // unconditionally (Rules of Hooks); its body guards on the same condition.
+    useEffect(() => {
+        if (isLocked && type === "redirect") {
+            handleUnlock();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLocked, type]);
+
     if (!isLocked) {
         return <>{children}</>;
     }
 
     // Redirect Mode: Immediately redirect (used for Protected Routes)
     if (type === "redirect") {
-        useEffect(() => {
-            handleUnlock();
-        }, []);
         return (
             <div className="flex flex-col items-center justify-center min-h-[50vh] animate-pulse">
                 <Lock className="w-8 h-8 text-ac-gold mb-4" />

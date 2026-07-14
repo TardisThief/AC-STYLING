@@ -25,7 +25,8 @@ import {
     updateNotificationStatus,
     markAllAsRead,
     type AdminNotification,
-    type NotificationStatus
+    type NotificationStatus,
+    type NotificationType
 } from "@/app/actions/notifications";
 import { answerQuestion } from "@/app/actions/send-question";
 import { toast } from "sonner";
@@ -73,10 +74,6 @@ export default function AdminNotificationsPanel() {
     const [activeTab, setActiveTab] = useState<FilterTab>('all');
     const [showRead, setShowRead] = useState(false); // Default to unread only initially? Or generic filter.
 
-    useEffect(() => {
-        loadNotifications();
-    }, []);
-
     const loadNotifications = async () => {
         setLoading(true);
         // Load ALL notifications initially to allow client-side filtering responsiveness
@@ -90,10 +87,15 @@ export default function AdminNotificationsPanel() {
         setLoading(false);
     };
 
+    useEffect(() => {
+        loadNotifications();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const handleMarkRead = async (id: string, type?: string) => {
         setProcessingId(id);
         // Cast type to NotificationType
-        const res = await markNotificationAsRead(id, type as any);
+        const res = await markNotificationAsRead(id, type as NotificationType | undefined);
         if (res.success) {
             setNotifications(prev =>
                 prev.map(n => n.id === id ? { ...n, status: 'read' } : n)
@@ -106,7 +108,7 @@ export default function AdminNotificationsPanel() {
 
     const handleTakeAction = async (id: string, action: string, type?: string) => {
         setProcessingId(id);
-        const res = await updateNotificationStatus(id, 'actioned', action, type as any);
+        const res = await updateNotificationStatus(id, 'actioned', action, type as NotificationType | undefined);
         if (res.success) {
             toast.success(`Marked as ${action}`);
             setNotifications(prev =>
@@ -398,24 +400,24 @@ function NotificationCard({
 
                     {/* Metadata */}
                     <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-ac-taupe/60">
-                        {metadata.email && (
+                        {!!metadata.email && (
                             <div className="flex items-center gap-1">
-                                <Mail size={12} /> {metadata.email}
+                                <Mail size={12} /> {String(metadata.email)}
                             </div>
                         )}
-                        {metadata.phone && (
+                        {!!metadata.phone && (
                             <div className="flex items-center gap-1">
-                                <Phone size={12} /> {metadata.phone}
+                                <Phone size={12} /> {String(metadata.phone)}
                             </div>
                         )}
-                        {metadata.amount && (
+                        {!!metadata.amount && (
                             <div className="flex items-center gap-1 font-semibold text-ac-taupe">
-                                <DollarSign size={12} /> {metadata.amount} {metadata.currency || 'USD'}
+                                <DollarSign size={12} /> {String(metadata.amount)} {String(metadata.currency || 'USD')}
                             </div>
                         )}
-                        {metadata.serviceTitle && (
+                        {!!metadata.serviceTitle && (
                             <div className="flex items-center gap-1 col-span-2">
-                                <span className="font-semibold text-[10px] uppercase tracking-wider">Product:</span> {metadata.serviceTitle}
+                                <span className="font-semibold text-[10px] uppercase tracking-wider">Product:</span> {String(metadata.serviceTitle)}
                             </div>
                         )}
                     </div>

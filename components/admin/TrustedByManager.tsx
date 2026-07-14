@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { TrustedLogo } from "@/app/lib/types";
 import { Plus, Trash2, ChevronUp, ChevronDown, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import ImageUpload from "./ImageUpload";
@@ -12,7 +13,7 @@ import {
 } from "@/app/actions/admin/manage-boutique";
 
 export default function TrustedByManager() {
-    const [logos, setLogos] = useState<any[]>([]);
+    const [logos, setLogos] = useState<TrustedLogo[]>([]);
     const [loading, setLoading] = useState(true);
     const [isAdding, setIsAdding] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -24,6 +25,7 @@ export default function TrustedByManager() {
         setLoading(false);
     };
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load-on-mount data fetch
     useEffect(() => { load(); }, []);
 
     const handleAdd = async (e: React.FormEvent) => {
@@ -45,7 +47,7 @@ export default function TrustedByManager() {
         setSaving(false);
     };
 
-    const handleToggleActive = async (logo: any) => {
+    const handleToggleActive = async (logo: TrustedLogo) => {
         const res = await updateTrustedByLogo(logo.id, { active: !logo.active });
         if (res.success) {
             setLogos(prev => prev.map(l => l.id === logo.id ? { ...l, active: !l.active } : l));

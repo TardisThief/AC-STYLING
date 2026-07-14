@@ -1,12 +1,13 @@
 "use client";
 
 import { Printer, ArrowLeft } from "lucide-react";
+import type { Profile } from "@/app/lib/types";
 import Link from "next/link";
 import { StyleEssentials } from "@/app/actions/vault/profile";
 import { JourneyStats } from "@/app/actions/vault/journey";
 
 interface StyleCardClientProps {
-    profile: any;
+    profile: Profile;
     essence: StyleEssentials;
     journey: JourneyStats | null;
 }

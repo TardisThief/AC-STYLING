@@ -1,5 +1,7 @@
 "use server";
 
+import { getErrorMessage } from "@/app/lib/errors";
+
 // ... extractUrlMetadata MOVED to scraper.ts ...
 
 // ... updateProfileStatus remains unchanged ...
@@ -26,9 +28,9 @@ export async function updateProfileStatus(profileId: string, status: 'active' | 
 
         revalidatePath('/[locale]/vault/studio', 'page');
         return { success: true };
-    } catch (err: any) {
+    } catch (err) {
         console.error("Update Status Error:", err);
-        return { success: false, error: err.message };
+        return { success: false, error: getErrorMessage(err) };
     }
 }
 
@@ -56,9 +58,9 @@ export async function permanentDeleteProfile(profileId: string) {
 
         revalidatePath('/[locale]/vault/studio', 'page');
         return { success: true };
-    } catch (err: any) {
+    } catch (err) {
         console.error("Delete Profile Error:", err);
-        return { success: false, error: err.message };
+        return { success: false, error: getErrorMessage(err) };
     }
 }
 
@@ -115,9 +117,9 @@ export async function deleteWardrobeItem(itemId: string) {
         }
 
         return { success: true };
-    } catch (err: any) {
+    } catch (err) {
         console.error("Delete Item Error:", err);
-        return { success: false, error: err.message };
+        return { success: false, error: getErrorMessage(err) };
     }
 }
 
@@ -171,7 +173,7 @@ export async function processWardrobeItem(
     if (profile?.role !== 'admin') return { success: false, error: "Unauthorized" };
 
     // 2. Validate Payload
-    const updates: any = { status };
+    const updates: Record<string, unknown> = { status };
     if (metadata?.tags) {
         if (!Array.isArray(metadata.tags) || metadata.tags.length > 50) return { success: false, error: "Invalid tags format or too many tags" };
         updates.tags = metadata.tags.map(t => String(t).substring(0, 50));
@@ -250,9 +252,9 @@ export async function uploadRemoteImage(imageUrl: string, userId: string) {
 
         return { success: true, url: publicUrl };
 
-    } catch (error: any) {
+    } catch (error) {
         console.error("Remote Upload Error:", error);
-        return { success: false, error: error.message || "Failed to upload remote image" };
+        return { success: false, error: getErrorMessage(error) || "Failed to upload remote image" };
     }
 }
 

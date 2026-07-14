@@ -1,5 +1,6 @@
 'use server';
 
+import type Stripe from 'stripe';
 import { stripe } from '@/utils/stripe';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
@@ -20,7 +21,7 @@ export async function createCheckoutSession(priceId: string, returnUrl: string) 
     const headersList = await headers();
     const origin = headersList.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
-    let email = user.email;
+    const email = user.email;
 
     // Fallback: If user.email is missing, try fetching from profiles or metadata?
     // Supabase Auth usually guarantees email unless anonymous.
@@ -34,7 +35,7 @@ export async function createCheckoutSession(priceId: string, returnUrl: string) 
     }
 
     try {
-        const sessionPayload: any = {
+        const sessionPayload: Stripe.Checkout.SessionCreateParams = {
             mode: 'payment',
             line_items: [
                 {

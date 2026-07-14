@@ -109,7 +109,7 @@ export default async function FoundationsEssenceLabPage({ params }: { params: Pr
     const title = locale === 'es' && chapter.title_es ? chapter.title_es : chapter.title;
     
     const labQuestionsRaw = chapter.lab_questions || [];
-    const labQuestions = labQuestionsRaw.map((q: any) => ({
+    const labQuestions = labQuestionsRaw.map((q: Record<string, unknown>) => ({
         ...q,
         label: (locale === 'es' && q.label_es) ? q.label_es : q.label,
         placeholder: (locale === 'es' && q.placeholder_es) ? q.placeholder_es : q.placeholder

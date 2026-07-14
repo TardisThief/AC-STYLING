@@ -86,7 +86,7 @@ export default function TailorCardUser({ initialMeasurements, userId, isActiveCl
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                     <Ruler className="text-ac-gold" size={20} />
-                    <h3 className="font-serif text-2xl text-ac-taupe">Tailor's Card</h3>
+                    <h3 className="font-serif text-2xl text-ac-taupe">Tailor&apos;s Card</h3>
                 </div>
                 {saveStatus === 'saving' && <Loader2 size={14} className="animate-spin text-ac-gold" />}
                 {saveStatus === 'saved' && (

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getErrorMessage } from '@/app/lib/errors';
+import type { WardrobeItem } from '@/app/lib/types';
 import { Lock, Plus, Camera, Loader2, Check, Trash2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { signWardrobeItems } from '@/lib/wardrobe-images';
@@ -14,11 +16,11 @@ import NextImage from 'next/image';
 interface GatedWardrobeProps {
     isActiveClient: boolean;
     userId: string;
-    initialItems?: Record<string, unknown>[];
+    initialItems?: WardrobeItem[];
 }
 
 export default function GatedWardrobe({ isActiveClient, userId, initialItems = [] }: GatedWardrobeProps) {
-    const [items, setItems] = useState<any[]>(initialItems);
+    const [items, setItems] = useState<WardrobeItem[]>(initialItems);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadFile, setUploadFile] = useState<File | null>(null);
     const [clientNote, setClientNote] = useState("");
@@ -100,8 +102,8 @@ export default function GatedWardrobe({ isActiveClient, userId, initialItems = [
             setUploadFile(null);
             setClientNote("");
             setCategory("Uncategorized");
-        } catch (err: any) {
-            toast.error(err.message || "Failed to upload.");
+        } catch (err) {
+            toast.error(getErrorMessage(err) || "Failed to upload.");
         } finally {
             setIsSaving(false);
         }
@@ -139,7 +141,7 @@ export default function GatedWardrobe({ isActiveClient, userId, initialItems = [
 
                             <div className="relative w-full h-full">
                                 <NextImage
-                                    src={item.image_url}
+                                    src={item.image_url ?? ''}
                                     alt="Wardrobe item"
                                     fill
                                     className="object-cover"
@@ -182,7 +184,7 @@ export default function GatedWardrobe({ isActiveClient, userId, initialItems = [
 
                                 <p className="text-[10px] uppercase tracking-widest font-bold mb-1">{item.category || 'Uncategorized'}</p>
                                 {item.client_note && (
-                                    <p className="text-[10px] italic opacity-80 line-clamp-2">"{item.client_note}"</p>
+                                    <p className="text-[10px] italic opacity-80 line-clamp-2">&quot;{item.client_note}&quot;</p>
                                 )}
                             </div>
                         </div>

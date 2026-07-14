@@ -111,7 +111,7 @@ export default function InvitationGenerator({ onClose }: { onClose: () => void }
                 <div className="space-y-6">
                     <div className="bg-ac-gold/10 p-6 rounded-sm text-center border border-ac-gold/20">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-ac-gold mb-2">Invitation Ready</p>
-                        <p className="font-serif text-xl text-ac-taupe">{name}'s Portal</p>
+                        <p className="font-serif text-xl text-ac-taupe">{name}&apos;s Portal</p>
                     </div>
 
                     <div className="flex gap-2">

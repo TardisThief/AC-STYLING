@@ -36,7 +36,7 @@ export function deriveStoragePath(imageUrl: string | null | undefined): string |
     return null;
 }
 
-type WithImage = { image_url?: string | null;[key: string]: unknown };
+type WithImage = { image_url?: string | null };
 
 /**
  * Return a copy of `items` with each `image_url` swapped for a fresh signed URL.

@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Loader2, Mail, CheckCircle2 } from "lucide-react";
+import { Link } from "@/i18n/routing";
 import { useRouter } from "next/navigation";
 
 export default function JoinPage() {
@@ -17,6 +18,7 @@ export default function JoinPage() {
     useEffect(() => {
         const stored = localStorage.getItem('redirect_to');
         if (stored) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only localStorage read on mount
             setRedirectTo(stored);
         }
     }, []);
@@ -200,7 +202,7 @@ export default function JoinPage() {
 
                     <p className="text-center text-[10px] text-[#3D3630]/40 leading-relaxed max-w-xs mx-auto">
                         Already have an account? <br />
-                        <a href="/login" className="text-[#3D3630] border-b border-[#3D3630]/30 hover:border-[#3D3630] transition-colors pb-0.5">Sign in here</a>
+                        <Link href="/login" className="text-[#3D3630] border-b border-[#3D3630]/30 hover:border-[#3D3630] transition-colors pb-0.5">Sign in here</Link>
                     </p>
                 </motion.div>
 

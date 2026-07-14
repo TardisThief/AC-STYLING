@@ -2,16 +2,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Profile } from "@/app/lib/types";
 import { getClients, toggleStudioAccess } from "@/app/actions/admin/manage-clients";
 import { User, Search, Eye, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 interface ClientListProps {
-    onSelectClient: (client: any) => void;
+    onSelectClient: (client: Profile) => void;
 }
 
 export default function ClientList({ onSelectClient }: ClientListProps) {
-    const [clients, setClients] = useState<any[]>([]);
+    const [clients, setClients] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [showStudioOnly, setShowStudioOnly] = useState(true);
@@ -70,7 +71,7 @@ export default function ClientList({ onSelectClient }: ClientListProps) {
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-ac-taupe/10 rounded-full flex items-center justify-center text-ac-taupe">
                                 {client.avatar_url ? (
-                                    <img src={client.avatar_url} alt={client.full_name} className="w-full h-full object-cover rounded-full" />
+                                    <img src={client.avatar_url ?? undefined} alt={client.full_name ?? undefined} className="w-full h-full object-cover rounded-full" />
                                 ) : (
                                     <User size={20} />
                                 )}

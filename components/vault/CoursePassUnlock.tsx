@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Offer } from "@/app/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { createCheckoutSession } from "@/app/actions/stripe";
 import { getOffer } from "@/app/actions/admin/manage-offers";
@@ -10,7 +11,7 @@ import { Link, useRouter } from "@/i18n/routing";
 
 export default function CoursePassUnlock({ userId, hasCoursePass }: { userId?: string, hasCoursePass: boolean }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [offer, setOffer] = useState<any>(null);
+    const [offer, setOffer] = useState<Offer | null>(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -35,6 +36,8 @@ export default function CoursePassUnlock({ userId, hasCoursePass }: { userId?: s
             router.push('/vault/join');
             return;
         }
+
+        if (!offer?.price_id) return;
 
         setLoading(true);
         try {

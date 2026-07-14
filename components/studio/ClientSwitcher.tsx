@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Profile } from "@/app/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { Search, User, Zap, Plus } from "lucide-react";
 
 interface ClientSwitcherProps {
-    onSelect: (client: any) => void;
+    onSelect: (client: Profile) => void;
     onAddClient: () => void;
     selectedId?: string;
 }
 
 export default function ClientSwitcher({ onSelect, onAddClient, selectedId }: ClientSwitcherProps) {
-    const [clients, setClients] = useState<any[]>([]);
+    const [clients, setClients] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const supabase = createClient();

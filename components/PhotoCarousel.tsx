@@ -17,13 +17,6 @@ export default function PhotoCarousel() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            nextSlide();
-        }, 5000);
-        return () => clearInterval(timer);
-    }, [currentIndex]);
-
     const nextSlide = () => {
         setDirection(1);
         setCurrentIndex((prev) => (prev + 1) % images.length);
@@ -33,6 +26,14 @@ export default function PhotoCarousel() {
         setDirection(-1);
         setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
     };
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            nextSlide();
+        }, 5000);
+        return () => clearInterval(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex]);
 
     const variants = {
         enter: (direction: number) => ({

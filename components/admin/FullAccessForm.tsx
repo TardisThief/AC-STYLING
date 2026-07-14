@@ -74,7 +74,7 @@ export default function FullAccessForm({ onClose }: FullAccessFormProps) {
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <h3 className="font-serif text-2xl text-ac-taupe border-b border-ac-taupe/10 pb-3">
-                Configure "Full Access" Offer
+                Configure &quot;Full Access&quot; Offer
             </h3>
 
             <div className="space-y-4">

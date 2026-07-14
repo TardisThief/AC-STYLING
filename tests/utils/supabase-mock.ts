@@ -20,7 +20,7 @@ export function createChainableMock(finalResult: any = { data: null, error: null
         get(_, prop) {
             // When we hit 'then', return the promise behavior
             if (prop === 'then') {
-                return (resolve: Function) => resolve(finalResult)
+                return (resolve: (value: unknown) => unknown) => resolve(finalResult)
             }
             // For any other method, return a function that returns the proxy
             return vi.fn(() => chainProxy)

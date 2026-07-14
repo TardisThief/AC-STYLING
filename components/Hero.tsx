@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 
@@ -67,12 +68,12 @@ export default function Hero() {
                     </p>
 
                     {/* Button - Transparent with Border */}
-                    <a
+                    <Link
                         href="/book"
                         className="inline-block px-10 py-4 border border-white text-white font-sans text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-300"
                     >
                         {t('cta')}
-                    </a>
+                    </Link>
                 </motion.div>
             </div>
         </section>

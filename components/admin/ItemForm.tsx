@@ -2,14 +2,15 @@
 "use client";
 
 import { useState } from "react";
+import type { BoutiqueItem, PartnerBrand } from "@/app/lib/types";
 import { createBoutiqueItem, updateBoutiqueItem } from "@/app/actions/admin/manage-boutique";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import ImageUpload from "./ImageUpload";
 
 interface ItemFormProps {
-    item?: any;
-    brands: any[];
+    item?: BoutiqueItem;
+    brands: PartnerBrand[];
     onSuccess: () => void;
     onCancel: () => void;
 }
@@ -93,7 +94,7 @@ export default function ItemForm({ item, brands, onSuccess, onCancel }: ItemForm
             </div>
 
             <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-ac-taupe/60 mb-1">Alejandra's Tip (Curator Note)</label>
+                <label className="block text-xs font-bold uppercase tracking-widest text-ac-taupe/60 mb-1">Alejandra&apos;s Tip (Curator Note)</label>
                 <textarea
                     placeholder="Why this item?"
                     value={formData.curator_note}

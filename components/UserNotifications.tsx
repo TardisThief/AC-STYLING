@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import type { UserQuestion } from "@/app/lib/types";
 import { Bell, X, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUnreadAnswers, markAnswerAsRead } from "@/app/actions/send-question";
@@ -8,7 +9,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 export default function UserNotifications() {
-    const [unreadQuestions, setUnreadQuestions] = useState<any[]>([]);
+    const [unreadQuestions, setUnreadQuestions] = useState<UserQuestion[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -23,6 +24,7 @@ export default function UserNotifications() {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- load-on-mount data fetch
         fetchNotifications();
 
         // Optional: Poll every 60s
@@ -97,7 +99,7 @@ export default function UserNotifications() {
                                 <div>
                                     {unreadQuestions.map((q) => (
                                         <div key={q.id} className="p-4 border-b border-ac-taupe/5 hover:bg-ac-gold/5 transition-colors relative group">
-                                            <p className="text-xs text-ac-taupe/60 italic mb-2 line-clamp-1">"{q.question}"</p>
+                                            <p className="text-xs text-ac-taupe/60 italic mb-2 line-clamp-1">&quot;{q.question}&quot;</p>
                                             <div className="text-sm text-ac-taupe mb-3">
                                                 <span className="font-semibold text-ac-gold text-xs uppercase tracking-wider block mb-1">Answer:</span>
                                                 {q.answer}

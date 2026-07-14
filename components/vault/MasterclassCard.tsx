@@ -1,17 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import type { Masterclass } from "@/app/lib/types";
 import { Link } from "@/i18n/routing";
 import { Layers, Check } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
 
 interface MasterclassCardProps {
-    masterclass: any;
+    masterclass: Masterclass;
     locale: string;
     isGuest: boolean;
     isCompleted: boolean;
     index: number;
-    t: any; // Translations object or function
     href: string;
 }
 
@@ -21,7 +21,6 @@ export default function MasterclassCard({
     isGuest,
     isCompleted,
     index,
-    t,
     href
 }: MasterclassCardProps) {
     // No video playback on card anymore, purely a link to detail page where video lives.
@@ -37,7 +36,7 @@ export default function MasterclassCard({
                 <Link href={href} className="block w-full h-full relative">
                     <div className="absolute inset-0 bg-ac-taupe/20 group-hover:bg-ac-taupe/0 transition-colors z-10" />
                     <SafeImage
-                        src={displayThumb}
+                        src={displayThumb ?? undefined}
                         alt={displayTitle}
                         className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${isGuest ? 'blur-[2px] grayscale' : 'grayscale group-hover:grayscale-0'}`}
                     />
