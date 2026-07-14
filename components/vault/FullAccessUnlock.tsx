@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Offer } from "@/app/lib/types";
 import { getOffer } from "@/app/actions/admin/manage-offers";
 import { createCheckoutSession } from "@/app/actions/stripe";
 import { toast } from "sonner";
@@ -9,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "@/i18n/routing";
 
 export default function FullAccessUnlock({ userId, hasFullAccess }: { userId?: string, hasFullAccess: boolean }) {
-    const [offer, setOffer] = useState<any>(null);
+    const [offer, setOffer] = useState<Offer | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -43,6 +44,7 @@ export default function FullAccessUnlock({ userId, hasFullAccess }: { userId?: s
             // Determine return URL
             const returnUrl = `/vault/foundations`;
 
+            if (!offer?.price_id) return;
             const result = await createCheckoutSession(offer.price_id, returnUrl);
 
             if (result.error) {

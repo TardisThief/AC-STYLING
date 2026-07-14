@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import type { UserQuestion } from "@/app/lib/types";
 import { Bell, X, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUnreadAnswers, markAnswerAsRead } from "@/app/actions/send-question";
@@ -8,7 +9,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 export default function UserNotifications() {
-    const [unreadQuestions, setUnreadQuestions] = useState<any[]>([]);
+    const [unreadQuestions, setUnreadQuestions] = useState<UserQuestion[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const containerRef = useRef<HTMLDivElement>(null);

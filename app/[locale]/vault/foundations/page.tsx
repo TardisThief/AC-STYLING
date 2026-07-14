@@ -106,7 +106,6 @@ export default async function FoundationsPage({ params }: { params: Promise<{ lo
                                     isGuest={isGuest}
                                     isCompleted={isCompleted}
                                     index={index}
-                                    t={null}
                                     href={href}
                                 />
                             );
