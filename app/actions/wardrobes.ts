@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { requireAdmin } from "@/app/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import { getErrorMessage } from "@/app/lib/errors";
 
@@ -33,21 +34,9 @@ export async function getWardrobes(): Promise<{
     data?: Wardrobe[];
     error?: string;
 }> {
-    const supabase = await createClient();
-
-    // Check admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { data, error } = await supabase
         .from('wardrobes')
@@ -79,21 +68,8 @@ export async function createWardrobe(
     error?: string;
 }> {
     try {
-        const supabase = await createClient();
-
-        // Check admin
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return { success: false, error: "Unauthorized" };
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-        if (profile?.role !== 'admin') {
-            return { success: false, error: "Unauthorized" };
-        }
+        const auth = await requireAdmin();
+        if (!auth.ok) return { success: false, error: auth.error };
 
         const adminSupabase = createAdminClient();
 
@@ -127,21 +103,8 @@ export async function updateWardrobe(
     wardrobeId: string,
     updates: { title?: string; owner_id?: string | null; status?: 'active' | 'archived' }
 ): Promise<{ success: boolean; error?: string }> {
-    const supabase = await createClient();
-
-    // Check admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
     const adminSupabase = createAdminClient();
 
@@ -363,21 +326,9 @@ export async function regenerateUploadToken(wardrobeId: string): Promise<{
     newToken?: string;
     error?: string;
 }> {
-    const supabase = await createClient();
-
-    // Check admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const newToken = crypto.randomUUID();
 
@@ -444,21 +395,8 @@ export async function assignWardrobe(
     wardrobeId: string,
     userId: string
 ): Promise<{ success: boolean; error?: string }> {
-    const supabase = await createClient();
-
-    // Check admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
     const adminSupabase = createAdminClient();
 
@@ -572,21 +510,8 @@ export async function claimWardrobe(token: string): Promise<{ success: boolean; 
 export async function deleteWardrobe(
     wardrobeId: string
 ): Promise<{ success: boolean; error?: string }> {
-    const supabase = await createClient();
-
-    // Check admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'admin') {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
 
     const adminSupabase = createAdminClient();
 
@@ -609,21 +534,9 @@ export async function deleteWardrobe(
 // =============================================================================
 
 export async function searchProfiles(query: string): Promise<{ success: boolean; profiles?: { id: string; full_name: string | null; email: string | null; avatar_url: string | null }[]; error?: string }> {
-    const supabase = await createClient();
-
-    // Check admin
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
-
-    const { data: adminProfile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (adminProfile?.role !== 'admin') {
-        return { success: false, error: "Unauthorized" };
-    }
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const supabase = auth.supabase;
 
     const { data, error } = await supabase
         .from('profiles')

@@ -141,7 +141,7 @@ vi.mock('@/utils/supabase/admin', () => {
 
 
 // Import Actions
-import { generateInvitation, claimWardrobe } from '@/app/actions/invitation';
+import { generateInvitation } from '@/app/actions/invitation';
 import { checkAccess } from '@/utils/access-control';
 
 // -----------------------------------------------------------------------------

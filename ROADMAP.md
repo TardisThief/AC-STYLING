@@ -51,10 +51,21 @@ Vimeo teaser handling.
   `npm run lint` is now 0 errors and CI enforces it. Warnings (~9k, mostly
   `no-img-element`) stay non-blocking — a separate future effort. Spec + plan:
   `docs/superpowers/{specs,plans}/2026-07-12-lint-to-blocking-gate*`.
-- De-duplicate the profile-merge logic + remaining inline admin checks.
-- Tailwind token consolidation (brand tokens vs. dead shadcn oklch); dead-code
-  cleanup.
-- Fold in the trivial Next 16 `middleware` → `proxy` rename here.
+- ~~De-duplicate the profile-merge logic + remaining inline admin checks~~ —
+  **done (2026-07-14)**. 15 admin actions consolidated onto `requireAdmin`;
+  dead `invitation.ts` `claimWardrobe` duplicate removed.
+- ~~Tailwind token consolidation (brand tokens vs. dead shadcn oklch); dead-code
+  cleanup~~ — **done (2026-07-14)**. The shadcn "new-york" token system was
+  entirely unused (only the never-imported `components/ui/button.tsx` referenced
+  it). Removed the dead tokens (`--primary/--card/--muted/--accent/--popover/
+  --destructive/--input/--chart-*/--sidebar-*`), the whole `.dark` block, and
+  `button.tsx`; kept the load-bearing `--border/--ring/--background/--foreground/
+  --radius` (the base layer colors ~300 bare-`border` elements). Verified
+  zero visual change at the shipped-CSS level.
+- ~~Fold in the trivial Next 16 `middleware` → `proxy` rename here~~ — **done
+  (2026-07-14)**, verified end-to-end (locale routing + /vault auth).
+
+**Phase 2 complete.**
 
 ## Phase 3 — UX & Design (impeccable-led)
 
