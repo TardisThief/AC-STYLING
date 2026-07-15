@@ -26,7 +26,7 @@ export default function About() {
 
                         <div className="w-16 h-px bg-ac-taupe/20 mb-6 mx-auto"></div>
 
-                        <p className="font-sans text-lg md:text-xl leading-relaxed text-ac-taupe/80 mb-6 max-w-xl">
+                        <p className="font-sans text-lg md:text-xl leading-relaxed text-ac-taupe mb-6 max-w-xl">
                             {t('description')}
                         </p>
 
@@ -34,7 +34,7 @@ export default function About() {
                             href="https://calendly.com/fashionstylist-ac/30min"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block px-10 py-4 border border-ac-taupe text-ac-taupe font-sans text-xs uppercase tracking-[0.2em] hover:bg-ac-taupe hover:text-white transition-all duration-300"
+                            className="inline-block px-10 py-4 border border-ac-taupe text-ac-taupe font-sans text-xs uppercase tracking-[0.2em] hover:bg-ac-taupe hover:text-white focus-visible:bg-ac-taupe focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-taupe focus-visible:ring-offset-2 focus-visible:ring-offset-ac-sand transition-all duration-300"
                         >
                             {t('cta')}
                         </a>

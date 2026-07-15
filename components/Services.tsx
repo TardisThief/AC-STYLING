@@ -2,66 +2,65 @@
 
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { ArrowUpRight } from "lucide-react";
 import Catalogs from "./Catalogs";
 
 export default function Services() {
     const t = useTranslations('Services');
 
     const services = [
-        {
-            id: 1,
-            title: t('personal_stylist.title'),
-            description: t('personal_stylist.description')
-        },
-        {
-            id: 2,
-            title: t('personal_shopping.title'),
-            description: t('personal_shopping.description')
-        },
-        {
-            id: 3,
-            title: t('closet_detox.title'),
-            description: t('closet_detox.description')
-        },
-        {
-            id: 4,
-            title: t('corporate_consulting.title'),
-            description: t('corporate_consulting.description')
-        },
+        { id: 1, title: t('personal_stylist.title'), description: t('personal_stylist.description') },
+        { id: 2, title: t('personal_shopping.title'), description: t('personal_shopping.description') },
+        { id: 3, title: t('closet_detox.title'), description: t('closet_detox.description') },
+        { id: 4, title: t('corporate_consulting.title'), description: t('corporate_consulting.description') },
     ];
 
     return (
-        <section className="w-full bg-ac-taupe py-8 md:py-12 scroll-mt-28" id="services">
+        <section className="w-full bg-ac-taupe py-16 md:py-28 scroll-mt-28" id="services">
             <div className="container mx-auto px-4">
 
                 {/* Header */}
-                <div className="flex flex-col items-center text-center mb-8">
-                    <span className="font-serif italic text-ac-beige text-xl mb-4">{t('section_title')}</span>
-                    <h2 className="font-serif text-3xl md:text-5xl text-ac-sand mb-6">{t('headline')}</h2>
-                    <div className="w-12 h-px bg-ac-sand/20"></div>
+                <div className="max-w-5xl mx-auto mb-10 md:mb-16">
+                    <span className="block font-serif italic text-ac-beige text-xl md:text-2xl mb-3">
+                        {t('section_title')}
+                    </span>
+                    <h2 className="font-serif text-4xl md:text-6xl text-ac-sand leading-[1.05] text-balance max-w-3xl">
+                        {t('headline')}
+                    </h2>
                 </div>
 
-                {/* Service Grid - Clean & Minimal */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto">
+                {/* Editorial service index — full-width typographic rows, not cards */}
+                <div className="max-w-5xl mx-auto border-t border-ac-sand/15">
                     {services.map((service, index) => (
                         <motion.a
                             key={service.id}
                             href="/book"
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 24 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1, duration: 0.5 }}
-                            viewport={{ once: true }}
-                            className="group flex flex-col p-6 md:p-8 bg-white/80 backdrop-blur-md border border-white/40 shadow-sm transition-all duration-300 hover:bg-white/90 hover:shadow-lg hover:-translate-y-1 rounded-xl"
+                            transition={{ delay: index * 0.08, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                            viewport={{ once: true, margin: "-60px" }}
+                            className="group grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-8 items-baseline border-b border-ac-sand/15 py-7 md:py-9 transition-colors duration-500 hover:bg-ac-sand/[0.04] focus-visible:bg-ac-sand/[0.06] focus-visible:outline-none px-2 -mx-2"
                         >
-                            <h3 className="font-serif text-2xl text-ac-taupe mb-4 group-hover:text-ac-olive-dark transition-colors">
-                                {service.title}
+                            <h3 className="md:col-span-5 font-serif text-2xl md:text-4xl text-ac-sand leading-tight transition-colors duration-300 group-hover:text-ac-beige flex items-start gap-3">
+                                <span className="flex-1">{service.title}</span>
+                                <ArrowUpRight
+                                    className="shrink-0 mt-1 text-ac-beige opacity-0 -translate-x-2 translate-y-1 transition-all duration-500 ease-out group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 md:hidden"
+                                    size={22}
+                                    aria-hidden="true"
+                                />
                             </h3>
-                            <p className="font-sans text-ac-taupe/70 leading-relaxed text-sm md:text-base mb-6 flex-grow">
+
+                            <p className="md:col-span-6 font-sans text-ac-sand/80 leading-relaxed text-sm md:text-base max-w-xl">
                                 {service.description}
                             </p>
-                            <span className="text-xs uppercase tracking-widest text-ac-taupe group-hover:underline decoration-ac-olive-dark underline-offset-4 font-semibold">
-                                {t('learn_more')}
-                            </span>
+
+                            <div className="hidden md:flex md:col-span-1 justify-end self-center">
+                                <ArrowUpRight
+                                    className="text-ac-beige opacity-40 -translate-x-1 transition-all duration-500 ease-out group-hover:opacity-100 group-hover:translate-x-0"
+                                    size={26}
+                                    aria-hidden="true"
+                                />
+                            </div>
                         </motion.a>
                     ))}
                 </div>

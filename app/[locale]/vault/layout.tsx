@@ -1,25 +1,16 @@
 
 import ConciergeNavbar from "@/components/ConciergeNavbar";
-import { createClient } from "@/utils/supabase/server";
+import { getViewer } from "@/app/lib/vault-user";
 
 export default async function VaultLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // Shared with the page via React cache() — one getUser + one profiles query.
+    const { user, profile } = await getViewer();
     const isGuest = !user || user.is_anonymous;
-
-    let isAdmin = false;
-    if (user && !isGuest) {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-        isAdmin = profile?.role === 'admin';
-    }
+    const isAdmin = !isGuest && profile?.role === 'admin';
 
     return (
         <div className="min-h-screen bg-ac-sand pb-20">

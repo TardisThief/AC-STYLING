@@ -123,8 +123,16 @@
             },
             "ask": {
                 "label": "Ask Ale a Question",
-                "subtitle": "Send her a direct question"
+                "subtitle": "Send her a direct question",
+                "locked": "Join to unlock"
             }
+        },
+        "pulse_goto": "Show update {number}",
+        "pulse_pause": "Pause auto-rotation",
+        "fallback": {
+            "label": "The Lab",
+            "title": "Welcome to your Vault",
+            "subtitle": "Your personal style journey starts here."
         }
     },
     "Studio": {
@@ -164,6 +172,10 @@
         "rights": "All Rights Reserved.",
         "privacy": "Privacy Policy",
         "terms": "Terms of Service",
-        "refunds": "Refund Policy"
+        "refunds": "Refund Policy",
+        "nav_home": "Home",
+        "nav_about": "About",
+        "nav_services": "Services",
+        "nav_contact": "Contact"
     }
 }

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, User, Check, Loader2, AlertCircle } from "lucide-react";
 import { searchProfiles, assignWardrobe } from "@/app/actions/wardrobes";
 import { toast } from "sonner";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 interface UserAssignmentModalProps {
     isOpen: boolean;
@@ -19,6 +20,7 @@ export default function UserAssignmentModal({ isOpen, onClose, wardrobeId, wardr
     const [results, setResults] = useState<Pick<Profile, 'id' | 'full_name' | 'email' | 'avatar_url'>[]>([]);
     const [searching, setSearching] = useState(false);
     const [assigning, setAssigning] = useState<string | null>(null); // ID of user being assigned
+    const [pendingAssign, setPendingAssign] = useState<Pick<Profile, 'id' | 'full_name' | 'email'> | null>(null);
 
     // Debounce search
     useEffect(() => {
@@ -42,10 +44,6 @@ export default function UserAssignmentModal({ isOpen, onClose, wardrobeId, wardr
 
     const handleAssign = async (user: Pick<Profile, 'id' | 'full_name' | 'email' | 'avatar_url'>) => {
         const displayName = user.full_name || user.email;
-        if (!confirm(`Are you sure you want to assign "${wardrobeTitle}" to ${displayName}? This will enable Studio access for them.`)) {
-            return;
-        }
-
         setAssigning(user.id);
         const { success, error } = await assignWardrobe(wardrobeId, user.id);
 
@@ -56,6 +54,7 @@ export default function UserAssignmentModal({ isOpen, onClose, wardrobeId, wardr
             toast.error(error || "Assignment failed");
         }
         setAssigning(null);
+        setPendingAssign(null);
     };
 
     return (
@@ -106,7 +105,7 @@ export default function UserAssignmentModal({ isOpen, onClose, wardrobeId, wardr
                                     {results.map((user) => (
                                         <button
                                             key={user.id}
-                                            onClick={() => handleAssign(user)}
+                                            onClick={() => setPendingAssign(user)}
                                             disabled={!!assigning}
                                             className="w-full p-4 flex items-center gap-3 hover:bg-ac-gold/5 transition-colors text-left group"
                                         >
@@ -156,6 +155,18 @@ export default function UserAssignmentModal({ isOpen, onClose, wardrobeId, wardr
                     </motion.div>
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={pendingAssign !== null}
+                onCancel={() => setPendingAssign(null)}
+                onConfirm={() => {
+                    const target = results.find(r => r.id === pendingAssign?.id);
+                    if (target) return handleAssign(target);
+                }}
+                title="Assign wardrobe"
+                body={<>&ldquo;{wardrobeTitle}&rdquo; will be assigned to {pendingAssign?.full_name || pendingAssign?.email}, which unlocks Studio access for them.</>}
+                confirmLabel="Assign"
+            />
         </AnimatePresence>
     );
 }

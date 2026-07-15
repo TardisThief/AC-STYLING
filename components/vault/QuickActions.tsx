@@ -2,125 +2,90 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Calendar, MessageCircleQuestion, Archive, Tag, GraduationCap } from "lucide-react";
+import { Calendar, MessageCircleQuestion, Archive, Tag, GraduationCap, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import AskAlejandraModal from "@/components/vault/AskAlejandraModal";
-import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "@/i18n/routing";
+import { Link } from "@/i18n/routing";
 
 interface QuickActionsProps {
     isMasterclassComplete?: boolean;
     isGuest?: boolean;
 }
 
-export default function QuickActions({ isMasterclassComplete = false, isGuest = false }: QuickActionsProps) {
+// Shared card chrome so every action reads as the same affordance.
+const cardBase =
+    "group relative flex flex-col lg:flex-row items-center lg:justify-start justify-center " +
+    "p-4 rounded-sm border shadow-sm transition-colors duration-200 " +
+    "overflow-hidden flex-1 min-h-[60px] lg:w-full text-center lg:text-left " +
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold focus-visible:ring-offset-2 focus-visible:ring-offset-ac-sand";
+const cardIdle = "bg-white/50 border-white/40 hover:bg-white/80";
+
+export default function QuickActions({ isGuest = false }: QuickActionsProps) {
     const t = useTranslations('Vault');
     const [isAskModalOpen, setIsAskModalOpen] = useState(false);
 
-    const actions = [
-        { label: t('actions.courses.label'), subtitle: t('actions.courses.subtitle'), icon: Archive, href: "/vault/courses", action: null },
-        { label: t('actions.studio.label'), subtitle: t('actions.studio.subtitle'), icon: Calendar, href: "/vault/services", action: null },
-        { label: t('actions.boutique.label'), subtitle: t('actions.boutique.subtitle'), icon: Tag, href: "/vault/boutique", action: null },
-        // Disable click for guest, maybe showing an alert or doing nothing
-        { label: t('actions.ask.label'), subtitle: isGuest ? "Locked for Guests" : t('actions.ask.subtitle'), icon: MessageCircleQuestion, href: isGuest ? "#" : "#", action: "ask", disabled: isGuest },
+    const links = [
+        { label: t('actions.courses.label'), subtitle: t('actions.courses.subtitle'), icon: Archive, href: "/vault/courses" },
+        { label: t('actions.studio.label'), subtitle: t('actions.studio.subtitle'), icon: Calendar, href: "/vault/services" },
+        { label: t('actions.boutique.label'), subtitle: t('actions.boutique.subtitle'), icon: Tag, href: "/vault/boutique" },
     ];
 
-    const router = useRouter();
-    const handleActionClick = async (actionType: string | null, e: React.MouseEvent) => {
-        if (actionType === 'ask') {
-            e.preventDefault();
-
-            if (isGuest) {
-                // Optionally show a toaster here or just do nothing
-                return;
-            }
-
-            // Check auth
-            const supabase = createClient();
-            const { data: { session } } = await supabase.auth.getSession();
-
-            if (!session) {
-                // Redirect to login or show toaster
-                router.push('/login?next=/vault'); // Assuming login path
-                return;
-            }
-
-            setIsAskModalOpen(true);
-        }
-    };
+    const iconClass = "text-ac-gold mb-2 lg:mb-0 lg:mr-4 shrink-0 transition-transform duration-200 group-hover:scale-110";
+    const titleClass = "block font-serif text-lg leading-tight text-ac-taupe";
+    const subtitleClass = "block text-[11px] uppercase tracking-widest text-ac-taupe/70 font-bold mt-0.5";
 
     return (
         <section className="h-full">
             <h3 className="font-serif text-lg text-ac-taupe mb-4 md:hidden">{t('quick_actions')}</h3>
-            {/* 
-                Grid Layout:
-                Mobile: grid-cols-2 (2x2)
-                Desktop (lg): flex-col (Vertical Sidebar)
-            */}
+
             <div className="grid grid-cols-2 lg:flex lg:flex-col gap-3 h-full">
 
-                {/* 1. Masterclasses (Primary Action) — same motion.a structure as siblings */}
-                <motion.a
+                {/* Primary action */}
+                <Link
                     href="/vault/foundations"
-                    initial={{ opacity: 1, x: 0 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0, duration: 0 }}
-                    className="group relative flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-start
-                             col-span-2 p-4 lg:p-4 rounded-sm
-                             bg-ac-espresso border border-ac-espresso shadow-md
-                             hover:bg-ac-taupe hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300
-                             overflow-hidden flex-1 min-h-[60px] lg:w-full"
+                    className={`${cardBase} col-span-2 bg-ac-espresso border-ac-espresso shadow-md hover:bg-ac-taupe focus-visible:ring-offset-ac-sand`}
                 >
-                    <GraduationCap
-                        size={30}
-                        className="text-ac-gold mb-2 lg:mb-0 lg:mr-4 transition-transform duration-300 group-hover:scale-110 flex-shrink-0"
-                    />
-                    <div className="text-center lg:text-left">
-                        <span className="block font-serif text-lg leading-tight text-white transition-colors">
-                            {t('masterclasses.title')}
-                        </span>
-                        <span className="text-[10px] uppercase tracking-widest text-ac-sand/80 font-bold">
+                    <GraduationCap size={30} className={iconClass} aria-hidden="true" />
+                    <div>
+                        <span className="block font-serif text-lg leading-tight text-white">{t('masterclasses.title')}</span>
+                        <span className="block text-[11px] uppercase tracking-widest text-ac-sand/90 font-bold mt-0.5">
                             {t('masterclasses.subtitle')}
                         </span>
                     </div>
-                </motion.a>
+                </Link>
 
-                {actions.map((action, index) => (
-                    <motion.a
-                        key={action.label}
-                        href={action.href}
-                        onClick={(e) => handleActionClick(action.action, e)}
-                        initial={{ opacity: 1, x: 0 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0, duration: 0 }}
-                        className="group relative flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-start
-                                 p-4 lg:p-4 rounded-sm
-                                 bg-white/40 backdrop-blur-md border border-white/20 shadow-sm
-                                 hover:bg-white/60 hover:shadow-md transition-all duration-300
-                                 overflow-hidden flex-1 min-h-[60px] lg:w-full cursor-pointer"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                        <action.icon
-                            size={30}
-                            className="text-ac-gold mb-2 lg:mb-0 lg:mr-4 transition-transform duration-300 group-hover:scale-110 flex-shrink-0"
-                        />
-
-                        <div className="relative z-10 text-center lg:text-left">
-                            <span className="block font-serif text-lg text-ac-taupe leading-tight group-hover:text-ac-taupe/80 transition-colors">
-                                {action.label}
-                            </span>
-                            <span className="block text-[10px] uppercase tracking-widest text-ac-taupe/40 font-bold mt-0.5">
-                                {action.subtitle}
-                            </span>
+                {links.map((action) => (
+                    <Link key={action.label} href={action.href} className={`${cardBase} ${cardIdle}`}>
+                        <action.icon size={30} className={iconClass} aria-hidden="true" />
+                        <div>
+                            <span className={titleClass}>{action.label}</span>
+                            <span className={subtitleClass}>{action.subtitle}</span>
                         </div>
-                    </motion.a>
+                    </Link>
                 ))}
+
+                {/* Ask Alejandra — a real button for members; a real upgrade path for guests
+                    (previously an <a href="#"> that silently did nothing for guests). */}
+                {isGuest ? (
+                    <Link href="/vault/join" className={`${cardBase} ${cardIdle}`}>
+                        <Lock size={30} className={iconClass} aria-hidden="true" />
+                        <div>
+                            <span className={titleClass}>{t('actions.ask.label')}</span>
+                            <span className={subtitleClass}>{t('actions.ask.locked')}</span>
+                        </div>
+                    </Link>
+                ) : (
+                    <button type="button" onClick={() => setIsAskModalOpen(true)} className={`${cardBase} ${cardIdle}`}>
+                        <MessageCircleQuestion size={30} className={iconClass} aria-hidden="true" />
+                        <div>
+                            <span className={titleClass}>{t('actions.ask.label')}</span>
+                            <span className={subtitleClass}>{t('actions.ask.subtitle')}</span>
+                        </div>
+                    </button>
+                )}
             </div>
 
             <AskAlejandraModal isOpen={isAskModalOpen} onClose={() => setIsAskModalOpen(false)} />
         </section>
     );
 }
-

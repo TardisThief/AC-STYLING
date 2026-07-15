@@ -5,6 +5,11 @@ import { createAdminClient } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/app/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import { getErrorMessage } from "@/app/lib/errors";
+import { deriveStoragePath, signWardrobeItems } from "@/lib/wardrobe-images";
+import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
+import { parseInput, uuid } from "@/app/lib/validation/parse";
+import { adminWardrobeItemUpdateSchema, bulkStatusSchema } from "@/app/lib/validation/wardrobe-items";
+import type { WardrobeItem } from "@/app/lib/types";
 
 // =============================================================================
 // Types
@@ -549,4 +554,182 @@ export async function searchProfiles(query: string): Promise<{ success: boolean;
     }
 
     return { success: true, profiles: data };
+}
+
+// =============================================================================
+// Admin: wardrobe items (service-role — see internal_note note below)
+// =============================================================================
+
+/**
+ * Read a wardrobe's items for the admin (Studio) view, including the private
+ * `internal_note`.
+ *
+ * This goes through the service role rather than the browser client because
+ * column privileges are not role-aware beyond the Postgres role: Ale and her
+ * clients are both `authenticated`, so revoking `internal_note` from that role
+ * to hide it from clients hides it from Ale too. Admin reads therefore come
+ * through a guarded server action, mirroring `getAdminBrands` for
+ * `partner_brands.internal_notes`.
+ */
+export async function getAdminWardrobeItems(wardrobeId: string): Promise<{
+    success: boolean;
+    items?: WardrobeItem[];
+    error?: string;
+}> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    const parsedId = parseInput(uuid('Wardrobe id'), wardrobeId);
+    if (!parsedId.ok) return { success: false, error: parsedId.error };
+
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('wardrobe_items')
+        .select('*')
+        .eq('wardrobe_id', parsedId.data)
+        .order('created_at', { ascending: false });
+
+    if (error) return { success: false, error: error.message };
+
+    // Sign with the service-role client: the bucket is private and these paths
+    // may sit under a client's folder.
+    const items = await signWardrobeItems(supabase, (data ?? []) as WardrobeItem[]);
+    return { success: true, items };
+}
+
+/** Admin edit of a single item, including the private note. */
+export async function updateAdminWardrobeItem(
+    itemId: string,
+    updates: Record<string, unknown>
+): Promise<{ success: boolean; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    const parsedId = parseInput(uuid('Item id'), itemId);
+    if (!parsedId.ok) return { success: false, error: parsedId.error };
+
+    const parsed = parseInput(adminWardrobeItemUpdateSchema, updates);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    if (Object.keys(parsed.data).length === 0) {
+        return { success: false, error: 'Nothing to update' };
+    }
+
+    const supabase = createAdminClient();
+    const { error } = await supabase
+        .from('wardrobe_items')
+        .update(parsed.data)
+        .eq('id', parsedId.data);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+}
+
+/** Apply one curation status to many items in a single round-trip. */
+export async function bulkSetItemStatus(
+    itemIds: string[],
+    status: string
+): Promise<{ success: boolean; updated?: number; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    const parsed = parseInput(bulkStatusSchema, { item_ids: itemIds, status });
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('wardrobe_items')
+        .update({ status: parsed.data.status })
+        .in('id', parsed.data.item_ids)
+        .select('id');
+
+    if (error) return { success: false, error: error.message };
+    return { success: true, updated: data?.length ?? 0 };
+}
+
+// =============================================================================
+// Admin: Clone an item into another wardrobe
+// =============================================================================
+
+/**
+ * Copy one item into `targetWardrobeId`.
+ *
+ * Items belong to a wardrobe, so the destination is a wardrobe — not a profile.
+ * The stored image is copied into the destination's own storage folder as well:
+ * `can_access_wardrobe_object` is owner-or-admin, so a row pointing at the
+ * source owner's path would render blank for the recipient.
+ *
+ * Notes are deliberately not carried over. `client_note` is the source client's
+ * own writing and `notes` renders to the client as "Stylist Note", so copying
+ * either would show one client another client's words. A clone duplicates the
+ * garment, not the conversation about it.
+ */
+export async function cloneWardrobeItem(
+    itemId: string,
+    targetWardrobeId: string
+): Promise<{ success: boolean; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    const supabase = createAdminClient();
+
+    const { data: item, error: itemError } = await supabase
+        .from('wardrobe_items')
+        .select('*')
+        .eq('id', itemId)
+        .single();
+
+    if (itemError || !item) return { success: false, error: "Item not found" };
+
+    const { data: target, error: targetError } = await supabase
+        .from('wardrobes')
+        .select('id, owner_id, title')
+        .eq('id', targetWardrobeId)
+        .eq('status', 'active')
+        .single();
+
+    if (targetError || !target) return { success: false, error: "Target wardrobe not found" };
+    if (target.id === item.wardrobe_id) {
+        return { success: false, error: "That item is already in this wardrobe" };
+    }
+
+    try {
+        let imageUrl: string | null = item.image_url;
+
+        const sourcePath = deriveStoragePath(item.image_url);
+        if (sourcePath) {
+            const fileName = sourcePath.split('/').pop() || 'item';
+            const destPath = wardrobeUploadPath(target.owner_id, target.id, fileName);
+
+            const { error: copyError } = await supabase.storage
+                .from('studio-wardrobe')
+                .copy(sourcePath, destPath);
+            if (copyError) throw copyError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('studio-wardrobe')
+                .getPublicUrl(destPath);
+            imageUrl = publicUrl;
+        }
+
+        const { error: insertError } = await supabase
+            .from('wardrobe_items')
+            .insert({
+                wardrobe_id: target.id,
+                user_id: target.owner_id,
+                image_url: imageUrl,
+                category: item.category,
+                brand: item.brand,
+                status: item.status,
+                tags: item.tags,
+                product_link_id: item.product_link_id,
+                is_general_library: item.is_general_library,
+            });
+        if (insertError) throw insertError;
+
+        revalidatePath('/vault/studio');
+        return { success: true };
+    } catch (err) {
+        return { success: false, error: getErrorMessage(err) };
+    }
 }

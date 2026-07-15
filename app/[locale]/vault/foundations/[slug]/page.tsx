@@ -105,8 +105,10 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                     Back to {chapter.masterclass_id ? 'Masterclass' : 'Collections'}
                 </Link>
                 {/* ... header ... */}
+                {/* order_index is authored 1-based in admin ("Order Index" = the show
+                    order), so it renders as-is. Adding 1 here made show order 1 read "2". */}
                 <div className="flex items-baseline gap-4">
-                    <span className="font-serif text-5xl text-ac-taupe/20 font-bold">{chapter.order_index + 1}</span>
+                    <span className="font-serif text-5xl text-ac-taupe/20 font-bold">{chapter.order_index}</span>
                     <div>
                         <h1 className="font-serif text-3xl md:text-5xl text-ac-taupe">
                             {title}

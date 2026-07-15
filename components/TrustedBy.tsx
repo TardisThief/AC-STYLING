@@ -1,4 +1,4 @@
-import { getTrustedByLogos } from '@/app/actions/admin/manage-boutique';
+import { getPublicTrustedByLogos } from '@/app/lib/trusted-by';
 import TrustedByCarousel from './TrustedByCarousel';
 
 const STATIC_FALLBACK = [12, 2, 5, 6, 8, 1, 3, 4, 7, 9, 10, 11].map((id) => ({
@@ -8,13 +8,12 @@ const STATIC_FALLBACK = [12, 2, 5, 6, 8, 1, 3, 4, 7, 9, 10, 11].map((id) => ({
 }));
 
 export default async function TrustedBy() {
-    const res = await getTrustedByLogos();
+    // Cached + cookieless: this read is what kept the landing page dynamic.
+    const rows = await getPublicTrustedByLogos();
 
     const logos =
-        res.success && res.logos && res.logos.filter((l) => l.active).length > 0
-            ? res.logos
-                  .filter((l) => l.active)
-                  .map((l) => ({ id: l.id, src: l.logo_url, alt: l.name }))
+        rows.length > 0
+            ? rows.map((l) => ({ id: l.id, src: l.logo_url, alt: l.name }))
             : STATIC_FALLBACK;
 
     return (

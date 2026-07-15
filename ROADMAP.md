@@ -69,11 +69,59 @@ Vimeo teaser handling.
 
 ## Phase 3 — UX & Design (impeccable-led)
 
-- Full design/UX **assessment via the impeccable skill** — propose upgrades
-  beyond current scope, not just fixes.
-- a11y sweep (roles, aria-labels, focus on icon-only buttons).
-- Performance: caching / Suspense / static generation (audit flagged 100%
-  dynamic rendering + per-request `getUser` refetches).
+- ~~Full design/UX **assessment via the impeccable skill**~~ — **done for the
+  landing page, the Vault, and the Studio (2026-07-15)**. Landing: hero
+  recomposition + editorial services. Vault: safe carousel, guest dead-end,
+  mobile overlap, chapter numbering. Studio (critique snapshot:
+  `.impeccable/critique/2026-07-15T13-37-50Z__app-locale-studio.md`, 18/40):
+  deleted the dead `/studio/intake` stack (publicly routable, rendered a fake
+  invitation for any string, could never succeed), fixed clone writing to the
+  wrong wardrobe while reporting success, removed fabricated "Last Active:
+  Today" from the client dashboard.
+- ~~a11y sweep (roles, aria-labels, focus on icon-only buttons)~~ — **done**.
+  The Studio had zero `aria-*`/`role=` across 13 components. Added
+  `components/ui/Modal` + `ConfirmDialog` (dialog role, focus trap, Escape,
+  focus restore), replacing five hand-rolled modals and all five native
+  `confirm()` calls; item cards are buttons; tabs have tablist semantics; a
+  semantic z-index scale replaced arbitrary `z-50`/`z-[100]`.
+- ~~**Performance: caching / Suspense / static generation**~~ — **done
+  (2026-07-15)**. The audit's "100% dynamic rendering" was literal: all 30
+  routes built as `ƒ`. Two causes: next-intl was never opted into static
+  rendering (no `setRequestLocale`/`generateStaticParams` — also needed in the
+  legal *layout*, which renders a locale-aware `<Link>`), and `TrustedBy` read
+  `cookies()` to fetch a public logo strip, opting the landing page (and via
+  the shared layout, all marketing/legal pages) out of static. Added
+  `app/lib/trusted-by.ts` (cookieless anon read + `unstable_cache` + tag), with
+  `updateTag(TRUSTED_BY_TAG)` on admin writes for read-your-own-writes. Fixed
+  the `useSearchParams`-without-Suspense bailout this surfaced in
+  `/confirm`, `/login`, `/signup`. Studio pages now share the layout's cached
+  `getViewer()`. **18 pages prerendered across both locales; `/vault/*`
+  correctly stays dynamic.**
+
+**Phase 3 complete.**
+
+### Studio backlog (from the critique)
+
+- ~~**P2 — no bulk actions**~~ — **done (2026-07-15)**. Multi-select
+  (checkbox per card, shift-click range, select-all-in-filter), a bulk bar that
+  replaces the filter bar while a selection is live, `bulkSetItemStatus()`
+  (admin + zod, capped at 200), and grid keyboard nav (arrows/Home/End, Space
+  selects, Enter opens).
+- ~~**P2 — `internal_note` is write-only**~~ — **done (2026-07-15)**, and it
+  was a confidentiality bug, not a naming nit: `notes` was labelled "Ale's
+  Private Note" ("Notes visible only to you...") while the client view rendered
+  that same column to the client. The three columns are not redundant — they
+  are three audiences — so they were wired to their real meanings rather than
+  consolidated: `client_note` (client's own), `notes` → "Note to Client"
+  (shared, captioned as such), `internal_note` → "Private Note" (admin-only,
+  service-role read/write). **Migration 08 is written but NOT applied**: apply
+  after this code deploys (the old browser `select('*')` calls would fail on the
+  revoked column), then run `scripts/verify_internal_note_privacy.ts` (expect
+  7/7; it reports 3/7 before).
+- **P3 (open)** — file inputs have no `accept`/size guard; `"Loading
+  Wardrobe..."` should be a skeleton; ~11 raw `<img>` remain (mostly blob
+  previews, which are legitimately raw); "Curation Ingestion" wording, and
+  "client" vs "wardrobe" terminology in the empty state.
 
 ## Phase 4 — North-star features (built on Phase 3's design language)
 

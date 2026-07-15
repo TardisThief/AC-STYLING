@@ -31,7 +31,13 @@ vi.mock('@/utils/supabase/server', () => ({
     })),
 }))
 
-vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
+// `unstable_cache` is pulled in transitively via app/lib/trusted-by (the landing
+// page's cached logo read); it must pass the wrapped fn through untouched.
+vi.mock('next/cache', () => ({
+    revalidatePath: vi.fn(),
+    updateTag: vi.fn(),
+    unstable_cache: (fn: unknown) => fn,
+}))
 
 import {
     getAdminBrands,

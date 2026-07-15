@@ -5,8 +5,12 @@ import Services from "@/components/Services";
 import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import Contact from "@/components/Contact";
+import { setRequestLocale } from 'next-intl/server';
 
-export default function Home() {
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    setRequestLocale(locale);
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
       <Hero />

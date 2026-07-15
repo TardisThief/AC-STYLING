@@ -1,28 +1,19 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * E2E Tests for Guest Intake Flow
- * Tests the tokenized wardrobe upload flow for guests (no login required)
+ * E2E Tests for the tokenized wardrobe upload flow and public route access.
  */
 
-test.describe('Guest Intake Flow', () => {
-    // This would use a real upload token from your test database
-    // For now, we test the error handling with an invalid token
+test.describe('Wardrobe Upload Flow', () => {
+    // Invitations are wardrobe `upload_token` links minted by generateInvitation.
+    // An unrecognized token must never render an invitation-shaped page: the old
+    // /studio/intake route did exactly that (any string produced a plausible
+    // "Welcome, <name>" screen), which is why it was removed.
+    test('invalid upload token does not render an invitation page', async ({ page }) => {
+        await page.goto('/en/studio/upload/invalid-token-123')
 
-    test('shows error for invalid upload token', async ({ page }) => {
-        await page.goto('/en/studio/intake/invalid-token-123')
-
-        // Should show error message
-        await expect(page.locator('text=/invalid|expired|not found/i')).toBeVisible({ timeout: 10000 })
-    })
-
-    test('intake page is accessible without login', async ({ page }) => {
-        // Navigate to a valid intake URL structure
-        const response = await page.goto('/en/studio/intake/test-token')
-
-        // Should not redirect to login (status 200 or 404, not 3xx to /login)
-        expect(response?.status()).not.toBe(302)
-        expect(page.url()).not.toContain('/login')
+        await expect(page).not.toHaveURL(/\/studio\/upload\//)
+        await expect(page.locator('text=/join the studio|upload your wardrobe/i')).toHaveCount(0)
     })
 })
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Shirt, BookOpen, Ruler, X } from "lucide-react";
+import { Shirt, BookOpen, Ruler, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import VirtualWardrobe from "@/components/studio/VirtualWardrobe";
 import DigitalLookbook from "@/components/studio/DigitalLookbook";
@@ -118,20 +118,6 @@ export default function ClientStudioDashboard({ wardrobeId, ownerId, initialMeas
                                         initialMeasurements={initialMeasurements}
                                         isActiveClient={true} // Always true here since route is protected
                                     />
-                                </div>
-                                
-                                {/* Stylist Contact / Status */}
-                                <div className="bg-ac-taupe text-white p-6 rounded-sm mt-8">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <Sparkles size={20} className="text-ac-gold" />
-                                        <h3 className="font-serif text-xl">Stylist Status</h3>
-                                    </div>
-                                    <p className="text-xs leading-relaxed opacity-80 mb-4">
-                                        Your stylist is currently curating new items for your review. Check back soon for updates.
-                                    </p>
-                                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-60">
-                                        Last Active: Today
-                                    </div>
                                 </div>
                             </div>
                         </motion.div>

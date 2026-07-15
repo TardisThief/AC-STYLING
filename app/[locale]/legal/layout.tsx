@@ -1,11 +1,21 @@
 import { Link } from "@/i18n/routing";
+import { setRequestLocale } from 'next-intl/server';
 import Footer from "@/components/Footer";
 
-export default function LegalLayout({
+// Needed here as well as in the root layout: this is a server layout that
+// renders a locale-aware <Link>, and resolving the locale without an explicit
+// setRequestLocale falls back to a dynamic API — which kept the legal pages,
+// the most purely static content in the app, rendering per request.
+export default async function LegalLayout({
     children,
+    params,
 }: {
     children: React.ReactNode;
+    params: Promise<{ locale: string }>;
 }) {
+    const { locale } = await params;
+    setRequestLocale(locale);
+
     return (
         <div className="min-h-screen bg-ac-sand flex flex-col text-ac-taupe">
             <header className="w-full py-8 flex justify-center border-b border-ac-taupe/10 bg-ac-sand">

@@ -1,38 +1,29 @@
-import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import QuickActions from "@/components/vault/QuickActions";
 import WhatsNew from "@/components/vault/WhatsNew";
 import { getDashboardPulse, getMasterclassCompletionStatus, getEditorialContent } from "@/app/actions/dashboard";
 import { getTranslations } from "next-intl/server";
+import { getViewer } from "@/app/lib/vault-user";
 
 export default async function VaultPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
     const t = await getTranslations({ locale, namespace: 'Vault' });
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
 
+    // Shared with the layout via React cache() — no duplicate auth/profile fetch.
+    // Guard before fetching content, as before.
+    const { user, profile } = await getViewer();
     if (!user) {
         redirect('/login');
     }
 
-    // Fetch profile and dynamic content concurrently
-    const [profileRes, pulse, completion, editorial] = await Promise.all([
-        supabase.from('profiles').select('full_name, is_guest').eq('id', user.id).single(),
+    const [pulse, completion, editorial] = await Promise.all([
         getDashboardPulse(),
         getMasterclassCompletionStatus(),
         getEditorialContent(locale),
     ]);
 
-    const profile = profileRes.data;
-
-    // Fetch profile
-    let fullName = "Guest";
-    if (profile?.full_name) {
-        fullName = profile.full_name;
-    } else {
-        // Fallback to metadata if profile is not yet created/synced
-        fullName = user.user_metadata?.full_name || "Style Icon";
-    }
+    // Fall back to auth metadata if the profile row isn't synced yet.
+    const fullName = profile?.full_name || user.user_metadata?.full_name || "Style Icon";
 
     return (
         <div className="flex flex-col gap-4">

@@ -6,6 +6,7 @@ import type { WardrobeItem } from '@/app/lib/types';
 import { Lock, Plus, Camera, Loader2, Check, Trash2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { signWardrobeItems } from '@/lib/wardrobe-images';
+import { CLIENT_ITEM_COLUMNS } from '@/app/lib/wardrobe-columns';
 import { wardrobeUploadPath } from '@/lib/wardrobe-paths';
 import { getMyWardrobe } from '@/app/actions/wardrobes';
 import { toast } from 'sonner';
@@ -92,7 +93,7 @@ export default function GatedWardrobe({ isActiveClient, userId, initialItems = [
                 client_note: clientNote,
                 status: 'Keep', // Default status
                 category: category || 'Uncategorized'
-            }).select().single();
+            }).select(CLIENT_ITEM_COLUMNS).single();
 
             if (dbError) throw dbError;
 

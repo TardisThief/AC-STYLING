@@ -1,12 +1,16 @@
 
 import { Metadata } from 'next';
+import { setRequestLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
     title: 'Refund Policy | AC Styling',
     description: 'Refund Policy for AC Styling services and website.',
 };
 
-export default function RefundsPage() {
+export default async function RefundsPage({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    setRequestLocale(locale);
+
     return (
         <article className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:text-ac-taupe prose-p:text-ac-taupe/80 prose-a:text-ac-espresso hover:prose-a:text-ac-taupe">
             <h1 className="font-serif text-4xl mb-4">REFUND POLICY</h1>
