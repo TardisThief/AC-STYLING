@@ -12,7 +12,8 @@ import {
     trustedByLogoSchema,
     trustedByLogoUpdateSchema,
 } from "@/app/lib/validation/boutique";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { TRUSTED_BY_TAG } from "@/app/lib/trusted-by";
 import { z } from "zod";
 
 // --- Brands ---
@@ -252,6 +253,7 @@ export async function createTrustedByLogo(data: { name: string; logo_url: string
         active: true,
     });
     if (error) return { success: false, error: error.message };
+    updateTag(TRUSTED_BY_TAG);
     revalidatePath('/');
     return { success: true };
 }
@@ -270,6 +272,7 @@ export async function updateTrustedByLogo(id: string, data: Partial<{ name: stri
         .update(parsed.data)
         .eq('id', idParsed.data);
     if (error) return { success: false, error: error.message };
+    updateTag(TRUSTED_BY_TAG);
     revalidatePath('/');
     return { success: true };
 }
@@ -283,6 +286,7 @@ export async function deleteTrustedByLogo(id: string) {
 
     const { error } = await auth.supabase.from('trusted_by_logos').delete().eq('id', idParsed.data);
     if (error) return { success: false, error: error.message };
+    updateTag(TRUSTED_BY_TAG);
     revalidatePath('/');
     return { success: true };
 }

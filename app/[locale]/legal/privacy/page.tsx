@@ -1,12 +1,16 @@
 
 import { Metadata } from 'next';
+import { setRequestLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
     title: 'Privacy Policy | AC Styling',
     description: 'Privacy Notice for AC Styling services and website.',
 };
 
-export default function PrivacyPage() {
+export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    setRequestLocale(locale);
+
     return (
         <article className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:text-ac-taupe prose-p:text-ac-taupe/80 prose-a:text-ac-espresso hover:prose-a:text-ac-taupe">
             {/* Content from user */}

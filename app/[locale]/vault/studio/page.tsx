@@ -1,7 +1,6 @@
-import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
 import StudioDashboard from "@/components/studio/StudioDashboard";
+import { getViewer } from "@/app/lib/vault-user";
 
 export default async function StudioPage({
     params
@@ -9,19 +8,14 @@ export default async function StudioPage({
     params: Promise<{ locale: string }>
 }) {
     const { locale } = await params;
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+
+    // Shared with the Vault layout via React cache(): this page used to repeat
+    // the layout's getUser + profiles round-trips instead of reusing them.
+    const { user, profile } = await getViewer();
 
     if (!user) {
         redirect('/login');
     }
-
-    // Check admin role
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
 
     if (profile?.role !== 'admin') {
         redirect('/vault');

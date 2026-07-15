@@ -2,31 +2,23 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import ClientStudioDashboard from "@/components/studio/ClientStudioDashboard";
 import { getMyWardrobe } from "@/app/actions/wardrobes";
+import { getViewer } from "@/app/lib/vault-user";
 
-export default async function MyStudioPage({
-    params
-}: {
-    params: Promise<{ locale: string }>
-}) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+export default async function MyStudioPage() {
+    // Shared with the Vault layout via React cache(): this page used to repeat
+    // the layout's getUser + profiles round-trips instead of reusing them.
+    const { user, profile } = await getViewer();
 
     if (!user) {
         redirect('/login');
     }
-
-    // Check Studio Access based on 'active_studio_client' column in 'profiles'
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('active_studio_client, full_name')
-        .eq('id', user.id)
-        .single();
 
     if (!profile?.active_studio_client) {
         redirect('/vault/services');
     }
 
     // Fetch Tailor Card Data
+    const supabase = await createClient();
     const { data: tailorCard } = await supabase
         .from('tailor_cards')
         .select('measurements')

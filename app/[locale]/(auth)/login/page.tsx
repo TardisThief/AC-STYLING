@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { Mail, Loader2, User, ChevronRight } from "lucide-react";
@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { safeNextPath } from "@/app/lib/safe-redirect";
 import { Link } from "@/i18n/routing";
 
-export default function LoginPage() {
+function LoginInner() {
     const [loginMethod, setLoginMethod] = useState<'magic' | 'password'>('magic');
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -359,5 +359,22 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function AuthFallback() {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-ac-sand">
+            <Loader2 className="animate-spin h-8 w-8 text-ac-espresso" aria-hidden="true" />
+            <span className="sr-only">Loading</span>
+        </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<AuthFallback />}>
+            <LoginInner />
+        </Suspense>
     );
 }

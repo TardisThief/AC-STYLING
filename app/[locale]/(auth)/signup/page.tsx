@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Link } from "@/i18n/routing";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { Mail, Loader2, Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
-export default function SignupPage() {
+function SignupInner() {
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
@@ -164,5 +164,22 @@ export default function SignupPage() {
                 )}
             </motion.div>
         </div>
+    );
+}
+
+function AuthFallback() {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-ac-sand">
+            <Loader2 className="animate-spin h-8 w-8 text-ac-espresso" aria-hidden="true" />
+            <span className="sr-only">Loading</span>
+        </div>
+    );
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={<AuthFallback />}>
+            <SignupInner />
+        </Suspense>
     );
 }

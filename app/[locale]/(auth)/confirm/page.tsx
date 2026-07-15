@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle2 } from "lucide-react";
@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { processOnboarding } from "@/app/actions/onboarding";
 import { safeNextPath } from "@/app/lib/safe-redirect";
 
-export default function AuthConfirmPage() {
+function AuthConfirmInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [status, setStatus] = useState("Verifying authentication...");
@@ -104,5 +104,22 @@ export default function AuthConfirmPage() {
                 </p>
             </div>
         </div>
+    );
+}
+
+function AuthFallback() {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-ac-sand">
+            <Loader2 className="animate-spin h-8 w-8 text-ac-espresso" aria-hidden="true" />
+            <span className="sr-only">Loading</span>
+        </div>
+    );
+}
+
+export default function AuthConfirmPage() {
+    return (
+        <Suspense fallback={<AuthFallback />}>
+            <AuthConfirmInner />
+        </Suspense>
     );
 }

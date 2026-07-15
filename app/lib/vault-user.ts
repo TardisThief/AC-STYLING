@@ -21,7 +21,7 @@ export const getViewer = cache(async () => {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, is_guest, role')
+        .select('full_name, is_guest, role, active_studio_client')
         .eq('id', user.id)
         .single();
 
