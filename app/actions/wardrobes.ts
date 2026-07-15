@@ -5,6 +5,8 @@ import { createAdminClient } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/app/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import { getErrorMessage } from "@/app/lib/errors";
+import { deriveStoragePath } from "@/lib/wardrobe-images";
+import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 
 // =============================================================================
 // Types
@@ -549,4 +551,91 @@ export async function searchProfiles(query: string): Promise<{ success: boolean;
     }
 
     return { success: true, profiles: data };
+}
+
+// =============================================================================
+// Admin: Clone an item into another wardrobe
+// =============================================================================
+
+/**
+ * Copy one item into `targetWardrobeId`.
+ *
+ * Items belong to a wardrobe, so the destination is a wardrobe — not a profile.
+ * The stored image is copied into the destination's own storage folder as well:
+ * `can_access_wardrobe_object` is owner-or-admin, so a row pointing at the
+ * source owner's path would render blank for the recipient.
+ *
+ * Notes are deliberately not carried over. `client_note` is the source client's
+ * own writing and `notes` renders to the client as "Stylist Note", so copying
+ * either would show one client another client's words. A clone duplicates the
+ * garment, not the conversation about it.
+ */
+export async function cloneWardrobeItem(
+    itemId: string,
+    targetWardrobeId: string
+): Promise<{ success: boolean; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    const supabase = createAdminClient();
+
+    const { data: item, error: itemError } = await supabase
+        .from('wardrobe_items')
+        .select('*')
+        .eq('id', itemId)
+        .single();
+
+    if (itemError || !item) return { success: false, error: "Item not found" };
+
+    const { data: target, error: targetError } = await supabase
+        .from('wardrobes')
+        .select('id, owner_id, title')
+        .eq('id', targetWardrobeId)
+        .eq('status', 'active')
+        .single();
+
+    if (targetError || !target) return { success: false, error: "Target wardrobe not found" };
+    if (target.id === item.wardrobe_id) {
+        return { success: false, error: "That item is already in this wardrobe" };
+    }
+
+    try {
+        let imageUrl: string | null = item.image_url;
+
+        const sourcePath = deriveStoragePath(item.image_url);
+        if (sourcePath) {
+            const fileName = sourcePath.split('/').pop() || 'item';
+            const destPath = wardrobeUploadPath(target.owner_id, target.id, fileName);
+
+            const { error: copyError } = await supabase.storage
+                .from('studio-wardrobe')
+                .copy(sourcePath, destPath);
+            if (copyError) throw copyError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('studio-wardrobe')
+                .getPublicUrl(destPath);
+            imageUrl = publicUrl;
+        }
+
+        const { error: insertError } = await supabase
+            .from('wardrobe_items')
+            .insert({
+                wardrobe_id: target.id,
+                user_id: target.owner_id,
+                image_url: imageUrl,
+                category: item.category,
+                brand: item.brand,
+                status: item.status,
+                tags: item.tags,
+                product_link_id: item.product_link_id,
+                is_general_library: item.is_general_library,
+            });
+        if (insertError) throw insertError;
+
+        revalidatePath('/vault/studio');
+        return { success: true };
+    } catch (err) {
+        return { success: false, error: getErrorMessage(err) };
+    }
 }

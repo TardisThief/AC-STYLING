@@ -6,6 +6,8 @@ import type { Wardrobe } from "@/app/lib/types";
 import { RefreshCw, Trash2, X, Search, Loader2, Shirt, User } from "lucide-react";
 import { updateWardrobe, deleteWardrobe } from "@/app/actions/wardrobes";
 import { toast } from "sonner";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import SafeImage from "@/components/ui/SafeImage";
 
 interface ArchiveManagerProps {
     onClose: () => void;
@@ -18,6 +20,7 @@ export default function ArchiveManager({ onClose, onRefresh, locale }: ArchiveMa
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [actionId, setActionId] = useState<string | null>(null);
+    const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
     const supabase = createClient();
 
     const fetchArchived = async () => {
@@ -55,9 +58,7 @@ export default function ArchiveManager({ onClose, onRefresh, locale }: ArchiveMa
         setActionId(null);
     };
 
-    const handleDelete = async (id: string, title: string) => {
-        if (!confirm(`Are you sure you want to permanently delete "${title}"? This action cannot be undone and will remove all associated items.`)) return;
-
+    const handleDelete = async (id: string) => {
         setActionId(id);
         const res = await deleteWardrobe(id);
         if (res.success) {
@@ -68,6 +69,7 @@ export default function ArchiveManager({ onClose, onRefresh, locale }: ArchiveMa
             toast.error(res.error || "Failed to delete");
         }
         setActionId(null);
+        setPendingDelete(null);
     };
 
     const filtered = archivedWardrobes.filter(w =>
@@ -109,7 +111,7 @@ export default function ArchiveManager({ onClose, onRefresh, locale }: ArchiveMa
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-ac-taupe/10 rounded-full flex items-center justify-center text-ac-taupe flex-shrink-0">
                                     {wardrobe.profiles?.avatar_url ? (
-                                        <img src={wardrobe.profiles.avatar_url} alt="" className="w-full h-full object-cover rounded-full" />
+                                        <SafeImage src={wardrobe.profiles.avatar_url} alt="" className="w-full h-full object-cover rounded-full" />
                                     ) : (
                                         <Shirt size={20} />
                                     )}
@@ -126,24 +128,34 @@ export default function ArchiveManager({ onClose, onRefresh, locale }: ArchiveMa
                                 <button
                                     onClick={() => handleRestore(wardrobe.id)}
                                     disabled={actionId === wardrobe.id}
-                                    className="p-2 text-ac-taupe/40 hover:text-ac-olive hover:bg-ac-olive/10 rounded-sm transition-all"
-                                    title="Restore Wardrobe"
+                                    className="p-2 text-ac-taupe/40 hover:text-ac-olive hover:bg-ac-olive/10 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold transition-all"
+                                    aria-label={`Restore ${wardrobe.title}`}
                                 >
-                                    {actionId === wardrobe.id ? <Loader2 className="animate-spin" size={18} /> : <RefreshCw size={18} />}
+                                    {actionId === wardrobe.id ? <Loader2 className="animate-spin" size={18} aria-hidden="true" /> : <RefreshCw size={18} aria-hidden="true" />}
                                 </button>
                                 <button
-                                    onClick={() => handleDelete(wardrobe.id, wardrobe.title)}
+                                    onClick={() => setPendingDelete({ id: wardrobe.id, title: wardrobe.title })}
                                     disabled={actionId === wardrobe.id}
-                                    className="p-2 text-ac-taupe/40 hover:text-red-500 hover:bg-red-50 rounded-sm transition-all"
-                                    title="Permanently Delete"
+                                    className="p-2 text-ac-taupe/40 hover:text-red-500 hover:bg-red-50 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-all"
+                                    aria-label={`Permanently delete ${wardrobe.title}`}
                                 >
-                                    <Trash2 size={18} />
+                                    <Trash2 size={18} aria-hidden="true" />
                                 </button>
                             </div>
                         </div>
                     ))
                 )}
             </div>
+
+            <ConfirmDialog
+                isOpen={pendingDelete !== null}
+                onCancel={() => setPendingDelete(null)}
+                onConfirm={() => { if (pendingDelete) return handleDelete(pendingDelete.id); }}
+                title="Delete wardrobe permanently"
+                body={<>&ldquo;{pendingDelete?.title}&rdquo; and every item in it will be erased. This cannot be undone.</>}
+                confirmLabel="Delete forever"
+                destructive
+            />
 
             <style jsx>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }

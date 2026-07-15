@@ -9,6 +9,7 @@ import html2canvas from "html2canvas";
 import { signWardrobeItems } from "@/lib/wardrobe-images";
 import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 import type { Lookbook, WardrobeItem } from "@/app/lib/types";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 // Draggable image placed on the lookbook canvas (persisted in lookbooks.lookbook_items).
 interface CanvasItem {
@@ -40,6 +41,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
     const canvasRef = useRef<HTMLDivElement>(null);
 
     // Creation Form
+    const [pendingDelete, setPendingDelete] = useState<string | null>(null);
     const [newTitle, setNewTitle] = useState("");
     const [newCollection, setNewCollection] = useState("");
 
@@ -146,11 +148,11 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
     };
 
     const handleDeleteLookbook = async (id: string) => {
-        if (!confirm("Delete this lookbook?")) return;
         await supabase.from('lookbooks').delete().eq('id', id);
         setLookbooks(prev => prev.filter(lb => lb.id !== id));
         if (activeLookbook?.id === id) setActiveLookbook(null);
         toast.success("Lookbook deleted");
+        setPendingDelete(null);
     };
 
     const handleCloneLookbook = async (lookbook: Lookbook) => {
@@ -270,11 +272,11 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                             <Copy size={18} />
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteLookbook(activeLookbook.id)}
-                                            className="p-2 text-ac-taupe/40 hover:text-red-400 transition-colors"
-                                            title="Delete"
+                                            onClick={() => setPendingDelete(activeLookbook.id)}
+                                            className="p-2 rounded-sm text-ac-taupe/40 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors"
+                                            aria-label="Delete this lookbook"
                                         >
-                                            <Trash2 size={18} />
+                                            <Trash2 size={18} aria-hidden="true" />
                                         </button>
                                         <button
                                             onClick={handleSaveLookbook}
@@ -434,6 +436,16 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <ConfirmDialog
+                isOpen={pendingDelete !== null}
+                onCancel={() => setPendingDelete(null)}
+                onConfirm={() => { if (pendingDelete) return handleDeleteLookbook(pendingDelete); }}
+                title="Delete lookbook"
+                body="This lookbook and its layout will be erased. It cannot be undone."
+                confirmLabel="Delete"
+                destructive
+            />
         </div>
     );
 }

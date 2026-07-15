@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Plus, Tag, MessageSquare, Briefcase, ShoppingBag, ExternalLink, Loader2, Filter, Search, X, Check, Image as ImageIcon, Link as LinkIcon, Camera, Sparkles, Trash2, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { uploadRemoteImage } from "@/app/actions/studio";
+import { getWardrobes, cloneWardrobeItem } from "@/app/actions/wardrobes";
 import { extractUrlMetadata } from "@/app/actions/scraper";
 import { signWardrobeItems } from "@/lib/wardrobe-images";
 import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 import { getErrorMessage } from "@/app/lib/errors";
-import type { WardrobeItem, BoutiqueItem, Profile } from "@/app/lib/types";
+import type { WardrobeItem, BoutiqueItem } from "@/app/lib/types";
+import SafeImage from "@/components/ui/SafeImage";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 interface VirtualWardrobeProps {
     wardrobeId: string;
@@ -45,12 +48,34 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
     const [updateFile, setUpdateFile] = useState<File | null>(null);
     const [updateImageUrl, setUpdateImageUrl] = useState("");
 
-    // Clone Item State
+    // Clone Item State — items live in wardrobes, so the target is a wardrobe.
     const [isCloning, setIsCloning] = useState(false);
-    const [targetClient, setTargetClient] = useState("");
-    const [allClients, setAllClients] = useState<Pick<Profile, 'id' | 'full_name'>[]>([]);
+    const [targetWardrobeId, setTargetWardrobeId] = useState("");
+    const [otherWardrobes, setOtherWardrobes] = useState<{ id: string; title: string; ownerName: string | null }[]>([]);
+
+    const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
     const supabase = createClient();
+
+    // Object URLs must be created once per file and revoked, not minted fresh on
+    // every render.
+    const uploadPreview = useMemo(
+        () => (uploadFile ? URL.createObjectURL(uploadFile) : null),
+        [uploadFile]
+    );
+    useEffect(() => {
+        if (!uploadPreview) return;
+        return () => URL.revokeObjectURL(uploadPreview);
+    }, [uploadPreview]);
+
+    const updatePreview = useMemo(
+        () => (updateFile ? URL.createObjectURL(updateFile) : null),
+        [updateFile]
+    );
+    useEffect(() => {
+        if (!updatePreview) return;
+        return () => URL.revokeObjectURL(updatePreview);
+    }, [updatePreview]);
 
     useEffect(() => {
         async function loadData() {
@@ -69,10 +94,14 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
 
             setBoutiqueItems(boutiqueRes.data || []);
 
-            // Allow cloning to other profiles (only if NOT client view)
+            // Clone targets: every other active wardrobe (admin view only).
             if (!isClientView) {
-                const { data: clients } = await supabase.from('profiles').select('id, full_name').neq('id', ownerId ?? '');
-                setAllClients(clients || []);
+                const res = await getWardrobes();
+                setOtherWardrobes(
+                    (res.data ?? [])
+                        .filter(w => w.id !== wardrobeId && w.status === 'active')
+                        .map(w => ({ id: w.id, title: w.title, ownerName: w.profiles?.full_name ?? null }))
+                );
             }
 
             setLoading(false);
@@ -98,8 +127,6 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
     };
 
     const handleDeleteItem = async (itemId: string) => {
-        if (!confirm("Are you sure you want to delete this item from the client's wardrobe?")) return;
-
         const { error } = await supabase
             .from('wardrobe_items')
             .delete()
@@ -112,25 +139,24 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
             setSelectedItem(null);
             toast.success("Item removed from wardrobe");
         }
+        setPendingDelete(null);
     };
 
     const handleCloneItem = async () => {
-        if (!selectedItem || !targetClient) return toast.error("Please select an item and a target client.");
+        if (!selectedItem || !targetWardrobeId) return toast.error("Select a destination wardrobe.");
 
         setIsSaving(true);
         try {
-            const { id, created_at, user_id, ...itemToClone } = selectedItem; // Exclude ID, created_at, and original user_id
-            const { data, error } = await supabase.from('wardrobe_items').insert({
-                ...itemToClone,
-                user_id: targetClient,
-                internal_note: `Cloned from wardrobe ${wardrobeId}. Original note: ${itemToClone.internal_note || ''}`
-            }).select().single();
+            const result = await cloneWardrobeItem(selectedItem.id, targetWardrobeId);
+            if (!result.success) {
+                toast.error(result.error || "Failed to clone item");
+                return;
+            }
 
-            if (error) throw error;
-
-            toast.success(`Item cloned to ${allClients.find(c => c.id === targetClient)?.full_name || 'another client'}'s wardrobe!`);
+            const target = otherWardrobes.find(w => w.id === targetWardrobeId);
+            toast.success(`Item copied to ${target?.title ?? 'the selected wardrobe'}`);
             setIsCloning(false);
-            setTargetClient("");
+            setTargetWardrobeId("");
         } catch (err) {
             toast.error("Failed to clone item: " + getErrorMessage(err));
         } finally {
@@ -201,33 +227,42 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Items Grid */}
+                {/* Selecting an item is the primary action of this whole surface, so the
+                    card is a real button: focusable, Enter/Space activated, and named. */}
                 <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {filteredItems.map((item) => (
-                        <div
+                        <button
                             key={item.id}
+                            type="button"
                             onClick={() => setSelectedItem(item)}
+                            aria-pressed={selectedItem?.id === item.id}
                             className={`
-                                group aspect-[3/4] relative bg-white/60 border rounded-sm overflow-hidden cursor-pointer transition-all
+                                group aspect-[3/4] relative bg-white/60 border rounded-sm overflow-hidden text-left transition-all
+                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold focus-visible:ring-offset-2
                                 ${selectedItem?.id === item.id ? 'ring-2 ring-ac-gold border-transparent shadow-xl' : 'border-white/50 hover:border-ac-gold/30'}
                             `}
                         >
-                            <img src={item.image_url ?? undefined} alt="" className="w-full h-full object-cover" />
+                            <SafeImage
+                                src={item.image_url ?? undefined}
+                                alt={`${item.category || 'Uncategorized'}${item.brand ? ` by ${item.brand}` : ''}${item.status ? ` — marked ${item.status}` : ''}`}
+                                className="w-full h-full object-cover"
+                            />
                             <div className="absolute top-2 left-2 flex gap-1">
-                                {item.status === 'Keep' && <div className="bg-ac-olive text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">Keep</div>}
-                                {item.status === 'Tailor' && <div className="bg-ac-gold text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">Tailor</div>}
+                                {item.status === 'Keep' && <span className="bg-ac-olive text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">Keep</span>}
+                                {item.status === 'Tailor' && <span className="bg-ac-gold text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">Tailor</span>}
                             </div>
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity flex flex-col justify-end p-4">
                                 <p className="text-white text-[10px] font-bold uppercase tracking-widest truncate">{item.category || 'Uncategorized'}</p>
                             </div>
-                        </div>
+                        </button>
                     ))}
 
                     {/* Add Item Trigger Card */}
                     <button
                         onClick={() => setIsAdding(true)}
-                        className="aspect-[3/4] border-2 border-dashed border-ac-taupe/10 rounded-sm flex flex-col items-center justify-center gap-4 text-ac-taupe/20 hover:border-ac-gold/40 hover:text-ac-gold transition-all"
+                        className="aspect-[3/4] border-2 border-dashed border-ac-taupe/10 rounded-sm flex flex-col items-center justify-center gap-4 text-ac-taupe/20 hover:border-ac-gold/40 hover:text-ac-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold transition-all"
                     >
-                        <Plus size={32} strokeWidth={1} />
+                        <Plus size={32} strokeWidth={1} aria-hidden="true" />
                         <span className="text-[10px] font-bold uppercase tracking-widest">Add Item</span>
                     </button>
                 </div>
@@ -252,32 +287,40 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => setIsCloning(true)}
-                                                className="p-2 text-ac-taupe/20 hover:text-ac-gold transition-colors"
-                                                title="Clone Item"
+                                                className="p-2 rounded-sm text-ac-taupe/20 hover:text-ac-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold transition-colors"
+                                                aria-label="Copy this item to another wardrobe"
                                             >
-                                                <Copy size={18} />
+                                                <Copy size={18} aria-hidden="true" />
                                             </button>
                                             <button
-                                                onClick={() => handleDeleteItem(selectedItem.id)}
-                                                className="p-2 text-ac-taupe/20 hover:text-red-400 transition-colors"
-                                                title="Delete Item"
+                                                onClick={() => setPendingDelete(selectedItem.id)}
+                                                className="p-2 rounded-sm text-ac-taupe/20 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors"
+                                                aria-label="Delete this item"
                                             >
-                                                <Trash2 size={18} />
+                                                <Trash2 size={18} aria-hidden="true" />
                                             </button>
-                                            <button onClick={() => setSelectedItem(null)} className="p-2 text-ac-taupe/20 hover:text-ac-taupe transition-colors">
-                                                <X size={20} />
+                                            <button
+                                                onClick={() => setSelectedItem(null)}
+                                                aria-label="Close item details"
+                                                className="p-2 rounded-sm text-ac-taupe/20 hover:text-ac-taupe focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold transition-colors"
+                                            >
+                                                <X size={20} aria-hidden="true" />
                                             </button>
                                         </div>
                                     )}
                                     {isClientView && (
-                                        <button onClick={() => setSelectedItem(null)} className="p-2 text-ac-taupe/20 hover:text-ac-taupe transition-colors">
-                                            <X size={20} />
+                                        <button
+                                            onClick={() => setSelectedItem(null)}
+                                            aria-label="Close item details"
+                                            className="p-2 rounded-sm text-ac-taupe/20 hover:text-ac-taupe focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold transition-colors"
+                                        >
+                                            <X size={20} aria-hidden="true" />
                                         </button>
                                     )}
                                 </div>
 
                                 <div className="aspect-[3/4] w-full bg-ac-taupe/5 rounded-sm overflow-hidden border border-ac-taupe/10 relative group">
-                                    <img src={selectedItem.image_url ?? undefined} className="w-full h-full object-cover" alt="" />
+                                    <SafeImage src={selectedItem.image_url ?? undefined} className="w-full h-full object-cover" alt={`${selectedItem.category || 'Item'}${selectedItem.brand ? ` by ${selectedItem.brand}` : ''}`} />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button
                                             onClick={() => setIsUpdatingImage(true)}
@@ -517,8 +560,11 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                             </div>
                                             <div className="grid grid-cols-3 gap-4">
                                                 {boutiqueItems.filter(bi => bi.name.toLowerCase().includes(searchBoutique.toLowerCase())).map(bi => (
-                                                    <div
+                                                    <button
                                                         key={bi.id}
+                                                        type="button"
+                                                        disabled={isSaving}
+                                                        aria-label={`Import ${bi.name} from the boutique`}
                                                         onClick={async () => {
                                                             setIsSaving(true);
                                                             const { data, error } = await supabase.from('wardrobe_items').insert({
@@ -539,14 +585,14 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                             }
                                                             setIsSaving(false);
                                                         }}
-                                                        className="group aspect-[3/4] relative rounded-sm overflow-hidden border border-ac-taupe/10 cursor-pointer hover:border-ac-gold transition-all"
+                                                        className="group aspect-[3/4] relative rounded-sm overflow-hidden border border-ac-taupe/10 hover:border-ac-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold disabled:opacity-50 transition-all"
                                                     >
-                                                        <img src={bi.image_url} alt="" className="w-full h-full object-cover" />
-                                                        <div className="absolute inset-0 bg-ac-gold/80 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white transition-opacity">
-                                                            <Plus size={24} />
+                                                        <SafeImage src={bi.image_url} alt="" className="w-full h-full object-cover" />
+                                                        <div className="absolute inset-0 bg-ac-gold/80 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 flex flex-col items-center justify-center text-white transition-opacity">
+                                                            <Plus size={24} aria-hidden="true" />
                                                             <span className="text-[8px] font-bold uppercase mt-2">Import</span>
                                                         </div>
-                                                    </div>
+                                                    </button>
                                                 ))}
                                             </div>
                                         </div>
@@ -556,7 +602,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                         <div className="space-y-8 max-w-xl mx-auto py-8">
                                             <div className="aspect-video border-2 border-dashed border-ac-taupe/20 rounded-sm flex flex-col items-center justify-center gap-4 bg-ac-taupe/5 relative overflow-hidden">
                                                 {uploadFile ? (
-                                                    <img src={URL.createObjectURL(uploadFile)} className="absolute inset-0 w-full h-full object-contain" alt="" />
+                                                    <img src={uploadPreview ?? undefined} className="absolute inset-0 w-full h-full object-contain" alt="Selected file preview" />
                                                 ) : (
                                                     <>
                                                         <Camera size={40} className="text-ac-taupe/10" />
@@ -859,7 +905,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                     <div className="space-y-4">
                                         <div className="aspect-square border-2 border-dashed border-ac-taupe/20 rounded-sm flex flex-col items-center justify-center gap-4 bg-ac-taupe/5 relative overflow-hidden">
                                             {updateFile ? (
-                                                <img src={URL.createObjectURL(updateFile)} className="absolute inset-0 w-full h-full object-contain" alt="" />
+                                                <img src={updatePreview ?? undefined} className="absolute inset-0 w-full h-full object-contain" alt="Selected file preview" />
                                             ) : (
                                                 <div className="text-center p-4">
                                                     <Camera size={24} className="text-ac-taupe/20 mx-auto mb-2" />
@@ -948,6 +994,18 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                 )}
             </AnimatePresence>
 
+            {/* Delete confirmation — deletion is permanent and there is no undo,
+                so name the consequence rather than asking "are you sure?". */}
+            <ConfirmDialog
+                isOpen={pendingDelete !== null}
+                onCancel={() => setPendingDelete(null)}
+                onConfirm={() => { if (pendingDelete) return handleDeleteItem(pendingDelete); }}
+                title="Delete item"
+                body="This removes the item from the wardrobe permanently, along with its notes and status. It cannot be undone."
+                confirmLabel="Delete"
+                destructive
+            />
+
             {/* Clone Modal */}
             <AnimatePresence>
                 {isCloning && selectedItem && !isClientView && (
@@ -963,7 +1021,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                             className="bg-white max-w-md w-full rounded-sm shadow-xl overflow-hidden relative"
                         >
                             <button
-                                onClick={() => { setIsCloning(false); setTargetClient(""); }}
+                                onClick={() => { setIsCloning(false); setTargetWardrobeId(""); }}
                                 className="absolute top-4 right-4 z-50 text-ac-taupe/40 hover:text-ac-taupe transition-colors"
                             >
                                 <X size={20} />
@@ -973,25 +1031,31 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                             </div>
                             <div className="p-6 space-y-6">
                                 <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-2">Target Client</label>
+                                    <label htmlFor="cloneTarget" className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-2">Destination Wardrobe</label>
                                     <select
-                                        value={targetClient}
-                                        onChange={(e) => setTargetClient(e.target.value)}
+                                        id="cloneTarget"
+                                        value={targetWardrobeId}
+                                        onChange={(e) => setTargetWardrobeId(e.target.value)}
                                         className="w-full bg-ac-taupe/5 border border-ac-taupe/10 rounded-sm p-3 text-sm focus:outline-none focus:border-ac-gold"
                                     >
-                                        <option value="">-- Select Client --</option>
-                                        {allClients.map(client => (
-                                            <option key={client.id} value={client.id}>{client.full_name || 'Unnamed'}</option>
+                                        <option value="">-- Select wardrobe --</option>
+                                        {otherWardrobes.map(w => (
+                                            <option key={w.id} value={w.id}>
+                                                {w.title}{w.ownerName ? ` — ${w.ownerName}` : ''}
+                                            </option>
                                         ))}
                                     </select>
+                                    <p className="text-[10px] text-ac-taupe/40 mt-2 leading-relaxed">
+                                        Copies the garment and its photo. Notes stay with this wardrobe.
+                                    </p>
                                 </div>
                                 <button
                                     onClick={handleCloneItem}
-                                    disabled={isSaving || !targetClient}
+                                    disabled={isSaving || !targetWardrobeId}
                                     className="w-full bg-ac-gold text-white py-3 rounded-sm font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-ac-taupe transition-all disabled:opacity-50"
                                 >
                                     {isSaving ? <Loader2 className="animate-spin" size={14} /> : <Copy size={14} />}
-                                    Duplicate to Client
+                                    Copy to Wardrobe
                                 </button>
                             </div>
                         </motion.div>
