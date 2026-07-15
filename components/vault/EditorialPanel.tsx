@@ -4,6 +4,7 @@
 import { Link } from "@/i18n/routing";
 import { Calendar, ChevronRight, Play } from "lucide-react";
 import { EditorialContent } from "@/app/actions/dashboard";
+import SafeImage from "@/components/ui/SafeImage";
 
 interface EditorialPanelProps {
     editorial: EditorialContent;
@@ -12,7 +13,7 @@ interface EditorialPanelProps {
 // ── Placeholder tile (used when styleOfWeek or alesPick is null) ─────────────
 function Placeholder({ label }: { label: string }) {
     return (
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-ac-taupe/20 bg-ac-taupe/[0.03] min-h-0">
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-ac-taupe/20 bg-ac-taupe/[0.03] min-h-[150px] md:min-h-0">
             <span className="text-[8px] uppercase tracking-widest font-bold text-ac-taupe/30">{label}</span>
             <span className="text-[10px] text-ac-taupe/20">Coming soon</span>
         </div>
@@ -30,10 +31,10 @@ function WelcomePanel() {
     ];
 
     return (
-        <div className="md:col-span-3 relative rounded-sm overflow-hidden">
-            <img
+        <div className="md:col-span-3 relative rounded-sm overflow-hidden min-h-[380px] md:min-h-0">
+            <SafeImage
                 src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2070&auto=format&fit=crop"
-                alt="Welcome"
+                alt=""
                 className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ac-taupe/95 via-ac-taupe/70 to-ac-taupe/20" />
@@ -74,15 +75,20 @@ function WelcomePanel() {
 export default function EditorialPanel({ editorial }: EditorialPanelProps) {
     const { continueCourse, styleOfWeek, alesPick } = editorial;
 
+    // Height is fixed only from md up, where the panels sit side by side in one row.
+    // At grid-cols-1 they stack, so a fixed height would crush them — each panel's
+    // content is absolutely positioned and cannot reflow, so it would overflow the
+    // box and paint over the section below. Panels carry their own min-height on
+    // mobile instead.
     return (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 h-[320px] md:h-[380px]">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:h-[380px]">
 
             {/* ── LEFT: Learning or Welcome ──────────────────────────────── */}
             {continueCourse ? (
-                <div className="md:col-span-3 relative rounded-sm overflow-hidden group">
-                    <img
+                <div className="md:col-span-3 relative rounded-sm overflow-hidden group min-h-[300px] md:min-h-0">
+                    <SafeImage
                         src={continueCourse.imageUrl}
-                        alt={continueCourse.masterclassTitle}
+                        alt=""
                         className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-ac-taupe/90 via-ac-taupe/50 to-ac-taupe/10" />
@@ -139,10 +145,10 @@ export default function EditorialPanel({ editorial }: EditorialPanelProps) {
 
                 {/* Style of the Week */}
                 {styleOfWeek ? (
-                    <Link href={styleOfWeek.href} className="flex-1 relative rounded-sm overflow-hidden group block min-h-0">
-                        <img
+                    <Link href={styleOfWeek.href} className="flex-1 relative rounded-sm overflow-hidden group block min-h-[150px] md:min-h-0">
+                        <SafeImage
                             src={styleOfWeek.coverImageUrl}
-                            alt={styleOfWeek.title}
+                            alt=""
                             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
@@ -164,9 +170,9 @@ export default function EditorialPanel({ editorial }: EditorialPanelProps) {
                         className="flex gap-3 p-3 bg-white/50 backdrop-blur-sm border border-white/40 rounded-sm hover:bg-white/70 transition-all group"
                     >
                         <div className="w-14 h-14 flex-shrink-0 relative overflow-hidden rounded-sm">
-                            <img
+                            <SafeImage
                                 src={alesPick.imageUrl}
-                                alt={alesPick.itemName}
+                                alt=""
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                         </div>
