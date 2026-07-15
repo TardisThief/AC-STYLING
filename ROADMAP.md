@@ -84,10 +84,21 @@ Vimeo teaser handling.
   focus restore), replacing five hand-rolled modals and all five native
   `confirm()` calls; item cards are buttons; tabs have tablist semantics; a
   semantic z-index scale replaced arbitrary `z-50`/`z-[100]`.
-- **Performance: caching / Suspense / static generation** — *next*. Audit
-  flagged 100% dynamic rendering; only the auth-refetch half is done
-  (`getViewer()` in the Vault). `/vault/studio` and `/vault/my-studio` still
-  re-fetch `getUser` + `profiles` inline and hand-roll the admin check.
+- ~~**Performance: caching / Suspense / static generation**~~ — **done
+  (2026-07-15)**. The audit's "100% dynamic rendering" was literal: all 30
+  routes built as `ƒ`. Two causes: next-intl was never opted into static
+  rendering (no `setRequestLocale`/`generateStaticParams` — also needed in the
+  legal *layout*, which renders a locale-aware `<Link>`), and `TrustedBy` read
+  `cookies()` to fetch a public logo strip, opting the landing page (and via
+  the shared layout, all marketing/legal pages) out of static. Added
+  `app/lib/trusted-by.ts` (cookieless anon read + `unstable_cache` + tag), with
+  `updateTag(TRUSTED_BY_TAG)` on admin writes for read-your-own-writes. Fixed
+  the `useSearchParams`-without-Suspense bailout this surfaced in
+  `/confirm`, `/login`, `/signup`. Studio pages now share the layout's cached
+  `getViewer()`. **18 pages prerendered across both locales; `/vault/*`
+  correctly stays dynamic.**
+
+**Phase 3 complete.**
 
 ### Studio backlog (from the critique, not yet done)
 
