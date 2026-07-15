@@ -100,17 +100,28 @@ Vimeo teaser handling.
 
 **Phase 3 complete.**
 
-### Studio backlog (from the critique, not yet done)
+### Studio backlog (from the critique)
 
-- **P2 — no bulk actions.** Triaging a 60-item wardrobe is 60 click-wait-click
-  cycles: no multi-select, no bulk status tagging, no keyboard nav between
-  items. Ale is the only user of this surface and it is her daily instrument.
-- **P2 — `internal_note` is write-only**: written by clone/boutique-import,
-  rendered nowhere. Three overlapping note columns (`client_note`,
-  `internal_note`, `notes`) want consolidating.
-- **P3** — file inputs have no `accept`/size guard; `"Loading Wardrobe..."`
-  should be a skeleton; 11 raw `<img>` remain (mostly blob previews, which are
-  legitimately raw); "Curation Ingestion" / "client" vs "wardrobe" wording.
+- ~~**P2 — no bulk actions**~~ — **done (2026-07-15)**. Multi-select
+  (checkbox per card, shift-click range, select-all-in-filter), a bulk bar that
+  replaces the filter bar while a selection is live, `bulkSetItemStatus()`
+  (admin + zod, capped at 200), and grid keyboard nav (arrows/Home/End, Space
+  selects, Enter opens).
+- ~~**P2 — `internal_note` is write-only**~~ — **done (2026-07-15)**, and it
+  was a confidentiality bug, not a naming nit: `notes` was labelled "Ale's
+  Private Note" ("Notes visible only to you...") while the client view rendered
+  that same column to the client. The three columns are not redundant — they
+  are three audiences — so they were wired to their real meanings rather than
+  consolidated: `client_note` (client's own), `notes` → "Note to Client"
+  (shared, captioned as such), `internal_note` → "Private Note" (admin-only,
+  service-role read/write). **Migration 08 is written but NOT applied**: apply
+  after this code deploys (the old browser `select('*')` calls would fail on the
+  revoked column), then run `scripts/verify_internal_note_privacy.ts` (expect
+  7/7; it reports 3/7 before).
+- **P3 (open)** — file inputs have no `accept`/size guard; `"Loading
+  Wardrobe..."` should be a skeleton; ~11 raw `<img>` remain (mostly blob
+  previews, which are legitimately raw); "Curation Ingestion" wording, and
+  "client" vs "wardrobe" terminology in the empty state.
 
 ## Phase 4 — North-star features (built on Phase 3's design language)
 
