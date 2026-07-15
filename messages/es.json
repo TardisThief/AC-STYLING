@@ -123,8 +123,16 @@
             },
             "ask": {
                 "label": "Preguntar a Ale",
-                "subtitle": "Escríbele directamente"
+                "subtitle": "Escríbele directamente",
+                "locked": "Únete para desbloquear"
             }
+        },
+        "pulse_goto": "Mostrar novedad {number}",
+        "pulse_pause": "Pausar rotación automática",
+        "fallback": {
+            "label": "El Laboratorio",
+            "title": "Bienvenida a tu Vault",
+            "subtitle": "Tu viaje de estilo personal comienza aquí."
         }
     },
     "Studio": {
