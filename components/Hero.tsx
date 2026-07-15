@@ -70,7 +70,7 @@ export default function Hero() {
                     {/* Button - Transparent with Border */}
                     <Link
                         href="/book"
-                        className="inline-block px-10 py-4 border border-white text-white font-sans text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-300"
+                        className="inline-block px-10 py-4 border border-white text-white font-sans text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black focus-visible:bg-white focus-visible:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black transition-all duration-300"
                     >
                         {t('cta')}
                     </Link>

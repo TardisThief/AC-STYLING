@@ -161,6 +161,13 @@
         "explore": "Explorar",
         "studios": "Estudios",
         "connect": "Conectar",
-        "rights": "Todos los Derechos Reservados."
+        "rights": "Todos los Derechos Reservados.",
+        "nav_home": "Inicio",
+        "nav_about": "Acerca",
+        "nav_services": "Servicios",
+        "nav_contact": "Contacto",
+        "privacy": "Política de Privacidad",
+        "terms": "Términos de Servicio",
+        "refunds": "Política de Reembolsos"
     }
 }

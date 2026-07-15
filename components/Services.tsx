@@ -51,12 +51,12 @@ export default function Services() {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1, duration: 0.5 }}
                             viewport={{ once: true }}
-                            className="group flex flex-col p-6 md:p-8 bg-white/80 backdrop-blur-md border border-white/40 shadow-sm transition-all duration-300 hover:bg-white/90 hover:shadow-lg hover:-translate-y-1 rounded-xl"
+                            className="group flex flex-col p-6 md:p-8 bg-white/80 backdrop-blur-md border border-white/40 shadow-sm transition-all duration-300 hover:bg-white/90 hover:shadow-lg hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-olive-dark focus-visible:ring-offset-2 focus-visible:ring-offset-ac-taupe rounded-xl"
                         >
                             <h3 className="font-serif text-2xl text-ac-taupe mb-4 group-hover:text-ac-olive-dark transition-colors">
                                 {service.title}
                             </h3>
-                            <p className="font-sans text-ac-taupe/70 leading-relaxed text-sm md:text-base mb-6 flex-grow">
+                            <p className="font-sans text-ac-taupe/90 leading-relaxed text-sm md:text-base mb-6 flex-grow">
                                 {service.description}
                             </p>
                             <span className="text-xs uppercase tracking-widest text-ac-taupe group-hover:underline decoration-ac-olive-dark underline-offset-4 font-semibold">

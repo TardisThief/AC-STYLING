@@ -164,6 +164,10 @@
         "rights": "All Rights Reserved.",
         "privacy": "Privacy Policy",
         "terms": "Terms of Service",
-        "refunds": "Refund Policy"
+        "refunds": "Refund Policy",
+        "nav_home": "Home",
+        "nav_about": "About",
+        "nav_services": "Services",
+        "nav_contact": "Contact"
     }
 }
