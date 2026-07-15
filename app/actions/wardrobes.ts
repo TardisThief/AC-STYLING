@@ -5,8 +5,11 @@ import { createAdminClient } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/app/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import { getErrorMessage } from "@/app/lib/errors";
-import { deriveStoragePath } from "@/lib/wardrobe-images";
+import { deriveStoragePath, signWardrobeItems } from "@/lib/wardrobe-images";
 import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
+import { parseInput, uuid } from "@/app/lib/validation/parse";
+import { adminWardrobeItemUpdateSchema, bulkStatusSchema } from "@/app/lib/validation/wardrobe-items";
+import type { WardrobeItem } from "@/app/lib/types";
 
 // =============================================================================
 // Types
@@ -551,6 +554,97 @@ export async function searchProfiles(query: string): Promise<{ success: boolean;
     }
 
     return { success: true, profiles: data };
+}
+
+// =============================================================================
+// Admin: wardrobe items (service-role — see internal_note note below)
+// =============================================================================
+
+/**
+ * Read a wardrobe's items for the admin (Studio) view, including the private
+ * `internal_note`.
+ *
+ * This goes through the service role rather than the browser client because
+ * column privileges are not role-aware beyond the Postgres role: Ale and her
+ * clients are both `authenticated`, so revoking `internal_note` from that role
+ * to hide it from clients hides it from Ale too. Admin reads therefore come
+ * through a guarded server action, mirroring `getAdminBrands` for
+ * `partner_brands.internal_notes`.
+ */
+export async function getAdminWardrobeItems(wardrobeId: string): Promise<{
+    success: boolean;
+    items?: WardrobeItem[];
+    error?: string;
+}> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    const parsedId = parseInput(uuid('Wardrobe id'), wardrobeId);
+    if (!parsedId.ok) return { success: false, error: parsedId.error };
+
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('wardrobe_items')
+        .select('*')
+        .eq('wardrobe_id', parsedId.data)
+        .order('created_at', { ascending: false });
+
+    if (error) return { success: false, error: error.message };
+
+    // Sign with the service-role client: the bucket is private and these paths
+    // may sit under a client's folder.
+    const items = await signWardrobeItems(supabase, (data ?? []) as WardrobeItem[]);
+    return { success: true, items };
+}
+
+/** Admin edit of a single item, including the private note. */
+export async function updateAdminWardrobeItem(
+    itemId: string,
+    updates: Record<string, unknown>
+): Promise<{ success: boolean; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    const parsedId = parseInput(uuid('Item id'), itemId);
+    if (!parsedId.ok) return { success: false, error: parsedId.error };
+
+    const parsed = parseInput(adminWardrobeItemUpdateSchema, updates);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    if (Object.keys(parsed.data).length === 0) {
+        return { success: false, error: 'Nothing to update' };
+    }
+
+    const supabase = createAdminClient();
+    const { error } = await supabase
+        .from('wardrobe_items')
+        .update(parsed.data)
+        .eq('id', parsedId.data);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+}
+
+/** Apply one curation status to many items in a single round-trip. */
+export async function bulkSetItemStatus(
+    itemIds: string[],
+    status: string
+): Promise<{ success: boolean; updated?: number; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
+    const parsed = parseInput(bulkStatusSchema, { item_ids: itemIds, status });
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('wardrobe_items')
+        .update({ status: parsed.data.status })
+        .in('id', parsed.data.item_ids)
+        .select('id');
+
+    if (error) return { success: false, error: error.message };
+    return { success: true, updated: data?.length ?? 0 };
 }
 
 // =============================================================================

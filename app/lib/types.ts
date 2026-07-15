@@ -45,7 +45,14 @@ export interface WardrobeItem {
     image_url: string | null;
     category: string | null;
     client_note: string | null;
-    internal_note: string | null;
+    /**
+     * The stylist's private note. Optional because it is genuinely absent from
+     * client-side reads: migration 08 revokes column access from
+     * `authenticated`, so browser queries name CLIENT_ITEM_COLUMNS and this
+     * field only arrives via getAdminWardrobeItems (service role).
+     */
+    internal_note?: string | null;
+    /** Shared stylist note — the client reads this as "Stylist Note". */
     notes: string | null;
     brand: string | null;
     status: string | null;

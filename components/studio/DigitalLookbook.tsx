@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import html2canvas from "html2canvas";
 import { signWardrobeItems } from "@/lib/wardrobe-images";
+import { CLIENT_ITEM_COLUMNS } from "@/app/lib/wardrobe-columns";
 import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 import type { Lookbook, WardrobeItem } from "@/app/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -72,7 +73,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
 
         const { data: wData } = await supabase
             .from('wardrobe_items')
-            .select('*')
+            .select(CLIENT_ITEM_COLUMNS)
             .eq('wardrobe_id', wardrobeId);
 
         if (lbData) setLookbooks(lbData);
