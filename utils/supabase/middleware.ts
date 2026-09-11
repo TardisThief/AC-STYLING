@@ -50,10 +50,9 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     // Protect /vault routes
-    // Exclude public paths: /vault/join (Signup) and /vault/gallery (Marketing)
+    // Exclude public paths: /vault/join (signup).
     const isVaultPublicRoute =
-        request.nextUrl.pathname.includes('/vault/join') ||
-        request.nextUrl.pathname.includes('/vault/gallery');
+        request.nextUrl.pathname.includes('/vault/join');
 
     if (request.nextUrl.pathname.includes('/vault') && !isVaultPublicRoute && !user) {
         const url = request.nextUrl.clone()

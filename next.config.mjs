@@ -29,6 +29,29 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    // /vault/gallery was a stale public marketing page: three hard-coded
+    // masterclasses that did not exist, played against Vimeo's demo reel. It is
+    // deleted, and its URL folds into the one canonical Vault address so that
+    // Instagram links, SEO and anything handed out all land in the same place.
+    // Config redirects run before the proxy, so this resolves before the
+    // /vault auth check ever sees the request.
+    return [
+      {
+        source: '/:locale(en|es)/vault/gallery',
+        destination: '/:locale/vault',
+        // 301 rather than Next's default 308 for `permanent: true`. Google
+        // treats them the same; 301 is better understood by older crawlers.
+        statusCode: 301,
+      },
+      {
+        source: '/vault/gallery',
+        destination: '/vault',
+        statusCode: 301,
+      },
+    ];
+  },
+
   async headers() {
     // CSP is shipped Report-Only first so we can observe violations without
     // breaking the app; promote to Content-Security-Policy once the report
