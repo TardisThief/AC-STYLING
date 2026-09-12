@@ -1,5 +1,4 @@
 import Image from "next/image";
-import TrackedCta from "@/components/vault-sales/TrackedCta";
 import { pickLocale, type CatalogEntry } from "@/app/lib/vault-catalog";
 
 /**
@@ -21,7 +20,6 @@ interface Props {
         inProductionBadge: string;
         inProductionNote: string;
         availableOn: string;
-        cardCta: string;
     };
 }
 
@@ -80,11 +78,11 @@ export default function CatalogCard({ entry, locale, t }: Props) {
             <div className="flex flex-1 flex-col gap-3 p-5">
                 <div className="flex flex-wrap items-center gap-2">
                     {upcoming ? (
-                        <span className="border border-ac-taupe/30 px-2 py-0.5 text-[10px] uppercase tracking-widest text-ac-taupe/70">
+                        <span className="border border-ac-taupe/30 px-2 py-0.5 text-[10px] uppercase tracking-widest text-ac-taupe">
                             {t.inProductionBadge}
                         </span>
                     ) : (
-                        <span className="border border-ac-olive/40 px-2 py-0.5 text-[10px] uppercase tracking-widest text-ac-olive">
+                        <span className="border border-ac-olive-dark/40 px-2 py-0.5 text-[10px] uppercase tracking-widest text-ac-olive-dark">
                             {t.includedBadge}
                         </span>
                     )}
@@ -92,33 +90,24 @@ export default function CatalogCard({ entry, locale, t }: Props) {
 
                 <div>
                     <h3 className="font-serif text-2xl leading-tight text-ac-taupe">{title}</h3>
-                    {subtitle && <p className="mt-1 text-sm text-ac-taupe/60">{subtitle}</p>}
+                    {subtitle && <p className="mt-1 text-sm text-ac-taupe">{subtitle}</p>}
                 </div>
 
                 {description && (
-                    <p className="text-[0.95rem] leading-relaxed text-ac-taupe/80">{description}</p>
+                    <p className="text-[0.95rem] leading-relaxed text-ac-taupe">{description}</p>
                 )}
 
                 {meta.length > 0 && (
-                    <p className="text-xs uppercase tracking-widest text-ac-taupe/50">
+                    <p className="text-xs uppercase tracking-widest text-ac-taupe">
                         {meta.join(" · ")}
                     </p>
                 )}
 
                 <div className="mt-auto pt-2">
-                    {upcoming ? (
-                        <p className="text-sm text-ac-taupe/70">
+                    {upcoming && (
+                        <p className="text-sm text-ac-taupe">
                             {availableLabel ?? t.inProductionNote}
                         </p>
-                    ) : (
-                        <TrackedCta
-                            href="#flagship"
-                            section="catalog"
-                            target="anchor"
-                            className="inline-block border-b border-ac-taupe/40 pb-0.5 text-sm text-ac-taupe transition-colors hover:border-ac-taupe focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
-                        >
-                            {t.cardCta}
-                        </TrackedCta>
                     )}
                 </div>
             </div>

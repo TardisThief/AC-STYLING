@@ -30,7 +30,9 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  // No maximumScale: capping it at 1 disabled pinch-zoom on every page of the
+  // site, which fails WCAG 1.4.4 and is exactly the thing someone with low
+  // vision reaches for first.
 };
 
 export function generateStaticParams() {

@@ -214,7 +214,6 @@
             "inProductionBadge": "In production",
             "inProductionNote": "In production. It joins your access when it's released, at no extra cost.",
             "availableOn": "Available {date}",
-            "cardCta": "See the modules",
             "empty": "The first courses are being prepared."
         },
         "flagship": {

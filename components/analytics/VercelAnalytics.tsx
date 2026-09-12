@@ -10,6 +10,13 @@ import Script from "next/script";
  * See app/lib/analytics.ts for why this is not the npm package.
  */
 export default function VercelAnalytics() {
+    // Gated on an explicit flag. When Web Analytics is not enabled for the
+    // project, /_vercel/insights/script.js returns an HTML 404 and the browser
+    // logs "Refused to execute script ... MIME type ('text/html')" on every
+    // page load. Set NEXT_PUBLIC_VERCEL_ANALYTICS=true once it is switched on
+    // in the Vercel dashboard.
+    if (process.env.NEXT_PUBLIC_VERCEL_ANALYTICS !== 'true') return null;
+
     return (
         <Script
             src="/_vercel/insights/script.js"

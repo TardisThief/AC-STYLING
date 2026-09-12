@@ -29,14 +29,14 @@ export default function Footer() {
                     {/* Column 1: Brand */}
                     <div className="flex flex-col space-y-4">
                         <h2 className="font-serif text-3xl tracking-widest">{t('tagline')}</h2>
-                        <p className="text-ac-sand/80 text-sm max-w-xs">
+                        <p className="text-ac-sand text-sm max-w-xs">
                             {t('subtagline')}
                         </p>
                     </div>
 
                     {/* Column 2: Quick Links */}
                     <div className="flex flex-col space-y-4">
-                        <h3 className="text-sm uppercase tracking-widest text-ac-beige">{t('explore')}</h3>
+                        <h3 className="text-sm uppercase tracking-widest text-ac-sand">{t('explore')}</h3>
                         <ul className="space-y-2 text-sm">
                             <li><Link href="/" className="hover:text-ac-beige focus-visible:text-ac-beige focus-visible:outline-none focus-visible:underline underline-offset-4 transition-colors">{t('nav_home')}</Link></li>
                             <li><a href="#about" className="hover:text-ac-beige focus-visible:text-ac-beige focus-visible:outline-none focus-visible:underline underline-offset-4 transition-colors">{t('nav_about')}</a></li>
@@ -47,8 +47,8 @@ export default function Footer() {
 
                     {/* Column 3: Locations */}
                     <div className="flex flex-col space-y-4">
-                        <h3 className="text-sm uppercase tracking-widest text-ac-beige">{t('studios')}</h3>
-                        <ul className="space-y-2 text-sm text-ac-sand/80">
+                        <h3 className="text-sm uppercase tracking-widest text-ac-sand">{t('studios')}</h3>
+                        <ul className="space-y-2 text-sm text-ac-sand">
                             <li>Miami</li>
                             <li>Bogotá</li>
                             <li>Madrid</li>
@@ -57,7 +57,7 @@ export default function Footer() {
 
                     {/* Column 4: Contact */}
                     <div className="flex flex-col space-y-4">
-                        <h3 className="text-sm uppercase tracking-widest text-ac-beige">{t('connect')}</h3>
+                        <h3 className="text-sm uppercase tracking-widest text-ac-sand">{t('connect')}</h3>
                         <a href="mailto:hello@theacstyle.com" className="text-lg font-serif hover:text-ac-beige transition-colors">
                             hello@theacstyle.com
                         </a>
@@ -70,7 +70,7 @@ export default function Footer() {
                 </div>
 
                 {/* Copyright */}
-                <div className="mt-8 border-t border-ac-sand/15 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-ac-sand/65">
+                <div className="mt-8 border-t border-ac-sand/15 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-ac-sand">
                     <p>&copy; {new Date().getFullYear()} The AC Style. {t('rights')}</p>
                     <div className="flex space-x-6 mt-4 md:mt-0">
                         <Link href="/legal/privacy" className="hover:text-ac-sand focus-visible:text-ac-sand focus-visible:outline-none focus-visible:underline underline-offset-4 transition-colors">{t('privacy')}</Link>

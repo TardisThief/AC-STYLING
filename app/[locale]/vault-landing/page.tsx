@@ -5,13 +5,19 @@ import { routing } from "@/i18n/routing";
 import { buildMetadata } from "@/app/lib/seo";
 import Navbar from "@/components/Navbar";
 import Spine from "@/components/vault-sales/Spine";
-import ColorField from "@/components/vault-sales/ColorField";
 import CatalogCard from "@/components/vault-sales/CatalogCard";
 import FlagshipCurriculum from "@/components/vault-sales/FlagshipCurriculum";
-import StickyCta from "@/components/vault-sales/StickyCta";
 import TrackedCta from "@/components/vault-sales/TrackedCta";
 import VaultCheckoutButton from "@/components/vault-sales/VaultCheckoutButton";
+import dynamic from "next/dynamic";
 import TrustedBy from "@/components/TrustedBy";
+
+// Code-split the below-the-fold client components. LCP here is render-delay
+// bound -- ~1.5s of script evaluation on a throttled mobile CPU -- and none of
+// these are needed to paint the hero. They still server-render; only their
+// JavaScript is deferred to its own chunk.
+const ColorField = dynamic(() => import("@/components/vault-sales/ColorField"));
+const StickyCta = dynamic(() => import("@/components/vault-sales/StickyCta"));
 import Footer from "@/components/Footer";
 import { Link } from "@/i18n/routing";
 import {
@@ -133,12 +139,19 @@ export default async function VaultLandingPage({
                                 className="object-cover object-center"
                             />
                         </div>
+                        {/* Eager, but deliberately NOT `priority`. next/image emits a
+                            preload link for every priority image regardless of the CSS
+                            that hides it, so marking both crops priority made every
+                            phone download this desktop PNG as well — competing with the
+                            image that is actually the LCP. Mobile is the majority path,
+                            so it keeps the preload and this one just loads immediately. */}
                         <div className="relative hidden h-full w-full md:block">
                             <Image
                                 src="/hero-manu.png"
                                 alt="Alejandra Carrillo, personal stylist"
                                 fill
-                                priority
+                                loading="eager"
+                                fetchPriority="high"
                                 sizes="100vw"
                                 className="object-cover object-center"
                             />
@@ -188,7 +201,7 @@ export default async function VaultLandingPage({
                         <h2 className="font-serif text-3xl leading-tight md:text-4xl">
                             {t("mirror.title")}
                         </h2>
-                        <p className="mt-6 text-lg leading-relaxed text-ac-taupe/85">
+                        <p className="mt-6 text-lg leading-relaxed text-ac-taupe">
                             {t("mirror.body")}
                         </p>
                         <p className="mt-6 font-serif text-2xl leading-snug text-ac-taupe md:text-[1.7rem]">
@@ -204,10 +217,10 @@ export default async function VaultLandingPage({
                         <h2 className="font-serif text-3xl leading-tight md:text-4xl">
                             {t("method.title")}
                         </h2>
-                        <p className="mt-6 text-lg leading-relaxed text-ac-taupe/85">
+                        <p className="mt-6 text-lg leading-relaxed text-ac-taupe">
                             {t("method.cognition")}
                         </p>
-                        <p className="mt-5 text-lg leading-relaxed text-ac-taupe/85">
+                        <p className="mt-5 text-lg leading-relaxed text-ac-taupe">
                             {t("method.thesis")}
                         </p>
                     </div>
@@ -221,7 +234,7 @@ export default async function VaultLandingPage({
                             <h2 className="font-serif text-3xl leading-tight md:text-4xl">
                                 {t("locate.title")}
                             </h2>
-                            <p className="mt-6 text-lg leading-relaxed text-ac-taupe/85">
+                            <p className="mt-6 text-lg leading-relaxed text-ac-taupe">
                                 {t("locate.body")}
                             </p>
                         </div>
@@ -234,7 +247,7 @@ export default async function VaultLandingPage({
                             <h3 className="font-serif text-2xl text-ac-taupe">
                                 {t("locate.splitTitle")}
                             </h3>
-                            <p className="mt-3 leading-relaxed text-ac-taupe/80">
+                            <p className="mt-3 leading-relaxed text-ac-taupe">
                                 {t("locate.splitBody")}
                             </p>
                         </div>
@@ -248,13 +261,13 @@ export default async function VaultLandingPage({
                             <h2 className="font-serif text-3xl leading-tight md:text-4xl">
                                 {t("catalog.title")}
                             </h2>
-                            <p className="mt-4 text-lg leading-relaxed text-ac-taupe/80">
+                            <p className="mt-4 text-lg leading-relaxed text-ac-taupe">
                                 {t("catalog.lede")}
                             </p>
                         </div>
 
                         {entries.length === 0 ? (
-                            <p className="mt-12 text-ac-taupe/70">{t("catalog.empty")}</p>
+                            <p className="mt-12 text-ac-taupe">{t("catalog.empty")}</p>
                         ) : (
                             <div
                                 className={
@@ -280,7 +293,6 @@ export default async function VaultLandingPage({
                                             inProductionBadge: t("catalog.inProductionBadge"),
                                             inProductionNote: t("catalog.inProductionNote"),
                                             availableOn: t("catalog.availableOn"),
-                                            cardCta: t("catalog.cardCta"),
                                         }}
                                     />
                                 ))}
@@ -297,7 +309,7 @@ export default async function VaultLandingPage({
                             <h2 className="font-serif text-3xl leading-tight md:text-4xl">
                                 {t("flagship.title")}
                             </h2>
-                            <p className="mt-4 text-lg leading-relaxed text-ac-taupe/80">
+                            <p className="mt-4 text-lg leading-relaxed text-ac-taupe">
                                 {t("flagship.lede")}
                             </p>
                             <FlagshipCurriculum
@@ -319,14 +331,14 @@ export default async function VaultLandingPage({
                             {(["lifetime", "order", "devices", "languages", "support"] as const).map(
                                 (k) => (
                                     <div key={k} className="border-b border-ac-taupe/15 py-4">
-                                        <dd className="text-lg leading-relaxed text-ac-taupe/85">
+                                        <dd className="text-lg leading-relaxed text-ac-taupe">
                                             {t(`included.${k}`)}
                                         </dd>
                                     </div>
                                 )
                             )}
                         </dl>
-                        <p className="mt-6 max-w-xl text-ac-taupe/70">
+                        <p className="mt-6 max-w-xl text-ac-taupe">
                             {t("included.foundingNote")}
                         </p>
                     </div>
@@ -348,10 +360,10 @@ export default async function VaultLandingPage({
                             <h2 className="font-serif text-3xl leading-tight md:text-4xl">
                                 {t("alejandra.name")}
                             </h2>
-                            <p className="mt-2 text-sm uppercase tracking-widest text-ac-taupe/55">
+                            <p className="mt-2 text-sm uppercase tracking-widest text-ac-taupe">
                                 {t("alejandra.role")}
                             </p>
-                            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ac-taupe/85">
+                            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ac-taupe">
                                 {t("alejandra.body")}
                             </p>
                         </div>
@@ -378,7 +390,7 @@ export default async function VaultLandingPage({
                                     <blockquote className="font-serif text-xl leading-relaxed text-ac-taupe md:text-[1.35rem]">
                                         {tt(`${q.key}.text`)}
                                     </blockquote>
-                                    <figcaption className="mt-4 text-sm uppercase tracking-widest text-ac-taupe/55">
+                                    <figcaption className="mt-4 text-sm uppercase tracking-widest text-ac-taupe">
                                         {q.name} · {q.place}
                                     </figcaption>
                                 </figure>
@@ -432,7 +444,7 @@ export default async function VaultLandingPage({
                                     <p className="mt-3 font-serif text-4xl text-ac-sand/90">
                                         {singleCourse.price_display}
                                     </p>
-                                    <p className="mt-4 leading-relaxed text-ac-sand/70">
+                                    <p className="mt-4 leading-relaxed text-ac-sand/75">
                                         {t("offer.singleBody")}
                                     </p>
                                     <div className="mt-7 pt-1">
@@ -449,10 +461,10 @@ export default async function VaultLandingPage({
                             )}
                         </div>
 
-                        <p className="mt-8 max-w-2xl leading-relaxed text-ac-sand/65">
+                        <p className="mt-8 max-w-2xl leading-relaxed text-ac-sand/75">
                             {t("offer.anchor")}
                         </p>
-                        <p className="mt-3 text-xs uppercase tracking-widest text-ac-sand/45">
+                        <p className="mt-3 text-xs uppercase tracking-widest text-ac-sand/75">
                             {t("offer.secure")}
                         </p>
                     </div>
@@ -464,7 +476,7 @@ export default async function VaultLandingPage({
                         <h2 className="font-serif text-3xl leading-tight md:text-4xl">
                             {t("bridge.title")}
                         </h2>
-                        <p className="mt-6 text-lg leading-relaxed text-ac-taupe/85">
+                        <p className="mt-6 text-lg leading-relaxed text-ac-taupe">
                             {t("bridge.body")}
                         </p>
                         <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
@@ -477,7 +489,7 @@ export default async function VaultLandingPage({
                             >
                                 {t("bridge.cta")}
                             </TrackedCta>
-                            <span className="text-ac-taupe/70">
+                            <span className="text-ac-taupe">
                                 {t("bridge.whatsappLead")}{" "}
                                 <TrackedCta
                                     href={WHATSAPP_URL}
@@ -514,7 +526,7 @@ export default async function VaultLandingPage({
                                         </span>
                                     </summary>
                                     <div className="pb-6 pr-8">
-                                        <p className="leading-relaxed text-ac-taupe/85">
+                                        <p className="leading-relaxed text-ac-taupe">
                                             {t(`faq.a${k}`)}
                                             {k === "8" && (
                                                 <>
@@ -541,7 +553,7 @@ export default async function VaultLandingPage({
                         <h2 className="font-serif text-3xl leading-tight md:text-5xl">
                             {t("closing.title")}
                         </h2>
-                        <p className="mt-4 font-serif text-2xl text-ac-taupe/70 md:text-3xl">
+                        <p className="mt-4 font-serif text-2xl text-ac-taupe md:text-3xl">
                             {t("closing.body")}
                         </p>
                         <div className="mt-10">

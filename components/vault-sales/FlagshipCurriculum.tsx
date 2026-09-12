@@ -39,9 +39,13 @@ export default function FlagshipCurriculum({ entry, locale, takeawaysLabel }: Pr
                     <li key={m.id} className="border-b border-ac-taupe/15">
                         <details className="group">
                             <summary className="flex cursor-pointer list-none items-baseline gap-5 py-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac-olive">
+                                {/* The module number is information, not decoration:
+                                    it is the sequence the reader is being asked to
+                                    follow. At /35 it measured 1.68 against sand, so
+                                    it is full-strength and simply smaller. */}
                                 <span
                                     aria-hidden="true"
-                                    className="font-serif text-lg tabular-nums text-ac-taupe/35"
+                                    className="font-serif text-base tabular-nums text-ac-taupe"
                                 >
                                     {String(i + 1).padStart(2, "0")}
                                 </span>
@@ -60,20 +64,20 @@ export default function FlagshipCurriculum({ entry, locale, takeawaysLabel }: Pr
 
                             <div className="pb-7 pl-[2.6rem] pr-2">
                                 {description && (
-                                    <p className="max-w-2xl leading-relaxed text-ac-taupe/85">
+                                    <p className="max-w-2xl leading-relaxed text-ac-taupe">
                                         {description}
                                     </p>
                                 )}
                                 {takeaways.length > 0 && (
                                     <div className="mt-5">
-                                        <p className="text-[11px] uppercase tracking-widest text-ac-taupe/50">
+                                        <p className="text-[11px] uppercase tracking-widest text-ac-taupe">
                                             {takeawaysLabel}
                                         </p>
                                         <ul className="mt-2 flex flex-wrap gap-x-2 gap-y-2">
                                             {takeaways.map((tk) => (
                                                 <li
                                                     key={tk}
-                                                    className="border border-ac-taupe/20 px-2.5 py-1 text-sm text-ac-taupe/75"
+                                                    className="border border-ac-taupe/20 px-2.5 py-1 text-sm text-ac-taupe"
                                                 >
                                                     {tk}
                                                 </li>
