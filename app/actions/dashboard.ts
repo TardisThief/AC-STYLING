@@ -2,6 +2,7 @@
 'use server';
 
 import { createClient } from "@/utils/supabase/server";
+import { CHAPTER_CATALOG_COLUMNS } from '@/app/lib/chapter-columns';
 
 export type PulseContent = {
     id: string; // Add ID for keys
@@ -34,7 +35,7 @@ export async function getDashboardPulse(): Promise<PulseContent[]> {
         if (lastSlug) {
             const { data: lastChapter } = await supabase
                 .from('chapters')
-                .select('*')
+                .select(CHAPTER_CATALOG_COLUMNS)
                 .eq('slug', lastSlug)
                 .single();
 
@@ -42,7 +43,7 @@ export async function getDashboardPulse(): Promise<PulseContent[]> {
                 // Find NEXT chapter
                 let query = supabase
                     .from('chapters')
-                    .select('*')
+                    .select(CHAPTER_CATALOG_COLUMNS)
                     .gt('order_index', lastChapter.order_index)
                     .order('order_index', { ascending: true })
                     .limit(1);
@@ -93,7 +94,7 @@ export async function getDashboardPulse(): Promise<PulseContent[]> {
     // 3. NEW LEARNING (Latest Chapter)
     const { data: latestChapter } = await supabase
         .from('chapters')
-        .select('*')
+        .select(CHAPTER_CATALOG_COLUMNS)
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -306,7 +307,7 @@ export async function getMasterclassCompletionStatus() {
     // 1. Get total active masterclass chapters
     const { count: totalChapters, error: totalError } = await supabase
         .from('chapters')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .not('masterclass_id', 'is', null);
 
     // Handle errors and edge cases early

@@ -8,8 +8,10 @@ import MarkComplete from "@/components/vault/MarkComplete";
 import CompleteChapterButton from "@/components/vault/CompleteChapterButton";
 import { createClient } from "@/utils/supabase/server";
 import { checkAccess } from "@/utils/access-control";
+import { getChapterVideo } from "@/app/actions/vault/chapter-video";
 import InteractiveGate from "@/components/auth/InteractiveGate";
 import UnlockButton from "@/components/monetization/UnlockButton";
+import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 export default async function CourseLessonPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
     const { slug, locale } = await params;
@@ -20,7 +22,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
     const supabase = await createClient();
     const { data: chapter, error: chapterError } = await supabase
         .from('chapters')
-        .select('*')
+        .select(CHAPTER_CATALOG_COLUMNS)
         .or(`slug.eq.${slug},slug.eq.${decodedSlug}`)
         .single();
 
@@ -61,6 +63,13 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
 
     // Check Access
     const hasAccess = user ? await checkAccess(user.id, chapter.id) : false;
+
+    // The player used to receive chapter.video_id straight off the row, which
+    // shipped the Vimeo id to unentitled visitors too -- InteractiveGate only
+    // covers it visually. Now the id is fetched only when access is real.
+    const video = hasAccess
+        ? await getChapterVideo(chapter.id)
+        : { videoId: null, videoIdEs: null };
 
 
     let isCompleted = false;
@@ -132,8 +141,8 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
                         >
                             <VaultVideoPlayer
                                 key={locale}
-                                videoId={chapter.video_id}
-                                videoIdEs={chapter.video_id_es}
+                                videoId={video.videoId ?? ""}
+                                videoIdEs={video.videoIdEs ?? undefined}
                                 title={title}
                                 locale={locale}
                             />

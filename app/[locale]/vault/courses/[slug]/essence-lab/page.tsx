@@ -5,6 +5,7 @@ import EssenceLab from "@/components/vault/EssenceLab";
 import CompleteChapterButton from "@/components/vault/CompleteChapterButton";
 import { createClient } from "@/utils/supabase/server";
 import { checkAccess } from "@/utils/access-control";
+import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 export default async function CoursesEssenceLabPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
     const { slug, locale } = await params;
@@ -13,7 +14,7 @@ export default async function CoursesEssenceLabPage({ params }: { params: Promis
     const supabase = await createClient();
     const { data: chapter, error: chapterError } = await supabase
         .from('chapters')
-        .select('*')
+        .select(CHAPTER_CATALOG_COLUMNS)
         .or(`slug.eq.${slug},slug.eq.${decodedSlug}`)
         .single();
 

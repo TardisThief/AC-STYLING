@@ -51,9 +51,6 @@
         },
         "t2": {
             "text": "Alejandra helped me to not lose my style while I make the transition into the professional world. Now I feel that I bring my true self to the workplace"
-        },
-        "t3": {
-            "text": "Alejandra built me a summer closet with easy to combine pieces and pre-made outfits. Helps me to not think about what I wear and still get approval nods from the wife."
         }
     },
     "Foundations": {
@@ -177,5 +174,125 @@
         "nav_about": "About",
         "nav_services": "Services",
         "nav_contact": "Contact"
+    },
+    "VaultSales": {
+        "meta": {
+            "title": "The Vault | AC Styling",
+            "description": "Self-paced courses in colour analysis, silhouette and personal style. The method Alejandra Carrillo uses with her clients.",
+            "ogAlt": "The AC Styling Vault"
+        },
+        "hero": {
+            "eyebrow": "The Vault",
+            "title": "Your style already speaks for you. Learn to direct it.",
+            "lede": "AC Styling's school: the same method I use with my clients, in courses you take at your own pace.",
+            "ctaPrimary": "Get access",
+            "ctaSecondary": "See what's inside"
+        },
+        "mirror": {
+            "title": "If any of this sounds familiar",
+            "body": "You buy something you loved in the shop and never wear it at home. Someone told you you're \"warm-toned\" and you never worked out what to do with that. You have clothes you like and clothes you wear, and almost nothing in the overlap.",
+            "close": "It isn't a shortage of clothes. It's a shortage of criteria, and criteria can be taught."
+        },
+        "method": {
+            "title": "Why it happens",
+            "cognition": "Clothes don't only change how you're read. They change how you think. In a study by Adam and Galinsky at Northwestern, two groups wore the same white coat: the group told it was a doctor's coat showed better sustained attention. Same garment, different story, different performance.",
+            "thesis": "So I don't teach trends. I teach you to decide: which colours hold you up, which silhouettes represent you, and what you want to communicate before you open the closet."
+        },
+        "locate": {
+            "title": "Four seasons. Find yours.",
+            "body": "Your season isn't a box. It's a position between three things: temperature, value and intensity. The course takes you there with a method you can repeat on your own, in front of the mirror.",
+            "splitTitle": "Four here. Twelve in person.",
+            "splitBody": "The twelve sub-seasons need real light and a trained eye, so I keep them for one-to-one analysis. It isn't a cut-down version of the method: it's honestly how far a course can take you.",
+            "fieldAlt": "A continuous colour field. Temperature runs warm to cool across the horizontal axis and value runs light to dark down the vertical. The four seasons — spring, summer, autumn and winter — appear as soft regions rather than boxes."
+        },
+        "catalog": {
+            "title": "What's inside",
+            "lede": "Each course stands alone. Full Access gives you all of them, including the ones still to come.",
+            "modulesLabel": "modules",
+            "runtimeApprox": "about {hours} h",
+            "includedBadge": "Included with Full Access",
+            "inProductionBadge": "In production",
+            "inProductionNote": "In production. It joins your access when it's released, at no extra cost.",
+            "availableOn": "Available {date}",
+            "cardCta": "See the modules",
+            "empty": "The first courses are being prepared."
+        },
+        "flagship": {
+            "title": "Colorimetry, module by module",
+            "lede": "Five modules. This is exactly what you'll watch.",
+            "toggleOpen": "See all five modules",
+            "toggleClose": "Close",
+            "takeawaysLabel": "You'll work on"
+        },
+        "included": {
+            "title": "What's included",
+            "lifetime": "Lifetime access. No renewals, no monthly fee.",
+            "order": "Watch the modules in any order, as many times as you like.",
+            "devices": "In the browser, on phone, tablet or computer.",
+            "languages": "Every course is recorded in both Spanish and English.",
+            "support": "If you get stuck, message us on WhatsApp.",
+            "foundingNote": "This first group comes in with lifetime access. If the Vault grows, your access doesn't change."
+        },
+        "alejandra": {
+            "name": "Alejandra Carrillo",
+            "role": "Personal stylist. Miami, Bogotá, Madrid.",
+            "body": "I've spent years dressing women who already know who they are and want their clothes to say it. I work one to one, with brands, and now here too.",
+            "trustedByTitle": "Brands I've worked with"
+        },
+        "proof": {
+            "title": "What they say",
+            "studentsTitle": "From Vault students",
+            "studentsTodo": "TODO_STUDENT_RESULTS"
+        },
+        "offer": {
+            "title": "Access",
+            "fullTitle": "The Full Learning Access",
+            "fullBody": "Every course available now and everything added later. One payment.",
+            "fullCta": "Get full access",
+            "singleTitle": "Colorimetry only",
+            "singleBody": "One course, five modules. If you'd rather start with one.",
+            "singleCta": "Buy Colorimetry",
+            "anchor": "For scale: a one-to-one Closet Detox is $250, and a personal styling session is $500. The Vault is the same method, at your own pace.",
+            "secure": "Secure payment via Stripe. One-time payment.",
+            "unavailable": "Available soon"
+        },
+        "bridge": {
+            "title": "If you'd rather we did it together",
+            "body": "The course takes you to your season. The one-to-one session settles your exact sub-season, your real closet, and what to buy next.",
+            "cta": "Book a thirty-minute session",
+            "whatsappLead": "Rather ask first?",
+            "whatsappCta": "Message us on WhatsApp"
+        },
+        "faq": {
+            "title": "Questions",
+            "q1": "Do I need to know anything before I start?",
+            "a1": "No. The courses start from zero and each module builds on the one before.",
+            "q2": "How long is it?",
+            "a2": "About an hour per masterclass, split into short modules so you can take them one at a time.",
+            "q3": "How do I get access?",
+            "a3": "You create your account at checkout and go straight into the Vault, in your browser. There's nothing to download.",
+            "q4": "How long do I keep it?",
+            "a4": "For life. No renewals, no monthly fee, no expiry date.",
+            "q5": "What language is it in?",
+            "a5": "Every course is recorded in both Spanish and English. You choose inside the platform.",
+            "q6": "What can I watch it on?",
+            "a6": "Any browser: phone, tablet or computer.",
+            "q7": "How can I pay?",
+            "a7": "Credit and debit card, through Stripe.",
+            "q8": "Can I get a refund?",
+            "a8": "Yes, under our refund policy.",
+            "a8Link": "Read the policy",
+            "q9": "Does this replace working with you directly?",
+            "a9": "No, and it isn't meant to. The course gives you the criteria and takes you to your season. Working one to one settles your exact sub-season and your real closet. Plenty of clients do both, in that order."
+        },
+        "closing": {
+            "title": "Your style is already saying something.",
+            "body": "Make it say it on purpose.",
+            "cta": "Get access"
+        },
+        "sticky": {
+            "label": "Full Access",
+            "cta": "Get access"
+        }
     }
 }

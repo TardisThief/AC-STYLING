@@ -40,6 +40,19 @@ vi.mock('@/app/lib/access-logic', () => ({
     grantAccessForProduct: vi.fn(() => true),
 }))
 
+const mockResolveUser = vi.fn()
+const mockSetPasswordLink = vi.fn()
+const mockSendEmail = vi.fn()
+
+vi.mock('@/app/lib/guest-purchase', () => ({
+    resolveOrCreateUserByEmail: (...args: unknown[]) => mockResolveUser(...args),
+    generateSetPasswordLink: (...args: unknown[]) => mockSetPasswordLink(...args),
+}))
+
+vi.mock('@/lib/resend', () => ({
+    sendEmail: (...args: unknown[]) => mockSendEmail(...args),
+}))
+
 vi.mock('next/headers', () => ({
     headers: vi.fn(() => ({
         get: vi.fn((key: string) => {
@@ -55,6 +68,9 @@ describe('Stripe Webhook Handler', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_secret'
+        mockResolveUser.mockResolvedValue({ userId: 'guest-user-1', created: true })
+        mockSetPasswordLink.mockResolvedValue('https://link/set-password')
+        mockSendEmail.mockResolvedValue({ success: true })
     })
 
     describe('Signature Verification', () => {
@@ -125,14 +141,18 @@ describe('Stripe Webhook Handler', () => {
             expect(grantAccessForProduct).toHaveBeenCalled()
         })
 
-        it('handles missing userId gracefully', async () => {
+        // A guest checkout arrives with no user id by design. The old handler
+        // logged it and returned 200, so Stripe considered the delivery done
+        // and the purchase vanished. These pin the replacement behaviour.
+        it('creates an account from the Stripe email when there is no userId', async () => {
             mockConstructEvent.mockReturnValue({
                 type: 'checkout.session.completed',
                 data: {
                     object: {
                         ...mockSession,
                         client_reference_id: null,
-                        metadata: {},
+                        metadata: { flow: 'guest' },
+                        customer_details: { email: 'guest@example.com', name: 'Ada L' },
                     }
                 },
             })
@@ -140,16 +160,113 @@ describe('Stripe Webhook Handler', () => {
             mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
 
             const { POST } = await import('@/app/api/webhooks/stripe/route')
-
-            const request = new Request('http://localhost:3000/api/webhooks/stripe', {
+            const response = await POST(new Request('http://localhost:3000/api/webhooks/stripe', {
                 method: 'POST',
                 body: JSON.stringify({}),
-            })
+            }))
 
-            const response = await POST(request)
-
-            // Should return 200 (acknowledge to Stripe) but log error
             expect(response.status).toBe(200)
+            expect(mockResolveUser).toHaveBeenCalled()
+            expect(mockResolveUser.mock.calls[0][1]).toBe('guest@example.com')
+            // access must be granted to the resolved account
+            expect(grantAccessForProduct).toHaveBeenCalled()
+            expect((grantAccessForProduct as unknown as { mock: { calls: unknown[][] } })
+                .mock.calls[0][1]).toBe('guest-user-1')
+        })
+
+        it('emails a set-password link only for a newly created account', async () => {
+            mockConstructEvent.mockReturnValue({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        ...mockSession,
+                        client_reference_id: null,
+                        metadata: { flow: 'guest' },
+                        customer_details: { email: 'guest@example.com', name: 'Ada L' },
+                    }
+                },
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const { POST } = await import('@/app/api/webhooks/stripe/route')
+            await POST(new Request('http://localhost:3000/api/webhooks/stripe', {
+                method: 'POST', body: JSON.stringify({}),
+            }))
+
+            expect(mockSendEmail).toHaveBeenCalled()
+            expect(mockSendEmail.mock.calls[0][0].to).toBe('guest@example.com')
+        })
+
+        it('does not email an existing customer who bought again', async () => {
+            mockResolveUser.mockResolvedValue({ userId: 'existing-1', created: false })
+            mockConstructEvent.mockReturnValue({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        ...mockSession,
+                        client_reference_id: null,
+                        metadata: { flow: 'guest' },
+                        customer_details: { email: 'repeat@example.com', name: 'Ada L' },
+                    }
+                },
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const { POST } = await import('@/app/api/webhooks/stripe/route')
+            await POST(new Request('http://localhost:3000/api/webhooks/stripe', {
+                method: 'POST', body: JSON.stringify({}),
+            }))
+
+            expect(mockSendEmail).not.toHaveBeenCalled()
+            expect(grantAccessForProduct).toHaveBeenCalled()
+        })
+
+        it('fails with 500 when there is neither a userId nor an email, so Stripe retries', async () => {
+            mockConstructEvent.mockReturnValue({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        ...mockSession,
+                        client_reference_id: null,
+                        metadata: {},
+                        customer_details: null,
+                        customer_email: null,
+                    }
+                },
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const { POST } = await import('@/app/api/webhooks/stripe/route')
+            const response = await POST(new Request('http://localhost:3000/api/webhooks/stripe', {
+                method: 'POST', body: JSON.stringify({}),
+            }))
+
+            expect(response.status).toBe(500)
+            expect(grantAccessForProduct).not.toHaveBeenCalled()
+        })
+
+        it('fails with 500 when the account cannot be created', async () => {
+            mockResolveUser.mockResolvedValue(null)
+            mockConstructEvent.mockReturnValue({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        ...mockSession,
+                        client_reference_id: null,
+                        metadata: { flow: 'guest' },
+                        customer_details: { email: 'broken@example.com' },
+                    }
+                },
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const { POST } = await import('@/app/api/webhooks/stripe/route')
+            const response = await POST(new Request('http://localhost:3000/api/webhooks/stripe', {
+                method: 'POST', body: JSON.stringify({}),
+            }))
+
+            expect(response.status).toBe(500)
+            expect(grantAccessForProduct).not.toHaveBeenCalled()
         })
 
         it('grants access for masterclass purchase', async () => {

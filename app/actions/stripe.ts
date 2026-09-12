@@ -71,3 +71,50 @@ export async function createCheckoutSession(priceId: string, returnUrl: string) 
         return { error: (err as Error).message };
     }
 }
+
+/**
+ * Checkout for a visitor who has no account yet.
+ *
+ * The sales page is the first thing a stranger sees, and asking her to create
+ * an account before she has bought anything loses sales for no benefit — we
+ * learn her email at checkout either way. Stripe collects it; the webhook
+ * creates the account and emails her a link to set a password.
+ *
+ * Deliberately NOT the same function as createCheckoutSession: that one
+ * requires a session and attaches client_reference_id, and blurring the two
+ * would make it easy to accidentally drop the user id from a logged-in
+ * purchase. `flow: 'guest'` marks these sessions so the webhook knows a
+ * missing user id is expected here and a bug anywhere else.
+ */
+export async function createGuestCheckoutSession(priceId: string, returnUrl: string) {
+    if (!priceId) {
+        return { error: 'Price ID is missing' };
+    }
+
+    const headersList = await headers();
+    const origin =
+        headersList.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+    try {
+        const session = await stripe.checkout.sessions.create({
+            mode: 'payment',
+            line_items: [{ price: priceId, quantity: 1 }],
+            success_url: `${origin}${returnUrl}?checkout_success=true`,
+            cancel_url: `${origin}${returnUrl}`,
+            // Stripe requires an email for a guest purchase; this is the identity
+            // the account is created against.
+            customer_creation: 'always',
+            metadata: { flow: 'guest' },
+            phone_number_collection: { enabled: true },
+        });
+
+        if (!session.url) {
+            throw new Error('No session URL returned');
+        }
+
+        return { url: session.url };
+    } catch (err: unknown) {
+        console.error('Stripe Guest Checkout Error:', err);
+        return { error: (err as Error).message };
+    }
+}

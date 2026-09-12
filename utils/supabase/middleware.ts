@@ -50,12 +50,42 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     // Protect /vault routes
-    // Exclude public paths: /vault/join (Signup) and /vault/gallery (Marketing)
+    // Exclude public paths: /vault/join (signup), and the locale-less Vault
+    // index. A bare /vault -- the shape an Instagram bio link takes -- must
+    // reach next-intl so it can redirect to /en/vault, where the rewrite below
+    // turns it into the public sales page. Without this it fell through to the
+    // gate and bounced to /login.
     const isVaultPublicRoute =
         request.nextUrl.pathname.includes('/vault/join') ||
-        request.nextUrl.pathname.includes('/vault/gallery');
+        /^\/vault\/?$/.test(request.nextUrl.pathname);
 
-    if (request.nextUrl.pathname.includes('/vault') && !isVaultPublicRoute && !user) {
+    // The Vault index is the public sales page. An anonymous visitor is
+    // rewritten to /vault-landing, which lives outside the member layout and is
+    // statically prerendered; the URL they see stays /vault. Matched EXACTLY --
+    // a prefix match here would unlock the entire library.
+    // Locale-prefixed only: a bare /vault falls through to next-intl, which
+    // redirects it to /en/vault, and the rewrite happens on that request.
+    const vaultIndex = /^\/(en|es)\/vault\/?$/;
+    const vaultMatch = request.nextUrl.pathname.match(vaultIndex);
+    if (vaultMatch && !user) {
+        const locale = vaultMatch[1];
+
+        const url = request.nextUrl.clone();
+        url.pathname = `/${locale}/vault-landing`;
+        const rewritten = NextResponse.rewrite(url);
+        // Carry any refreshed session cookies onto the rewritten response.
+        supabaseResponse.cookies.getAll().forEach((c) =>
+            rewritten.cookies.set(c.name, c.value)
+        );
+        return rewritten;
+    }
+
+    // Match /vault as a whole path segment, not as a substring. `includes`
+    // also caught /vault-landing/* -- including its opengraph-image route,
+    // which meant crawlers fetching the social card were redirected to login.
+    const isVaultPath = /\/vault(\/|$)/.test(request.nextUrl.pathname);
+
+    if (isVaultPath && !isVaultPublicRoute && !user) {
         const url = request.nextUrl.clone()
         // ... (existing redirect logic)
         const pathSegments = request.nextUrl.pathname.split('/');

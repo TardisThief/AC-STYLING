@@ -29,18 +29,55 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    // /vault/gallery was a stale public marketing page: three hard-coded
+    // masterclasses that did not exist, played against Vimeo's demo reel. It is
+    // deleted, and its URL folds into the one canonical Vault address so that
+    // Instagram links, SEO and anything handed out all land in the same place.
+    // Config redirects run before the proxy, so this resolves before the
+    // /vault auth check ever sees the request.
+    return [
+      {
+        source: '/:locale(en|es)/vault/gallery',
+        destination: '/:locale/vault',
+        // 301 rather than Next's default 308 for `permanent: true`. Google
+        // treats them the same; 301 is better understood by older crawlers.
+        statusCode: 301,
+      },
+      {
+        source: '/vault/gallery',
+        destination: '/vault',
+        statusCode: 301,
+      },
+      // /vault-landing is the rewrite target for the anonymous Vault index, not
+      // a second address for it. Reached directly it folds back to the canonical
+      // URL. No loop: config redirects run before the proxy, and the proxy's
+      // rewrite is internal, so it never re-enters this phase.
+      {
+        source: '/:locale(en|es)/vault-landing',
+        destination: '/:locale/vault',
+        statusCode: 301,
+      },
+      {
+        source: '/vault-landing',
+        destination: '/vault',
+        statusCode: 301,
+      },
+    ];
+  },
+
   async headers() {
     // CSP is shipped Report-Only first so we can observe violations without
     // breaking the app; promote to Content-Security-Policy once the report
     // stream is clean. The other headers are safe to enforce immediately.
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com",
-      "frame-src 'self' https://js.stripe.com https://player.vimeo.com",
+      "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com",
+      "frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
