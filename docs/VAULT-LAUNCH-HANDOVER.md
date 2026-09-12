@@ -5,17 +5,25 @@ shipping `noindex` until you flip it.
 
 ## What was built
 
-**The page.** `/vault` now serves a public, bilingual, statically prerendered
-sales page to anonymous visitors while members still land in their library.
-Thirteen sections: hero, recognition, method, placement (the colour field),
-catalogue, flagship curriculum, what's included, Alejandra, proof, offer,
-bridge to 1:1, FAQ, close — plus a mobile sticky CTA.
+**The page.** The public, bilingual, statically prerendered sales page lives at
+**`/vault-access`** — this is the URL for the Instagram bio. Thirteen sections:
+hero, recognition, method, placement (the colour field), catalogue, flagship
+curriculum, what's included, Alejandra, proof, offer, bridge to 1:1, FAQ, close
+— plus a mobile sticky CTA.
 
-**How the same URL serves two audiences.** The member layout reads cookies, so
-branching inside `/vault` would have made the sales page dynamic. Instead the
-proxy rewrites anonymous, locale-prefixed `/vault` to `/vault-landing`, a route
-outside the member layout that prerenders as SSG. The visitor's URL stays
-`/vault`; `/vault-landing` reached directly 301s back to it.
+**Addresses.** `/vault` is members-only and redirects anonymous visitors to
+`/vault-access`. `/vault-landing` (an old internal route) and `/vault/gallery`
+(deleted) both fold forward. Because the sales page has its own address, it
+looks the same to everyone — including Alejandra while she is signed in.
+
+**After payment.** Stripe returns to `/[locale]/welcome`, which verifies the
+session server-side and offers a set-password form, with the emailed recovery
+link still sent as a fallback. The session id in that URL is a weak credential,
+so the claim is fenced four ways: the session must be genuinely paid, under 24h
+old, rate limited per email, and the account must still carry
+`pending_password` — a flag set only when the webhook creates a guest account
+and cleared the moment a password is set. An established account can never be
+touched this way.
 
 **Everything on the page comes from the database.** Course titles, subtitles,
 descriptions, module lists, takeaways, runtimes and prices are read at build
@@ -72,14 +80,16 @@ canonical + hreflang, per-locale OG image, Course and FAQPage JSON-LD).
   `NEXT_PUBLIC_VERCEL_ANALYTICS=true`. Until then the script is not loaded at
   all (it would 404 and log a console error on every page).
 - **Flip to indexed** when video and Stripe are real: set `VAULT_INDEXABLE=true`
-  and add `/vault` to `app/sitemap.ts`. Both are governed together so they
-  cannot drift.
+  and add `/vault-access` to `app/sitemap.ts`. Both are governed together so
+  they cannot drift.
 - Optionally `VAULT_REVEAL_UPCOMING=true` to show in-production courses as
   "included with Full Access" cards.
 
 ## Measured state
 
 Lighthouse mobile against production, median of three clean runs:
+
+Measured at `/vault` before the URL split; the page itself is unchanged.
 
 | | EN | target |
 |---|---|---|
