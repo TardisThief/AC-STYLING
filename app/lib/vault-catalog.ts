@@ -184,3 +184,42 @@ export function pickLocale(
     if (locale === 'es' && translated && translated.trim().length > 0) return translated;
     return base;
 }
+
+export interface VaultOffer {
+    slug: string;
+    title: string;
+    title_es: string | null;
+    description: string | null;
+    description_es: string | null;
+    price_display: string | null;
+    price_id: string | null;
+}
+
+/**
+ * The active offers the sales page can sell. Same cookieless, cached read as
+ * the catalogue; RLS exposes only `active = true` rows to anon.
+ *
+ * Keyed by slug so callers ask for `full_access` by name rather than guessing
+ * at an array position.
+ */
+export const getVaultOffers = unstable_cache(
+    async (): Promise<Record<string, VaultOffer>> => {
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+
+        const { data, error } = await supabase
+            .from('offers')
+            .select('slug, title, title_es, description, description_es, price_display, price_id')
+            .eq('active', true);
+
+        if (error || !data) return {};
+
+        return Object.fromEntries(
+            (data as unknown as VaultOffer[]).map((o) => [o.slug, o])
+        );
+    },
+    ['vault-offers'],
+    { tags: [VAULT_CATALOG_TAG], revalidate: 3600 }
+);

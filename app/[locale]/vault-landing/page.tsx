@@ -6,7 +6,19 @@ import Navbar from "@/components/Navbar";
 import Spine from "@/components/vault-sales/Spine";
 import ColorField from "@/components/vault-sales/ColorField";
 import CatalogCard from "@/components/vault-sales/CatalogCard";
-import { getVaultCatalog, shouldRevealUpcoming } from "@/app/lib/vault-catalog";
+import FlagshipCurriculum from "@/components/vault-sales/FlagshipCurriculum";
+import StickyCta from "@/components/vault-sales/StickyCta";
+import TrustedBy from "@/components/TrustedBy";
+import Footer from "@/components/Footer";
+import { Link } from "@/i18n/routing";
+import {
+    getVaultCatalog,
+    getVaultOffers,
+    shouldRevealUpcoming,
+    pickLocale,
+} from "@/app/lib/vault-catalog";
+
+const WHATSAPP_URL = "https://wa.me/13054131472";
 
 /**
  * The public Vault sales page.
@@ -50,16 +62,58 @@ export default async function VaultLandingPage({
     setRequestLocale(locale);
 
     const t = await getTranslations({ locale, namespace: "VaultSales" });
-    const catalog = await getVaultCatalog();
+    const tt = await getTranslations({ locale, namespace: "Testimonials" });
+
+    const [catalog, offers] = await Promise.all([getVaultCatalog(), getVaultOffers()]);
     const reveal = shouldRevealUpcoming();
     const entries = reveal ? catalog : catalog.filter((e) => e.is_published);
+
+    // The flagship deep-dive is whichever published course has the most modules
+    // written, so the section follows the catalogue rather than naming a course.
+    const flagship = entries
+        .filter((e) => e.is_published && e.modules.length > 0)
+        .sort((a, b) => b.modules.length - a.modules.length)[0];
+
+    const fullAccess = offers["full_access"];
+    const singleCourse = entries.find((e) => e.is_published && e.price_display);
+
+    // Course + FAQPage structured data, generated from exactly what renders so
+    // the two cannot drift. Correct markup on a noindex page: nothing has to
+    // change at flip time except the robots flag.
+    const faqKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9"] as const;
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@graph": [
+            ...entries
+                .filter((e) => e.is_published)
+                .map((e) => ({
+                    "@type": "Course",
+                    name: pickLocale(locale, e.title, e.title_es),
+                    description: pickLocale(locale, e.description, e.description_es),
+                    inLanguage: locale,
+                    provider: {
+                        "@type": "Organization",
+                        name: "AC Styling",
+                        url: "https://theacstyle.com",
+                    },
+                })),
+            {
+                "@type": "FAQPage",
+                mainEntity: faqKeys.map((k) => ({
+                    "@type": "Question",
+                    name: t(`faq.q${k}`),
+                    acceptedAnswer: { "@type": "Answer", text: t(`faq.a${k}`) },
+                })),
+            },
+        ],
+    };
 
     return (
         <>
             <Navbar />
             <main className="bg-ac-sand text-ac-taupe">
                 {/* ── Hero ─────────────────────────────────────────────── */}
-                <section className="relative min-h-[92vh] w-full overflow-hidden bg-black text-white">
+                <section id="vault-hero" className="relative min-h-[92vh] w-full overflow-hidden bg-black text-white">
                     <div className="absolute inset-0">
                         <div className="relative block h-full w-full md:hidden">
                             <Image
@@ -224,12 +278,275 @@ export default async function VaultLandingPage({
                 </section>
                 <Spine level={4} />
 
-                {/* Remaining sections land in the next pass: flagship curriculum,
-                    what's included, Alejandra, proof, offer, bridge, FAQ, close. */}
-                <div id="offer" className="scroll-mt-24 px-6 py-20 text-center text-ac-taupe/40">
-                    <p className="text-xs uppercase tracking-widest">In progress</p>
-                </div>
+                {/* ── Flagship curriculum ──────────────────────────────── */}
+                {flagship && (
+                    <section id="flagship" className="scroll-mt-24 px-6 py-20 md:py-28">
+                        <div className="mx-auto max-w-3xl">
+                            <h2 className="font-serif text-3xl leading-tight md:text-4xl">
+                                {t("flagship.title")}
+                            </h2>
+                            <p className="mt-4 text-lg leading-relaxed text-ac-taupe/80">
+                                {t("flagship.lede")}
+                            </p>
+                            <FlagshipCurriculum
+                                entry={flagship}
+                                locale={locale}
+                                takeawaysLabel={t("flagship.takeawaysLabel")}
+                            />
+                        </div>
+                    </section>
+                )}
+
+                {/* ── What's included ──────────────────────────────────── */}
+                <section className="bg-ac-beige/30 px-6 py-20 md:py-28">
+                    <div className="mx-auto max-w-3xl">
+                        <h2 className="font-serif text-3xl leading-tight md:text-4xl">
+                            {t("included.title")}
+                        </h2>
+                        <dl className="mt-8 border-t border-ac-taupe/15">
+                            {(["lifetime", "order", "devices", "languages", "support"] as const).map(
+                                (k) => (
+                                    <div key={k} className="border-b border-ac-taupe/15 py-4">
+                                        <dd className="text-lg leading-relaxed text-ac-taupe/85">
+                                            {t(`included.${k}`)}
+                                        </dd>
+                                    </div>
+                                )
+                            )}
+                        </dl>
+                        <p className="mt-6 max-w-xl text-ac-taupe/70">
+                            {t("included.foundingNote")}
+                        </p>
+                    </div>
+                </section>
+
+                {/* ── Alejandra ────────────────────────────────────────── */}
+                <section className="px-6 py-20 md:py-28">
+                    <div className="mx-auto grid max-w-5xl gap-10 md:grid-cols-[minmax(0,320px)_1fr] md:gap-14">
+                        <div className="relative aspect-[3/4] w-full max-w-[320px] overflow-hidden">
+                            <Image
+                                src="/ac photo 2.jpg"
+                                alt="Alejandra Carrillo"
+                                fill
+                                sizes="(max-width: 768px) 100vw, 320px"
+                                className="object-cover object-top"
+                            />
+                        </div>
+                        <div className="self-center">
+                            <h2 className="font-serif text-3xl leading-tight md:text-4xl">
+                                {t("alejandra.name")}
+                            </h2>
+                            <p className="mt-2 text-sm uppercase tracking-widest text-ac-taupe/55">
+                                {t("alejandra.role")}
+                            </p>
+                            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ac-taupe/85">
+                                {t("alejandra.body")}
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <TrustedBy />
+
+                {/* ── Proof ────────────────────────────────────────────── */}
+                <section className="px-6 py-20 md:py-28">
+                    <div className="mx-auto max-w-4xl">
+                        <h2 className="font-serif text-3xl leading-tight md:text-4xl">
+                            {t("proof.title")}
+                        </h2>
+                        {/* Two real, named testimonials as text — not a carousel, which
+                            would be machinery pretending to be volume, and not images,
+                            which are unreadable to search and to screen readers. */}
+                        <div className="mt-10 grid gap-10 md:grid-cols-2">
+                            {[
+                                { key: "t1", name: "Alexandra", place: "Toronto" },
+                                { key: "t2", name: "Bianca", place: "Caracas" },
+                            ].map((q) => (
+                                <figure key={q.key}>
+                                    <blockquote className="font-serif text-xl leading-relaxed text-ac-taupe md:text-[1.35rem]">
+                                        {tt(`${q.key}.text`)}
+                                    </blockquote>
+                                    <figcaption className="mt-4 text-sm uppercase tracking-widest text-ac-taupe/55">
+                                        {q.name} · {q.place}
+                                    </figcaption>
+                                </figure>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── Offer ────────────────────────────────────────────── */}
+                <section id="offer" className="scroll-mt-24 bg-ac-espresso px-6 py-20 text-ac-sand md:py-28">
+                    <div className="mx-auto max-w-4xl">
+                        <h2 className="font-serif text-3xl leading-tight text-ac-sand md:text-4xl">
+                            {t("offer.title")}
+                        </h2>
+
+                        <div className="mt-10 grid gap-px bg-ac-sand/20 md:grid-cols-2">
+                            <div className="flex flex-col bg-ac-espresso p-7">
+                                <h3 className="font-serif text-2xl text-ac-sand">
+                                    {fullAccess
+                                        ? pickLocale(locale, fullAccess.title, fullAccess.title_es)
+                                        : t("offer.fullTitle")}
+                                </h3>
+                                {fullAccess?.price_display && (
+                                    <p className="mt-3 font-serif text-4xl text-ac-sand">
+                                        {fullAccess.price_display}
+                                    </p>
+                                )}
+                                <p className="mt-4 leading-relaxed text-ac-sand/75">
+                                    {t("offer.fullBody")}
+                                </p>
+                                <div className="mt-7 pt-1">
+                                    <Link
+                                        href="/vault/join"
+                                        className="inline-block bg-ac-sand px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-espresso transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
+                                    >
+                                        {t("offer.fullCta")}
+                                    </Link>
+                                </div>
+                            </div>
+
+                            {singleCourse && (
+                                <div className="flex flex-col bg-ac-espresso p-7">
+                                    <h3 className="font-serif text-2xl text-ac-sand/90">
+                                        {t("offer.singleTitle")}
+                                    </h3>
+                                    <p className="mt-3 font-serif text-4xl text-ac-sand/90">
+                                        {singleCourse.price_display}
+                                    </p>
+                                    <p className="mt-4 leading-relaxed text-ac-sand/70">
+                                        {t("offer.singleBody")}
+                                    </p>
+                                    <div className="mt-7 pt-1">
+                                        <Link
+                                            href="/vault/join"
+                                            className="inline-block border border-ac-sand/50 px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-sand transition-colors hover:border-ac-sand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
+                                        >
+                                            {t("offer.singleCta")}
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <p className="mt-8 max-w-2xl leading-relaxed text-ac-sand/65">
+                            {t("offer.anchor")}
+                        </p>
+                        <p className="mt-3 text-xs uppercase tracking-widest text-ac-sand/45">
+                            {t("offer.secure")}
+                        </p>
+                    </div>
+                </section>
+
+                {/* ── Bridge to 1:1 ────────────────────────────────────── */}
+                <section className="px-6 py-20 md:py-28">
+                    <div className="mx-auto max-w-2xl">
+                        <h2 className="font-serif text-3xl leading-tight md:text-4xl">
+                            {t("bridge.title")}
+                        </h2>
+                        <p className="mt-6 text-lg leading-relaxed text-ac-taupe/85">
+                            {t("bridge.body")}
+                        </p>
+                        <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+                            <Link
+                                href="/book"
+                                className="inline-block border border-ac-taupe/40 px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-taupe transition-colors hover:border-ac-taupe hover:bg-ac-taupe hover:text-ac-sand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
+                            >
+                                {t("bridge.cta")}
+                            </Link>
+                            <span className="text-ac-taupe/70">
+                                {t("bridge.whatsappLead")}{" "}
+                                <a
+                                    href={WHATSAPP_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="border-b border-ac-taupe/40 pb-0.5 text-ac-taupe transition-colors hover:border-ac-taupe focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
+                                >
+                                    {t("bridge.whatsappCta")}
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── FAQ ──────────────────────────────────────────────── */}
+                <section className="bg-ac-beige/30 px-6 py-20 md:py-28">
+                    <div className="mx-auto max-w-3xl">
+                        <h2 className="font-serif text-3xl leading-tight md:text-4xl">
+                            {t("faq.title")}
+                        </h2>
+                        <div className="mt-10 border-t border-ac-taupe/15">
+                            {faqKeys.map((k) => (
+                                <details key={k} className="group border-b border-ac-taupe/15">
+                                    <summary className="flex cursor-pointer list-none items-baseline justify-between gap-5 py-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac-olive">
+                                        <span className="font-serif text-xl text-ac-taupe">
+                                            {t(`faq.q${k}`)}
+                                        </span>
+                                        <span
+                                            aria-hidden="true"
+                                            className="mt-1 shrink-0 text-ac-taupe/40 transition-transform duration-200 group-open:rotate-45 motion-reduce:transition-none"
+                                        >
+                                            +
+                                        </span>
+                                    </summary>
+                                    <div className="pb-6 pr-8">
+                                        <p className="leading-relaxed text-ac-taupe/85">
+                                            {t(`faq.a${k}`)}
+                                            {k === "8" && (
+                                                <>
+                                                    {" "}
+                                                    <Link
+                                                        href="/legal/refunds"
+                                                        className="border-b border-ac-taupe/40 pb-0.5 text-ac-taupe transition-colors hover:border-ac-taupe"
+                                                    >
+                                                        {t("faq.a8Link")}
+                                                    </Link>
+                                                </>
+                                            )}
+                                        </p>
+                                    </div>
+                                </details>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── Closing ──────────────────────────────────────────── */}
+                <section className="px-6 py-24 md:py-32">
+                    <div className="mx-auto max-w-2xl text-center">
+                        <h2 className="font-serif text-3xl leading-tight md:text-5xl">
+                            {t("closing.title")}
+                        </h2>
+                        <p className="mt-4 font-serif text-2xl text-ac-taupe/70 md:text-3xl">
+                            {t("closing.body")}
+                        </p>
+                        <div className="mt-10">
+                            <Link
+                                href="/vault/join"
+                                className="inline-block bg-ac-espresso px-9 py-4 text-xs font-bold uppercase tracking-widest text-ac-sand transition-colors hover:bg-ac-taupe focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
+                            >
+                                {t("closing.cta")}
+                            </Link>
+                        </div>
+                    </div>
+                </section>
             </main>
+
+            <Footer />
+
+            <StickyCta
+                label={t("sticky.label")}
+                cta={t("sticky.cta")}
+                price={fullAccess?.price_display ?? null}
+                href="#offer"
+            />
+
+            <script
+                type="application/ld+json"
+                // Generated from the rendered content above, not hand-authored.
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
         </>
     );
 }

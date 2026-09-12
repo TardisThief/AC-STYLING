@@ -19,11 +19,6 @@ export default function Testimonials() {
             location: "Caracas",
             text: t('t2.text'),
         },
-        {
-            name: "Manuel",
-            location: "Miami",
-            text: t('t3.text'),
-        },
     ];
 
     return (

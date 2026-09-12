@@ -1,4 +1,4 @@
-import SafeImage from "@/components/ui/SafeImage";
+import Image from "next/image";
 import { pickLocale, type CatalogEntry } from "@/app/lib/vault-catalog";
 
 /**
@@ -60,10 +60,16 @@ export default function CatalogCard({ entry, locale, t }: Props) {
         >
             <div className="relative aspect-[4/3] overflow-hidden bg-ac-beige/40">
                 {entry.thumbnail_url ? (
-                    <SafeImage
+                    // next/image, not SafeImage: SafeImage is a raw <img>, and the
+                    // stored thumbnails are camera originals -- the Colorimetry one
+                    // is 4284x5712 (~4.8 MB) being painted into a 250px slot. That
+                    // alone would sink the mobile performance budget.
+                    <Image
                         src={entry.thumbnail_url}
                         alt=""
-                        className={`h-full w-full object-cover ${upcoming ? "grayscale" : ""}`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
+                        className={`object-cover ${upcoming ? "grayscale" : ""}`}
                     />
                 ) : (
                     <div aria-hidden="true" className="h-full w-full bg-ac-beige/60" />

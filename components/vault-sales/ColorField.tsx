@@ -70,27 +70,32 @@ function paint(canvas: HTMLCanvasElement) {
 
     ctx.putImageData(img, 0, 0);
 
-    // The twelve sub-seasons: present, deliberately below the threshold of
-    // being readable. Three bands per season across four columns.
-    // Drawn into the low-resolution buffer, so a 1px line upscales into a soft
-    // seam: enough to register that the field subdivides further, never enough
-    // to read your own coordinate off it. That gap is the point.
-    ctx.strokeStyle = "rgba(255,255,255,0.13)";
+    // The twelve sub-seasons: present, deliberately unreadable.
+    //
+    // A uniform grid was the wrong drawing twice over -- it looked like a table
+    // and it invited you to read a coordinate off it, which is the opposite of
+    // what this says. Each line instead fades to nothing at the edges and peaks
+    // faintly at the centre, so the subdivision only surfaces where the seasons
+    // actually blend into each other. That is also where sub-seasons genuinely
+    // live, and it leaves the four regions themselves clean.
     ctx.lineWidth = 1;
-    for (let c = 1; c < 4; c++) {
-        const x = (BUF_W / 4) * c;
+
+    const fade = (a: number, b: number, horizontal: boolean) => {
+        const g = horizontal
+            ? ctx.createLinearGradient(0, 0, BUF_W, 0)
+            : ctx.createLinearGradient(0, 0, 0, BUF_H);
+        g.addColorStop(0, "rgba(255,255,255,0)");
+        g.addColorStop(0.5, "rgba(255,255,255,0.085)");
+        g.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.strokeStyle = g;
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, BUF_H);
+        ctx.moveTo(a, b);
+        horizontal ? ctx.lineTo(BUF_W, b) : ctx.lineTo(a, BUF_H);
         ctx.stroke();
-    }
-    for (let rIdx = 1; rIdx < 3; rIdx++) {
-        const y = (BUF_H / 3) * rIdx;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(BUF_W, y);
-        ctx.stroke();
-    }
+    };
+
+    for (let c = 1; c < 4; c++) fade((BUF_W / 4) * c, 0, false);
+    for (let rIdx = 1; rIdx < 3; rIdx++) fade(0, (BUF_H / 3) * rIdx, true);
 }
 
 export default function ColorField({ label }: { label: string }) {
