@@ -177,5 +177,124 @@
         "privacy": "Política de Privacidad",
         "terms": "Términos de Servicio",
         "refunds": "Política de Reembolsos"
+    },
+    "VaultSales": {
+        "meta": {
+            "title": "El Vault | AC Styling",
+            "description": "Cursos de colorimetría, silueta y estilo personal, a tu ritmo. El método que Alejandra Carrillo usa con sus clientas.",
+            "ogAlt": "El Vault de AC Styling"
+        },
+        "hero": {
+            "eyebrow": "El Vault",
+            "title": "Tu estilo ya habla por ti. Aprende a dirigirlo.",
+            "lede": "La escuela de AC Styling: el mismo método que uso con mis clientas, en cursos que haces a tu ritmo.",
+            "ctaPrimary": "Obtener acceso",
+            "ctaSecondary": "Ver qué hay dentro"
+        },
+        "mirror": {
+            "title": "Si algo de esto te suena",
+            "body": "Compras algo que te encantó en la tienda y en casa no te lo pones. Te dijeron que eres «de tono cálido» y nunca supiste qué hacer con esa información. Tienes ropa que te gusta y ropa que usas, y casi nada en la intersección.",
+            "close": "No es falta de ropa. Es falta de criterio, y el criterio se aprende."
+        },
+        "method": {
+            "title": "Por qué pasa",
+            "cognition": "La ropa no solo cambia cómo te leen. Cambia cómo piensas. En un estudio de Adam y Galinsky en Northwestern, dos grupos usaron la misma bata blanca: al grupo al que le dijeron que era de médico le mejoró la atención sostenida. Misma prenda, distinta historia, distinto desempeño.",
+            "thesis": "Por eso no enseño tendencias. Enseño a decidir: qué colores te sostienen, qué siluetas te representan y qué quieres comunicar antes de abrir el clóset."
+        },
+        "locate": {
+            "title": "Cuatro estaciones. Encuentra la tuya.",
+            "body": "Tu estación no es una casilla. Es una posición entre tres cosas: temperatura, valor e intensidad. El curso te lleva hasta ahí con un método que después puedes repetir sola, frente al espejo.",
+            "splitTitle": "Cuatro aquí. Doce en persona.",
+            "splitBody": "Las doce subestaciones piden luz real y ojo entrenado, así que las reservo para el análisis uno a uno. No es una versión recortada del método: es hasta dónde llega, honestamente, un curso.",
+            "fieldAlt": "Un campo de color continuo. La temperatura va de cálido a frío en el eje horizontal y el valor de claro a oscuro en el vertical. Las cuatro estaciones —primavera, verano, otoño e invierno— aparecen como regiones suaves, no como casillas."
+        },
+        "catalog": {
+            "title": "Lo que hay dentro",
+            "lede": "Cada curso es independiente. Con el Acceso Completo los tienes todos, incluidos los que se sumen después.",
+            "modulesLabel": "módulos",
+            "runtimeApprox": "alrededor de {hours} h",
+            "includedBadge": "Incluido en el Acceso Completo",
+            "inProductionBadge": "En producción",
+            "inProductionNote": "En producción. Se suma a tu acceso cuando salga, sin costo adicional.",
+            "availableOn": "Disponible el {date}",
+            "cardCta": "Ver los módulos",
+            "empty": "Estamos preparando los primeros cursos."
+        },
+        "flagship": {
+            "title": "Colorimetría, módulo por módulo",
+            "lede": "Cinco módulos. Esto es exactamente lo que vas a ver.",
+            "toggleOpen": "Ver los cinco módulos",
+            "toggleClose": "Cerrar",
+            "takeawaysLabel": "Vas a trabajar"
+        },
+        "included": {
+            "title": "Qué incluye",
+            "lifetime": "Acceso de por vida, sin renovaciones ni mensualidades.",
+            "order": "Ves los módulos en el orden que quieras, las veces que quieras.",
+            "devices": "Desde el navegador, en teléfono, tablet o computadora.",
+            "languages": "Cada curso está grabado en español y en inglés.",
+            "support": "Si te trabas, nos escribes por WhatsApp.",
+            "foundingNote": "Esta primera generación entra con acceso de por vida. Si el Vault crece, tu acceso no cambia."
+        },
+        "alejandra": {
+            "name": "Alejandra Carrillo",
+            "role": "Estilista personal. Miami, Bogotá, Madrid.",
+            "body": "Llevo años vistiendo a mujeres que ya saben quiénes son y quieren que su ropa lo diga. Trabajo uno a uno, con marcas, y ahora también aquí.",
+            "trustedByTitle": "Marcas con las que he trabajado"
+        },
+        "proof": {
+            "title": "Lo que dicen",
+            "studentsTitle": "De estudiantes del Vault",
+            "studentsTodo": "TODO_STUDENT_RESULTS"
+        },
+        "offer": {
+            "title": "El acceso",
+            "fullTitle": "Acceso Completo al Aprendizaje",
+            "fullBody": "Todos los cursos actuales y los que se sumen después. Un solo pago.",
+            "fullCta": "Obtener acceso completo",
+            "singleTitle": "Solo Colorimetría",
+            "singleBody": "Un curso, cinco módulos. Si prefieres empezar por uno.",
+            "singleCta": "Comprar Colorimetría",
+            "anchor": "Para dimensionarlo: un Closet Detox uno a uno son $250 y una sesión de estilismo personal, $500. El Vault es el mismo método, a tu ritmo.",
+            "secure": "Pago seguro con Stripe. Pago único."
+        },
+        "bridge": {
+            "title": "Si prefieres que lo hagamos juntas",
+            "body": "El curso te lleva a tu estación. La sesión uno a uno resuelve tu subestación exacta, tu clóset real y qué comprar después.",
+            "cta": "Agendar sesión de treinta minutos",
+            "whatsappLead": "¿Prefieres preguntar antes?",
+            "whatsappCta": "Escríbenos por WhatsApp"
+        },
+        "faq": {
+            "title": "Preguntas",
+            "q1": "¿Necesito saber algo antes de empezar?",
+            "a1": "No. Los cursos empiezan desde cero y cada módulo se apoya en el anterior.",
+            "q2": "¿Cuánto dura?",
+            "a2": "Alrededor de una hora por masterclass, repartida en módulos cortos para que puedas verlos de a uno.",
+            "q3": "¿Cómo recibo el acceso?",
+            "a3": "Al pagar creas tu cuenta y entras al Vault de inmediato, desde el navegador. No hay que descargar nada.",
+            "q4": "¿Por cuánto tiempo lo tengo?",
+            "a4": "De por vida. Sin renovaciones, sin mensualidades y sin fecha de vencimiento.",
+            "q5": "¿En qué idioma está?",
+            "a5": "Cada curso está grabado en español y en inglés. Eliges el idioma dentro de la plataforma.",
+            "q6": "¿Desde qué dispositivos puedo verlo?",
+            "a6": "Desde cualquier navegador: teléfono, tablet o computadora.",
+            "q7": "¿Qué formas de pago aceptan?",
+            "a7": "Tarjeta de crédito y débito a través de Stripe.",
+            "q8": "¿Hay reembolsos?",
+            "a8": "Sí, según nuestra política de reembolsos.",
+            "a8Link": "Ver la política",
+            "q9": "¿Esto reemplaza trabajar contigo directamente?",
+            "a9": "No, y no pretende hacerlo. El curso te da el criterio y te lleva a tu estación. El trabajo uno a uno resuelve tu subestación exacta y tu clóset real. Muchas clientas hacen las dos cosas, en ese orden."
+        },
+        "closing": {
+            "title": "Tu estilo ya está diciendo algo.",
+            "body": "Que lo diga a propósito.",
+            "cta": "Obtener acceso"
+        },
+        "sticky": {
+            "label": "Acceso Completo",
+            "cta": "Obtener acceso"
+        }
     }
 }
