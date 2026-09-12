@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { trackCta } from "@/app/lib/analytics";
 
 /**
  * Mobile-only sticky CTA, revealed once the hero scrolls out of view.
@@ -58,6 +59,7 @@ export default function StickyCta({
                 </div>
                 <a
                     href={href}
+                    onClick={() => trackCta("sticky", "anchor")}
                     tabIndex={shown ? undefined : -1}
                     className="shrink-0 bg-ac-espresso px-5 py-3 text-xs font-bold uppercase tracking-widest text-ac-sand transition-colors hover:bg-ac-taupe focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac-olive"
                 >

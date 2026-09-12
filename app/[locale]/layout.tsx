@@ -7,6 +7,7 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { Toaster } from 'sonner';
+import VercelAnalytics from '@/components/analytics/VercelAnalytics';
 
 const didot = Antic_Didone({
   subsets: ["latin"],
@@ -64,6 +65,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages} locale={locale} timeZone="America/New_York">
           {children}
           <Toaster position="top-center" richColors theme="system" />
+          <VercelAnalytics />
         </NextIntlClientProvider>
       </body>
     </html>

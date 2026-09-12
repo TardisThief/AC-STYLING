@@ -1,4 +1,5 @@
 import Image from "next/image";
+import TrackedCta from "@/components/vault-sales/TrackedCta";
 import { pickLocale, type CatalogEntry } from "@/app/lib/vault-catalog";
 
 /**
@@ -110,12 +111,14 @@ export default function CatalogCard({ entry, locale, t }: Props) {
                             {availableLabel ?? t.inProductionNote}
                         </p>
                     ) : (
-                        <a
+                        <TrackedCta
                             href="#flagship"
+                            section="catalog"
+                            target="anchor"
                             className="inline-block border-b border-ac-taupe/40 pb-0.5 text-sm text-ac-taupe transition-colors hover:border-ac-taupe focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
                         >
                             {t.cardCta}
-                        </a>
+                        </TrackedCta>
                     )}
                 </div>
             </div>

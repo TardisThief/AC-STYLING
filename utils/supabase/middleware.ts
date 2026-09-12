@@ -80,7 +80,12 @@ export async function updateSession(request: NextRequest) {
         return rewritten;
     }
 
-    if (request.nextUrl.pathname.includes('/vault') && !isVaultPublicRoute && !user) {
+    // Match /vault as a whole path segment, not as a substring. `includes`
+    // also caught /vault-landing/* -- including its opengraph-image route,
+    // which meant crawlers fetching the social card were redirected to login.
+    const isVaultPath = /\/vault(\/|$)/.test(request.nextUrl.pathname);
+
+    if (isVaultPath && !isVaultPublicRoute && !user) {
         const url = request.nextUrl.clone()
         // ... (existing redirect logic)
         const pathSegments = request.nextUrl.pathname.split('/');

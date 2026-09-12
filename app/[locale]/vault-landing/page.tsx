@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { buildMetadata } from "@/app/lib/seo";
 import Navbar from "@/components/Navbar";
 import Spine from "@/components/vault-sales/Spine";
 import ColorField from "@/components/vault-sales/ColorField";
 import CatalogCard from "@/components/vault-sales/CatalogCard";
 import FlagshipCurriculum from "@/components/vault-sales/FlagshipCurriculum";
 import StickyCta from "@/components/vault-sales/StickyCta";
+import TrackedCta from "@/components/vault-sales/TrackedCta";
 import TrustedBy from "@/components/TrustedBy";
 import Footer from "@/components/Footer";
 import { Link } from "@/i18n/routing";
@@ -44,13 +46,18 @@ export async function generateMetadata({
     const { locale } = await params;
     const t = await getTranslations({ locale, namespace: "VaultSales.meta" });
 
-    return {
+    // Canonical is /vault, not /vault-landing: the rewrite target must never
+    // become the address search engines learn.
+    return buildMetadata({
+        locale,
+        path: "/vault",
         title: t("title"),
         description: t("description"),
         // Unlisted until module video is real and Stripe is live. Flipping this
         // is a deliberate act behind an env flag, never a merge side-effect.
-        robots: { index: false, follow: false },
-    };
+        // app/sitemap.ts is the other half and changes in the same commit.
+        index: process.env.VAULT_INDEXABLE === "true",
+    });
 }
 
 export default async function VaultLandingPage({
@@ -152,18 +159,22 @@ export default async function VaultLandingPage({
                                 {t("hero.lede")}
                             </p>
                             <div className="mt-9 flex flex-wrap items-center gap-6">
-                                <a
+                                <TrackedCta
                                     href="#offer"
+                                    section="hero"
+                                    target="anchor"
                                     className="bg-ac-sand px-8 py-4 text-xs font-bold uppercase tracking-widest text-ac-espresso transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
                                 >
                                     {t("hero.ctaPrimary")}
-                                </a>
-                                <a
+                                </TrackedCta>
+                                <TrackedCta
                                     href="#catalog"
+                                    section="hero"
+                                    target="anchor"
                                     className="border-b border-white/50 pb-1 text-sm text-white transition-colors hover:border-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
                                 >
                                     {t("hero.ctaSecondary")}
-                                </a>
+                                </TrackedCta>
                             </div>
                         </div>
                     </div>
@@ -398,12 +409,15 @@ export default async function VaultLandingPage({
                                     {t("offer.fullBody")}
                                 </p>
                                 <div className="mt-7 pt-1">
-                                    <Link
+                                    <TrackedCta
                                         href="/vault/join"
+                                        internal
+                                        section="offer_full"
+                                        target="checkout"
                                         className="inline-block bg-ac-sand px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-espresso transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
                                     >
                                         {t("offer.fullCta")}
-                                    </Link>
+                                    </TrackedCta>
                                 </div>
                             </div>
 
@@ -419,12 +433,15 @@ export default async function VaultLandingPage({
                                         {t("offer.singleBody")}
                                     </p>
                                     <div className="mt-7 pt-1">
-                                        <Link
+                                        <TrackedCta
                                             href="/vault/join"
+                                            internal
+                                            section="offer_single"
+                                            target="checkout"
                                             className="inline-block border border-ac-sand/50 px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-sand transition-colors hover:border-ac-sand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
                                         >
                                             {t("offer.singleCta")}
-                                        </Link>
+                                        </TrackedCta>
                                     </div>
                                 </div>
                             )}
@@ -449,22 +466,26 @@ export default async function VaultLandingPage({
                             {t("bridge.body")}
                         </p>
                         <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
-                            <Link
+                            <TrackedCta
                                 href="/book"
+                                internal
+                                section="bridge"
+                                target="calendly"
                                 className="inline-block border border-ac-taupe/40 px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-taupe transition-colors hover:border-ac-taupe hover:bg-ac-taupe hover:text-ac-sand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
                             >
                                 {t("bridge.cta")}
-                            </Link>
+                            </TrackedCta>
                             <span className="text-ac-taupe/70">
                                 {t("bridge.whatsappLead")}{" "}
-                                <a
+                                <TrackedCta
                                     href={WHATSAPP_URL}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                    external
+                                    section="whatsapp"
+                                    target="whatsapp"
                                     className="border-b border-ac-taupe/40 pb-0.5 text-ac-taupe transition-colors hover:border-ac-taupe focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
                                 >
                                     {t("bridge.whatsappCta")}
-                                </a>
+                                </TrackedCta>
                             </span>
                         </div>
                     </div>
@@ -522,12 +543,15 @@ export default async function VaultLandingPage({
                             {t("closing.body")}
                         </p>
                         <div className="mt-10">
-                            <Link
+                            <TrackedCta
                                 href="/vault/join"
+                                internal
+                                section="closing"
+                                target="checkout"
                                 className="inline-block bg-ac-espresso px-9 py-4 text-xs font-bold uppercase tracking-widest text-ac-sand transition-colors hover:bg-ac-taupe focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
                             >
                                 {t("closing.cta")}
-                            </Link>
+                            </TrackedCta>
                         </div>
                     </div>
                 </section>

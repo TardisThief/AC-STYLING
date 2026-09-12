@@ -72,12 +72,12 @@ const nextConfig = {
     // stream is clean. The other headers are safe to enforce immediately.
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com",
-      "frame-src 'self' https://js.stripe.com https://player.vimeo.com",
+      "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com",
+      "frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
