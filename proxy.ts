@@ -14,15 +14,6 @@ export async function proxy(request: NextRequest) {
         return response;
     }
 
-    // A rewrite is a 200 carrying x-middleware-rewrite, so the status check
-    // above does not catch it. Without this, next-intl below would build a
-    // fresh response and the anonymous /vault -> /vault-landing rewrite would
-    // be silently discarded. The path is already locale-prefixed at this point,
-    // so next-intl has nothing left to decide.
-    if (response.headers.has('x-middleware-rewrite')) {
-        return response;
-    }
-
     // 2. Run next-intl middleware for everything else
     const intlMiddleware = createMiddleware(routing);
     const intlResponse = intlMiddleware(request);

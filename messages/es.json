@@ -293,5 +293,22 @@
             "label": "Acceso Completo",
             "cta": "Obtener acceso"
         }
+    },
+    "VaultWelcome": {
+        "metaTitle": "Tu acceso | AC Styling",
+        "title": "Listo. Tu acceso está pago.",
+        "paidTo": "Registramos tu compra a nombre de {email}.",
+        "stillSettingUp": "Estamos terminando de preparar tu cuenta. Tarda unos segundos; si el formulario no aparece, recarga la página o entra con el enlace que te enviamos por correo.",
+        "choosePassword": "Elige una contraseña",
+        "passwordLabel": "Contraseña",
+        "passwordHint": "Mínimo 8 caracteres. Con esto entras al Vault de inmediato.",
+        "submit": "Entrar al Vault",
+        "working": "Un momento…",
+        "signedOutNote": "Tu contraseña quedó lista. Inicia sesión para entrar.",
+        "alreadyHasPassword": "Esta cuenta ya tiene contraseña.",
+        "emailFallback": "También te enviamos un correo con un enlace para entrar, por si prefieres hacerlo desde otro dispositivo.",
+        "goToLogin": "Iniciar sesión",
+        "problemTitle": "No pudimos verificar este pago",
+        "problemBody": "El enlace no trae una referencia de pago válida. Si ya pagaste, usa el enlace que te enviamos por correo."
     }
 }

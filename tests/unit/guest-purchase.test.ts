@@ -51,10 +51,24 @@ describe('resolveOrCreateUserByEmail', () => {
         const result = await resolveOrCreateUserByEmail(admin, 'new@example.com', 'Ada L')
 
         expect(result).toEqual({ userId: 'new-1', created: true })
+        // pending_password is the one-shot gate the welcome page's set-password
+        // form checks, so it must be set at creation or the fast lane is dead.
         expect(createUser).toHaveBeenCalledWith({
             email: 'new@example.com',
             email_confirm: true,
-            user_metadata: { full_name: 'Ada L' },
+            user_metadata: { full_name: 'Ada L', pending_password: true },
+        })
+    })
+
+    it('always marks a new account pending_password, even with no name', async () => {
+        createUser.mockResolvedValue({ data: { user: { id: 'new-2' } }, error: null })
+
+        await resolveOrCreateUserByEmail(admin, 'noname@example.com')
+
+        expect(createUser).toHaveBeenCalledWith({
+            email: 'noname@example.com',
+            email_confirm: true,
+            user_metadata: { pending_password: true },
         })
     })
 

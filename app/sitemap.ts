@@ -5,9 +5,10 @@ import { localeUrl } from '@/app/lib/seo';
 /**
  * Public, indexable routes only.
  *
- * /vault is deliberately ABSENT while it ships noindex — listing a noindex URL
- * is a contradictory signal. It joins this list in the same change that lifts
- * the flag, so the two can never drift apart.
+ * /vault-access — the public sales page — is deliberately ABSENT while it
+ * ships noindex, because listing a noindex URL is a contradictory signal. It
+ * joins this list in the same change that sets VAULT_INDEXABLE, so the two can
+ * never drift apart. /vault itself is members-only and never belongs here.
  */
 const PUBLIC_PATHS: Array<{ path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency'] }> = [
     { path: '', priority: 1.0, changeFrequency: 'monthly' },

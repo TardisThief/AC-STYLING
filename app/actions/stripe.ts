@@ -86,7 +86,11 @@ export async function createCheckoutSession(priceId: string, returnUrl: string) 
  * purchase. `flow: 'guest'` marks these sessions so the webhook knows a
  * missing user id is expected here and a bug anywhere else.
  */
-export async function createGuestCheckoutSession(priceId: string, returnUrl: string) {
+export async function createGuestCheckoutSession(
+    priceId: string,
+    returnUrl: string,
+    welcomePath: string
+) {
     if (!priceId) {
         return { error: 'Price ID is missing' };
     }
@@ -99,7 +103,9 @@ export async function createGuestCheckoutSession(priceId: string, returnUrl: str
         const session = await stripe.checkout.sessions.create({
             mode: 'payment',
             line_items: [{ price: priceId, quantity: 1 }],
-            success_url: `${origin}${returnUrl}?checkout_success=true`,
+            // Back to the welcome step, never to the sales page she just bought
+            // from. {CHECKOUT_SESSION_ID} is substituted by Stripe on redirect.
+            success_url: `${origin}${welcomePath}?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${origin}${returnUrl}`,
             // Stripe requires an email for a guest purchase; this is the identity
             // the account is created against.

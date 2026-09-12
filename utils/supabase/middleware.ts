@@ -51,37 +51,32 @@ export async function updateSession(request: NextRequest) {
 
     // Protect /vault routes
     // Exclude public paths: /vault/join (signup), and the locale-less Vault
-    // index. A bare /vault -- the shape an Instagram bio link takes -- must
-    // reach next-intl so it can redirect to /en/vault, where the rewrite below
-    // turns it into the public sales page. Without this it fell through to the
-    // gate and bounced to /login.
+    // index. A bare /vault must reach next-intl so it can redirect to
+    // /en/vault, which then redirects on to the public sales page. Without
+    // this it falls through to the gate and bounces to /login.
     const isVaultPublicRoute =
         request.nextUrl.pathname.includes('/vault/join') ||
         /^\/vault\/?$/.test(request.nextUrl.pathname);
 
-    // The Vault index is the public sales page. An anonymous visitor is
-    // rewritten to /vault-landing, which lives outside the member layout and is
-    // statically prerendered; the URL they see stays /vault. Matched EXACTLY --
-    // a prefix match here would unlock the entire library.
-    // Locale-prefixed only: a bare /vault falls through to next-intl, which
-    // redirects it to /en/vault, and the rewrite happens on that request.
+    // The Vault index is members-only. An anonymous visitor is redirected to
+    // the public sales page at its own address.
+    //
+    // This used to be a rewrite -- same URL, two pages -- which caused two real
+    // problems: the owner could never see her own sales page while signed in,
+    // and Stripe's return URL landed a buyer back on the page she had just
+    // bought from. One page, one address is simpler and both bugs disappear.
+    // Locale-prefixed only: a bare /vault falls through to next-intl first.
     const vaultIndex = /^\/(en|es)\/vault\/?$/;
     const vaultMatch = request.nextUrl.pathname.match(vaultIndex);
     if (vaultMatch && !user) {
-        const locale = vaultMatch[1];
-
         const url = request.nextUrl.clone();
-        url.pathname = `/${locale}/vault-landing`;
-        const rewritten = NextResponse.rewrite(url);
-        // Carry any refreshed session cookies onto the rewritten response.
-        supabaseResponse.cookies.getAll().forEach((c) =>
-            rewritten.cookies.set(c.name, c.value)
-        );
-        return rewritten;
+        url.pathname = `/${vaultMatch[1]}/vault-access`;
+        url.search = request.nextUrl.search;
+        return NextResponse.redirect(url);
     }
 
     // Match /vault as a whole path segment, not as a substring. `includes`
-    // also caught /vault-landing/* -- including its opengraph-image route,
+    // also caught /vault-access/* -- including its opengraph-image route,
     // which meant crawlers fetching the social card were redirected to login.
     const isVaultPath = /\/vault(\/|$)/.test(request.nextUrl.pathname);
 

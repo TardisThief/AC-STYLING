@@ -49,18 +49,16 @@ const nextConfig = {
         destination: '/vault',
         statusCode: 301,
       },
-      // /vault-landing is the rewrite target for the anonymous Vault index, not
-      // a second address for it. Reached directly it folds back to the canonical
-      // URL. No loop: config redirects run before the proxy, and the proxy's
-      // rewrite is internal, so it never re-enters this phase.
+      // /vault-landing was the internal rewrite target before the sales page
+      // got its own public address. Anything that cached it folds forward.
       {
         source: '/:locale(en|es)/vault-landing',
-        destination: '/:locale/vault',
+        destination: '/:locale/vault-access',
         statusCode: 301,
       },
       {
         source: '/vault-landing',
-        destination: '/vault',
+        destination: '/vault-access',
         statusCode: 301,
       },
     ];

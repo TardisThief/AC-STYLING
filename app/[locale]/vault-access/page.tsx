@@ -30,13 +30,12 @@ import {
 const WHATSAPP_URL = "https://wa.me/13054131472";
 
 /**
- * The public Vault sales page.
+ * The public Vault sales page, at its own public address.
  *
- * Served at /vault: the proxy rewrites an anonymous visitor here, so the URL
- * they see is the canonical one while this route stays outside the member
- * layout and its cookie-reading `getViewer()`. That is what keeps the page
- * statically prerenderable — the whole reason it is a separate route rather
- * than a branch inside the Vault index.
+ * It lives outside the member layout (which reads cookies via getViewer) so it
+ * can be statically prerendered, and outside /vault so that it is the same
+ * page for everyone — including Alejandra while she is signed in. An anonymous
+ * visitor to /vault is redirected here by the proxy.
  *
  * Nothing here may read cookies or headers.
  */
@@ -53,11 +52,9 @@ export async function generateMetadata({
     const { locale } = await params;
     const t = await getTranslations({ locale, namespace: "VaultSales.meta" });
 
-    // Canonical is /vault, not /vault-landing: the rewrite target must never
-    // become the address search engines learn.
     return buildMetadata({
         locale,
-        path: "/vault",
+        path: "/vault-access",
         title: t("title"),
         description: t("description"),
         // Unlisted until module video is real and Stripe is live. Flipping this

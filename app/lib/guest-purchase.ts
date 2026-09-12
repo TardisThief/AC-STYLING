@@ -37,7 +37,15 @@ export async function resolveOrCreateUserByEmail(
         // She has paid; making her verify an address Stripe already charged
         // adds a step that can only lose her.
         email_confirm: true,
-        user_metadata: fullName ? { full_name: fullName } : undefined,
+        user_metadata: {
+            ...(fullName ? { full_name: fullName } : {}),
+            // One-shot flag for the set-password form on the success page. The
+            // Stripe session id in that URL is a weak credential — it sits in
+            // browser history and the referrer — so it can only ever act on an
+            // account that has never had a password. claimPurchase clears this
+            // the moment one is set, which makes the id inert afterwards.
+            pending_password: true,
+        },
     });
 
     if (error || !data?.user) {

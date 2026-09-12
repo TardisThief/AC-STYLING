@@ -293,5 +293,22 @@
             "label": "Full Access",
             "cta": "Get access"
         }
+    },
+    "VaultWelcome": {
+        "metaTitle": "Your access | AC Styling",
+        "title": "Done. Your access is paid for.",
+        "paidTo": "We have your purchase under {email}.",
+        "stillSettingUp": "We are still finishing your account. It takes a few seconds — if the form does not appear, reload the page or use the link we emailed you.",
+        "choosePassword": "Choose a password",
+        "passwordLabel": "Password",
+        "passwordHint": "At least 8 characters. This takes you straight into the Vault.",
+        "submit": "Enter the Vault",
+        "working": "One moment…",
+        "signedOutNote": "Your password is set. Sign in to continue.",
+        "alreadyHasPassword": "This account already has a password.",
+        "emailFallback": "We also emailed you a link to get in, in case you would rather do it from another device.",
+        "goToLogin": "Sign in",
+        "problemTitle": "We could not verify this payment",
+        "problemBody": "This link has no valid payment reference. If you have already paid, use the link we emailed you."
     }
 }

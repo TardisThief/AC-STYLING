@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { createGuestCheckoutSession, createCheckoutSession } from "@/app/actions/stripe";
 import { trackCta, type CtaSection } from "@/app/lib/analytics";
@@ -38,6 +39,7 @@ export default function VaultCheckoutButton({
     className,
 }: Props) {
     const [loading, setLoading] = useState(false);
+    const locale = useLocale();
     const unavailable = !priceId;
 
     const handleClick = async () => {
@@ -49,7 +51,7 @@ export default function VaultCheckoutButton({
         try {
             const result = isSignedIn
                 ? await createCheckoutSession(priceId!, returnUrl)
-                : await createGuestCheckoutSession(priceId!, returnUrl);
+                : await createGuestCheckoutSession(priceId!, returnUrl, `/${locale}/welcome`);
 
             if (result.error) {
                 toast.error(result.error);
