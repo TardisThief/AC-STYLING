@@ -123,6 +123,48 @@ Vimeo teaser handling.
   previews, which are legitimately raw); "Curation Ingestion" wording, and
   "client" vs "wardrobe" terminology in the empty state.
 
+## Vault sales page — shipped (2026-09-12)
+
+`/vault` is a public, bilingual, statically prerendered sales page for
+anonymous visitors; members still land in their library. Full detail in
+`docs/VAULT-LAUNCH-HANDOVER.md`.
+
+- **Routing**: the proxy rewrites anonymous locale-prefixed `/vault` to
+  `/vault-landing` (outside the member layout, so it stays SSG). The visitor's
+  URL stays `/vault`; `/vault-landing` and the deleted `/vault/gallery` both 301
+  to it.
+- **Content is generated**: the catalogue, curriculum, runtimes and prices all
+  read from the DB via a cookieless cached client. Nothing about a course is in
+  JSX.
+- **Migrations 09, 10, 11 applied.** 10 added `is_published` / `available_at` /
+  `runtime_minutes` / `price_display`; 09 gates `video_id` behind the
+  `check_access` RPC + service role; 11 records the founding cohort on offer
+  purchases.
+- **Pay-before-signup** works: Stripe collects the email, the webhook creates
+  the account and sends a set-password link. This replaced a path that returned
+  200 and silently lost the sale.
+- **Analytics + SEO** built app-wide: sitemap, robots, canonical + hreflang,
+  per-locale OG image, Course/FAQPage JSON-LD, one `vault_cta` event with
+  section attribution.
+- **Measured**: accessibility 100, best practices 100, CLS 0. SEO 69 solely
+  because of the intentional `noindex`. **Performance 81, below the 90 target** —
+  the cost is framer-motion in the shared `Navbar`/`TrustedByCarousel`, not this
+  page. See below.
+
+**Ships `noindex` and unlisted.** Flip with `VAULT_INDEXABLE=true` plus adding
+`/vault` to `app/sitemap.ts`, once module video is real and Stripe is live.
+
+### Next on this thread
+
+- **Drop framer-motion from the shared chrome** — the single change that moves
+  mobile performance. Ten components import it; `Navbar` and `TrustedByCarousel`
+  are the two on the critical path. Touches the marketing home page, so it is a
+  deliberate call.
+- Gate `lab_questions` / `resource_urls` the way 09 gated the video ids, once
+  the lead-magnet question is settled.
+- The marketing `Hero` preloads both crops on every device (fixed on the Vault
+  hero, same one-line fix).
+
 ## Phase 4 — North-star features (built on Phase 3's design language)
 
 - Improve editorial content pull: **"Style of the Week"** + **"Ale's Pick"**,
