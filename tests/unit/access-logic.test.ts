@@ -50,6 +50,9 @@ describe('Access Logic - grantAccessForProduct', () => {
                 maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
             }
 
+            // Founding-cohort record written alongside the profile flag.
+            const grantInsert = { insert: vi.fn().mockResolvedValue({ error: null }) }
+
             mockSupabase._mockFrom
                 .mockReturnValueOnce(emptyQuery) // Masterclass
                 .mockReturnValueOnce(emptyQuery) // Chapter
@@ -58,6 +61,7 @@ describe('Access Logic - grantAccessForProduct', () => {
                         eq: vi.fn().mockResolvedValue({ error: null }),
                     })),
                 })
+                .mockReturnValueOnce(grantInsert) // user_access_grants
 
             const result = await grantAccessForProduct(
                 mockSupabase as any,
@@ -68,6 +72,11 @@ describe('Access Logic - grantAccessForProduct', () => {
 
             expect(result).toBe(true)
             expect(mockLog).toHaveBeenCalledWith('success', 'Granted Full Access (Env Match)')
+            expect(grantInsert.insert).toHaveBeenCalledWith({
+                user_id: 'user-123',
+                offer_slug: 'full_access',
+                grant_type: 'purchase',
+            })
         })
     })
 
@@ -94,11 +103,14 @@ describe('Access Logic - grantAccessForProduct', () => {
                 maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
             }
 
+            const grantInsert = { insert: vi.fn().mockResolvedValue({ error: null }) }
+
             mockSupabase._mockFrom
                 .mockReturnValueOnce(emptyQuery) // Masterclass
                 .mockReturnValueOnce(emptyQuery) // Chapter
                 .mockReturnValueOnce(offerQuery)
                 .mockReturnValueOnce(profileUpdate)
+                .mockReturnValueOnce(grantInsert)
 
             const result = await grantAccessForProduct(
                 mockSupabase as any,
@@ -108,6 +120,11 @@ describe('Access Logic - grantAccessForProduct', () => {
             )
 
             expect(result).toBe(true)
+            expect(grantInsert.insert).toHaveBeenCalledWith({
+                user_id: 'user-123',
+                offer_slug: 'full_access',
+                grant_type: 'purchase',
+            })
         })
 
         it('grants course pass for course_pass offer', async () => {
@@ -130,11 +147,14 @@ describe('Access Logic - grantAccessForProduct', () => {
                 maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
             }
 
+            const grantInsert = { insert: vi.fn().mockResolvedValue({ error: null }) }
+
             mockSupabase._mockFrom
                 .mockReturnValueOnce(emptyQuery) // Masterclass
                 .mockReturnValueOnce(emptyQuery) // Chapter
                 .mockReturnValueOnce(offerQuery)
                 .mockReturnValueOnce(profileUpdate)
+                .mockReturnValueOnce(grantInsert)
 
             const result = await grantAccessForProduct(
                 mockSupabase as any,
@@ -145,6 +165,11 @@ describe('Access Logic - grantAccessForProduct', () => {
 
             expect(result).toBe(true)
             expect(mockLog).toHaveBeenCalledWith('success', 'Granted Course Pass (Offer)')
+            expect(grantInsert.insert).toHaveBeenCalledWith({
+                user_id: 'user-123',
+                offer_slug: 'course_pass',
+                grant_type: 'purchase',
+            })
         })
     })
 
