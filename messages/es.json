@@ -253,7 +253,8 @@
             "singleBody": "Un curso, cinco módulos. Si prefieres empezar por uno.",
             "singleCta": "Comprar Colorimetría",
             "anchor": "Para dimensionarlo: un Closet Detox uno a uno son $250 y una sesión de estilismo personal, $500. El Vault es el mismo método, a tu ritmo.",
-            "secure": "Pago seguro con Stripe. Pago único."
+            "secure": "Pago seguro con Stripe. Pago único.",
+            "unavailable": "Disponible pronto"
         },
         "bridge": {
             "title": "Si prefieres que lo hagamos juntas",

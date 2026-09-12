@@ -126,3 +126,41 @@ export const getAnswerNotificationHtml = (question: string, answer: string) => `
 </body>
 </html>
 `;
+
+/**
+ * Sent to someone who bought from the public sales page before having an
+ * account. She has already paid, so this is not a sales email — it is the one
+ * step between her and the thing she bought.
+ */
+export const getPurchaseWelcomeHtml = (url: string, productTitle: string) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your AC Styling Vault access</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; background-color: #E6DED6; margin: 0; padding: 0; color: #3D3630; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #E6DED6; padding: 40px 20px; text-align: center; }
+        .logo { font-size: 24px; font-weight: bold; margin-bottom: 30px; letter-spacing: 1px; color: #3D3630; }
+        .content { background-color: #ffffff; padding: 40px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h1 { font-size: 20px; font-weight: normal; margin-bottom: 20px; color: #3D3630; text-transform: uppercase; letter-spacing: 2px; }
+        p { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #5A4F44; margin-bottom: 30px; }
+        .button { display: inline-block; background-color: #3D3630; color: #E6DED6; padding: 15px 30px; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; border-radius: 2px; }
+        .footer { font-family: Arial, sans-serif; font-size: 11px; color: #8C847B; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">AC STYLING</div>
+        <div class="content">
+            <h1>Your access is ready</h1>
+            <p>Thank you for joining the Vault. Your purchase of <strong>${escapeHtml(productTitle)}</strong> is confirmed and already attached to your account.</p>
+            <p>Choose a password to get in. The link works once.</p>
+            <a href="${url}" class="button">Set your password</a>
+            <p class="footer">If you did not make this purchase, reply to this email and we will sort it out.</p>
+        </div>
+    </div>
+</body>
+</html>
+`;

@@ -2,6 +2,9 @@ import { headers } from 'next/headers';
 import { stripe } from '@/utils/stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { grantAccessForProduct } from '@/app/lib/access-logic';
+import { resolveOrCreateUserByEmail, generateSetPasswordLink } from '@/app/lib/guest-purchase';
+import { sendEmail } from '@/lib/resend';
+import { getPurchaseWelcomeHtml } from '@/lib/email-templates';
 import Stripe from 'stripe';
 
 export async function POST(req: Request) {
@@ -42,6 +45,16 @@ export async function POST(req: Request) {
             });
         } catch (e) {
             console.error('Failed to log webhook event:', e);
+        }
+    };
+
+    // Drop the idempotency mark so a 500 can actually be retried. Without this
+    // an early failure would be permanently "already processed".
+    const releaseIdempotency = async () => {
+        try {
+            await supabase.from('stripe_processed_events').delete().eq('event_id', event.id);
+        } catch (e) {
+            console.warn('[Stripe Webhook] Failed to release idempotency mark:', e);
         }
     };
 
@@ -102,11 +115,51 @@ export async function POST(req: Request) {
         const customerPhone = session.customer_details?.phone || 'No Phone';
         const customerName = session.customer_details?.name || 'No Name';
 
-        if (!finalUserId) {
-            console.error('[Stripe Webhook] No userId found in session');
-            await logEvent('error', 'No userId found in session', { session_dump: session });
-            return new Response('No userId', { status: 200 }); // Return 200 to acknowledge Stripe
+        // A guest checkout has no user id by design: the buyer had no account
+        // when she paid. Resolve or create one from the email Stripe collected
+        // and continue exactly as a logged-in purchase would.
+        //
+        // This block replaces a `return 200` that acknowledged the delivery and
+        // silently lost the sale — money taken, nothing granted, no retry.
+        let resolvedUserId = finalUserId;
+        let isNewAccount = false;
+
+        if (!resolvedUserId) {
+            const hasEmail = customerEmail && customerEmail !== 'No Email';
+
+            if (!hasEmail) {
+                // Nothing to attach the purchase to and no way to reach the
+                // buyer. Fail loudly so Stripe retries and the event stays
+                // visible instead of disappearing.
+                await logEvent('fatal_error', 'Session has neither a user id nor an email', {
+                    session_id: session.id,
+                });
+                await releaseIdempotency();
+                return new Response('No user id and no email', { status: 500 });
+            }
+
+            const resolved = await resolveOrCreateUserByEmail(
+                supabase,
+                customerEmail,
+                customerName !== 'No Name' ? customerName : null
+            );
+
+            if (!resolved) {
+                await logEvent('fatal_error', `Could not resolve an account for ${customerEmail}`);
+                await releaseIdempotency();
+                return new Response('Could not create account', { status: 500 });
+            }
+
+            resolvedUserId = resolved.userId;
+            isNewAccount = resolved.created;
+            await logEvent(
+                'info',
+                `Guest purchase attached to ${resolvedUserId} (new account: ${isNewAccount})`
+            );
         }
+
+        // Remembered for the welcome email below, which names what was bought.
+        let purchasedTitle = 'your Vault access';
 
         try {
             const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
@@ -117,7 +170,7 @@ export async function POST(req: Request) {
                     ? item.price?.product
                     : (item.price?.product as Stripe.Product)?.id;
 
-                console.log(`[Stripe Webhook] Processing Item: ProductID=${stripeProductId}, UserID=${finalUserId}`);
+                console.log(`[Stripe Webhook] Processing Item: ProductID=${stripeProductId}, UserID=${resolvedUserId}`);
                 await logEvent('item_processing', `Processing Item ${stripeProductId}`, { product_id: stripeProductId });
 
                 if (!stripeProductId) {
@@ -129,7 +182,7 @@ export async function POST(req: Request) {
                 // prevented by the event-level idempotency gate above, so the
                 // old fragile 5-minute time-window dedup is no longer needed.
                 const { error: purchaseError } = await supabase.from('purchases').insert({
-                    user_id: finalUserId,
+                    user_id: resolvedUserId,
                     product_id: stripeProductId,
                     amount_paid: item.amount_total ? item.amount_total / 100 : 0,
                     currency: item.currency?.toUpperCase() || 'USD',
@@ -144,7 +197,7 @@ export async function POST(req: Request) {
                 // 2. Grant Access Logic
                 const granted = await grantAccessForProduct(
                     supabase,
-                    finalUserId,
+                    resolvedUserId,
                     stripeProductId,
                     logEvent
                 );
@@ -209,17 +262,19 @@ export async function POST(req: Request) {
                         productImage = '';
                     }
 
+                    if (productTitle) purchasedTitle = productTitle;
+
                     if (notificationType) {
                         // Verify Profile Exists to avoid FK Constraint Error
                         const { data: profileExists } = await supabase
                             .from('profiles')
                             .select('id')
-                            .eq('id', finalUserId)
+                            .eq('id', resolvedUserId)
                             .single();
 
                         // If profile missing, fallback to NULL and add note
-                        const notificationUserId = profileExists ? finalUserId : null;
-                        const fallbackMessage = !profileExists ? ` (Profile Missing: ${finalUserId})` : "";
+                        const notificationUserId = profileExists ? resolvedUserId : null;
+                        const fallbackMessage = !profileExists ? ` (Profile Missing: ${resolvedUserId})` : "";
 
                         // Prevent duplicates
                         if (!existingNotif) {
@@ -231,7 +286,7 @@ export async function POST(req: Request) {
                                 reference_id: session.id,
                                 status: 'unread',
                                 metadata: {
-                                    original_user_id: finalUserId,
+                                    original_user_id: resolvedUserId,
                                     customerName,
                                     email: customerEmail,
                                     phone: customerPhone,
@@ -254,6 +309,38 @@ export async function POST(req: Request) {
                     }
                 } catch (notifyErr) {
                     console.error('[Stripe Webhook] Notification Logic Error:', notifyErr);
+                }
+            }
+            // Only once access is actually granted: an email inviting her in
+            // before the grant landed would be a link to a locked Vault.
+            if (isNewAccount) {
+                const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://theacstyle.com';
+                const link = await generateSetPasswordLink(
+                    supabase,
+                    customerEmail,
+                    `${siteUrl}/update-password?next=${encodeURIComponent('/vault')}`
+                );
+
+                if (link) {
+                    const { success, error: mailError } = await sendEmail({
+                        to: customerEmail,
+                        subject: 'Your AC Styling Vault access',
+                        html: getPurchaseWelcomeHtml(link, purchasedTitle),
+                    });
+                    await logEvent(
+                        success ? 'notification' : 'error',
+                        success
+                            ? `Welcome email sent to ${customerEmail}`
+                            : `Welcome email FAILED for ${customerEmail}: ${mailError}`
+                    );
+                } else {
+                    // The account and the grant both exist, so this is not worth
+                    // a retry of the whole event — it is worth being loud about,
+                    // because she cannot get in until someone sends her a link.
+                    await logEvent(
+                        'error',
+                        `Could not generate a set-password link for ${customerEmail}`
+                    );
                 }
             }
         } catch (err: unknown) {

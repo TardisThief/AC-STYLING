@@ -10,6 +10,7 @@ import CatalogCard from "@/components/vault-sales/CatalogCard";
 import FlagshipCurriculum from "@/components/vault-sales/FlagshipCurriculum";
 import StickyCta from "@/components/vault-sales/StickyCta";
 import TrackedCta from "@/components/vault-sales/TrackedCta";
+import VaultCheckoutButton from "@/components/vault-sales/VaultCheckoutButton";
 import TrustedBy from "@/components/TrustedBy";
 import Footer from "@/components/Footer";
 import { Link } from "@/i18n/routing";
@@ -409,15 +410,17 @@ export default async function VaultLandingPage({
                                     {t("offer.fullBody")}
                                 </p>
                                 <div className="mt-7 pt-1">
-                                    <TrackedCta
-                                        href="/vault/join"
-                                        internal
+                                    {/* isSignedIn is false by construction: the proxy
+                                        only rewrites anonymous visitors here, so a
+                                        member never sees this page. */}
+                                    <VaultCheckoutButton
+                                        priceId={fullAccess?.price_id ?? null}
+                                        isSignedIn={false}
                                         section="offer_full"
-                                        target="checkout"
+                                        label={t("offer.fullCta")}
+                                        unavailableLabel={t("offer.unavailable")}
                                         className="inline-block bg-ac-sand px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-espresso transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
-                                    >
-                                        {t("offer.fullCta")}
-                                    </TrackedCta>
+                                    />
                                 </div>
                             </div>
 
@@ -433,15 +436,14 @@ export default async function VaultLandingPage({
                                         {t("offer.singleBody")}
                                     </p>
                                     <div className="mt-7 pt-1">
-                                        <TrackedCta
-                                            href="/vault/join"
-                                            internal
+                                        <VaultCheckoutButton
+                                            priceId={singleCourse.price_id}
+                                            isSignedIn={false}
                                             section="offer_single"
-                                            target="checkout"
+                                            label={t("offer.singleCta")}
+                                            unavailableLabel={t("offer.unavailable")}
                                             className="inline-block border border-ac-sand/50 px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-sand transition-colors hover:border-ac-sand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
-                                        >
-                                            {t("offer.singleCta")}
-                                        </TrackedCta>
+                                        />
                                     </div>
                                 </div>
                             )}
