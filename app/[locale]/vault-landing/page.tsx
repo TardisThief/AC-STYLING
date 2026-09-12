@@ -190,7 +190,18 @@ export default async function VaultLandingPage({
                         {entries.length === 0 ? (
                             <p className="mt-12 text-ac-taupe/70">{t("catalog.empty")}</p>
                         ) : (
-                            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            <div
+                                className={
+                                    // One published course should not sit stranded in a
+                                    // third of a three-column grid. The grid grows with
+                                    // the catalogue instead of assuming it is full.
+                                    entries.length === 1
+                                        ? "mt-12 grid max-w-md gap-6"
+                                        : entries.length === 2
+                                          ? "mt-12 grid gap-6 sm:grid-cols-2"
+                                          : "mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                                }
+                            >
                                 {entries.map((entry) => (
                                     <CatalogCard
                                         key={entry.id}

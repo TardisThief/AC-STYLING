@@ -72,8 +72,11 @@ function paint(canvas: HTMLCanvasElement) {
 
     // The twelve sub-seasons: present, deliberately below the threshold of
     // being readable. Three bands per season across four columns.
-    ctx.strokeStyle = "rgba(255,255,255,0.07)";
-    ctx.lineWidth = 0.5;
+    // Drawn into the low-resolution buffer, so a 1px line upscales into a soft
+    // seam: enough to register that the field subdivides further, never enough
+    // to read your own coordinate off it. That gap is the point.
+    ctx.strokeStyle = "rgba(255,255,255,0.13)";
+    ctx.lineWidth = 1;
     for (let c = 1; c < 4; c++) {
         const x = (BUF_W / 4) * c;
         ctx.beginPath();
