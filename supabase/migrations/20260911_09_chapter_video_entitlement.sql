@@ -52,7 +52,6 @@ GRANT SELECT (
   takeaways_es,
   is_published,
   available_at,
-  runtime_seconds,
   created_at,
   updated_at
 ) ON public.chapters TO anon, authenticated;
@@ -61,8 +60,8 @@ GRANT SELECT (
 -- a browser client now errors with "permission denied for column".
 --
 -- NOTE: this migration assumes 20260911_10_catalog_publication.sql has already
--- added is_published, available_at and runtime_seconds. Apply 10 before 09, or
--- drop those three names from the grant list above.
+-- added is_published and available_at. Apply 10 before 09, or drop those two
+-- names from the grant list above.
 --
 -- STILL PUBLIC, deliberately out of scope but worth a decision:
 --   * lab_questions  — the Essence Lab quiz content, authored paid IP.
