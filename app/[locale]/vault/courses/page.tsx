@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 import CoursePassUnlock from "@/components/vault/CoursePassUnlock";
 import SafeImage from "@/components/ui/SafeImage";
 import CheckoutSyncHandler from "@/components/monetization/CheckoutSyncHandler";
+import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 export default async function CoursesPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
@@ -17,7 +18,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
     // Fetch Courses (category = 'course')
     const { data: chapters } = await supabase
         .from('chapters')
-        .select('*')
+        .select(CHAPTER_CATALOG_COLUMNS)
         .eq('category', 'course')
         .order('order_index', { ascending: true });
 

@@ -7,6 +7,8 @@ import MarkComplete from "@/components/vault/MarkComplete";
 import CompleteChapterButton from "@/components/vault/CompleteChapterButton";
 import { createClient } from "@/utils/supabase/server";
 import { checkAccess } from "@/utils/access-control";
+import { getChapterVideo } from "@/app/actions/vault/chapter-video";
+import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 export default async function LessonPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
     const { slug, locale } = await params;
@@ -17,7 +19,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     const supabase = await createClient();
     const { data: chapter, error: chapterError } = await supabase
         .from('chapters')
-        .select('*')
+        .select(CHAPTER_CATALOG_COLUMNS)
         .or(`slug.eq.${slug},slug.eq.${decodedSlug}`)
         .single();
 
@@ -92,6 +94,13 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     // Check Access
     const hasAccess = user ? await checkAccess(user.id, chapter.id) : false;
 
+    // Video ids are no longer on the row: migration 09 removed them from
+    // what a browser session may read. They are fetched only for a viewer
+    // who has actually been granted this chapter.
+    const video = hasAccess
+        ? await getChapterVideo(chapter.id)
+        : { videoId: null, videoIdEs: null };
+
     return (
         <section className="min-h-screen pb-20">
             {/* Nav ... */}
@@ -130,8 +139,8 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                         {hasAccess ? (
                             <VaultVideoPlayer
                                 key={locale}
-                                videoId={chapter.video_id}
-                                videoIdEs={chapter.video_id_es}
+                                videoId={video.videoId ?? ""}
+                                videoIdEs={video.videoIdEs ?? undefined}
                                 title={title}
                                 locale={locale}
                             />

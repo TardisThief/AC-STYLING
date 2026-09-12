@@ -10,6 +10,7 @@ import CheckoutSyncHandler from "@/components/monetization/CheckoutSyncHandler";
 import VaultVideoPlayer from "@/components/vault/VaultVideoPlayer";
 import SafeImage from "@/components/ui/SafeImage";
 import { parseVimeoId } from "@/app/lib/vimeo";
+import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,7 @@ export default async function MasterclassPage({ params }: { params: Promise<{ id
     // 2. Fetch Chapters in this Masterclass
     const { data: chapters } = await supabase
         .from('chapters')
-        .select('*')
+        .select(CHAPTER_CATALOG_COLUMNS)
         .eq('masterclass_id', id)
         .order('order_index', { ascending: true });
 

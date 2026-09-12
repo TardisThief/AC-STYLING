@@ -5,6 +5,8 @@ import { requireAdmin } from '@/app/lib/auth-guards';
 import { parseInput, uuid } from '@/app/lib/validation/parse';
 import { chapterSchema } from '@/app/lib/validation/chapters';
 import { revalidatePath } from 'next/cache';
+import { createAdminClient } from '@/utils/supabase/admin';
+import { CHAPTER_CATALOG_COLUMNS } from '@/app/lib/chapter-columns';
 
 // Map the admin form's FormData field names onto DB column names; validation
 // and coercion happen in chapterSchema. (Module-private sync helpers are fine
@@ -44,7 +46,11 @@ export async function createChapter(formData: FormData) {
     const { data: chapter, error: chapterError } = await auth.supabase
         .from('chapters')
         .insert(parsed.data)
-        .select()
+        // Not `.select()`: that returns every column, and after migration 09
+        // even an admin's session cannot read video_id (column privileges are
+        // not role-aware beyond the Postgres role). The caller does not use
+        // the video ids anyway.
+        .select(CHAPTER_CATALOG_COLUMNS)
         .single();
     if (chapterError) {
         console.error("Chapter creation error:", chapterError);
@@ -107,10 +113,22 @@ export async function deleteChapter(chapterId: string) {
     return { success: true };
 }
 
+/**
+ * Full chapter rows for the admin console, video ids included.
+ *
+ * Reads with the service role because migration 09 removed column-level SELECT
+ * on video_id / video_id_es from `authenticated`, and Alejandra is
+ * `authenticated` like everyone else. The requireAdmin() gate above the
+ * service-role client is what keeps this privileged read honest — it must stay
+ * first, and this must never be called from anywhere unguarded.
+ */
 export async function getChapters() {
-    const supabase = await createClient();
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error, chapters: [] };
 
-    const { data, error } = await supabase
+    const admin = createAdminClient();
+
+    const { data, error } = await admin
         .from('chapters')
         .select(`
             *,
