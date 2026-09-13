@@ -1,6 +1,9 @@
 # Product
 
-<!-- impeccable:product-schema 1 -->
+Standing product truth for AC Styling: who it is for, what it claims, how it
+speaks, and what may never be invented. This outlives any single piece of work —
+when a page and this document disagree about the audience, the positioning, or a
+brand commitment, this document is the one to argue with first.
 
 ## Platform
 
@@ -25,13 +28,13 @@ take a different action, without either feeling like the consolation prize.
 ## Product Purpose
 
 The Vault is AC Styling's education arm: self-paced masterclasses and courses
-that teach personal style as a system rather than a set of trends. Today it is
-entirely behind authentication and invisible to anyone who is not already a
-customer. Success for this surface is that a stranger understands what the Vault
-is, sees herself in it, and buys — without talking to anyone — while an entitled
-customer still lands in her library.
+that teach personal style as a system rather than a set of trends. It is sold
+publicly at `/vault-access`; `/vault` itself stays the members-only library.
+Success for that surface is that a stranger understands what the Vault is, sees
+herself in it, and buys — without talking to anyone — while an entitled customer
+still lands in her library.
 
-The engagement's deliverable is "the Vault is sellable", not "a page exists".
+The standard is "the Vault is sellable", not "a page exists".
 
 ## Positioning
 
@@ -73,9 +76,9 @@ The engagement's deliverable is "the Vault is sellable", not "a page exists".
   unconditional and unchanging. Price rises as the library grows, but with no
   mechanism, trigger, date, seat count or timer — in the page or in the code.
   No future price is ever named.
-- **Checkout currently requires an account first.** Pay-before-signup is a
-  launch requirement, sequenced after the page ships; until then a purchase
-  arriving without a user id is silently dropped by the webhook.
+- **Pay-before-signup works.** Stripe collects the email, the webhook creates the
+  account and sends a set-password link, and the buyer lands on `/welcome` to
+  claim it. This replaced a path that returned 200 and silently lost the sale.
 - **Stripe is deliberately in test mode pre-launch.** Establishing canonical
   live products and repointing the database is the owner's task.
 - **The page ships `noindex` and unlisted** until module video is real and
@@ -86,8 +89,8 @@ The engagement's deliverable is "the Vault is sellable", not "a page exists".
   carry `is_published` and `available_at`; unpublished rows may appear as
   "in production" cards behind a reveal flag, and a date is shown only when one
   is actually set.
-- No runtime, level, or rating data exists; `runtime_seconds` is being added and
-  is null until authored.
+- No level or rating data exists. `runtime_minutes` (migration 10) is the
+  runtime column and is null until authored.
 
 ## Brand Commitments
 
@@ -99,8 +102,11 @@ The engagement's deliverable is "the Vault is sellable", not "a page exists".
   lightness, a wink, never solemn, and used once or twice across a whole page,
   never as a voice.
 - **Binding identity constraint:** the repository's own tokens and typefaces
-  win over any external brand document. An older brand doc specifying Lora,
-  Poppins and a different palette is reference material, not an instruction.
+  win over any external brand document. Two such documents have circulated —
+  one specifying Lora/Poppins, and a generated `design-system/` file specifying
+  Playfair Display on a blue CTA; the latter was deleted from the repo in
+  September 2026 precisely because it contradicted the shipped tokens. Treat any
+  brand doc that is not the code as reference material, never an instruction.
   Which identity AC Styling ultimately uses is an open question and is
   Alejandra's to settle — not something to resolve by shipping one page in a
   second voice.

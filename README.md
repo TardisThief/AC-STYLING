@@ -1,217 +1,64 @@
-# AC Styling - Premier Personal Styling Platform 
+# AC Styling
 
-**AC Styling** is a high-end personal styling website built with modern web technologies, designed to reflect elegance, minimalism, and professional expertise.
+A bilingual (EN/ES) SaaS platform for a luxury personal-styling brand, built on
+Next.js 16 and Supabase. Three pillars:
 
-## 🎨 Design System: "Liquid Glass & Taupe"
+- **The Vault** — gated education: masterclasses, courses, the Essence Lab quiz,
+  boutique, essence journal, journey tracker. Sold publicly at `/vault-access`.
+- **The Studio** — wardrobe management: tokenized client intake, virtual
+  wardrobe, digital lookbooks, tailor cards, client dossier.
+- **The Atelier** — service discovery and booking (`/book`).
 
-The project implements a bespoke design system focusing on:
+Design language is "Liquid Glass & Taupe": warm neutrals (`#5A4F44` taupe,
+`#E6DED6` sand), Antic Didone headings, Inter body, glass-morphism UI.
 
--   **Aesthetic**: "Liquid Glass" (Translucent layers, blur effects, refined borders).
--   **Palette**:
-    -   **Primary**: Deep Taupe (`#5A4F44`)
-    -   **Base**: Warm Sand (`#E6DED6`)
-    -   **Accents**: Muted Olive (`#7F8968`), Gold (`#D4AF37`)
--   **Typography**:
-    -   **Headings**: *Didot* (Classic, Editorial, Serif)
-    -   **Body**: *Inter* (Clean, Modern, Sans)
--   **Layout**: "Ultra-Compact" & "Editorial"
-    -   Tight vertical spacing for modern feel.
-    -   2-Column grids for storytelling sections.
+## Requirements
 
-## Phase 1: Website Redesign & Public Landing Page
+- Node 20+
+- A Supabase project (PostgreSQL + Auth + Storage)
+- Stripe, Resend, and Vimeo accounts for payments, email, and video
 
-The website has completed Phase 1, which includes the redesign of the public landing page and the implementation of the new design system.
+## Setup
 
-## ✨ Key Features
-
-### 1. Photo Carousel (`components/PhotoCarousel.tsx`)
--   **Behavior**: Auto-playing, swipeable carousel for portrait editorial shots.
--   **Design**: 3:4 aspect ratio with glass-morphism control overlays.
-
-### 2. Services & Testimonials (`components/Services.tsx`, `Testimonials.tsx`)
--   **Effect**: Cards feature a "Liquid Glass" effect (`bg-white/80` + `backdrop-blur`).
--   **Interaction**: Hover-lift effects with deepened shadows.
-
-### 3. Smart Navbar (`components/Navbar.tsx`)
--   **Dynamic**: Changes from transparent to white on scroll.
--   **Assets**: Logo adapts color (Taupe/White) using CSS masks for perfect contrast.
-
-## 🛠 Tech Stack & Integrations
-
-### Core Framework
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| [Next.js](https://nextjs.org/) | 16.1.3 | App Router, Server Components |
-| [React](https://react.dev/) | 19.2.3 | UI Library |
-| [TypeScript](https://typescriptlang.org/) | 5.x | Type Safety |
-| [Tailwind CSS](https://tailwindcss.com/) | 4.x | Styling |
-
-### Backend & Database
-| Service | Purpose |
-|---------|---------|
-| [Supabase](https://supabase.com/) | PostgreSQL Database, Auth, Storage |
-| [Stripe](https://stripe.com/) | Payments, Subscriptions, Webhooks |
-| [Vimeo](https://vimeo.com/) | Video Hosting (Domain-locked) |
-| [Resend](https://resend.com/) | Transactional Email |
-
-### Key Libraries
-| Library | Purpose |
-|---------|---------|
-| `@supabase/ssr` | Server-side Supabase client |
-| `next-intl` | Internationalization (EN/ES) |
-| `framer-motion` | Animations |
-| `react-dropzone` | File uploads |
-| `sonner` | Toast notifications |
-| `lucide-react` | Icons |
-
-### Database Schema (17 Tables)
-| Table | Purpose |
-|-------|---------|
-| `profiles` | User profiles with access flags |
-| `purchases` | Purchase records |
-| `user_access_grants` | Content access control |
-| `masterclasses` | Course containers |
-| `chapters` | Individual lessons |
-| `offers` | Pricing packages (Full Access, Course Pass) |
-| `services` | Bookable services |
-| `wardrobes` | Client wardrobe containers |
-| `wardrobe_items` | Individual clothing items |
-| `lookbooks` | Styled outfit collections |
-| `boutique_items` | Curated shopping recommendations |
-| `partner_brands` | Brand partnerships |
-| `tailor_cards` | Client measurements |
-| `essence_responses` | Style quiz answers |
-| `user_progress` | Content completion tracking |
-| `admin_notifications` | Admin inbox |
-| `webhook_events` | Stripe event logging |
-
-## 🚀 Getting Started
-
-1.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
-
-2.  **Run development server**:
-    ```bash
-    npm run dev
-    ```
-
-3.  **Build for production**:
-    ```bash
-    npm run build
-    ```
-
-## 📂 Project Structure
-
+```bash
+npm install
+cp .env.local.example .env.local
 ```
-AC-STYLING/
-├── app/
-│   ├── [locale]/           # i18n routes (en, es)
-│   │   ├── (auth)/         # Login, Signup
-│   │   ├── (marketing)/    # Public landing page
-│   │   ├── vault/          # Protected user dashboard
-│   │   │   ├── admin/      # Admin dashboard
-│   │   │   ├── boutique/   # Curated shopping
-│   │   │   ├── courses/    # Masterclasses & chapters
-│   │   │   ├── essence/    # Style essence lab
-│   │   │   ├── gallery/    # User gallery
-│   │   │   ├── profile/    # User profile
-│   │   │   ├── services/   # Bookable services
-│   │   │   └── studio/     # Wardrobe access
-│   │   └── studio/         # Intake & upload flows
-│   ├── actions/            # Server actions
-│   │   ├── admin/          # Admin CRUD operations
-│   │   ├── commerce.ts     # Purchase handling
-│   │   ├── stripe.ts       # Checkout sessions
-│   │   ├── wardrobes.ts    # Wardrobe management
-│   │   └── studio.ts       # Studio operations
-│   ├── api/webhooks/stripe/ # Stripe webhook handler
-│   └── lib/                # Shared utilities
-├── components/
-│   ├── admin/              # Admin dashboard components
-│   ├── vault/              # Vault UI components
-│   ├── studio/             # Studio UI components
-│   └── ui/                 # Shared UI primitives
-├── utils/
-│   ├── supabase/           # Supabase client configs
-│   └── stripe.ts           # Stripe client
-├── messages/               # i18n translations (en.json, es.json)
-└── supabase/migrations/    # Database migrations
+
+`.env.local.example` lists only the two public Supabase keys. The full set of
+required variables — including the server-only service-role key, Stripe keys,
+and `DATABASE_URL` for `scripts/` — is documented in
+[CLAUDE.md](CLAUDE.md#environment-variables). Stripe, email, and the helper
+scripts will not work until those are set.
+
+Database schema is managed directly in Supabase, not by a local CLI. See
+[supabase/migrations/README.md](supabase/migrations/README.md) — those files are
+**not** auto-applied, and the project is a single shared instance, so running
+them hits production.
+
+## Commands
+
+```bash
+npm run dev          # local dev server
+npm run build        # production build
+npm run lint         # eslint — blocking CI gate, must be 0 errors
+npm test             # vitest (watch)
+npm run test:run     # vitest (once, CI)
+npm run test:e2e     # playwright
 ```
----
 
-## Phase 2: AC Styling Lab | Ecosystem Overview
+Run `npm run lint` and `npm run test:run` before considering a change done.
 
-### 1. The Vision
+## Deployment
 
-The AC Styling Lab is a hybrid digital platform merging high-touch personal styling with scalable digital education. It transforms the styling business from a purely service-based model into a tech-enabled ecosystem.
+Hosted on Vercel, deployed from `main`.
 
-**Goal:** A seamless "Liquid Glass" luxury experience where users flow effortlessly between curious guests, paying students, and high-ticket private clients.
+## Where things are
 
----
-
-### 2. The Core Pillars
-
-#### 🏛️ The Vault (Education & Passive Income)
-
-**Function:** The scalable monetization engine hosting Masterclasses, Courses, and "The Pulse" (monthly trends).
-
-| Feature | Description |
-|---------|-------------|
-| **A la Carte** | Individual Masterclass purchases (micro-transactions) |
-| **Full Access** | "Super User" state unlocking entire library |
-| **Content Security** | Videos on Vimeo, domain-locked to theacstyle.com |
-
-#### 🎨 The Studio (Service & Client Management)
-
-**Function:** The high-touch service engine powering "Remote Closet Detox" and ongoing wardrobe management.
-
-| Feature | Description |
-|---------|-------------|
-| **Tokenized Intake** | Secure private links for wardrobe upload (no login required) |
-| **The Merge** | Guest data grafted onto permanent profile at signup |
-| **Digital Wardrobe** | Visual inventory with tagging (Donate/Keep/Tailor) |
-
-#### 🛍️ The Atelier (Booking & Conversion)
-
-**Function:** The gateway handling discovery and booking of services.
-
-**Strategy:** "Soft Gate" offering value (teasers, style quizzes) before "Hard Gate" (Payment/Booking).
-
----
-
-### 3. The User Hierarchy
-
-| Role | Access Level | Experience |
-|------|--------------|------------|
-| **Guest** | Landing pages, tokenized intake | "Shop Window" |
-| **Member** | Free content, Profile Hub | "Lobby Access" |
-| **Student/Client** | Paid content, Wardrobe Tools | "VIP Room" |
-| **Admin** | All content, CMS, User Management | "Control Tower" |
-
----
-
-### 4. Technical Philosophy
-
-| Principle | Implementation |
-|-----------|----------------|
-| **Seamless Entry** | No email verification until value exchanged |
-| **Economic Engine** | Stripe webhooks auto-grant access |
-| **Liquid UI** | Didot typography, luxury palettes, mobile-first |
-
----
-
-### 5. Future Roadmap
-
-- **Styling 2.0:** Canva integration for outfit design
-- **AI Stylist:** Automated pairing suggestions from wardrobe data
-
----
-
-**System Status:** Live / Production  
-**Deployment:** Vercel  
-**Database:** Supabase
-
----
-*Maintained by AC Styling Dev Team*
+| Document | Covers |
+|---|---|
+| [CLAUDE.md](CLAUDE.md) | Architecture, conventions, routing, server actions, access control, env vars |
+| [PRODUCT.md](PRODUCT.md) | Audience, positioning, brand voice, and what may never be fabricated |
+| [ROADMAP.md](ROADMAP.md) | What is done, what is next |
+| [docs/VAULT-LAUNCH-HANDOVER.md](docs/VAULT-LAUNCH-HANDOVER.md) | Open items before the Vault sales page goes public |
+| [docs/archive/](docs/archive/) | Completed plans, specs, and the July 2026 security audit |

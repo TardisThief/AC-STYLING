@@ -48,14 +48,14 @@ Always run `npm run lint` and `npm run test:run` before considering a change don
   - `middleware.ts` — session refresh + route protection
   - `admin.ts` / `admin-client.ts` — **service-role key, bypasses RLS. Server-only. Never import into client code.**
 - **Proxy** (`proxy.ts`, Next 16's renamed middleware convention) chains Supabase session refresh → next-intl. `/vault` requires auth.
-- **Studio wardrobe storage**: the `studio-wardrobe` bucket is private (signed URLs via `lib/wardrobe-images.ts`). Studio components take an explicit `{ wardrobeId, ownerId }` pair (never a single ambiguous `clientId`); all uploads build their object path with `lib/wardrobe-paths.ts` — owned content under `<ownerId>/…`, ownerless guest-intake under `wardrobe/<id>/…`. The bucket policy (`public.can_access_wardrobe_object`) is owner-or-admin. File bytes never go through a server action; the browser uploads to a signed URL (see `app/actions/intake.ts`, `app/lib/upload-client.ts`).
+- **Studio wardrobe storage**: the `studio-wardrobe` bucket is private (signed URLs via `lib/wardrobe-images.ts`). Studio components take an explicit `{ wardrobeId, ownerId }` pair (never a single ambiguous `clientId`); all uploads build their object path with `lib/wardrobe-paths.ts` — owned content under `<ownerId>/…`, ownerless guest-intake under `wardrobe/<id>/…`. The bucket policy (`public.can_access_wardrobe_object`) is owner-or-admin. File bytes never go through a server action; the browser uploads to a signed URL (see `app/actions/wardrobes.ts`, `app/lib/upload-client.ts`).
 - **Access control**: user tiers Guest → Member → Student → Super User → Admin. Admin is `profiles.role === 'admin'`. Purchase → access flow lives in `app/lib/access-logic.ts` (`grantAccessForProduct`) driven by the Stripe webhook: resolves a `stripe_product_id` against masterclasses → chapters → `STRIPE_FULL_ACCESS_PRODUCT_ID` env → `offers` (slug `full_access`/`course_pass`). Gate flags: `profiles.has_full_unlock`, `profiles.has_course_pass`, plus per-item rows in `user_access_grants`. `webhook_events` gives idempotency.
 - **Components** (`components/`) grouped by domain: `vault/`, `studio/`, `admin/`, `boutique/`, `marketing/`, `monetization/`, `auth/`, `ui/`. Use `components/ui/SafeImage.tsx` for images (falls back to `FALLBACK_IMAGE_URL` in `app/lib/constants.ts`).
 - **i18n**: all user-facing strings go in `messages/en.json` + `messages/es.json`. Navigation helpers from `i18n/routing.ts` (`Link`, `redirect`, `usePathname`, `useRouter`).
 
 ## Database
 
-RLS is enabled on every table. Core tables: `profiles`, `wardrobes`, `wardrobe_items`, `tailor_cards`, `lookbooks`, `user_questions`, `admin_notifications`, `purchases`, `webhook_events`, `services`, `masterclasses`, `chapters`, `offers`, `user_access_grants`, `user_progress`, `essence_responses`, `partner_brands`, `boutique_items`, `boutique_collections`, `boutique_collection_items`, `boutique_saves`, `boutique_clicks`, `trusted_by_logos`.
+RLS is enabled on every table. The 26 tables in the baseline dump: `profiles`, `wardrobes`, `wardrobe_items`, `tailor_cards`, `lookbooks`, `lookbook_items`, `user_questions`, `admin_notifications`, `purchases`, `webhook_events`, `stripe_processed_events`, `rate_limits`, `services`, `masterclasses`, `chapters`, `offers`, `user_access_grants`, `user_progress`, `essence_responses`, `partner_brands`, `boutique_items`, `boutique_collections`, `boutique_collection_items`, `boutique_saves`, `boutique_clicks`, `trusted_by_logos`.
 
 Schema is managed directly in Supabase. The historical `supabase/migrations/` SQL was reset for a clean start (2026-07); add new migrations there going forward. `scripts/` holds one-off DB/QA helpers (need `DATABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`).
 
@@ -83,6 +83,6 @@ DATABASE_URL                      # direct Postgres, used by scripts/
 
 ## Notes / gotchas
 
-- The `.agent/` directory is a generic third-party "Antigravity Kit" agent toolkit — **not** this project's architecture. Ignore `.agent/ARCHITECTURE.md` when reasoning about AC Styling.
-- Design system: "Liquid Glass & Taupe" — warm neutrals (`#5A4F44` taupe, `#E6DED6` sand), Didot headings, Inter body, glass-morphism UI.
+- Design system: "Liquid Glass & Taupe" — warm neutrals (`#5A4F44` taupe, `#E6DED6` sand), Inter body, glass-morphism UI. Headings are **Antic Didone**, loaded via `next/font/google` and aliased to the `--font-didot` CSS variable — "Didot" in the codebase means that variable, not the Didot typeface.
+- Brand docs that are not the code (an older Lora/Poppins doc, the deleted `design-system/MASTER.md` specifying Playfair Display) are reference material only. The shipped tokens win — see `PRODUCT.md` § Brand Commitments.
 - `main` is the single working branch (local + remote) after the 2026-07 cleanup.

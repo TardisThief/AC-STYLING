@@ -1,7 +1,9 @@
 # AC Styling — Engineering Roadmap
 
-Status as of 2026-07-12. See `AUDIT.md` for the security audit this follows from,
-and `supabase/migrations/README.md` for DB state.
+Status as of 2026-09-13. See
+[docs/archive/AUDIT-2026-07-10.md](docs/archive/AUDIT-2026-07-10.md) for the
+security audit this follows from (all P0/P1 closed), and
+[supabase/migrations/README.md](supabase/migrations/README.md) for DB state.
 
 ## Done & deployed
 
@@ -34,7 +36,7 @@ Vimeo teaser handling.
   direct-to-storage (no Vercel 4.5 MB cap); lookbooks work against the real
   schema. Migrations 06 + 07 applied; `scripts/verify_wardrobe_policy.ts` passes
   6/6 against prod (owner-or-admin isolation confirmed). Spec + plan:
-  `docs/superpowers/{specs,plans}/2026-07-11-wardrobe-storage-normalization*`.
+  `docs/archive/superpowers/{specs,plans}/2026-07-11-wardrobe-storage-normalization*`.
   Remaining optional cleanup: `scripts/cleanup_orphaned_wardrobe_files.ts` (44
   orphaned files, dry-run first).
 
@@ -50,7 +52,7 @@ Vimeo teaser handling.
   react-hooks rules (incl. a real rules-of-hooks bug in `InteractiveGate`).
   `npm run lint` is now 0 errors and CI enforces it. Warnings (~9k, mostly
   `no-img-element`) stay non-blocking — a separate future effort. Spec + plan:
-  `docs/superpowers/{specs,plans}/2026-07-12-lint-to-blocking-gate*`.
+  `docs/archive/superpowers/{specs,plans}/2026-07-12-lint-to-blocking-gate*`.
 - ~~De-duplicate the profile-merge logic + remaining inline admin checks~~ —
   **done (2026-07-14)**. 15 admin actions consolidated onto `requireAdmin`;
   dead `invitation.ts` `claimWardrobe` duplicate removed.
@@ -72,8 +74,9 @@ Vimeo teaser handling.
 - ~~Full design/UX **assessment via the impeccable skill**~~ — **done for the
   landing page, the Vault, and the Studio (2026-07-15)**. Landing: hero
   recomposition + editorial services. Vault: safe carousel, guest dead-end,
-  mobile overlap, chapter numbering. Studio (critique snapshot:
-  `.impeccable/critique/2026-07-15T13-37-50Z__app-locale-studio.md`, 18/40):
+  mobile overlap, chapter numbering. Studio (critique scored 18/40; the snapshot
+  file was removed in the 2026-09 cleanup — findings are summarised here and in
+  the Studio backlog below):
   deleted the dead `/studio/intake` stack (publicly routable, rendered a fake
   invitation for any string, could never succeed), fixed clone writing to the
   wrong wardrobe while reporting success, removed fabricated "Last Active:
@@ -125,34 +128,17 @@ Vimeo teaser handling.
 
 ## Vault sales page — shipped (2026-09-12)
 
-`/vault` is a public, bilingual, statically prerendered sales page for
-anonymous visitors; members still land in their library. Full detail in
-`docs/VAULT-LAUNCH-HANDOVER.md`.
+The public, bilingual, statically prerendered sales page lives at
+`/vault-access`; `/vault` stays the members-only library and redirects anonymous
+visitors. The catalogue, curriculum, runtimes and prices are all generated from
+the database. Migrations 09, 10, 11 applied. Pay-before-signup works. Measured
+accessibility 100, best practices 100, CLS 0, performance 81.
 
-- **Routing**: the proxy rewrites anonymous locale-prefixed `/vault` to
-  `/vault-landing` (outside the member layout, so it stays SSG). The visitor's
-  URL stays `/vault`; `/vault-landing` and the deleted `/vault/gallery` both 301
-  to it.
-- **Content is generated**: the catalogue, curriculum, runtimes and prices all
-  read from the DB via a cookieless cached client. Nothing about a course is in
-  JSX.
-- **Migrations 09, 10, 11 applied.** 10 added `is_published` / `available_at` /
-  `runtime_minutes` / `price_display`; 09 gates `video_id` behind the
-  `check_access` RPC + service role; 11 records the founding cohort on offer
-  purchases.
-- **Pay-before-signup** works: Stripe collects the email, the webhook creates
-  the account and sends a set-password link. This replaced a path that returned
-  200 and silently lost the sale.
-- **Analytics + SEO** built app-wide: sitemap, robots, canonical + hreflang,
-  per-locale OG image, Course/FAQPage JSON-LD, one `vault_cta` event with
-  section attribution.
-- **Measured**: accessibility 100, best practices 100, CLS 0. SEO 69 solely
-  because of the intentional `noindex`. **Performance 81, below the 90 target** —
-  the cost is framer-motion in the shared `Navbar`/`TrustedByCarousel`, not this
-  page. See below.
+It ships `noindex` and unlisted until module video is real and Stripe is live.
 
-**Ships `noindex` and unlisted.** Flip with `VAULT_INDEXABLE=true` plus adding
-`/vault` to `app/sitemap.ts`, once module video is real and Stripe is live.
+**Full detail, the open items, and the flip procedure are in
+[docs/VAULT-LAUNCH-HANDOVER.md](docs/VAULT-LAUNCH-HANDOVER.md)** — that is the
+single source for this thread; do not duplicate its state here.
 
 ### Next on this thread
 
