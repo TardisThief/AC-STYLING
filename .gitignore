@@ -40,10 +40,13 @@ yarn-error.log*
 # vercel
 .vercel
 
-# claude code (local settings, worktrees, scratch)
-.claude/
+# claude code — local settings/worktrees/scratch stay out,
+# but the shared project permission rules are checked in
+.claude/*
+!.claude/settings.json
 
 # claude code skills / tooling installed at repo root (not project code)
+/.agent/
 /claude-mem/
 /superpowers/
 /impeccable/
