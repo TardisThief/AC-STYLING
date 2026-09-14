@@ -117,10 +117,11 @@ Vimeo teaser handling.
   are three audiences — so they were wired to their real meanings rather than
   consolidated: `client_note` (client's own), `notes` → "Note to Client"
   (shared, captioned as such), `internal_note` → "Private Note" (admin-only,
-  service-role read/write). **Migration 08 is written but NOT applied**: apply
-  after this code deploys (the old browser `select('*')` calls would fail on the
-  revoked column), then run `scripts/verify_internal_note_privacy.ts` (expect
-  7/7; it reports 3/7 before).
+  service-role read/write). **Migration 08 is applied** — verified against prod
+  2026-09-14: `internal_note` carries no SELECT/UPDATE/INSERT grant for `anon`
+  or `authenticated`, `select('*')` is refused for both, and the client's own
+  columns, note edits and deletes still work. 7/7 (it reports 3/7 before apply);
+  re-check any time with `scripts/verify_internal_note_privacy.ts`.
 - **P3 (open)** — file inputs have no `accept`/size guard; `"Loading
   Wardrobe..."` should be a skeleton; ~11 raw `<img>` remain (mostly blob
   previews, which are legitimately raw); "Curation Ingestion" wording, and
