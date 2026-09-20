@@ -226,7 +226,7 @@ Most of this phase is propagating patterns that already exist in the repo
 rather than inventing anything.
 
 Order below is the agreed execution order. 1–2 unblock launch; 3–4 are the only
-genuine legal exposure. **1–4 are done; 5 is next.**
+genuine legal exposure. **1–5 are done; 6 is next.**
 
 - ~~**1. Roll `buildMetadata` out site-wide.**~~ — **done (2026-09-19)**. Added
   `pageMetadata()` to `app/lib/seo.ts`, which reduces a route to one line and
@@ -322,10 +322,56 @@ genuine legal exposure. **1–4 are done; 5 is next.**
   are terms that bind customers, so Ale or counsel should read the Spanish
   before launch. The English remains the authoritative text and the two must be
   changed together — a divergence between them is a legal defect, not a nit.
-- **5. Add `error.tsx` / `global-error.tsx`.** There is no error boundary file
-  anywhere in `app/`. A render error in the Vault drops the user on Next's
-  default error screen; the 404 is branded and its 500 counterpart does not
-  exist. Localized, matching `not-found.tsx`.
+- ~~**5. Add `error.tsx` / `global-error.tsx`.**~~ — **done (2026-09-20)**.
+  There was no error boundary anywhere in `app/`, so any render error dropped
+  the user on Next's default screen. Three now exist:
+
+  - `app/global-error.tsx` — catches failures of the root layout itself, so it
+    replaces that layout and supplies its own `<html>`/`<body>`. Deliberately
+    self-contained: inline styles, system fonts, **zero imports**, no
+    translations. If it renders, the root layout did not, which means the
+    next-intl provider, the Google fonts and the Tailwind layer are all
+    candidates for what broke. A pretty error page that itself throws is worse
+    than a plain one that does not. English-only for the same reason — the
+    provider lives below the layout that just failed.
+  - `app/[locale]/error.tsx` — the localized boundary for everything under a
+    locale, with retry, a link home, and the error digest (the only handle
+    support has on a production failure, since the message itself is withheld).
+  - `app/[locale]/vault/error.tsx` — Vault-scoped, so a failing Vault page
+    keeps `vault/layout.tsx` and the concierge navbar mounted. Without it the
+    error replaces the whole screen and reads as "the Vault is gone" rather
+    than "this page did not load"; the copy states what is actually true, that
+    progress and purchases are untouched, because a render error never wrote
+    anything.
+
+  **Verified at runtime**, not just compiled: a temporary throwing route under
+  each locale returned HTTP 500 with the boundary rendered and correctly
+  localized (`/en/boom` English, `/es/boom` Spanish), retry button and digest
+  present. The throwing routes were removed afterwards. Note they had to be
+  `force-dynamic` to test at all — a page that throws during prerender fails
+  the build instead.
+
+  **Not runtime-verified:** the Vault boundary, because `/vault` redirects
+  anonymous requests at the proxy and this check had no session; it compiles,
+  lints and is structurally identical to the locale boundary that is proven to
+  work. `global-error.tsx` likewise, since triggering it means breaking the
+  root layout.
+
+  **A localized 404 was attempted and abandoned — this is a real finding.**
+  On Next 16.3.5 with next-intl, `notFound()` renders the root
+  `app/not-found.tsx` no matter where a nested `not-found.tsx` sits. Tried, and
+  each time inspected the streamed RSC payload: `app/[locale]/not-found.tsx`
+  with next-intl's documented `[locale]/[...rest]` catch-all; the catch-all
+  alone (a probe marker confirmed the route *does* execute); a `not-found.tsx`
+  colocated inside `[...rest]`; and removing the root `not-found.tsx` entirely
+  (which fell through to Next's built-in default, not the locale one). In every
+  case the nested file appeared only in the `notFound` **slot** — registered,
+  never rendered. So a Spanish visitor still gets an English 404. The branded
+  root 404 is unaffected and still works. A workable follow-up, if wanted:
+  make the root `not-found.tsx` read next-intl's `NEXT_LOCALE` cookie via
+  `headers()` and pick its own strings — it is outside `[locale]` so it has no
+  `params`, but it can read cookies. Not done, because it is beyond this item
+  and costs the 404 its static rendering.
 - **6. Alt-text sweep.** Confirmed missing on raw `<img>` in
   `components/admin/BoutiqueManager.tsx` and `components/admin/CollectionsManager.tsx`
   (2 instances). Plus ~16 `alt=""` to triage — decorative is a legitimate answer,

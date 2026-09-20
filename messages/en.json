@@ -450,5 +450,15 @@
         "goToLogin": "Sign in",
         "problemTitle": "We could not verify this payment",
         "problemBody": "This link has no valid payment reference. If you have already paid, use the link we emailed you."
+    },
+    "Errors": {
+        "title": "Something came apart",
+        "body": "An unexpected error stopped this page from loading. It is on our side, not yours.",
+        "retry": "Try again",
+        "home": "Return home",
+        "vaultTitle": "This page would not load",
+        "vaultBody": "Something went wrong opening this part of the Vault. Your progress and your purchases are safe.",
+        "vaultHome": "Back to the Vault",
+        "digest": "Reference"
     }
 }

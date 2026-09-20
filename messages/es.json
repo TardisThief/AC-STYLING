@@ -450,5 +450,15 @@
         "goToLogin": "Iniciar sesión",
         "problemTitle": "No pudimos verificar este pago",
         "problemBody": "El enlace no trae una referencia de pago válida. Si ya pagaste, usa el enlace que te enviamos por correo."
+    },
+    "Errors": {
+        "title": "Algo se rompió",
+        "body": "Un error inesperado impidió que esta página cargara. Es de nuestro lado, no del tuyo.",
+        "retry": "Intentar de nuevo",
+        "home": "Volver al inicio",
+        "vaultTitle": "Esta página no pudo cargar",
+        "vaultBody": "Algo salió mal al abrir esta parte del Vault. Tu progreso y tus compras están a salvo.",
+        "vaultHome": "Volver al Vault",
+        "digest": "Referencia"
     }
 }
