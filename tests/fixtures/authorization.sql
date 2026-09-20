@@ -109,19 +109,19 @@ BEGIN
 
     -- 3. Clone items and link them
     -- We assume lookbooks largely consist of items we want to copy into the new user's wardrobe (e.g. from Warehouse)
-    
-    FOR item_record IN 
+
+    FOR item_record IN
         SELECT li.item_id, li.position
         FROM public.lookbook_items li
         WHERE li.lookbook_id = lookbook_id
     LOOP
         -- Clone item to new user
         new_item_id := public.clone_wardrobe_item(item_record.item_id, target_profile_id);
-        
+
         -- Link new item to new lookbook
         INSERT INTO public.lookbook_items (lookbook_id, item_id, position)
         VALUES (new_lookbook_id, new_item_id, item_record.position);
-        
+
     END LOOP;
 
     RETURN new_lookbook_id;

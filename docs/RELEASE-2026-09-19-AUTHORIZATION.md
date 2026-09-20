@@ -1,14 +1,38 @@
 # Authorization release: F01-F04 and framework patch
 
-Status: implemented locally; production deployment and SQL application pending.
+Status: deployed; migration 12 applied and verified in production.
 See the [roadmap](../ROADMAP.md). The detailed assessment is retained in the owner's working copy.
+
+## Execution record
+
+- Application commit: `87dea9e20bb836da660c6697da53a24f4070352f`, released from
+  the previous production revision so unrelated local commits/translations were
+  not published. Vercel production deployment `6548762389` succeeded; GitHub CI
+  run `35487575898` passed.
+- Migration applied transactionally by the agent at **2026-09-20 03:53:16 UTC**
+  (September 19, 23:53 EDT), after successful production admin-action checks.
+- Applied SQL SHA-256:
+  `3596234fa64f301080e0d5eb4a179e478da8fad92ae2b6829436fd3d813734d2`.
+- **13/13 structural checks and 33/33 live smoke checks passed.** Checks cover
+  deployed Studio grant/revoke actions and non-admin denial, profile/RPC
+  restrictions, boutique writes and analytics attribution, avatar ownership,
+  Vault PNG/PDF and signed uploads, SVG rejection, and the 15 MB upload cap.
+- All temporary accounts, collections, analytics rows, and objects were removed.
+  The policy inventory remains 72 entries with only the intended changes.
+  Recovery metadata is retained locally under `.git/migration-backups/`.
+- [Sanitized verification record](AUTHORIZATION-VERIFICATION-2026-09-19.json).
+
+`updateProfileStatus` currently has no UI caller and is absent from the deployed
+action manifest; its server-client change is unit-tested rather than exercised
+through a production endpoint. Existing signed wardrobe images and unrelated
+payment/content workflows are not claimed as covered by these smoke tests.
 
 ## Dependencies checked
 
 - Direct read-only access to the shared production database works. The assessment
   captured 26 public tables, 72 public/storage policies, function definitions,
   column grants, triggers, constraints, and bucket configuration.
-- Profile INSERT/UPDATE grants currently permit self-escalation. Migration 12
+- Before this release, profile INSERT/UPDATE grants permitted self-escalation. Migration 12
   removes table and column grants, then allows only ordinary self-profile fields.
   Existing RLS still controls which rows may be edited.
 - `toggleStudioAccess`, `updateProfileStatus`, and purchase restoration require
@@ -62,18 +86,19 @@ Do not roll the application back independently of these database dependencies.
 
 Local results: 38 test files / 320 tests pass, including 31 PostgreSQL permission
 tests and 10 new server-action authorization tests. Lint passes with 0 errors and
-159 pre-existing warnings. The Next 16.3.5 production build and its TypeScript
+159 pre-existing warnings in the main working copy and 160 in the isolated
+production-based release. The Next 16.3.5 production build and its TypeScript
 checks pass; the existing `metadataBase` fallback warning remains. The read-only
-production verifier reports 12 failed
-checks and preserved wardrobe privacy before application, confirming these
-live fixes are still pending.
+production verifier changed from 12 failed checks before application to all 13
+checks passing afterward. Live Storage and PostgREST checks also pass.
 
 The integration fixture reproduces the affected live grants/policies/functions
 with synthetic identities. It first proves the original self-role escalation,
 then runs migration 12 in PGlite's PostgreSQL engine and tests the resulting
 permissions. It does not start Supabase Auth, PostgREST, or the Storage HTTP
-service; bucket MIME/size enforcement and signed uploads still need release
-smoke tests. CI runs these tests without production credentials or Docker.
+service; the subsequent live smoke tests verified bucket MIME/size enforcement
+and signed uploads. CI runs the isolated tests without production credentials
+or Docker.
 
 F05-F07 remain next: reliable payment replay, claim/password lifecycle, and
 redirect/DNS-safe image fetching. Purchase restoration still scans only 100
@@ -86,6 +111,7 @@ The refreshed npm audit retains four high findings in Puppeteer's transitive
 was not applied. Resolve the browser acquisition/extraction dependency alongside
 the scraper work; do not label the dependency audit clean.
 
-Live Vercel configuration/deployment identity, Vimeo restrictions, email
-delivery, and backup restoration have not been verified. This release addresses
+The deployment identity and production admin service-role path are verified.
+Other Vercel settings, Vimeo restrictions, email delivery, and backup restoration
+have not been verified. This release addresses
 authorization dependencies, not complete commercial launch readiness.

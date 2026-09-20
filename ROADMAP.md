@@ -35,8 +35,8 @@ restrictions, email delivery, and backup restoration remain unverified.
 
 | Priority | Assessment | Dependencies / acceptance | Progress |
 |---|---|---|---|
-| Immediate | F01–F04: profile privileges, RPC execution, boutique/storage policies | Deploy coordinated server actions BEFORE migration 12; agent applies SQL; verify roles and upload behavior in production | Implemented locally: migration 12, trusted admin actions, TailorCard action, verified restoration identity. PostgreSQL role tests pass. Agent migration authority confirmed 2026-09-19; coordinated release in progress. **Not yet deployed or applied to DB.** |
-| Immediate | F08: patched Next.js | Align Next and eslint-config-next; verify Node/React requirements; lint, tests, typecheck, production build | Updated and pinned to 16.3.5; compatible dependency fixes installed. Tests, lint, build TypeScript checks, and production build pass locally. Not deployed. Four Puppeteer/extract-zip high findings remain; no forced downgrade. |
+| Immediate | F01–F04: profile privileges, RPC execution, boutique/storage policies | Deploy coordinated server actions BEFORE migration 12; agent applies SQL; verify roles and upload behavior in production | **Deployed, applied, and verified.** Release `87dea9e`; migration 12 committed 2026-09-20 03:53 UTC (September 19 EDT). All 13 structural and 33 live smoke checks pass; fixtures removed. Agent migration authority is now documented. |
+| Immediate | F08: patched Next.js | Align Next and eslint-config-next; verify Node/React requirements; lint, tests, typecheck, production build | **Next.js 16.3.5 deployed** in release `87dea9e`; CI, tests, lint, TypeScript and build pass. Four Puppeteer/extract-zip high findings remain; no forced downgrade. |
 | Before payments | F05–F07: fulfillment, claim lifecycle, SSRF | Requires protected entitlements; durable replay-safe grants; all password-setting paths; safe remote-image delivery | Queued after authorization dependencies |
 | Before promotion | F09/F14: real content/live payments and deployed behavior | Alejandra's videos, owner-managed Stripe/Vimeo, deployment verification; preserve noindex until complete | Open; see Vault handover |
 | Release assurance | F10–F13: token boundaries, deletion, restoration, integration tests | Role tests and purchase model first; retention decision before deletion changes | F13 partially implemented: 31 isolated PostgreSQL authorization tests now included in CI. F10–F12 remain open, including restoration's 100-session limit. |
@@ -46,13 +46,15 @@ Progress entries distinguish **implemented**, **validated locally**, **applied t
 DB**, **deployed**, and **verified in production**. A passing unit test or a SQL
 file alone does not close a live finding. Update this table at each milestone.
 
-**2026-09-19 implementation checkpoint:**
+**2026-09-19 production checkpoint:**
 [release dependencies, sequence, and smoke checks](docs/RELEASE-2026-09-19-AUTHORIZATION.md)
-are ready for review. Full suite: **38 files / 320 tests passed**; lint:
-**0 errors / 159 existing warnings**. Production build and its TypeScript checks
-pass; the existing `metadataBase` fallback warning remains. Read-only production verification still
-fails 12 authorization/configuration checks as expected before migration 12;
-wardrobe privacy passes. No live data/configuration was changed. Next work is
+and the [sanitized verification record](docs/AUTHORIZATION-VERIFICATION-2026-09-19.json)
+record the completed rollout. Full suite: **38 files / 320 tests passed**; lint:
+**0 errors / 159 existing warnings locally, 160 on the production-based release**.
+Production build, TypeScript and GitHub CI pass. The live verifier now passes
+all 13 checks; all 33 production smoke checks pass. Customer records/files were
+preserved and temporary verification fixtures removed. The release excludes the
+five previously unpushed commits and unfinished translation work. Next work is
 F05–F07; fulfillment must also reconcile the live trigger's price-ID/product-ID
 mismatch and propagate failed grants. Translation/legal files remain with the
 other agent.

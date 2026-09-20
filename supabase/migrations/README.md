@@ -66,7 +66,7 @@ fixes. See [release dependencies and verification](../../docs/RELEASE-2026-09-19
 | `20260911_10_catalog_publication.sql` | Publication columns present live. **Dependency of 09**, despite filename order. |
 | `20260911_09_chapter_video_entitlement.sql` | Video-column restriction and entitlement RPC present live; requires 10. |
 | `20260911_11_founding_cohort_grants.sql` | Cohort schema present live; this does not establish content/payment launch readiness. |
-| `20260919_12_authorization_boundaries.sql` | **Prepared, not applied.** Deploy coordinated admin/profile/restoration code first. Revokes sensitive profile writes and RPC execution, repairs boutique/storage policies, sets upload limits. |
+| `20260919_12_authorization_boundaries.sql` | **Applied and verified 2026-09-20 03:53 UTC (September 19 EDT)** by the agent, after production release `87dea9e`. All 13 structural and 33 live smoke checks pass; temporary fixtures removed. See the release verification record. |
 
 Do not blindly replay the baseline and dated files against a fresh or live DB.
 They overlap, and filename order is not a complete dependency plan. Migration 12
