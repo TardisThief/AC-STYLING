@@ -226,7 +226,7 @@ Most of this phase is propagating patterns that already exist in the repo
 rather than inventing anything.
 
 Order below is the agreed execution order. 1–2 unblock launch; 3–4 are the only
-genuine legal exposure. **1–8 are done; 9 is next.**
+genuine legal exposure. **1–9 are done; 10 is next and last.**
 
 - ~~**1. Roll `buildMetadata` out site-wide.**~~ — **done (2026-09-19)**. Added
   `pageMetadata()` to `app/lib/seo.ts`, which reduces a route to one line and
@@ -476,9 +476,48 @@ genuine legal exposure. **1–8 are done; 9 is next.**
   and `aria-current="page"`. Removing the five now-dead `ArrowLeft` imports (and
   one `Link`) kept the warning count flat at 156; the other unused-import
   warnings in those files are pre-existing and were left alone.
-- **9. Loading skeletons beyond marketing.** `(marketing)/loading.tsx` is the only
-  one in the app, and the Vault pages are the slow ones. Subsumes the open Studio
-  P3 item (`"Loading Wardrobe..."` should be a skeleton).
+- ~~**9. Loading skeletons beyond marketing.**~~ — **done (2026-09-20)**. The
+  Vault routes are the dynamic, query-heavy ones and had no loading state at
+  all; `(marketing)/loading.tsx` was the only one in the app.
+
+  New `components/ui/Skeleton.tsx` holds the pieces, and four `loading.tsx`
+  files compose them into the shape of the page each one stands in for —
+  `vault/` (greeting plus the 3+1 dashboard grid, and the fallback for any
+  `/vault/*` route without a closer one), `vault/courses/`, `vault/foundations/`
+  and `vault/boutique/`. Shape matters: a skeleton that does not match what is
+  coming is just a spinner taking up more room, and a mismatched one makes the
+  layout jump when data lands. They render inside `vault/layout.tsx`, so the
+  concierge navbar stays put and only the content area is replaced.
+
+  **Accessibility was the interesting part.** A screen of placeholder blocks
+  announced naively reads as dozens of empty elements, so the whole tree is
+  `aria-hidden` and a single `role="status"` / `aria-busy` container carries one
+  `sr-only` label. And a full page of `animate-pulse` is exactly what someone
+  who has asked their OS for less motion does not want, so globals.css now
+  neutralizes `animate-pulse` and `animate-spin` under
+  `prefers-reduced-motion` — scoped to those two utilities rather than killing
+  every animation site-wide. Confirmed the rule survives into the built
+  stylesheet, not just the source.
+
+  Closes the open Studio P3 nit: `VirtualWardrobe`'s bare
+  `"Loading Wardrobe..."` line is now a skeleton shaped like the status tiles
+  and item grid beneath it.
+
+  **Fixed a latent bug found on the way:** `(marketing)/loading.tsx` styled
+  itself `bg-ac-cream`, and `--color-ac-cream` does not exist — it was the only
+  use of that name in the repo. Under Tailwind v4 an undefined utility simply
+  does not generate, so the element had no background and only looked right by
+  inheriting the body's. Now `bg-ac-sand`.
+
+  Verified by five unit tests (`tests/unit/skeleton.test.tsx`) plus a grep of
+  the built CSS; the route files themselves could not be exercised against a
+  running server for the usual reason — `/vault` redirects anonymous requests
+  at the proxy.
+
+  Left alone: the three admin managers (`BoutiqueManager`,
+  `CollectionsManager`, `TrustedByManager`) still show a bare "Loading…" line.
+  They are stylist-facing tooling behind an admin gate, not a member-facing
+  slow path, and this item was scoped to the routes members wait on.
 - **10. Email footers.** All four templates in `lib/email-templates.ts` are
   transactional, so no unsubscribe link is strictly required — but none carries a
   physical business address, which CAN-SPAM does require of anything promotional.

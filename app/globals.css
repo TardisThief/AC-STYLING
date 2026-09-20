@@ -102,3 +102,16 @@ html {
     @apply bg-background text-foreground;
   }
 }
+
+/*
+ * Loading indicators must not pulse or spin at someone who has asked their OS
+ * for less motion. Scoped to the two animation utilities the skeletons and the
+ * route spinner use, rather than disabling every animation site-wide, so this
+ * stays a deliberate accessibility rule and not a blunt instrument.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-spin {
+    animation: none !important;
+  }
+}

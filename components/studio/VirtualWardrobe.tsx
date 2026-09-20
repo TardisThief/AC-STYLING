@@ -15,6 +15,7 @@ import { getErrorMessage } from "@/app/lib/errors";
 import type { WardrobeItem, BoutiqueItem } from "@/app/lib/types";
 import SafeImage from "@/components/ui/SafeImage";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { SkeletonBlock, SkeletonScreen } from "@/components/ui/Skeleton";
 
 interface VirtualWardrobeProps {
     wardrobeId: string;
@@ -276,7 +277,32 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-ac-taupe/40">Loading Wardrobe...</div>;
+    // Shaped like the wardrobe below it -- the four status tiles and the item
+    // grid -- so the layout does not jump when the data lands. The bare
+    // "Loading Wardrobe..." line this replaces was the open Studio P3 nit.
+    if (loading) {
+        return (
+            <SkeletonScreen label="Loading wardrobe">
+                <div className="space-y-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {Array.from({ length: 4 }, (_, i) => (
+                            <SkeletonBlock key={i} className="h-[76px] w-full" />
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {Array.from({ length: 6 }, (_, i) => (
+                                <SkeletonBlock key={i} className="aspect-[3/4] w-full" />
+                            ))}
+                        </div>
+                        <div className="lg:col-span-4">
+                            <SkeletonBlock className="h-64 w-full" />
+                        </div>
+                    </div>
+                </div>
+            </SkeletonScreen>
+        );
+    }
 
     // Status summary counts
     const statusCounts = STATUSES.reduce((acc, s) => {
