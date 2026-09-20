@@ -119,25 +119,7 @@ because at the moment it implies everything goes.
 
 ---
 
-## 7. Decide how long a Studio intake token should stay valid
-
-A wardrobe intake link carries a bearer token: whoever holds it can upload to
-that wardrobe and claim it. Today it is valid until someone manually archives
-the wardrobe — there is no expiry and no cap on how many files one token can
-add.
-
-The boundaries around it were tightened on 2026-09-20 (uploads can only target
-their own wardrobe, claiming is atomic, and the token value is no longer
-written to logs), but its *lifetime* is a product question rather than an
-engineering one.
-
-**What I need from you:** how long should a link a client is emailed remain
-usable — 7 days, 30, until first claim? And is there a sensible per-token
-upload cap? With those two numbers it is one migration and a small code change.
-
----
-
-## 8. Confirm the testimonials are real and attributable
+## 7. Confirm the testimonials are real and attributable
 
 Carried over from Phase 3.5. The `Testimonials` component ships quotes that
 nobody in the repository can verify. Unverifiable testimonials are the item on
@@ -148,7 +130,7 @@ used with permission.
 
 ---
 
-## 9. Have the Spanish legal text reviewed
+## 8. Have the Spanish legal text reviewed
 
 `PrivacyEs.tsx`, `TermsEs.tsx` and `RefundsEs.tsx` are a translation produced
 by an agent, not legal review. They bind customers. The English remains the
@@ -158,7 +140,7 @@ Ale or counsel should read the Spanish before launch.
 
 ---
 
-## 10. Replace `public/logo.png` with a larger original — minor
+## 9. Replace `public/logo.png` with a larger original — minor
 
 150×150. It clears Google's 112×112 floor for the `Organization` logo in
 structured data, but is not generous. Swap it if a larger original exists.
@@ -182,11 +164,12 @@ one place.
 
 - ~~**F11** — account deletion did not delete~~ — **fixed 2026-09-20**,
   migration 15.
-- **F10** — partially fixed: upload paths are bound to their wardrobe, the
-  claim is atomic, and tokens are no longer logged. **Still open:** intake
-  tokens have no expiry and no per-upload quota, so one stays valid until it is
-  manually archived. Needs a migration plus a decision on how long a token
-  should live — see below.
+- ~~**F10** — guest-upload and wardrobe-claim boundaries~~ — **fixed
+  2026-09-20**, migration 16. Upload paths are bound to their wardrobe, the
+  claim is atomic, tokens are no longer logged, intake links expire after
+  **7 days**, and a wardrobe caps at 500 items. The cap lives in code
+  (`app/lib/wardrobe-tokens.ts`) so it can be lowered without a migration once
+  there is real usage to size it against.
 - **F12–F16** remain open: the 2,000-account lookup ceiling in guest
   resolution, test coverage of the highest-consequence boundaries, deployed-vs-
   source drift, bilingual/performance polish, and backup/observability.

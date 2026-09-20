@@ -10,6 +10,7 @@ import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 import { parseInput, uuid } from "@/app/lib/validation/parse";
 import { adminWardrobeItemUpdateSchema, bulkStatusSchema } from "@/app/lib/validation/wardrobe-items";
 import type { WardrobeItem } from "@/app/lib/types";
+import { MAX_ITEMS_PER_WARDROBE, uploadTokenExpiry } from '@/app/lib/wardrobe-tokens';
 
 // =============================================================================
 // Types
@@ -139,11 +140,13 @@ export async function getWardrobeByToken(token: string): Promise<{
     // Use admin client to bypass RLS for token lookup
     const supabase = createAdminClient();
 
+    const resolved = await resolveWardrobeByToken(supabase, token);
+    if (!resolved.ok) return { success: false, error: resolved.error };
+
     const { data, error } = await supabase
         .from('wardrobes')
         .select('*')
-        .eq('upload_token', token)
-        .eq('status', 'active')
+        .eq('id', resolved.wardrobe!.id)
         .single();
 
     if (error || !data) {
@@ -157,6 +160,74 @@ export async function getWardrobeByToken(token: string): Promise<{
 // Direct Upload Flow (bypasses Vercel serverless limits)
 // =============================================================================
 
+interface TokenLookup {
+    ok: boolean;
+    wardrobe?: { id: string; owner_id: string | null };
+    error?: string;
+}
+
+/**
+ * Resolve an intake token to its wardrobe, or explain why not.
+ *
+ * Every token-accepting entry point goes through here. Five call sites
+ * previously repeated the same `.eq('upload_token', ...)` lookup, which is
+ * exactly the shape where one gets missed when a rule like expiry is added.
+ *
+ * A null `upload_token_expires_at` is treated as "no expiry" so a row that
+ * predates migration 16 fails open rather than locking a client out. Every
+ * path that issues a token now sets one.
+ */
+async function resolveWardrobeByToken(
+    supabase: ReturnType<typeof createAdminClient>,
+    token: string,
+    { requireActive = true }: { requireActive?: boolean } = {}
+): Promise<TokenLookup> {
+    let query = supabase
+        .from('wardrobes')
+        .select('id, owner_id, status, upload_token_expires_at')
+        .eq('upload_token', token);
+
+    if (requireActive) query = query.eq('status', 'active');
+
+    const { data, error } = await query.single();
+
+    if (error || !data) return { ok: false, error: "Invalid or expired upload link" };
+
+    const expiresAt = data.upload_token_expires_at as string | null;
+    if (expiresAt && new Date(expiresAt).getTime() <= Date.now()) {
+        // Said plainly, because unlike a bad token this is recoverable: the
+        // stylist can issue a new link.
+        return { ok: false, error: "This upload link has expired. Ask for a new one." };
+    }
+
+    return { ok: true, wardrobe: { id: data.id as string, owner_id: data.owner_id as string | null } };
+}
+
+/**
+ * Has this wardrobe hit its item cap?
+ *
+ * Counted rather than stored: the number of items IS the count, and a separate
+ * counter would be one more thing to drift.
+ */
+async function isWardrobeFull(
+    supabase: ReturnType<typeof createAdminClient>,
+    wardrobeId: string
+): Promise<boolean> {
+    const { count, error } = await supabase
+        .from('wardrobe_items')
+        .select('id', { count: 'exact', head: true })
+        .eq('wardrobe_id', wardrobeId);
+
+    // Fail open on a counting error: refusing a legitimate upload because a
+    // COUNT failed is worse than briefly exceeding a deliberately loose cap.
+    if (error) {
+        console.error('[wardrobes] item count failed:', error.message);
+        return false;
+    }
+
+    return (count ?? 0) >= MAX_ITEMS_PER_WARDROBE;
+}
+
 /**
  * Step 1: Get a signed URL for direct browser → Supabase Storage upload
  * This validates the token and returns a URL the client can upload to directly
@@ -167,20 +238,18 @@ export async function getSignedUploadUrl(
 ): Promise<{ success: boolean; signedUrl?: string; filePath?: string; error?: string }> {
     const supabase = createAdminClient();
 
-    // 1. Validate token
-    const { data: wardrobe, error: wError } = await supabase
-        .from('wardrobes')
-        .select('id, owner_id')
-        .eq('upload_token', token)
-        .eq('status', 'active')
-        .single();
+    // 1. Validate token (existence, active status and expiry)
+    const resolved = await resolveWardrobeByToken(supabase, token);
+    if (!resolved.ok) return { success: false, error: resolved.error };
+    const wardrobe = resolved.wardrobe!;
 
-    if (wError || !wardrobe) {
-        return { success: false, error: "Invalid or expired upload link" };
+    // 2. Refuse once the wardrobe is full, before minting an upload URL.
+    if (await isWardrobeFull(supabase, wardrobe.id)) {
+        return { success: false, error: "This wardrobe has reached its upload limit." };
     }
 
     try {
-        // 2. Generate unique file path
+        // 3. Generate unique file path
         const fileExt = fileName.split('.').pop() || 'jpg';
         const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `wardrobe/${wardrobe.id}/${uniqueName}`;
@@ -239,17 +308,10 @@ export async function createWardrobeItem(
 ): Promise<{ success: boolean; error?: string }> {
     const supabase = createAdminClient();
 
-    // 1. Validate token
-    const { data: wardrobe, error: wError } = await supabase
-        .from('wardrobes')
-        .select('id, owner_id')
-        .eq('upload_token', token)
-        .eq('status', 'active')
-        .single();
-
-    if (wError || !wardrobe) {
-        return { success: false, error: "Invalid or expired upload link" };
-    }
+    // 1. Validate token (existence, active status and expiry)
+    const resolved = await resolveWardrobeByToken(supabase, token);
+    if (!resolved.ok) return { success: false, error: resolved.error };
+    const wardrobe = resolved.wardrobe!;
 
     // 2. The path must be one this token could actually have been issued.
     //
@@ -313,17 +375,10 @@ export async function uploadToWardrobe(
     // Use service role for guest uploads
     const supabase = createAdminClient();
 
-    // 1. Validate token
-    const { data: wardrobe, error: wError } = await supabase
-        .from('wardrobes')
-        .select('id, owner_id')
-        .eq('upload_token', token)
-        .eq('status', 'active')
-        .single();
-
-    if (wError || !wardrobe) {
-        return { success: false, error: "Invalid or expired upload link" };
-    }
+    // 1. Validate token (existence, active status and expiry)
+    const resolved = await resolveWardrobeByToken(supabase, token);
+    if (!resolved.ok) return { success: false, error: resolved.error };
+    const wardrobe = resolved.wardrobe!;
 
     try {
         const file = formData.get('file') as File;
@@ -387,7 +442,13 @@ export async function regenerateUploadToken(wardrobeId: string): Promise<{
 
     const { error } = await supabase
         .from('wardrobes')
-        .update({ upload_token: newToken, updated_at: new Date().toISOString() })
+        .update({
+            upload_token: newToken,
+            // A rotated token starts its own week; carrying the old expiry
+            // over would make rotation shorten the link's life.
+            upload_token_expires_at: uploadTokenExpiry(),
+            updated_at: new Date().toISOString(),
+        })
         .eq('id', wardrobeId);
 
     if (error) {
@@ -502,17 +563,15 @@ export async function claimWardrobe(token: string): Promise<{ success: boolean; 
 
     const adminSupabase = createAdminClient();
 
-    // 1. Find Wardrobe by Upload Token (MUST use admin client - RLS policy was dropped)
-    const { data: wardrobe, error: findError } = await adminSupabase
-        .from('wardrobes')
-        .select('id, owner_id')
-        .eq('upload_token', token)
-        .single();
-
-    if (findError || !wardrobe) {
-        console.error('[claimWardrobe] Token lookup failed:', findError?.message || 'No wardrobe found');
-        return { success: false, error: "Invalid or expired claim token." };
+    // 1. Find Wardrobe by Upload Token (MUST use admin client - RLS policy was dropped).
+    //    `requireActive: false` because an archived wardrobe should still be
+    //    claimable by the person it belongs to; expiry still applies.
+    const resolvedClaim = await resolveWardrobeByToken(adminSupabase, token, { requireActive: false });
+    if (!resolvedClaim.ok) {
+        console.error('[claimWardrobe] Token lookup failed (value withheld)');
+        return { success: false, error: resolvedClaim.error ?? "Invalid or expired claim token." };
     }
+    const wardrobe = resolvedClaim.wardrobe!;
 
     // 2. Check if already owned
     if (wardrobe.owner_id && wardrobe.owner_id !== user.id) {
@@ -568,7 +627,6 @@ export async function claimWardrobe(token: string): Promise<{ success: boolean; 
     revalidatePath('/vault');
     return { success: true, wardrobeId: wardrobe.id };
 }
-
 
 // =============================================================================
 // Admin: Permanently Delete Wardrobe

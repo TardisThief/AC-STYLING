@@ -31,6 +31,11 @@ vi.mock('@/utils/supabase/server', () => ({
 
 // Import after mocks
 import { getWardrobeByToken, getSignedUploadUrl, createWardrobeItem } from '@/app/actions/wardrobes'
+import {
+    uploadTokenExpiry,
+    UPLOAD_TOKEN_TTL_DAYS,
+    MAX_ITEMS_PER_WARDROBE,
+} from '@/app/lib/wardrobe-tokens'
 
 describe('Wardrobes Server Actions', () => {
     beforeEach(() => {
@@ -209,6 +214,129 @@ describe('Wardrobes Server Actions', () => {
                 expect(result.success).toBe(false)
                 expect(insert).not.toHaveBeenCalled()
             })
+        })
+    })
+
+    // F10. An intake link is a bearer credential; it used to be valid until
+    // someone manually archived the wardrobe, so one left in an inbox stayed
+    // live for ever. The owner set the lifetime at one week on 2026-09-20.
+    describe('intake token expiry', () => {
+        const tokenRow = (expiresAt: string | null) => ({
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+                data: {
+                    id: 'wardrobe-123',
+                    owner_id: null,
+                    status: 'active',
+                    upload_token_expires_at: expiresAt,
+                },
+                error: null,
+            }),
+        })
+
+        // Counting query for the quota check: returns an empty wardrobe.
+        const emptyCount = () => ({
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockResolvedValue({ count: 0, error: null }),
+        })
+
+        it('issues a seven-day expiry', () => {
+            const days = (new Date(uploadTokenExpiry()).getTime() - Date.now()) / 86_400_000
+            expect(Math.round(days)).toBe(UPLOAD_TOKEN_TTL_DAYS)
+            expect(UPLOAD_TOKEN_TTL_DAYS).toBe(7)
+        })
+
+        it('refuses an expired token, and says so recoverably', async () => {
+            mockFrom.mockReturnValueOnce(tokenRow(new Date(Date.now() - 1000).toISOString()))
+
+            const result = await getSignedUploadUrl('stale-token', 'photo.jpg')
+
+            expect(result.success).toBe(false)
+            // Unlike a bad token this is fixable, so the message says how.
+            expect(result.error).toContain('expired')
+            expect(result.error).toMatch(/new one/i)
+        })
+
+        it('accepts a token that has not expired yet', async () => {
+            mockFrom.mockReturnValueOnce(tokenRow(uploadTokenExpiry()))
+            mockFrom.mockReturnValueOnce(emptyCount())
+
+            const result = await getSignedUploadUrl('fresh-token', 'photo.jpg')
+
+            expect(result.success).toBe(true)
+        })
+
+        it('treats a null expiry as no expiry, so pre-migration rows fail open', async () => {
+            mockFrom.mockReturnValueOnce(tokenRow(null))
+            mockFrom.mockReturnValueOnce(emptyCount())
+
+            const result = await getSignedUploadUrl('legacy-token', 'photo.jpg')
+
+            // Locking a real client out over a backfill gap would be worse
+            // than honouring an old link.
+            expect(result.success).toBe(true)
+        })
+
+        it('refuses to create an item with an expired token', async () => {
+            mockFrom.mockReturnValueOnce(tokenRow(new Date(Date.now() - 1000).toISOString()))
+            const insert = vi.fn().mockResolvedValue({ error: null })
+            mockFrom.mockReturnValueOnce({ insert })
+
+            const result = await createWardrobeItem('stale-token', 'wardrobe/wardrobe-123/photo.jpg', 'tops', '')
+
+            expect(result.success).toBe(false)
+            expect(insert).not.toHaveBeenCalled()
+        })
+    })
+
+    describe('upload quota', () => {
+        const validToken = () => ({
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+                data: { id: 'wardrobe-123', owner_id: null, status: 'active', upload_token_expires_at: null },
+                error: null,
+            }),
+        })
+
+        const countOf = (count: number | null, error: unknown = null) => ({
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockResolvedValue({ count, error }),
+        })
+
+        it('refuses a new upload once the wardrobe is full', async () => {
+            mockFrom.mockReturnValueOnce(validToken())
+            mockFrom.mockReturnValueOnce(countOf(MAX_ITEMS_PER_WARDROBE))
+
+            const result = await getSignedUploadUrl('valid-token', 'photo.jpg')
+
+            expect(result.success).toBe(false)
+            expect(result.error).toMatch(/limit/i)
+        })
+
+        it('allows an upload below the cap', async () => {
+            mockFrom.mockReturnValueOnce(validToken())
+            mockFrom.mockReturnValueOnce(countOf(MAX_ITEMS_PER_WARDROBE - 1))
+
+            const result = await getSignedUploadUrl('valid-token', 'photo.jpg')
+
+            expect(result.success).toBe(true)
+        })
+
+        it('fails open if the count itself errors', async () => {
+            mockFrom.mockReturnValueOnce(validToken())
+            mockFrom.mockReturnValueOnce(countOf(null, { message: 'count failed' }))
+
+            // Refusing a legitimate upload because a COUNT failed is worse
+            // than briefly exceeding a deliberately loose cap.
+            const result = await getSignedUploadUrl('valid-token', 'photo.jpg')
+
+            expect(result.success).toBe(true)
+        })
+
+        it('keeps the cap high enough not to constrain a real client', () => {
+            expect(MAX_ITEMS_PER_WARDROBE).toBeGreaterThanOrEqual(200)
         })
     })
 })
