@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Footer from "@/components/Footer";
 import { pageMetadata } from "@/app/lib/seo";
+import { faqPageJsonLd } from "@/app/lib/structured-data";
 import CalendlyEmbed from "./CalendlyEmbed";
 
 export const generateMetadata = pageMetadata({ path: "/book", key: "book" });
@@ -78,6 +79,13 @@ export default async function BookPage({ params }: { params: Promise<{ locale: s
             </section>
 
             <Footer />
+
+            {/* Built from the same `faqs` the page renders above, so the markup
+                cannot describe questions the visitor cannot see. */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageJsonLd(faqs)) }}
+            />
         </main>
     );
 }

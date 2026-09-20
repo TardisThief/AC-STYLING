@@ -226,7 +226,7 @@ Most of this phase is propagating patterns that already exist in the repo
 rather than inventing anything.
 
 Order below is the agreed execution order. 1–2 unblock launch; 3–4 are the only
-genuine legal exposure. **1–6 are done; 7 is next.**
+genuine legal exposure. **1–7 are done; 8 is next.**
 
 - ~~**1. Roll `buildMetadata` out site-wide.**~~ — **done (2026-09-19)**. Added
   `pageMetadata()` to `app/lib/seo.ts`, which reduces a route to one line and
@@ -249,8 +249,7 @@ genuine legal exposure. **1–6 are done; 7 is next.**
   is isolated in `CalendlyEmbed.tsx` as the page's only client component, moved
   to `strategy="lazyOnload"`, and given a `<noscript>` direct link so the booking
   path survives the widget being blocked. Still prerendered in both locales.
-  Remaining: the FAQ copy is ready to carry `FAQPage` JSON-LD, which is folded
-  into item 7.
+  The FAQ copy was left ready to carry `FAQPage` JSON-LD; item 7 added it.
 - ~~**3. Reconcile the cookie/tracking story.**~~ — **done (2026-09-19)**.
   Section 5 of `legal/privacy` was rewritten against what the code actually
   does: strictly necessary Supabase auth cookies, cookieless first-party Vercel
@@ -408,8 +407,38 @@ genuine legal exposure. **1–6 are done; 7 is next.**
   hardcoded English, so the new labels are too. That the admin/Studio UI is
   untranslated is a real gap but a separate one; item 4 covered the customer-
   facing legal pages, not the stylist's tooling.
-- **7. `Organization` schema on the home page.** The site's only JSON-LD is on
-  `/vault-access`. The brand entity belongs on the root.
+- ~~**7. `Organization` schema on the home page.**~~ — **done (2026-09-20)**.
+  The site's only JSON-LD was on `/vault-access`; the brand entity now sits on
+  the root, once, in both locales. A new `app/lib/structured-data.ts` holds it
+  so the entity is defined in one place.
+
+  `Organization`, deliberately **not** `LocalBusiness` — consistent with the
+  rejected-items list above. AC Styling is delivered over video with no
+  storefront and no walk-in hours; `LocalBusiness` would invite Google to treat
+  it as a place customers visit and to expect opening hours and a service area
+  it does not have. The postal address is the registered company address the
+  legal terms already publish, which is exactly what `Organization.address` is
+  for. Every field is asserted somewhere a human can also read it — the two
+  social links are the ones the footer and contact section link to, the
+  description is the same localized string the page ships as its meta
+  description — so the markup cannot drift into claiming something the site
+  does not say. `@id` is stable across locales (one entity) while `url` is
+  locale-specific.
+
+  Item 2 left `/book`'s FAQ copy ready to carry `FAQPage`; that is now done,
+  generated from the same `faqs` array the page renders. **Verified in the
+  emitted HTML that all four questions and all four answers appear in the
+  visible page text in both locales** — structured data describing content a
+  visitor cannot see is a manual-action risk, not a win. Worth being honest
+  about the payoff: Google restricted FAQ rich results to a narrow set of
+  authoritative sites in 2023, so this is unlikely to earn a snippet. It stays
+  because it is valid, still read by other consumers, and free — not because it
+  is expected to move the SERP.
+
+  Both blocks parse as JSON and were checked in the built output, not just the
+  source. One small thing left: `public/logo.png` is 150×150, which clears
+  Google's 112×112 floor but is not generous; a larger logo would be a
+  five-minute improvement if one exists.
 - **8. Breadcrumbs in the Vault.** `vault/courses/[slug]/essence-lab` is four
   levels deep with no positional affordance. The routes are gated so there is no
   SEO argument here — this is purely the UX one, which is why it sits below 1–7.
