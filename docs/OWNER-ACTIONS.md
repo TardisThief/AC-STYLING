@@ -54,11 +54,11 @@ Until then everything works exactly as it does now, in the sandbox.
 
 ## 2. Confirm the other Vercel environment variables
 
-`NEXT_PUBLIC_SITE_URL` is also missing from `.env.local`. It is the canonical
-URL for checkout returns, the set-password link in the purchase email,
-`sitemap.xml`, `robots.txt` and every canonical tag. It falls back to
-`https://theacstyle.com`, which is right today, but only by luck on preview
-deployments.
+`NEXT_PUBLIC_SITE_URL` is missing from `.env.local` but **is set correctly in
+Vercel** — verified against production on 2026-09-20: the canonical tag,
+`og:url`, all three hreflang alternates and `robots.txt` all resolve to
+`https://www.theacstyle.com`, which is the host the apex redirects to. Nothing
+to do for production; add it locally if you want dev to match.
 
 Also confirm these are present in Vercel, since they are only in `.env.local`
 here: `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,

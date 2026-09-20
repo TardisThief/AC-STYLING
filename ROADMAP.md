@@ -595,6 +595,28 @@ Note that this phase does **not** clear the launch. The
 [2026-09-19 assessment](docs/ASSESSMENT-2026-09-19.md) holds it on database
 authorization and payment fulfillment, which are unrelated to anything here.
 
+## Post-deploy verification — 2026-09-20
+
+35 commits reached production. Checked against the live site rather than
+assumed:
+
+- `/en/book` returns 200 with `Book a Consultation | AC Styling` and the new
+  booking copy. **This closes the first half of F14** — its "deployed public
+  experience lags source" was a stale deployment, not a source defect.
+- The Calendly consent gate works in production: `assets.calendly.com` is
+  **not** loaded before interaction, and `js.stripe.com` is absent from
+  `/book`. Both were F14 complaints.
+- `Organization` JSON-LD is live on the home page.
+- `NEXT_PUBLIC_SITE_URL` **is** configured in Vercel (canonical, `og:url`,
+  hreflang and `robots.txt` all resolve to `www.theacstyle.com`). It is only
+  absent from `.env.local`.
+
+**Still open from F14, re-verified as present:** the live home page serves 11
+buttons with no text content and only 4 `aria-label`s, so **seven controls have
+no accessible name** — the carousel's two arrows and five dots, exactly as the
+assessment described. Mobile overflow at 360/390px and the mobile menu's
+Escape/focus-trap behaviour were not re-measured here.
+
 ## Phase 4 — North-star features (built on Phase 3's design language)
 
 - Improve editorial content pull: **"Style of the Week"** + **"Ale's Pick"**,
