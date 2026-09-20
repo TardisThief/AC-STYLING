@@ -21,7 +21,13 @@
         "faq4A": "Sí. Alejandra trabaja en español y en inglés; elige el idioma en el que piensas.",
         "schedulerTitle": "Elige tu horario",
         "schedulerFallback": "El calendario se está cargando. Si no aparece, ábrelo en una pestaña nueva.",
-        "schedulerFallbackLink": "Abrir el calendario"
+        "schedulerFallbackLink": "Abrir el calendario",
+        "consentTitle": "¿Cargar el calendario?",
+        "consentBody": "Nuestro calendario de citas lo provee Calendly, que instala sus propias cookies. No lo cargamos hasta que tú lo digas — así que no se envía nada a Calendly a menos que decidas abrirlo.",
+        "consentAction": "Cargar el calendario",
+        "consentRemember": "Recordaremos tu elección en este dispositivo.",
+        "consentAlternative": "¿Prefieres no hacerlo? Abre el calendario directamente en Calendly",
+        "consentPolicyLink": "Lee cómo manejamos las cookies"
     },
     "Meta": {
         "home": {

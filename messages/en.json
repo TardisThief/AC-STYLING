@@ -21,7 +21,13 @@
         "faq4A": "Yes. Alejandra works in both English and Spanish; choose whichever you think in.",
         "schedulerTitle": "Choose your time",
         "schedulerFallback": "The scheduler is loading. If it does not appear, open it in a new tab.",
-        "schedulerFallbackLink": "Open the scheduler"
+        "schedulerFallbackLink": "Open the scheduler",
+        "consentTitle": "Load the scheduler?",
+        "consentBody": "Our booking calendar is provided by Calendly, which sets its own cookies. We do not load it until you say so — so nothing is sent to Calendly unless you choose to open it.",
+        "consentAction": "Load the scheduler",
+        "consentRemember": "We will remember this choice on this device.",
+        "consentAlternative": "Rather not? Open the calendar directly on Calendly",
+        "consentPolicyLink": "Read how we handle cookies"
     },
     "Meta": {
         "home": {

@@ -12,7 +12,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         <article className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:text-ac-taupe prose-p:text-ac-taupe/80 prose-a:text-ac-espresso hover:prose-a:text-ac-taupe">
             {/* Content from user */}
             <h1 className="font-serif text-4xl mb-4">PRIVACY NOTICE</h1>
-            <p className="text-sm text-gray-500 mb-8">Last updated February 01, 2026</p>
+            <p className="text-sm text-gray-500 mb-8">Last updated September 19, 2026</p>
 
             <p>
                 This Privacy Notice for AC Styling (&quot;<strong>we</strong>,&quot; &quot;<strong>us</strong>,&quot; or &quot;<strong>our</strong>&quot;), describes how and why we might access, collect, store, use, and/or share (&quot;<strong>process</strong>&quot;) your personal information when you use our services (&quot;<strong>Services</strong>&quot;), including when you:
@@ -94,7 +94,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
 
             <p><strong>Payment Data.</strong> We may collect data necessary to process your payment if you choose to make purchases, such as your payment instrument number, and the security code associated with your payment instrument. All payment data is handled and stored by Stripe. You may find their privacy notice link(s) here: <a href="https://stripe.com/privacy">https://stripe.com/privacy</a>.</p>
 
-            <p><strong>Social Media Login Data.</strong> We may provide you with the option to register with us using your existing social media account details, like your Facebook, X, or other social media account. If you choose to register in this way, we will collect certain profile information about you from the social media provider.</p>
+            <p><strong>Social Media Login Data.</strong> We offer the option to register and sign in using a Google account. If you choose to register in this way, we collect the profile information described in section 7 below. Google is the only social login we support.</p>
 
             <p><strong>Application Data.</strong> If you use our application(s), we also may collect the following information if you choose to provide us with access or permission:</p>
             <ul>
@@ -169,31 +169,40 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
             <ul>
                 <li><strong>Business Transfers.</strong> We may share or transfer your information in connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business to another company.</li>
                 <li><strong>Affiliates.</strong> We may share your information with our affiliates, in which case we will require those affiliates to honor this Privacy Notice. Affiliates include our parent company and any subsidiaries, joint venture partners, or other companies that we control or that are under common control with us.</li>
-                <li><strong>Business Partners.</strong> We may share your information with our business partners to offer you certain products, services, or promotions.</li>
-                <li><strong>Offer Wall.</strong> Our application(s) may display a third-party hosted &quot;offer wall.&quot; Such an offer wall allows third-party advertisers to offer virtual currency, gifts, or other items to users in return for the acceptance and completion of an advertisement offer.</li>
             </ul>
+            <p>We also rely on a small number of service providers to operate the Services. They process your information only on our instructions and only for the purpose listed:</p>
+            <ul>
+                <li><strong>Supabase</strong> &mdash; hosts our database, authentication and file storage. Your account, your Vault progress and any wardrobe images you upload are stored there.</li>
+                <li><strong>Stripe</strong> &mdash; processes payments. We never see or store your full card details; Stripe returns us a payment reference and the product purchased.</li>
+                <li><strong>Resend</strong> &mdash; delivers transactional email, such as sign-in links, password resets and purchase confirmations.</li>
+                <li><strong>Vercel</strong> &mdash; hosts the website and provides our privacy-friendly, cookieless traffic analytics.</li>
+                <li><strong>Calendly</strong> &mdash; provides the consultation scheduler, and only when you choose to load it. See the section below.</li>
+                <li><strong>Google</strong> &mdash; only if you choose to sign in with a Google account.</li>
+            </ul>
+            <p>We do not sell your personal information, we do not share it for targeted advertising, and we do not display third-party advertising on the Services.</p>
 
             <h2 id="cookies">5. DO WE USE COOKIES AND OTHER TRACKING TECHNOLOGIES?</h2>
-            <p><strong><em>In Short:</em></strong> <em>We may use cookies and other tracking technologies to collect and store your information.</em></p>
-            <p>We may use cookies and similar tracking technologies (like web beacons and pixels) to gather information when you interact with our Services. Some online tracking technologies help us maintain the security of our Services and your account, prevent crashes, fix bugs, save your preferences, and assist with basic site functions.</p>
-            <p>We also permit third parties and service providers to use online tracking technologies on our Services for analytics and advertising, including to help manage and display advertisements, to tailor advertisements to your interests, or to send abandoned shopping cart reminders (depending on your communication preferences). The third parties and service providers use their technology to provide advertising about products and services tailored to your interests which may appear either on our Services or on other websites.</p>
-            <p>To the extent these online tracking technologies are deemed to be a &quot;sale&quot;/&quot;sharing&quot; (which includes targeted advertising, as defined under the applicable laws) under applicable US state laws, you can opt out of these online tracking technologies by submitting a request as described below.</p>
-            <h3>Google Analytics</h3>
-            <p>We may share your information with Google Analytics to track and analyze the use of the Services. To opt out of being tracked by Google Analytics across the Services, visit <a href="https://tools.google.com/dlpage/gaoptout">https://tools.google.com/dlpage/gaoptout</a>. For more information on the privacy practices of Google, please visit the <a href="https://policies.google.com/privacy">Google Privacy & Terms page</a>.</p>
+            <p><strong><em>In Short:</em></strong> <em>We use a small number of strictly necessary cookies. We do not use advertising or cross-site tracking cookies, and the one third party that would set cookies is not loaded until you ask for it.</em></p>
+            <h3>Cookies we set</h3>
+            <p>The only cookies we set ourselves are strictly necessary ones, placed by our authentication provider (Supabase) to keep you signed in and to protect your account. They are not used for advertising or profiling, and they cannot be switched off without making it impossible to sign in.</p>
+            <h3>Analytics</h3>
+            <p>We measure traffic with Vercel Web Analytics. It is served from our own domain, it sets no cookies, and it does not build a profile of you or follow you to other websites. It records aggregate information such as which pages are viewed, the referring site, and the general country and device type. We cannot use it to identify you.</p>
+            <h3>The consultation scheduler</h3>
+            <p>Our booking page embeds a scheduler provided by Calendly, which does set third-party cookies. For that reason it is not loaded automatically. The page shows a placeholder, and the scheduler loads only after you choose to load it. If you never do, Calendly receives nothing from your visit. Once you load it, your use of the scheduler is also covered by <a href="https://calendly.com/privacy" rel="noopener noreferrer" target="_blank">Calendly&apos;s privacy notice</a>. You can withdraw that choice at any time by clearing this site&apos;s data in your browser.</p>
+            <h3>Payments</h3>
+            <p>When you buy something, checkout is completed on Stripe&apos;s own hosted page. Stripe sets its own cookies there for fraud prevention and to operate the checkout, as described in <a href="https://stripe.com/privacy" rel="noopener noreferrer" target="_blank">Stripe&apos;s privacy policy</a>.</p>
+            <h3>Advertising</h3>
+            <p>We do not run Google Analytics, advertising pixels, retargeting tags, abandoned-cart tracking or any other cross-site tracking technology on the Services. Because we do not carry out targeted advertising, there is no advertising opt-out to offer you &mdash; there is nothing to opt out of.</p>
+            <h3>Your browser controls</h3>
+            <p>Most browsers accept cookies by default and let you remove or reject them. Rejecting the strictly necessary cookies described above will prevent you from signing in, but the public parts of the site will continue to work.</p>
 
             <h2 id="ai">6. DO WE OFFER ARTIFICIAL INTELLIGENCE-BASED PRODUCTS?</h2>
-            <p><strong><em>In Short:</em></strong> <em>We offer products, features, or tools powered by artificial intelligence, machine learning, or similar technologies.</em></p>
-            <p>As part of our Services, we offer products, features, or tools powered by artificial intelligence, machine learning, or similar technologies (collectively, &quot;AI Products&quot;). These tools are designed to enhance your experience and provide you with innovative solutions. The terms in this Privacy Notice govern your use of the AI Products within our Services.</p>
-            <h3>Use of AI Technologies</h3>
-            <p>We provide the AI Products through third-party service providers (&quot;AI Service Providers&quot;), including Google Cloud AI. As outlined in this Privacy Notice, your input, output, and personal information will be shared with and processed by these AI Service Providers to enable your use of our AI Products. You must not use the AI Products in any way that violates the terms or policies of any AI Service Provider.</p>
-            <h3>Our AI Products</h3>
-            <p>Our AI Products are designed for the following functions: AI applications</p>
-            <h3>How We Process Your Data Using AI</h3>
-            <p>All personal information processed using our AI Products is handled in line with our Privacy Notice and our agreement with third parties. This ensures high security and safeguards your personal information throughout the process, giving you peace of mind about your data&apos;s safety.</p>
+            <p><strong><em>In Short:</em></strong> <em>No. We do not process your personal information with artificial intelligence.</em></p>
+            <p>We do not currently offer any product, feature or tool powered by artificial intelligence or machine learning, and we do not send your personal information to any AI service provider. Our Essence Lab results are produced by fixed rules written by our stylist, not by a model. If this changes, we will update this Privacy Notice before launching any such feature.</p>
 
             <h2 id="sociallogins">7. HOW DO WE HANDLE YOUR SOCIAL LOGINS?</h2>
             <p><strong><em>In Short:</em></strong> <em>If you choose to register or log in to our Services using a social media account, we may have access to certain information about you.</em></p>
-            <p>Our Services offer you the ability to register and log in using your third-party social media account details (like your Facebook or X logins). Where you choose to do this, we will receive certain profile information about you from your social media provider. The profile information we receive may vary depending on the social media provider concerned, but will often include your name, email address, friends list, and profile picture, as well as other information you choose to make public on such a social media platform.</p>
+            <p>Our Services let you register and sign in with a Google account. Google is the only such provider we offer; we do not support Facebook, X or any other social login. Where you choose to sign in with Google, we receive your name, your email address and your profile picture. We do not receive your contacts, and we do not post anything on your behalf.</p>
             <p>We will use the information we receive only for the purposes that are described in this Privacy Notice or that are otherwise made clear to you on the relevant Services. Please note that we do not control, and are not responsible for, other uses of your personal information by your third-party social media provider. We recommend that you review their privacy notice to understand how they collect, use, and share your personal information, and how you can set your privacy preferences on their sites and apps.</p>
 
             <h2 id="inforetain">8. HOW LONG DO WE KEEP YOUR INFORMATION?</h2>

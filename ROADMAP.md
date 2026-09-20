@@ -169,7 +169,7 @@ Most of this phase is propagating patterns that already exist in the repo
 rather than inventing anything.
 
 Order below is the agreed execution order. 1–2 unblock launch; 3–4 are the only
-genuine legal exposure. **1–2 are done; 3 is next.**
+genuine legal exposure. **1–3 are done; 4 is next.**
 
 - ~~**1. Roll `buildMetadata` out site-wide.**~~ — **done (2026-09-19)**. Added
   `pageMetadata()` to `app/lib/seo.ts`, which reduces a route to one line and
@@ -194,12 +194,35 @@ genuine legal exposure. **1–2 are done; 3 is next.**
   path survives the widget being blocked. Still prerendered in both locales.
   Remaining: the FAQ copy is ready to carry `FAQPage` JSON-LD, which is folded
   into item 7.
-- **3. Reconcile the cookie/tracking story.** `legal/privacy` describes Google
-  Analytics and third-party ad tracking that the site does not run (it runs
-  cookieless first-party Vercel Analytics), and omits the one third party that
-  *does* set cookies: the Calendly widget on `/book`. So: correct the policy to
-  match reality, then add a consent gate in front of the Calendly script. With an
-  `es` locale and an EU-facing audience this is the item with actual downside.
+- ~~**3. Reconcile the cookie/tracking story.**~~ — **done (2026-09-19)**.
+  Section 5 of `legal/privacy` was rewritten against what the code actually
+  does: strictly necessary Supabase auth cookies, cookieless first-party Vercel
+  Analytics, Calendly as the one cookie-setting third party, Stripe's own
+  cookies on its hosted checkout, and an explicit statement that we run no
+  Google Analytics, no pixels, no retargeting and no abandoned-cart tracking —
+  so there is no advertising opt-out to offer because there is nothing to opt
+  out of. Section 4 now names the six real processors (Supabase, Stripe, Resend,
+  Vercel, Calendly, Google) instead of a generic list.
+
+  The gate is **in-place on `/book`, not a site-wide banner**, because Calendly
+  is the only cookie-setting third party on the site and a banner on every page
+  would be asking about something that exists on one. `CalendlyEmbed.tsx` now
+  renders a placeholder until the visitor loads it: verified in the prerendered
+  HTML that `assets.calendly.com` and the widget container are both absent
+  before consent, leaving only a plain `<a href>` that makes no request until
+  clicked. The choice is remembered per-device via `localStorage`, read through
+  `useSyncExternalStore` (a server snapshot keeps hydration honest and it picks
+  up cross-tab changes) rather than an effect — the first attempt used an
+  effect and the blocking lint gate correctly rejected the setState cascade.
+  A `<noscript>` direct link keeps the booking path alive with scripting off,
+  since the consent button cannot work there.
+
+  **Scope note:** fixing only the cookie claims would have left the same class
+  of defect untouched elsewhere in the same file, so three adjacent unsupported
+  claims went too — a third-party advertising "Offer Wall" we do not have, an
+  "AI Products … including Google Cloud AI" section (the Essence Lab is fixed
+  rules, not a model), and Facebook/X social logins we do not offer (Google is
+  the only provider). The policy's "Last updated" date moved to 2026-09-19.
 - **4. Translate the legal pages.** `privacy`, `terms` and `refunds` contain zero
   `useTranslations`/`getTranslations` — a Spanish visitor gets English terms.
   The one place where bilingual carries legal weight rather than UX weight.
