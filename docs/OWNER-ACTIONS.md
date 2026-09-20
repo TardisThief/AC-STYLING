@@ -137,9 +137,16 @@ one place.
 
 - ~~**F06** — purchase-claim credential stayed valid after the email recovery
   path~~ — **fixed 2026-09-20**, migration 13 applied and verified.
-- **F05** — partially done. Fulfillment no longer reports success it did not
-  achieve; the durable fulfillment-state record, the `payment_status` check,
-  and refund/dispute reconciliation are still open.
+- ~~**F05** — fulfillment could report success it did not achieve~~ —
+  **fixed 2026-09-20**, migration 14 applied and verified. Per-line-item
+  durable state, idempotent at the database, `payment_status` gate,
+  `async_payment_succeeded` handling, and refund/dispute events recorded with
+  an admin notification (access is *not* auto-revoked — that is a human
+  decision, since the published policy is that sales are final).
+
+**With that, every code blocker in the assessment is closed.** What remains
+between here and launch is on this page, plus **F09**: the five published Vault
+modules still have no usable video, which no amount of code can fix.
 - ~~**F07** — SSRF validation only checked the first destination~~ — **fixed
   2026-09-20**. Every redirect hop is now re-validated, four address bypasses
   closed (including IPv4-mapped IPv6 loopback), and the remote-image upload
