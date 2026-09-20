@@ -226,7 +226,7 @@ Most of this phase is propagating patterns that already exist in the repo
 rather than inventing anything.
 
 Order below is the agreed execution order. 1–2 unblock launch; 3–4 are the only
-genuine legal exposure. **1–3 are done; 4 is next.**
+genuine legal exposure. **1–4 are done; 5 is next.**
 
 - ~~**1. Roll `buildMetadata` out site-wide.**~~ — **done (2026-09-19)**. Added
   `pageMetadata()` to `app/lib/seo.ts`, which reduces a route to one line and
@@ -280,9 +280,48 @@ genuine legal exposure. **1–3 are done; 4 is next.**
   "AI Products … including Google Cloud AI" section (the Essence Lab is fixed
   rules, not a model), and Facebook/X social logins we do not offer (Google is
   the only provider). The policy's "Last updated" date moved to 2026-09-19.
-- **4. Translate the legal pages.** `privacy`, `terms` and `refunds` contain zero
-  `useTranslations`/`getTranslations` — a Spanish visitor gets English terms.
-  The one place where bilingual carries legal weight rather than UX weight.
+- ~~**4. Translate the legal pages.**~~ — **done (2026-09-20)**. All three
+  documents now exist in both locales: a Spanish visitor gets Spanish terms.
+
+  The text lives in per-locale server components (`PrivacyEn/Es.tsx`,
+  `TermsEn/Es.tsx`, `RefundsEn/Es.tsx`) with `page.tsx` choosing between them,
+  **not** in `messages/*.json`. These are long-form documents whose structure —
+  headings, lists, inline links, anchor ids — is part of the text, and
+  threading ~9,000 words of it through message keys would make both the copy
+  and the markup harder to review than the prose is to read. Section anchors
+  are deliberately identical across locales (`#cookies`, `#refunds`, …): an
+  anchor is an address, not copy, so a link to a clause resolves in either
+  language. Verified: 15 ids in privacy and 27 in terms match one-for-one
+  between EN and ES, with no dangling links.
+
+  **Terms was converted from a Termly HTML blob to real JSX.** It had been
+  injected with `dangerouslySetInnerHTML` carrying its own inline `<style>`
+  block forcing Arial and `#000`, which made it the one page on the site that
+  did not look like the site. The words are unchanged; the markup and the
+  `<style>` block are gone, and it now inherits the shared prose/Didot styling.
+
+  **Two false sections were removed from terms and three claims from privacy**
+  (agreed scope, same defect class as item 3's Offer Wall): the mobile
+  application licence and the SMS text-messaging section (there is no app and
+  we send no SMS), plus privacy's health-data/biometric-data processing, its
+  mobile-device-access and push-notification permissions, and the
+  "download our mobile application" bullet. Privacy's sensitive-information
+  answer is now a plain "No." Terms renumbered 1–27; nothing cross-references a
+  section by number, only by name, so the renumbering was safe. The disclaimer's
+  references to *third-party* mobile applications are legitimate and kept in
+  both locales.
+
+  A bug the lint gate caught: the new cross-link from terms to the privacy
+  notice was a bare `<a href="/legal/privacy">`, which drops the locale — a
+  Spanish reader would have landed on the English notice. Now the i18n `Link`;
+  verified in the emitted HTML that `/es/legal/terms` links to
+  `/es/legal/privacy`. All six pages still prerender; lint 0 errors; 320 tests
+  green.
+
+  **Not verified by me:** the Spanish is my translation, not a lawyer's. These
+  are terms that bind customers, so Ale or counsel should read the Spanish
+  before launch. The English remains the authoritative text and the two must be
+  changed together — a divergence between them is a legal defect, not a nit.
 - **5. Add `error.tsx` / `global-error.tsx`.** There is no error boundary file
   anywhere in `app/`. A render error in the Vault drops the user on Next's
   default error screen; the 404 is branded and its 500 counterpart does not
@@ -303,7 +342,8 @@ genuine legal exposure. **1–3 are done; 4 is next.**
   transactional, so no unsubscribe link is strictly required — but none carries a
   physical business address, which CAN-SPAM does require of anything promotional.
   `getPurchaseWelcomeHtml` is the borderline one. Decide its character, then give
-  it the right footer.
+  it the right footer. The address to use is already in the legal terms:
+  AC Styling, 1865 S Ocean Dr, Hallandale Beach, FL 33009, United States.
 
 ### Considered and rejected
 

@@ -1,26 +1,20 @@
 import { setRequestLocale } from 'next-intl/server';
-
 import { pageMetadata } from '@/app/lib/seo';
+import RefundsEn from './RefundsEn';
+import RefundsEs from './RefundsEs';
 
 export const generateMetadata = pageMetadata({ path: '/legal/refunds', key: 'legalRefunds' });
 
+/**
+ * The document itself lives in a per-locale component rather than in
+ * `messages/*.json`: these are long-form documents whose structure (headings,
+ * lists, inline links) is part of the text, and threading that through message
+ * keys makes both the copy and the markup harder to review than the prose is
+ * to read.
+ */
 export default async function RefundsPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
     setRequestLocale(locale);
 
-    return (
-        <article className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:text-ac-taupe prose-p:text-ac-taupe/80 prose-a:text-ac-espresso hover:prose-a:text-ac-taupe">
-            <h1 className="font-serif text-4xl mb-4">REFUND POLICY</h1>
-            <p className="text-sm text-gray-500 mb-8">Last updated February 01, 2026</p>
-
-            <p>
-                <strong>All sales are final and no refund will be issued.</strong>
-            </p>
-
-            <h2>Contact Us</h2>
-            <p>
-                If you have any questions about our Refunds Policy, please contact us at <a href="mailto:fashionstylist.ac@gmail.com">fashionstylist.ac@gmail.com</a>.
-            </p>
-        </article>
-    );
+    return locale === 'es' ? <RefundsEs /> : <RefundsEn />;
 }
