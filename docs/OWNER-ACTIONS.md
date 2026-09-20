@@ -12,16 +12,53 @@ Ordered by what blocks the most.
 
 ---
 
-## 1. Confirm the Vercel environment variables — **blocking a real launch**
+## 1. Stripe is still in the test sandbox — a live cutover is more than one key
 
-`.env.local` is missing two variables that the code reads. Locally they fall
-back or go unused, so nothing breaks here; in production one of them silently
-changes who gets access.
+Confirmed 2026-09-20: `STRIPE_SECRET_KEY` is an `sk_test` key, and the
+catalogue in the database holds **test-mode identifiers**:
 
-| Variable | Why it matters if missing in Vercel |
-|---|---|
-| `STRIPE_FULL_ACCESS_PRODUCT_ID` | One of three paths in `grantAccessForProduct` that grants a full unlock. If unset, a full-access purchase falls through to the `offers` lookup; if that row is absent or inactive, **the buyer is charged and granted nothing**. |
-| `NEXT_PUBLIC_SITE_URL` | Canonical URL for checkout returns, the set-password link in the purchase email, `sitemap.xml`, `robots.txt` and every canonical tag. Falls back to `https://theacstyle.com`, which is right today, but only by luck on preview deployments. |
+| Table | Rows with a `stripe_product_id` | Rows with a `price_id` |
+|---|---|---|
+| `masterclasses` | 1 of 3 | 1 |
+| `chapters` | 6 of 20 | 6 |
+| `offers` | 2 of 2 | 2 |
+| `services` | 2 of 2 | — |
+| **Total** | **11** | **9** |
+
+**Stripe product and price IDs do not carry across modes.** A live `prod_…`
+and a test `prod_…` are different objects, so flipping the secret key alone
+leaves every one of those 20 identifiers pointing at something that does not
+exist in live mode. `grantAccessForProduct` resolves a purchase by matching
+the webhook's product id against those columns — so a real customer would pay
+and match nothing.
+
+**Cutover checklist, when you are ready to take real money:**
+
+1. Recreate the products and prices in Stripe **live** mode.
+2. Update all 11 `stripe_product_id` and 9 `price_id` values in the database to
+   the live ids.
+3. Set `STRIPE_FULL_ACCESS_PRODUCT_ID` to the **live** full-access product id.
+   This one is currently absent from `.env.local` entirely. It is one of three
+   paths that grant a full unlock; if it is unset *and* the `full_access` offer
+   row is missing or inactive, **the buyer is charged and granted nothing**.
+4. Swap `STRIPE_SECRET_KEY` to the `sk_live_…` key.
+5. Create a **new webhook endpoint** in live mode and set `STRIPE_WEBHOOK_SECRET`
+   to its signing secret. The test-mode secret will not verify live events, and
+   the handler rejects anything that fails signature verification.
+6. Make one real purchase end to end and confirm a row appears in
+   `fulfillments` with `status = 'completed'`.
+
+Until then everything works exactly as it does now, in the sandbox.
+
+---
+
+## 2. Confirm the other Vercel environment variables
+
+`NEXT_PUBLIC_SITE_URL` is also missing from `.env.local`. It is the canonical
+URL for checkout returns, the set-password link in the purchase email,
+`sitemap.xml`, `robots.txt` and every canonical tag. It falls back to
+`https://theacstyle.com`, which is right today, but only by luck on preview
+deployments.
 
 Also confirm these are present in Vercel, since they are only in `.env.local`
 here: `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
@@ -32,7 +69,7 @@ Production *and* Preview.
 
 ---
 
-## 2. Make `hello@theacstyle.com` deliver somewhere a human reads
+## 3. Make `hello@theacstyle.com` deliver somewhere a human reads
 
 Transactional email is sent from `AC Styling <hello@theacstyle.com>` and now
 carries **no Reply-To header**, so every reply goes to that address.
@@ -51,7 +88,7 @@ resets and answer notifications will reach a person; today they land nowhere.
 
 ---
 
-## 3. Email reputation — optional, worth doing before volume
+## 4. Email reputation — optional, worth doing before volume
 
 Authentication is fully correct and verified (SPF, DKIM aligned to
 `theacstyle.com`, DMARC, PTR, no blocklists, 10/10 on mail-tester). These are
@@ -69,7 +106,7 @@ improvements, not fixes.
 
 ---
 
-## 4. Check the Resend plan limits
+## 5. Check the Resend plan limits
 
 The send response carried `x-resend-daily-quota: 1` and
 `x-resend-monthly-quota: 2`. It is not documented whether those count sent or
@@ -81,7 +118,7 @@ monthly limits against expected volume.
 
 ---
 
-## 5. Consider setting Vercel's Node version to 22.x — not urgent
+## 6. Consider setting Vercel's Node version to 22.x — not urgent
 
 `puppeteer@25` declares `engines: { node: ">=22.12.0" }`, and this project
 declares no `engines` field, so production runs whatever the Vercel dashboard
@@ -101,7 +138,7 @@ supported range means upstream will not treat any resulting bug as theirs.
 
 ---
 
-## 6. Decide whether a wardrobe should outlive the client who left
+## 7. Decide whether a wardrobe should outlive the client who left
 
 When someone deletes their account, migration 15 now removes their profile,
 progress, essence answers, wardrobe items, lookbooks, questions, grants and
@@ -119,7 +156,7 @@ because at the moment it implies everything goes.
 
 ---
 
-## 7. Confirm the testimonials are real and attributable
+## 8. Confirm the testimonials are real and attributable
 
 Carried over from Phase 3.5. The `Testimonials` component ships quotes that
 nobody in the repository can verify. Unverifiable testimonials are the item on
@@ -130,7 +167,7 @@ used with permission.
 
 ---
 
-## 8. Have the Spanish legal text reviewed
+## 9. Have the Spanish legal text reviewed
 
 `PrivacyEs.tsx`, `TermsEs.tsx` and `RefundsEs.tsx` are a translation produced
 by an agent, not legal review. They bind customers. The English remains the
@@ -140,7 +177,7 @@ Ale or counsel should read the Spanish before launch.
 
 ---
 
-## 9. Replace `public/logo.png` with a larger original — minor
+## 10. Replace `public/logo.png` with a larger original — minor
 
 150×150. It clears Google's 112×112 floor for the `Organization` logo in
 structured data, but is not generous. Swap it if a larger original exists.

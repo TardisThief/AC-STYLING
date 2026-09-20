@@ -8,9 +8,17 @@ historical security audit this follows from, and
 ## September assessment — Product owner review and execution tracking
 
 Anything that can only be done from a dashboard, a DNS zone or a mailbox —
-Vercel environment variables, the `hello@` inbox, Resend plan limits, the
-testimonials check — is tracked in **[docs/OWNER-ACTIONS.md](docs/OWNER-ACTIONS.md)**
-rather than left implicit in a commit message.
+the Stripe live cutover, Vercel environment variables, the `hello@` inbox,
+Resend plan limits, the testimonials check — is tracked in
+**[docs/OWNER-ACTIONS.md](docs/OWNER-ACTIONS.md)** rather than left implicit in
+a commit message.
+
+**Stripe is still in the test sandbox.** Confirmed 2026-09-20: an `sk_test`
+key, and 11 `stripe_product_id` plus 9 `price_id` values in the database are
+test-mode identifiers. Those ids do not carry across modes, so going live is a
+cutover — recreate the catalogue in live mode, update all 20 ids, set
+`STRIPE_FULL_ACCESS_PRODUCT_ID`, swap the key, and create a live webhook
+endpoint with its own signing secret. Owner action 1.
 
 The [repository and ecosystem assessment](docs/ASSESSMENT-2026-09-19.md)
 adds findings F01–F16 backed by live schema inspection and public browser checks.
