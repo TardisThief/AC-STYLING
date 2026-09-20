@@ -13,7 +13,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
  *      someone who already has a login and buys again from the marketing page
  *      must end up in the account she already has.
  *   2. Otherwise create the user, email-confirmed, with no password. She sets
- *      one through the recovery link the caller sends.
+ *      one through the recovery link the caller sends, or through the
+ *      single-use `purchase_claims` credential the caller mints.
+ *
+ * No `pending_password` marker is written any more. It used to gate the
+ * set-password fast lane, but `user_metadata` is writable by the account it
+ * describes, and nothing cleared it on the recovery path — see
+ * app/lib/purchase-claims.ts and migration 13.
  *
  * Returns null only when the email itself is unusable, which the caller must
  * treat as a hard failure (500) so Stripe retries rather than dropping it.
@@ -39,12 +45,6 @@ export async function resolveOrCreateUserByEmail(
         email_confirm: true,
         user_metadata: {
             ...(fullName ? { full_name: fullName } : {}),
-            // One-shot flag for the set-password form on the success page. The
-            // Stripe session id in that URL is a weak credential — it sits in
-            // browser history and the referrer — so it can only ever act on an
-            // account that has never had a password. claimPurchase clears this
-            // the moment one is set, which makes the id inert afterwards.
-            pending_password: true,
         },
     });
 

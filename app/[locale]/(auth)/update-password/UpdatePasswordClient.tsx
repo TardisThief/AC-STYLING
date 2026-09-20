@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Loader2, Lock, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { closePurchaseClaims } from "@/app/actions/vault/close-purchase-claims";
 
 export default function UpdatePasswordPage() {
     const [password, setPassword] = useState("");
@@ -31,6 +32,14 @@ export default function UpdatePasswordPage() {
         if (error) {
             toast.error(error.message);
         } else {
+            // Establishing a password here must also close the Stripe-session
+            // fast lane for this account. Without this, a buyer who used the
+            // emailed recovery link left that weaker credential usable for the
+            // rest of its 24 hours (F06). Deliberately awaited before we
+            // navigate, so the window is shut before she leaves the page; it
+            // never throws and never blocks the password change itself.
+            await closePurchaseClaims();
+
             toast.success("Password updated successfully!");
             setTimeout(() => {
                 router.push("/vault");

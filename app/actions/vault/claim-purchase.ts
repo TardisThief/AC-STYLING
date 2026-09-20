@@ -4,6 +4,7 @@ import { stripe } from '@/utils/stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { checkEmailRateLimit } from '@/app/lib/rate-limit';
 import { getErrorMessage } from '@/app/lib/errors';
+import { consumePurchaseClaim, isClaimOpen } from '@/app/lib/purchase-claims';
 
 /**
  * Turning a completed guest checkout into a usable login.
@@ -15,14 +16,19 @@ import { getErrorMessage } from '@/app/lib/errors';
  *
  *   1. The Stripe session must exist and be genuinely paid.
  *   2. It must be recent (24h), so an old link in history is useless.
- *   3. The account it names must still carry `pending_password`, which only a
- *      webhook-created guest account ever has. The moment a password is set
- *      the flag clears, which makes the id inert and means this can never
- *      touch an established account.
+ *   3. An unspent, unexpired row must exist in `purchase_claims` for that
+ *      session. That row is the credential: server-owned, single-use, and
+ *      consumed atomically, so a second holder of the id gets nothing.
  *   4. Rate limited per email.
  *
  * The emailed recovery link remains the stronger path and keeps working; this
- * is the fast lane, not a replacement for it.
+ * is the fast lane, not a replacement for it. Crucially, using that link now
+ * *closes* this one — see `consumeClaimsForUser`. Before, it did not, which
+ * left the weaker credential live for the rest of its 24 hours (F06).
+ *
+ * This deliberately no longer consults `user_metadata.pending_password`. That
+ * field is writable by the account it describes, so it could never be the
+ * authority for a decision about that account.
  */
 
 const MAX_SESSION_AGE_SECONDS = 24 * 60 * 60;
@@ -81,10 +87,13 @@ export async function getPurchaseSession(sessionId: string): Promise<SessionInfo
         // webhook. Payment is confirmed either way — say so, and let her retry.
         if (!user) return { ok: true, email: loaded.email, pending: true };
 
+        // Read-only look at the credential. The decision to act on it is made
+        // by consuming it in claimPurchase, never by trusting this.
+        const admin = createAdminClient();
         return {
             ok: true,
             email: loaded.email,
-            claimable: user.user_metadata?.pending_password === true,
+            claimable: await isClaimOpen(admin, sessionId),
         };
     } catch (err) {
         console.error('[claim-purchase] getPurchaseSession:', err);
@@ -109,27 +118,34 @@ export async function claimPurchase(sessionId: string, password: string) {
             return { success: false, error: 'Too many attempts. Try again in a few minutes.' };
         }
 
-        const user = await findUser(email);
-        if (!user) {
-            return {
-                success: false,
-                error: 'Your account is still being set up. Try again in a moment, or use the link in your email.',
-            };
-        }
-
-        // The one-shot gate. An account that already has a password is not
-        // reachable through a Stripe session id, no matter who holds it.
-        if (user.user_metadata?.pending_password !== true) {
-            return {
-                success: false,
-                error: 'This account already has a password. Sign in, or reset it from the login page.',
-            };
-        }
-
         const admin = createAdminClient();
-        const { error: updateError } = await admin.auth.admin.updateUserById(user.id, {
+
+        // The one-shot gate, and the whole security boundary of this action.
+        // Consuming is the check: the database hands exactly one caller a row,
+        // so a replayed or shared session id gets nothing, and two concurrent
+        // attempts cannot both proceed. Reading a flag and then writing a
+        // password — the previous shape — could not promise that.
+        const claim = await consumePurchaseClaim(admin, sessionId, 'claim');
+
+        if (!claim) {
+            // Deliberately one message for "already used", "expired" and
+            // "never existed": distinguishing them tells a holder of someone
+            // else's session id which case they are in.
+            const user = await findUser(email);
+            if (!user) {
+                return {
+                    success: false,
+                    error: 'Your account is still being set up. Try again in a moment, or use the link in your email.',
+                };
+            }
+            return {
+                success: false,
+                error: 'This link has already been used. Sign in, or reset your password from the login page.',
+            };
+        }
+
+        const { error: updateError } = await admin.auth.admin.updateUserById(claim.userId, {
             password,
-            user_metadata: { ...user.user_metadata, pending_password: false },
         });
 
         if (updateError) {

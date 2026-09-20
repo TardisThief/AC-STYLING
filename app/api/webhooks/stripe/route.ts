@@ -3,6 +3,7 @@ import { stripe } from '@/utils/stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { grantAccessForProduct } from '@/app/lib/access-logic';
 import { resolveOrCreateUserByEmail, generateSetPasswordLink } from '@/app/lib/guest-purchase';
+import { createPurchaseClaim } from '@/app/lib/purchase-claims';
 import { sendEmail } from '@/lib/resend';
 import { getPurchaseWelcomeHtml } from '@/lib/email-templates';
 import Stripe from 'stripe';
@@ -314,6 +315,20 @@ export async function POST(req: Request) {
             // Only once access is actually granted: an email inviting her in
             // before the grant landed would be a link to a locked Vault.
             if (isNewAccount) {
+                // Mint the single-use credential the welcome page's fast lane
+                // spends. Keyed to this checkout session and unique on it, so a
+                // replayed delivery is a no-op rather than a second live
+                // credential. Not fatal if it fails: the emailed recovery link
+                // below is the stronger path and does not depend on it.
+                const claimed = await createPurchaseClaim(supabase, {
+                    userId: resolvedUserId,
+                    stripeSessionId: session.id,
+                    email: customerEmail,
+                });
+                if (!claimed) {
+                    await logEvent('error', `Could not mint purchase claim for ${customerEmail}`);
+                }
+
                 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://theacstyle.com';
                 const link = await generateSetPasswordLink(
                     supabase,
