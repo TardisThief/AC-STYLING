@@ -101,7 +101,25 @@ supported range means upstream will not treat any resulting bug as theirs.
 
 ---
 
-## 6. Confirm the testimonials are real and attributable
+## 6. Decide whether a wardrobe should outlive the client who left
+
+When someone deletes their account, migration 15 now removes their profile,
+progress, essence answers, wardrobe items, lookbooks, questions, grants and
+tailor cards, plus their uploaded images.
+
+**One thing was deliberately left alone:** `wardrobes.owner_id` is `SET NULL`,
+so the wardrobe *container* survives as an unowned record rather than being
+deleted. That is a retention decision, not a bug — a stylist-managed wardrobe
+may legitimately outlive the client relationship — but it is a decision, and
+right now it is implicit.
+
+If the answer is "no, it should go too", it is a one-line migration. If the
+answer is "yes", the privacy notice's deletion section should say so plainly,
+because at the moment it implies everything goes.
+
+---
+
+## 7. Confirm the testimonials are real and attributable
 
 Carried over from Phase 3.5. The `Testimonials` component ships quotes that
 nobody in the repository can verify. Unverifiable testimonials are the item on
@@ -112,7 +130,7 @@ used with permission.
 
 ---
 
-## 7. Have the Spanish legal text reviewed
+## 8. Have the Spanish legal text reviewed
 
 `PrivacyEs.tsx`, `TermsEs.tsx` and `RefundsEs.tsx` are a translation produced
 by an agent, not legal review. They bind customers. The English remains the
@@ -122,7 +140,7 @@ Ale or counsel should read the Spanish before launch.
 
 ---
 
-## 8. Replace `public/logo.png` with a larger original — minor
+## 9. Replace `public/logo.png` with a larger original — minor
 
 150×150. It clears Google's 112×112 floor for the `Organization` logo in
 structured data, but is not generous. Swap it if a larger original exists.
