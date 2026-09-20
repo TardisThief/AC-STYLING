@@ -2,6 +2,7 @@
 
 import { getErrorMessage } from "@/app/lib/errors";
 import { requireAdmin } from "@/app/lib/auth-guards";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 // ... extractUrlMetadata MOVED to scraper.ts ...
 
@@ -11,7 +12,7 @@ export async function updateProfileStatus(profileId: string, status: 'active' | 
     const { revalidatePath } = await import("next/cache");
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
+    const supabase = createAdminClient();
 
     try {
         const { error } = await supabase

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { EssenceResponse } from "@/app/lib/types";
 import { createClient } from "@/utils/supabase/client";
+import { toggleStudioAccess } from "@/app/actions/admin/manage-clients";
 import { Ruler, Sparkles, Check, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
 
@@ -88,16 +89,13 @@ export default function TailorCard({ ownerId: ownerIdProp }: TailorCardProps) {
         if (!ownerId) return; // Can't toggle without an owner
         const newValue = !isActiveClient;
         setIsActiveClient(newValue);
-        const { error } = await supabase
-            .from('profiles')
-            .update({ active_studio_client: newValue })
-            .eq('id', ownerId);
-
-        if (error) {
+        try {
+            const result = await toggleStudioAccess(ownerId, newValue);
+            if (!result.success) throw new Error(result.error);
+            toast.success(newValue ? "Client Wardrobe Unlocked" : "Client Wardrobe Locked");
+        } catch {
             toast.error("Failed to update status");
             setIsActiveClient(!newValue); // Revert
-        } else {
-            toast.success(newValue ? "Client Wardrobe Unlocked" : "Client Wardrobe Locked");
         }
     }
 

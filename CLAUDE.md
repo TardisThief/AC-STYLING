@@ -59,6 +59,13 @@ RLS is enabled on every table. Core tables: `profiles`, `wardrobes`, `wardrobe_i
 
 Schema is managed directly in Supabase. The historical `supabase/migrations/` SQL was reset for a clean start (2026-07); add new migrations there going forward. `scripts/` holds one-off DB/QA helpers (need `DATABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`).
 
+Agents are authorized to execute and verify migrations themselves, including on
+the shared production database (owner authorization, 2026-09-19). Follow
+`supabase/migrations/README.md`: check dependencies, test, deploy prerequisite
+code, capture recovery metadata, apply transactionally, verify live behavior,
+and update the roadmap. Historical owner-only migration instructions are
+superseded; do not request repeat authorization for assigned migration work.
+
 ## Environment variables
 
 ```

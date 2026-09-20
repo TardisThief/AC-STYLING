@@ -52,7 +52,9 @@ export async function syncStripePurchases() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user || !user.email) return { error: "User or Email not found" };
+    if (!user || !user.email || !user.email_confirmed_at) {
+        return { error: "Verify your email before restoring purchases." };
+    }
 
     try {
         // 1. Fetch recent sessions (Last 100) and filter manually
@@ -70,7 +72,10 @@ export async function syncStripePurchases() {
             // Check Payer Email (Guest or Customer)
             const payerEmail = session.customer_details?.email || session.customer_email;
 
-            if (session.payment_status === 'paid' && payerEmail?.toLowerCase() === targetEmail) {
+            const belongsToUser = session.client_reference_id
+                ? session.client_reference_id === user.id
+                : payerEmail?.toLowerCase() === targetEmail;
+            if (session.payment_status === 'paid' && belongsToUser) {
                 const lineItems = session.line_items?.data || [];
 
                 for (const item of lineItems) {
@@ -79,7 +84,10 @@ export async function syncStripePurchases() {
                         : (item.price?.product as { id?: string } | null)?.id;
 
                     if (stripeProductId) {
-                        const granted = await grantAccessForProduct(supabase, user.id, stripeProductId);
+                        // Stripe identity/payment are verified above. Browser
+                        // clients cannot write entitlement fields after migration 12.
+                        const { createAdminClient } = await import('@/utils/supabase/admin');
+                        const granted = await grantAccessForProduct(createAdminClient(), user.id, stripeProductId);
                         if (granted) restoredCount++;
                     }
                 }

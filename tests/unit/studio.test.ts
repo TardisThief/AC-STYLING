@@ -19,6 +19,10 @@ vi.mock('@/utils/supabase/server', () => ({
     })),
 }))
 
+vi.mock('@/utils/supabase/admin', () => ({
+    createAdminClient: vi.fn(() => ({ from: mockFrom })),
+}))
+
 vi.mock('next/cache', () => ({
     revalidatePath: vi.fn(),
 }))
