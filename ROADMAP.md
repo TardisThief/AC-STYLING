@@ -7,6 +7,11 @@ historical security audit this follows from, and
 
 ## September assessment — Product owner review and execution tracking
 
+Anything that can only be done from a dashboard, a DNS zone or a mailbox —
+Vercel environment variables, the `hello@` inbox, Resend plan limits, the
+testimonials check — is tracked in **[docs/OWNER-ACTIONS.md](docs/OWNER-ACTIONS.md)**
+rather than left implicit in a commit message.
+
 The [repository and ecosystem assessment](docs/ASSESSMENT-2026-09-19.md)
 adds findings F01–F16 backed by live schema inspection and public browser checks.
 **The historical P0/P1 closure below is not a current security clearance.**
