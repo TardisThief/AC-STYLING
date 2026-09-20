@@ -81,7 +81,27 @@ monthly limits against expected volume.
 
 ---
 
-## 5. Confirm the testimonials are real and attributable
+## 5. Consider setting Vercel's Node version to 22.x — not urgent
+
+`puppeteer@25` declares `engines: { node: ">=22.12.0" }`, and this project
+declares no `engines` field, so production runs whatever the Vercel dashboard
+is set to.
+
+**This is not currently broken.** Puppeteer 25 was tested on Node 20.19.4
+locally — browser launch, the stealth plugin, request interception and
+navigation all work — so the requirement is advisory rather than enforced. No
+`engines` constraint was added to the repo precisely because declaring
+`>=22.12.0` could *fail* your build if the dashboard is pinned to 20.x, which
+would be a worse outcome than an unsupported-but-working runtime.
+
+Worth aligning when convenient, since running a dependency outside its
+supported range means upstream will not treat any resulting bug as theirs.
+
+**How to check:** Vercel → Project → Settings → General → Node.js Version.
+
+---
+
+## 6. Confirm the testimonials are real and attributable
 
 Carried over from Phase 3.5. The `Testimonials` component ships quotes that
 nobody in the repository can verify. Unverifiable testimonials are the item on
@@ -92,7 +112,7 @@ used with permission.
 
 ---
 
-## 6. Have the Spanish legal text reviewed
+## 7. Have the Spanish legal text reviewed
 
 `PrivacyEs.tsx`, `TermsEs.tsx` and `RefundsEs.tsx` are a translation produced
 by an agent, not legal review. They bind customers. The English remains the
@@ -102,7 +122,7 @@ Ale or counsel should read the Spanish before launch.
 
 ---
 
-## 7. Replace `public/logo.png` with a larger original — minor
+## 8. Replace `public/logo.png` with a larger original — minor
 
 150×150. It clears Google's 112×112 floor for the `Organization` logo in
 structured data, but is not generous. Swap it if a larger original exists.
@@ -126,5 +146,10 @@ one place.
   gained a size cap, timeout and content-type allowlist. Residual, documented:
   DNS rebinding is not fully closed, because pinning needs a connect-to-IP with
   an explicit Host header that Node's fetch does not expose.
-- **F08** — Next.js sits inside current advisory ranges; a dependency upgrade
-  is still open.
+- ~~**F08** — Next.js inside current advisory ranges~~ — **already fixed**.
+  `next` and `eslint-config-next` were moved 16.1.3 → **16.3.5** in `cb65711`,
+  above the 16.3.3 the cited advisories require. The audit discrepancy the
+  assessment told us to investigate has since resolved itself into a real
+  finding: four high-severity issues in the Puppeteer/`extract-zip` chain,
+  fixed 2026-09-20 by upgrading `puppeteer` 24.43.1 → 25.11.0. `npm audit` now
+  reports 0.
