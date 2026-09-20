@@ -24,7 +24,14 @@ export default function AccountSettings() {
         try {
             const res = await deleteAccount();
             if (res.success) {
-                toast.success("Account deleted successfully.");
+                // Say what actually happened. If the uploaded images could not
+                // be removed, claiming a clean deletion would be a promise we
+                // did not keep.
+                if (res.storageCleanupFailed) {
+                    toast.success("Account deleted. Some uploaded images could not be removed automatically — contact us and we will finish it.");
+                } else {
+                    toast.success("Account deleted successfully.");
+                }
                 router.push('/'); // Redirect to home/landing
             } else {
                 toast.error(res.error || "Failed to delete account.");
