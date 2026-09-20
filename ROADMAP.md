@@ -209,7 +209,7 @@ single source for this thread; do not duplicate its state here.
 - The marketing `Hero` preloads both crops on every device (fixed on the Vault
   hero, same one-line fix).
 
-## Phase 3.5 — Launch readiness: SEO, legal, a11y (current)
+## Phase 3.5 — Launch readiness: SEO, legal, a11y — complete
 
 Opened 2026-09-19 from an audit of the codebase against four widely-circulated
 "things to add before launching" checklists (SEO, legal/compliance, performance,
@@ -226,7 +226,7 @@ Most of this phase is propagating patterns that already exist in the repo
 rather than inventing anything.
 
 Order below is the agreed execution order. 1–2 unblock launch; 3–4 are the only
-genuine legal exposure. **1–9 are done; 10 is next and last.**
+genuine legal exposure. **All ten are done (2026-09-20).**
 
 - ~~**1. Roll `buildMetadata` out site-wide.**~~ — **done (2026-09-19)**. Added
   `pageMetadata()` to `app/lib/seo.ts`, which reduces a route to one line and
@@ -518,12 +518,31 @@ genuine legal exposure. **1–9 are done; 10 is next and last.**
   `CollectionsManager`, `TrustedByManager`) still show a bare "Loading…" line.
   They are stylist-facing tooling behind an admin gate, not a member-facing
   slow path, and this item was scoped to the routes members wait on.
-- **10. Email footers.** All four templates in `lib/email-templates.ts` are
-  transactional, so no unsubscribe link is strictly required — but none carries a
-  physical business address, which CAN-SPAM does require of anything promotional.
-  `getPurchaseWelcomeHtml` is the borderline one. Decide its character, then give
-  it the right footer. The address to use is already in the legal terms:
-  AC Styling, 1865 S Ocean Dr, Hallandale Beach, FL 33009, United States.
+- ~~**10. Email footers.**~~ — **done (2026-09-20)**. All four templates are
+  transactional in the CAN-SPAM sense — each is sent in response to something
+  the recipient just did — so **no unsubscribe link**, and that choice is now
+  pinned by a test so it is not "fixed" later by someone pattern-matching on
+  CAN-SPAM. Offering to unsubscribe from your own password reset would be worse
+  than useless. If a genuine marketing email is ever added it must not reuse
+  these; it needs its own template with a working unsubscribe.
+
+  A shared `emailFooter(reason)` now gives all four the postal address from the
+  legal terms, a contact mailto, and a line saying why *this* message arrived
+  ("You received this email because you asked to reset your AC Styling
+  password"). Its styles are inline rather than relying on each template's
+  `<style>` block, because several clients strip `<head>` styles and the
+  address is the part that most needs to survive that. CAN-SPAM only demands an
+  address of commercial mail, but a real one is what separates a legitimate
+  transactional email from a phishing attempt in the recipient's eyes.
+
+  **Found and fixed a live bug:** `getAnswerNotificationHtml`'s "Go to Vault"
+  button was hardcoded to `https://ac-styling.com/vault` — a domain this brand
+  does not own. Every member who ever clicked it went nowhere. It now builds
+  from `NEXT_PUBLIC_SITE_URL`, so it cannot drift from the deployment again,
+  and a test asserts the old domain is gone.
+
+  Verified by 18 new assertions in `tests/unit/email-templates.test.ts`, which
+  call the template functions and assert against the real rendered HTML.
 
 ### Considered and rejected
 
@@ -540,6 +559,28 @@ genuine legal exposure. **1–9 are done; 10 is next and last.**
 One-off worth doing alongside: confirm the `Testimonials` entries are real and
 attributable. Unverifiable testimonials are the checklist item that actually
 draws FTC complaints.
+
+**Phase 3.5 complete (2026-09-20).** Carried forward, none of it blocking:
+
+- **The `Testimonials` check above is still open** — it needs someone who knows
+  whether those quotes are real and attributable. Not something the code can
+  answer.
+- **A localized 404 is not achievable** the documented way on Next 16.3.5 with
+  next-intl; the finding and a workable alternative are under item 5.
+- **The Studio and admin components are hardcoded English.** Item 4 translated
+  the customer-facing legal pages, not the stylist's tooling. Real gap, separate
+  scope.
+- **~30 `no-img-element` warnings** remain, plus the three admin managers' bare
+  "Loading..." lines. Performance and polish rather than correctness.
+- **`public/logo.png` is 150x150** — clears Google's floor for the Organization
+  logo, but a larger original would be better.
+- Verification honesty: the Vault-gated work (the Vault error boundary,
+  breadcrumbs, the Vault loading states) is covered by unit tests rather than a
+  running server, because `/vault` redirects anonymous requests at the proxy.
+
+Note that this phase does **not** clear the launch. The
+[2026-09-19 assessment](docs/ASSESSMENT-2026-09-19.md) holds it on database
+authorization and payment fulfillment, which are unrelated to anything here.
 
 ## Phase 4 — North-star features (built on Phase 3's design language)
 

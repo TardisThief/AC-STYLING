@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { escapeHtml, getAnswerNotificationHtml } from '@/lib/email-templates'
+import {
+    escapeHtml,
+    getAnswerNotificationHtml,
+    getMagicLinkHtml,
+    getPasswordResetHtml,
+    getPurchaseWelcomeHtml,
+} from '@/lib/email-templates'
 
 describe('email-templates', () => {
     describe('escapeHtml', () => {
@@ -27,6 +33,45 @@ describe('email-templates', () => {
             expect(html).not.toContain('<script>steal()</script>')
             expect(html).not.toContain('<img src=x onerror=alert(1)>')
             expect(html).toContain('&lt;script&gt;steal()&lt;/script&gt;')
+        })
+    })
+
+    describe('footer', () => {
+        const ALL = [
+            ['magic link', getMagicLinkHtml('https://example.test/link')],
+            ['password reset', getPasswordResetHtml('https://example.test/reset')],
+            ['answer notification', getAnswerNotificationHtml('q', 'a')],
+            ['purchase welcome', getPurchaseWelcomeHtml('https://example.test/set', 'The Vault')],
+        ] as const
+
+        it.each(ALL)('%s carries the postal address', (_name, html) => {
+            expect(html).toContain('1865 S Ocean Dr')
+            expect(html).toContain('Hallandale Beach, FL 33009')
+        })
+
+        it.each(ALL)('%s says why it was received', (_name, html) => {
+            expect(html).toContain('You received this email because')
+        })
+
+        it.each(ALL)('%s offers a way to reach a human', (_name, html) => {
+            expect(html).toContain('mailto:fashionstylist.ac@gmail.com')
+        })
+
+        // These are transactional, not commercial. An unsubscribe link on a
+        // password reset would be nonsense; this pins that choice so it is not
+        // "fixed" later by someone pattern-matching on CAN-SPAM.
+        it.each(ALL)('%s does not offer to unsubscribe', (_name, html) => {
+            expect(html.toLowerCase()).not.toContain('unsubscribe')
+        })
+    })
+
+    describe('links', () => {
+        it('points the Vault button at the real domain', () => {
+            const html = getAnswerNotificationHtml('q', 'a')
+
+            // Was hardcoded to ac-styling.com, which this brand does not own.
+            expect(html).not.toContain('ac-styling.com')
+            expect(html).toContain('theacstyle.com/vault')
         })
     })
 })

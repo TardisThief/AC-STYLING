@@ -1,3 +1,48 @@
+/**
+ * Transactional email templates.
+ *
+ * Every template here is transactional in the CAN-SPAM sense: each one is sent
+ * in response to something the recipient just did (asked to sign in, asked for
+ * a password reset, asked a question, completed a purchase). None of them is a
+ * commercial message, so none carries an unsubscribe link — offering to
+ * unsubscribe from your own password reset would be worse than useless. If a
+ * genuine marketing email is ever added it must not reuse these; it needs its
+ * own template with a working unsubscribe.
+ *
+ * They do carry the postal address. CAN-SPAM only requires it of commercial
+ * mail, but a real address in the footer is what separates a legitimate
+ * transactional email from a phishing attempt in a recipient's eyes, and it is
+ * the one thing every deliverability guide agrees on.
+ */
+
+/** Canonical site URL. Read from env so emails cannot drift from the deployment. */
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://theacstyle.com').replace(/\/$/, '');
+
+/** The registered business address, matching the one published in the legal terms. */
+const POSTAL_ADDRESS = 'AC Styling &middot; 1865 S Ocean Dr, Hallandale Beach, FL 33009, United States';
+
+/**
+ * Shared footer.
+ *
+ * Styles are inline rather than leaning on each template's `<style>` block:
+ * several email clients strip `<head>` styles entirely, and the address is the
+ * part that most needs to survive that.
+ *
+ * `reason` states why this specific message arrived. A recipient who cannot
+ * tell why they got an email treats it as spam, and "you received this
+ * because..." is the cheapest way to answer that.
+ */
+export const emailFooter = (reason: string) => `
+        <div style="margin-top: 30px; font-family: Arial, sans-serif; font-size: 10px; line-height: 1.6; color: #8C847B; text-align: center;">
+            <p style="margin: 0 0 6px 0; font-size: 10px; color: #8C847B;">You received this email because ${reason}.</p>
+            <p style="margin: 0 0 6px 0; font-size: 10px; color: #8C847B;">${POSTAL_ADDRESS}</p>
+            <p style="margin: 0; font-size: 10px; color: #8C847B;">
+                Questions? <a href="mailto:fashionstylist.ac@gmail.com" style="color: #8C847B;">fashionstylist.ac@gmail.com</a>
+                &nbsp;&middot;&nbsp; &copy; 2026 AC Styling
+            </p>
+        </div>
+`;
+
 export const getMagicLinkHtml = (url: string) => `
 <!DOCTYPE html>
 <html lang="en">
@@ -25,9 +70,7 @@ export const getMagicLinkHtml = (url: string) => `
             <a href="${url}" class="button">Enter The Vault</a>
             <p style="margin-top: 30px; font-size: 12px; color: #8C847B;">This link expires in 24 hours.</p>
         </div>
-        <div class="footer">
-            &copy; 2026 AC Styling. All Rights Reserved.
-        </div>
+        ${emailFooter('you asked to sign in to AC Styling')}
     </div>
 </body>
 </html>
@@ -60,9 +103,7 @@ export const getPasswordResetHtml = (url: string) => `
             <a href="${url}" class="button">Reset Password</a>
             <p style="margin-top: 30px; font-size: 12px; color: #8C847B;">If you didn't request this, you can safely ignore this email.</p>
         </div>
-        <div class="footer">
-            &copy; 2026 AC Styling. All Rights Reserved.
-        </div>
+        ${emailFooter('you asked to reset your AC Styling password')}
     </div>
 </body>
 </html>
@@ -117,11 +158,9 @@ export const getAnswerNotificationHtml = (question: string, answer: string) => `
                 <p>${escapeHtml(answer)}</p>
             </div>
 
-            <a href="https://ac-styling.com/vault" class="button">Go to Vault</a>
+            <a href="${SITE_URL}/vault" class="button">Go to Vault</a>
         </div>
-        <div class="footer">
-            &copy; 2026 AC Styling. All Rights Reserved.
-        </div>
+        ${emailFooter('you asked Alejandra a question in the Vault')}
     </div>
 </body>
 </html>
@@ -160,6 +199,7 @@ export const getPurchaseWelcomeHtml = (url: string, productTitle: string) => `
             <a href="${url}" class="button">Set your password</a>
             <p class="footer">If you did not make this purchase, reply to this email and we will sort it out.</p>
         </div>
+        ${emailFooter('you completed a purchase at AC Styling')}
     </div>
 </body>
 </html>
