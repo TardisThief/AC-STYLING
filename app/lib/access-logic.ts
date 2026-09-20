@@ -43,6 +43,52 @@ async function recordOfferGrant(
     if (logFn) await logFn('error', `Founding grant failed (${offerSlug}): ${error.message}`);
 }
 
+/**
+ * Thrown when a grant could not be written.
+ *
+ * The distinction this preserves: `grantAccessForProduct` returning `false`
+ * means "this product is not content we grant access to" — a service booking,
+ * for example — which is a normal outcome. A write that was supposed to happen
+ * and did not is *not* an outcome, it is a failure, and conflating the two is
+ * how a buyer ends up charged with nothing to show for it.
+ *
+ * The Stripe webhook already rolls back its idempotency marker and returns 500
+ * from its catch, so throwing here is what makes Stripe retry the delivery.
+ * `restorePurchases` catches it and surfaces the error instead of reporting a
+ * restore that did not happen.
+ */
+export class GrantWriteError extends Error {
+    constructor(what: string, cause: string) {
+        super(`Failed to write ${what}: ${cause}`);
+        this.name = 'GrantWriteError';
+    }
+}
+
+/** 23505 = unique_violation: the grant is already recorded, which is success. */
+function isDuplicate(error: { code?: string } | null): boolean {
+    return error?.code === '23505';
+}
+
+/**
+ * Set an entitlement flag on the profile, and refuse to pretend it worked.
+ *
+ * The three call sites previously ignored the result of this update entirely,
+ * so a failed write left the buyer with no access while the webhook reported
+ * success.
+ */
+async function setProfileFlag(
+    supabase: SupabaseClient,
+    userId: string,
+    flag: 'has_full_unlock' | 'has_course_pass'
+): Promise<void> {
+    const { error } = await supabase
+        .from('profiles')
+        .update({ [flag]: true })
+        .eq('id', userId);
+
+    if (error) throw new GrantWriteError(`${flag} for user ${userId}`, error.message);
+}
+
 export async function grantAccessForProduct(
     supabase: SupabaseClient,
     userId: string,
@@ -64,11 +110,13 @@ export async function grantAccessForProduct(
             masterclass_id: masterclass.id,
             grant_type: 'purchase'
         });
-        if (grantError) {
+        if (grantError && !isDuplicate(grantError)) {
+            // Previously this logged and returned true, so the webhook answered
+            // 200 and Stripe never retried: paid, not granted, no second chance.
             if (logFn) await logFn('error', `Masterclass Grant Failed: ${grantError.message}`);
-        } else {
-            if (logFn) await logFn('success', `Granted Masterclass: ${masterclass.title}`);
+            throw new GrantWriteError(`masterclass grant for ${masterclass.title}`, grantError.message);
         }
+        if (logFn) await logFn('success', `Granted Masterclass: ${masterclass.title}`);
         return true;
     }
 
@@ -85,21 +133,27 @@ export async function grantAccessForProduct(
             chapter_id: chapter.id,
             grant_type: 'purchase'
         });
-        if (grantError) {
+        if (grantError && !isDuplicate(grantError)) {
             if (logFn) await logFn('error', `Chapter Grant Failed: ${grantError.message}`);
-        } else {
-            if (logFn) await logFn('success', `Granted Chapter: ${chapter.title}`);
+            throw new GrantWriteError(`chapter grant for ${chapter.title}`, grantError.message);
         }
+        if (logFn) await logFn('success', `Granted Chapter: ${chapter.title}`);
         return true;
     }
 
     const FULL_UNLOCK_PRODUCT_ID = process.env.STRIPE_FULL_ACCESS_PRODUCT_ID;
 
-    if (logFn) await logFn('info', `Checking Full Access for ${productId}: Target=${FULL_UNLOCK_PRODUCT_ID}, Match=${productId === FULL_UNLOCK_PRODUCT_ID}`);
+    if (logFn) await logFn('info', `Checking Full Access for ${productId}: Target=${FULL_UNLOCK_PRODUCT_ID ?? 'unset'}, Match=${!!FULL_UNLOCK_PRODUCT_ID && productId === FULL_UNLOCK_PRODUCT_ID}`);
 
     // 3. Full Unlock (Env)
-    if (productId === FULL_UNLOCK_PRODUCT_ID) {
-        await supabase.from('profiles').update({ has_full_unlock: true }).eq('id', userId);
+    //
+    // The truthiness check is load-bearing, not defensive noise. With the env
+    // var unset this reads `productId === undefined`, so any caller that ever
+    // passed a nullish product id would be handed a full unlock. Both current
+    // callers guard against that before calling, but the comparison should not
+    // depend on them continuing to.
+    if (FULL_UNLOCK_PRODUCT_ID && productId === FULL_UNLOCK_PRODUCT_ID) {
+        await setProfileFlag(supabase, userId, 'has_full_unlock');
         await recordOfferGrant(supabase, userId, 'full_access', logFn);
         if (logFn) await logFn('success', 'Granted Full Access (Env Match)');
         return true;
@@ -117,12 +171,12 @@ export async function grantAccessForProduct(
 
     if (offer) {
         if (offer.slug === 'full_access') {
-            await supabase.from('profiles').update({ has_full_unlock: true }).eq('id', userId);
+            await setProfileFlag(supabase, userId, 'has_full_unlock');
             await recordOfferGrant(supabase, userId, offer.slug, logFn);
             if (logFn) await logFn('success', 'Granted Full Access (Offer)');
             return true;
         } else if (offer.slug === 'course_pass') {
-            await supabase.from('profiles').update({ has_course_pass: true }).eq('id', userId);
+            await setProfileFlag(supabase, userId, 'has_course_pass');
             await recordOfferGrant(supabase, userId, offer.slug, logFn);
             if (logFn) await logFn('success', 'Granted Course Pass (Offer)');
             return true;
