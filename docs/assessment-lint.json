@@ -1,0 +1,1350 @@
+{
+  "checkedAt": "2026-09-20T02:53:49.731Z",
+  "files": 263,
+  "errors": 0,
+  "warnings": 159,
+  "rules": {
+    "@typescript-eslint/no-unused-vars": 118,
+    "@next/next/no-img-element": 32,
+    "null": 2,
+    "jsx-a11y/alt-text": 3,
+    "@typescript-eslint/no-unused-expressions": 3,
+    "react-hooks/exhaustive-deps": 1
+  },
+  "filesWithMessages": [
+    {
+      "file": "app\\[locale]\\(auth)\\confirm\\ConfirmClient.tsx",
+      "messages": [
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'CheckCircle2' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\(auth)\\login\\LoginClient.tsx",
+      "messages": [
+        {
+          "line": 137,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'data' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\(auth)\\update-password\\UpdatePasswordClient.tsx",
+      "messages": [
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Lock' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\layout.tsx",
+      "messages": [
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Navbar' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\vault\\admin\\layout.tsx",
+      "messages": [
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'getTranslations' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\vault\\courses\\[slug]\\essence-lab\\page.tsx",
+      "messages": [
+        {
+          "line": 2,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'BookOpen' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\vault\\courses\\[slug]\\page.tsx",
+      "messages": [
+        {
+          "line": 2,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'getTranslations' is defined but never used."
+        },
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'redirect' is defined but never used."
+        },
+        {
+          "line": 13,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'UnlockButton' is defined but never used."
+        },
+        {
+          "line": 85,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'targetMasterclassId' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\vault\\foundations\\[slug]\\essence-lab\\page.tsx",
+      "messages": [
+        {
+          "line": 2,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'BookOpen' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\vault\\foundations\\[slug]\\page.tsx",
+      "messages": [
+        {
+          "line": 1,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'getTranslations' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\vault\\foundations\\masterclass\\[id]\\page.tsx",
+      "messages": [
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'FolderOpen' is defined but never used."
+        },
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Unlock' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\vault\\foundations\\page.tsx",
+      "messages": [
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Layers' is defined but never used."
+        },
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Check' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\[locale]\\vault\\join\\JoinClient.tsx",
+      "messages": [
+        {
+          "line": 8,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Mail' is defined but never used."
+        },
+        {
+          "line": 16,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'router' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\actions\\admin\\manage-boutique-upload.ts",
+      "messages": [
+        {
+          "line": 17,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'fileType' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\actions\\admin\\manage-chapters.ts",
+      "messages": [
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'createClient' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\actions\\admin\\manage-services.ts",
+      "messages": [
+        {
+          "line": 9,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'locale' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\actions\\auth.ts",
+      "messages": [
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'createClient' is defined but never used."
+        },
+        {
+          "line": 232,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'user' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\actions\\essence-lab.ts",
+      "messages": [
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'revalidatePath' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\actions\\invitation.ts",
+      "messages": [
+        {
+          "line": 19,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'email' is assigned a value but never used."
+        },
+        {
+          "line": 20,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'note' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\actions\\scraper.ts",
+      "messages": [
+        {
+          "line": 80,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'e' is defined but never used."
+        },
+        {
+          "line": 82,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'e' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\actions\\send-question.ts",
+      "messages": [
+        {
+          "line": 91,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'userError' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\actions\\stripe.ts",
+      "messages": [
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'redirect' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\actions\\vault\\account.ts",
+      "messages": [
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'revalidatePath' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "app\\lib\\access-logic.ts",
+      "messages": [
+        {
+          "line": 53,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'mcError' is assigned a value but never used."
+        },
+        {
+          "line": 76,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'chError' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\Contact.tsx",
+      "messages": [
+        {
+          "line": 30,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\PhotoCarousel.tsx",
+      "messages": [
+        {
+          "line": 35,
+          "rule": null,
+          "severity": 1,
+          "message": "Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')."
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\AdminDashboard.tsx",
+      "messages": [
+        {
+          "line": 13,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'deleteChapter' is defined but never used."
+        },
+        {
+          "line": 277,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\AdminNotificationsPanel.tsx",
+      "messages": [
+        {
+          "line": 7,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Check' is defined but never used."
+        },
+        {
+          "line": 9,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Archive' is defined but never used."
+        },
+        {
+          "line": 28,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'NotificationStatus' is defined but never used."
+        },
+        {
+          "line": 75,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'showRead' is assigned a value but never used."
+        },
+        {
+          "line": 75,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'setShowRead' is assigned a value but never used."
+        },
+        {
+          "line": 92,
+          "rule": null,
+          "severity": 1,
+          "message": "Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')."
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\BoutiqueItemUploader.tsx",
+      "messages": [
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Upload' is defined but never used."
+        },
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'ImageIcon' is defined but never used."
+        },
+        {
+          "line": 42,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'supabase' is assigned a value but never used."
+        },
+        {
+          "line": 112,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'successCount' is assigned a value but never used."
+        },
+        {
+          "line": 113,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'itemsToCreate' is assigned a value but never used."
+        },
+        {
+          "line": 126,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'filePath' is assigned a value but never used."
+        },
+        {
+          "line": 277,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\BoutiqueManager.tsx",
+      "messages": [
+        {
+          "line": 10,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Tag' is defined but never used."
+        },
+        {
+          "line": 144,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 144,
+          "rule": "jsx-a11y/alt-text",
+          "severity": 1,
+          "message": "img elements must have an alt prop, either with meaningful text, or an empty string for decorative images."
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\ClientDossier.tsx",
+      "messages": [
+        {
+          "line": 8,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Trophy' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\ClientList.tsx",
+      "messages": [
+        {
+          "line": 74,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\CollectionsManager.tsx",
+      "messages": [
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'ChevronDown' is defined but never used."
+        },
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'ChevronUp' is defined but never used."
+        },
+        {
+          "line": 37,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'expandedId' is assigned a value but never used."
+        },
+        {
+          "line": 37,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'setExpandedId' is assigned a value but never used."
+        },
+        {
+          "line": 228,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 228,
+          "rule": "jsx-a11y/alt-text",
+          "severity": 1,
+          "message": "img elements must have an alt prop, either with meaningful text, or an empty string for decorative images."
+        },
+        {
+          "line": 276,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 276,
+          "rule": "jsx-a11y/alt-text",
+          "severity": 1,
+          "message": "img elements must have an alt prop, either with meaningful text, or an empty string for decorative images."
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\ImageUpload.tsx",
+      "messages": [
+        {
+          "line": 7,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'ImageIcon' is defined but never used."
+        },
+        {
+          "line": 94,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\MasterclassForm.tsx",
+      "messages": [
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Upload' is defined but never used."
+        },
+        {
+          "line": 18,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Video' is defined but never used."
+        },
+        {
+          "line": 120,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\ServiceForm.tsx",
+      "messages": [
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Upload' is defined but never used."
+        },
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Trash2' is defined but never used."
+        },
+        {
+          "line": 167,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\ServicesList.tsx",
+      "messages": [
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Check' is defined but never used."
+        },
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'XIcon' is defined but never used."
+        },
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'DollarSign' is defined but never used."
+        },
+        {
+          "line": 27,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\StudioInbox.tsx",
+      "messages": [
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Sparkles' is defined but never used."
+        },
+        {
+          "line": 56,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'e' is defined but never used."
+        },
+        {
+          "line": 110,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'notes' is assigned a value but never used."
+        },
+        {
+          "line": 110,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'setNotes' is assigned a value but never used."
+        },
+        {
+          "line": 122,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\admin\\TrustedByManager.tsx",
+      "messages": [
+        {
+          "line": 163,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\auth\\InteractiveGate.tsx",
+      "messages": [
+        {
+          "line": 27,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'pathname' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\boutique\\BoutiqueInterface.tsx",
+      "messages": [
+        {
+          "line": 41,
+          "rule": "@typescript-eslint/no-unused-expressions",
+          "severity": 1,
+          "message": "Expected an assignment or function call and instead saw an expression."
+        }
+      ]
+    },
+    {
+      "file": "components\\boutique\\BrandAtelier.tsx",
+      "messages": [
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'motion' is defined but never used."
+        },
+        {
+          "line": 43,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\boutique\\ProductGrid.tsx",
+      "messages": [
+        {
+          "line": 18,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'isPending' is assigned a value but never used."
+        },
+        {
+          "line": 61,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\marketing\\JoinLanding.tsx",
+      "messages": [
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Image' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\monetization\\CheckoutSyncHandler.tsx",
+      "messages": [
+        {
+          "line": 29,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'e' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\monetization\\RestorePurchasesButton.tsx",
+      "messages": [
+        {
+          "line": 21,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'e' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\monetization\\UnlockButton.tsx",
+      "messages": [
+        {
+          "line": 66,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'error' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\studio\\ArchiveManager.tsx",
+      "messages": [
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'User' is defined but never used."
+        },
+        {
+          "line": 18,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'locale' is defined but never used."
+        },
+        {
+          "line": 46,
+          "rule": "react-hooks/exhaustive-deps",
+          "severity": 1,
+          "message": "React Hook useEffect has a missing dependency: 'fetchArchived'. Either include it or remove the dependency array."
+        }
+      ]
+    },
+    {
+      "file": "components\\studio\\DigitalLookbook.tsx",
+      "messages": [
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Share2' is defined but never used."
+        },
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Move' is defined but never used."
+        },
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Type' is defined but never used."
+        },
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'ImageIcon' is defined but never used."
+        },
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Shirt' is defined but never used."
+        },
+        {
+          "line": 160,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'id' is assigned a value but never used."
+        },
+        {
+          "line": 160,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'created_at' is assigned a value but never used."
+        },
+        {
+          "line": 325,
+          "rule": "@typescript-eslint/no-unused-expressions",
+          "severity": 1,
+          "message": "Expected an assignment or function call and instead saw an expression."
+        },
+        {
+          "line": 330,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 371,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\studio\\InvitationGenerator.tsx",
+      "messages": [
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Check' is defined but never used."
+        },
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'motion' is defined but never used."
+        },
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'AnimatePresence' is defined but never used."
+        },
+        {
+          "line": 15,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'setNote' is assigned a value but never used."
+        },
+        {
+          "line": 40,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'err' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\studio\\TailorCard.tsx",
+      "messages": [
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Check' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\studio\\UserAssignmentModal.tsx",
+      "messages": [
+        {
+          "line": 114,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\studio\\VirtualWardrobe.tsx",
+      "messages": [
+        {
+          "line": 827,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 978,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 987,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 1130,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 1190,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\studio\\WardrobeSwitcher.tsx",
+      "messages": [
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'User' is defined but never used."
+        },
+        {
+          "line": 100,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\studio\\WardrobeUploadLanding.tsx",
+      "messages": [
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'LogIn' is defined but never used."
+        },
+        {
+          "line": 426,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\ui\\SafeImage.tsx",
+      "messages": [
+        {
+          "line": 39,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\vault-sales\\ColorField.tsx",
+      "messages": [
+        {
+          "line": 93,
+          "rule": "@typescript-eslint/no-unused-expressions",
+          "severity": 1,
+          "message": "Expected an assignment or function call and instead saw an expression."
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\AccountSettings.tsx",
+      "messages": [
+        {
+          "line": 8,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'X' is defined but never used."
+        },
+        {
+          "line": 34,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'e' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\CompleteChapterButton.tsx",
+      "messages": [
+        {
+          "line": 5,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'getEssenceProgress' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\CoursePassUnlock.tsx",
+      "messages": [
+        {
+          "line": 10,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Link' is defined but never used."
+        },
+        {
+          "line": 51,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'error' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\EditorialDraft.tsx",
+      "messages": [
+        {
+          "line": 47,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 106,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 127,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\EssenceLab.tsx",
+      "messages": [
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'useEffect' is defined but never used."
+        },
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'createClient' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\FullAccessUnlock.tsx",
+      "messages": [
+        {
+          "line": 8,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Check' is defined but never used."
+        },
+        {
+          "line": 55,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'error' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\MarkComplete.tsx",
+      "messages": [
+        {
+          "line": 17,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'nextChapterSlug' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\MasterclassCard.tsx",
+      "messages": [
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'useState' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\ServicesGrid.tsx",
+      "messages": [
+        {
+          "line": 239,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\StyleEssence.tsx",
+      "messages": [
+        {
+          "line": 9,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'isEmpty' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\VaultHero.tsx",
+      "messages": [
+        {
+          "line": 16,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        },
+        {
+          "line": 27,
+          "rule": "@next/next/no-img-element",
+          "severity": 1,
+          "message": "Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element"
+        }
+      ]
+    },
+    {
+      "file": "components\\vault\\VaultVideoPlayer.tsx",
+      "messages": [
+        {
+          "line": 6,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'Globe' is defined but never used."
+        },
+        {
+          "line": 17,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'title' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "scripts\\verify_qa.ts",
+      "messages": [
+        {
+          "line": 2,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'createClient' is defined but never used."
+        },
+        {
+          "line": 3,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'createAdminClient' is defined but never used."
+        },
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'askQuestion' is defined but never used."
+        },
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'answerQuestion' is defined but never used."
+        },
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'getUnreadAnswers' is defined but never used."
+        },
+        {
+          "line": 4,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'markAnswerAsRead' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "tests\\unit\\access-logic.test.ts",
+      "messages": [
+        {
+          "line": 179,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'offerQuery' is assigned a value but never used."
+        },
+        {
+          "line": 219,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'offerQuery' is assigned a value but never used."
+        },
+        {
+          "line": 226,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'masterclassQuery' is assigned a value but never used."
+        }
+      ]
+    },
+    {
+      "file": "tests\\unit\\boutique.test.ts",
+      "messages": [
+        {
+          "line": 48,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'_columns' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "tests\\unit\\manage-offers.test.ts",
+      "messages": [
+        {
+          "line": 31,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'_row' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "tests\\unit\\manage-services.test.ts",
+      "messages": [
+        {
+          "line": 31,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'_row' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "tests\\unit\\paywall-guard.test.tsx",
+      "messages": [
+        {
+          "line": 12,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'beforeEach' is defined but never used."
+        },
+        {
+          "line": 13,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'screen' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "utils\\supabase\\admin.ts",
+      "messages": [
+        {
+          "line": 1,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'createSupabaseClient' is defined but never used."
+        },
+        {
+          "line": 17,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'cookiesToSet' is defined but never used."
+        }
+      ]
+    },
+    {
+      "file": "utils\\supabase\\middleware.ts",
+      "messages": [
+        {
+          "line": 21,
+          "rule": "@typescript-eslint/no-unused-vars",
+          "severity": 1,
+          "message": "'options' is defined but never used."
+        }
+      ]
+    }
+  ]
+}

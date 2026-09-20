@@ -1,0 +1,153 @@
+[
+  {
+    "route": "/en",
+    "width": 360,
+    "documentWidth": 374,
+    "viewportWidth": 360,
+    "overflow": [
+      {
+        "tag": "DIV",
+        "class": "relative flex-shrink-0 flex justify-center items-center group cursor-pointer",
+        "right": 415.1256103515625,
+        "left": 295.1256103515625
+      },
+      {
+        "tag": "DIV",
+        "class": "relative h-12 w-[120px] transition-all duration-300 filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100",
+        "right": 415.1256103515625,
+        "left": 295.1256103515625
+      },
+      {
+        "tag": "IMG",
+        "class": "object-contain",
+        "right": 415.1256103515625,
+        "left": 295.1256103515625
+      },
+      {
+        "tag": "DIV",
+        "class": "relative flex-shrink-0 flex justify-center items-center group cursor-pointer",
+        "right": 583.1256103515625,
+        "left": 463.1256103515625
+      },
+      {
+        "tag": "DIV",
+        "class": "relative h-12 w-[120px] transition-all duration-300 filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100",
+        "right": 583.1256103515625,
+        "left": 463.1256103515625
+      },
+      {
+        "tag": "IMG",
+        "class": "object-contain",
+        "right": 583.1256103515625,
+        "left": 463.1256103515625
+      },
+      {
+        "tag": "DIV",
+        "class": "relative flex-shrink-0 flex justify-center items-center group cursor-pointer",
+        "right": 751.1256103515625,
+        "left": 631.1256103515625
+      },
+      {
+        "tag": "DIV",
+        "class": "relative h-12 w-[120px] transition-all duration-300 filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100",
+        "right": 751.1256103515625,
+        "left": 631.1256103515625
+      }
+    ],
+    "unnamedButtons": [
+      "<button class=\"p-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 text-white hover:bg-white/50 transition-all pointer-events-auto\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-left\" aria-hidden=\"true\"><path d=\"m15 18-",
+      "<button class=\"p-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 text-white hover:bg-white/50 transition-all pointer-events-auto\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-right\" aria-hidden=\"true\"><path d=\"m9 18 ",
+      "<button class=\"w-2 h-2 rounded-full transition-all duration-300 bg-white w-6\"></button>",
+      "<button class=\"w-2 h-2 rounded-full transition-all duration-300 bg-white/50\"></button>",
+      "<button class=\"w-2 h-2 rounded-full transition-all duration-300 bg-white/50\"></button>",
+      "<button class=\"w-2 h-2 rounded-full transition-all duration-300 bg-white/50\"></button>",
+      "<button class=\"w-2 h-2 rounded-full transition-all duration-300 bg-white/50\"></button>"
+    ],
+    "requestedHosts": [
+      "www.theacstyle.com"
+    ],
+    "menuExpandedAfterEscape": "true"
+  },
+  {
+    "route": "/en",
+    "width": 1440,
+    "documentWidth": 1440,
+    "viewportWidth": 1440,
+    "overflow": [
+      {
+        "tag": "DIV",
+        "class": "relative flex-shrink-0 flex justify-center items-center group cursor-pointer",
+        "right": 1579.18798828125,
+        "left": 1459.18798828125
+      },
+      {
+        "tag": "DIV",
+        "class": "relative h-12 w-[120px] transition-all duration-300 filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100",
+        "right": 1579.18798828125,
+        "left": 1459.18798828125
+      },
+      {
+        "tag": "IMG",
+        "class": "object-contain",
+        "right": 1579.18798828125,
+        "left": 1459.18798828125
+      },
+      {
+        "tag": "DIV",
+        "class": "relative flex-shrink-0 flex justify-center items-center group cursor-pointer",
+        "right": 1795.18798828125,
+        "left": 1675.18798828125
+      },
+      {
+        "tag": "DIV",
+        "class": "relative h-12 w-[120px] transition-all duration-300 filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100",
+        "right": 1795.18798828125,
+        "left": 1675.18798828125
+      },
+      {
+        "tag": "IMG",
+        "class": "object-contain",
+        "right": 1795.18798828125,
+        "left": 1675.18798828125
+      },
+      {
+        "tag": "DIV",
+        "class": "relative flex-shrink-0 flex justify-center items-center group cursor-pointer",
+        "right": 2011.18798828125,
+        "left": 1891.18798828125
+      },
+      {
+        "tag": "DIV",
+        "class": "relative h-12 w-[120px] transition-all duration-300 filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100",
+        "right": 2011.18798828125,
+        "left": 1891.18798828125
+      }
+    ],
+    "unnamedButtons": [
+      "<button class=\"p-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 text-white hover:bg-white/50 transition-all pointer-events-auto\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-left\" aria-hidden=\"true\"><path d=\"m15 18-",
+      "<button class=\"p-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 text-white hover:bg-white/50 transition-all pointer-events-auto\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-right\" aria-hidden=\"true\"><path d=\"m9 18 ",
+      "<button class=\"w-2 h-2 rounded-full transition-all duration-300 bg-white w-6\"></button>",
+      "<button class=\"w-2 h-2 rounded-full transition-all duration-300 bg-white/50\"></button>",
+      "<button class=\"w-2 h-2 rounded-full transition-all duration-300 bg-white/50\"></button>",
+      "<button class=\"w-2 h-2 rounded-full transition-all duration-300 bg-white/50\"></button>",
+      "<button class=\"w-2 h-2 rounded-full transition-all duration-300 bg-white/50\"></button>"
+    ],
+    "requestedHosts": [
+      "www.theacstyle.com"
+    ]
+  },
+  {
+    "route": "/en/book",
+    "width": 390,
+    "documentWidth": 390,
+    "viewportWidth": 390,
+    "overflow": [],
+    "unnamedButtons": [],
+    "requestedHosts": [
+      "www.theacstyle.com",
+      "assets.calendly.com",
+      "calendly.com",
+      "js.stripe.com"
+    ]
+  }
+]

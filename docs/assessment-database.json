@@ -1,0 +1,4184 @@
+{
+  "checkedAt": "2026-09-20T02:53:12.449Z",
+  "mode": "BEGIN READ ONLY; schema and aggregate catalog readiness only",
+  "tables": [
+    {
+      "schemaname": "public",
+      "tablename": "admin_notifications",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_clicks",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_collection_items",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_collections",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_items",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_saves",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "chapters",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "essence_responses",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lookbook_items",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lookbooks",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "masterclasses",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "offers",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "partner_brands",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "purchases",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "rate_limits",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "services",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "stripe_processed_events",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tailor_cards",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "trusted_by_logos",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_access_grants",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_progress",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_questions",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "wardrobe_items",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "wardrobes",
+      "rowsecurity": true
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_events",
+      "rowsecurity": true
+    }
+  ],
+  "policies": [
+    {
+      "schemaname": "public",
+      "tablename": "admin_notifications",
+      "policyname": "Admin full access to notifications",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (auth.uid() = '4613bce4-5a40-4779-9e87-0def946be940'::uuid))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (auth.uid() = '4613bce4-5a40-4779-9e87-0def946be940'::uuid))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_clicks",
+      "policyname": "boutique_clicks: admin read",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_clicks",
+      "policyname": "boutique_clicks: anon insert",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(user_id IS NULL)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_clicks",
+      "policyname": "boutique_clicks: authenticated insert",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(auth.role() = 'authenticated'::text)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_collection_items",
+      "policyname": "boutique_collection_items: admin write",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": "(auth.role() = 'authenticated'::text)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_collection_items",
+      "policyname": "boutique_collection_items: authenticated read",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_collections",
+      "policyname": "boutique_collections: admin write",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": "(auth.role() = 'authenticated'::text)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_collections",
+      "policyname": "boutique_collections: authenticated read",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_items",
+      "policyname": "Admins manage items",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_items",
+      "policyname": "Public view items",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(active = true)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_saves",
+      "policyname": "boutique_saves: user delete own",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_saves",
+      "policyname": "boutique_saves: user insert own",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "boutique_saves",
+      "policyname": "boutique_saves: user read own",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "chapters",
+      "policyname": "Admins can insert chapters",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "chapters",
+      "policyname": "Admins can manage chapters",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "chapters",
+      "policyname": "Anyone can view chapters",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "essence_responses",
+      "policyname": "Admins can view all essence responses",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "essence_responses",
+      "policyname": "Users can insert own essence responses",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "essence_responses",
+      "policyname": "Users can update own essence responses",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "essence_responses",
+      "policyname": "Users can view own essence responses",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lookbook_items",
+      "policyname": "Admins can manage all lookbook items",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lookbook_items",
+      "policyname": "Users can view items in their lookbooks",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (lookbook_id IN ( SELECT lookbooks.id\n   FROM lookbooks\n  WHERE ((lookbooks.user_id = auth.uid()) OR (lookbooks.wardrobe_id IN ( SELECT wardrobes.id\n           FROM wardrobes\n          WHERE (wardrobes.owner_id = auth.uid())))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lookbooks",
+      "policyname": "Admins can manage all lookbooks",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lookbooks",
+      "policyname": "Users can view their published lookbooks",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND ((user_id = auth.uid()) OR (wardrobe_id IN ( SELECT wardrobes.id\n   FROM wardrobes\n  WHERE (wardrobes.owner_id = auth.uid())))) AND (status = 'Published'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "masterclasses",
+      "policyname": "Admins can insert masterclasses",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "masterclasses",
+      "policyname": "Admins can manage masterclasses",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "masterclasses",
+      "policyname": "Anyone can view masterclasses",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "offers",
+      "policyname": "Admins can manage offers",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "offers",
+      "policyname": "Public read active offers",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(active = true)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "partner_brands",
+      "policyname": "Admins manage brands",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "partner_brands",
+      "policyname": "Public view brands",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(active = true)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Admins can delete any profile",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles profiles_1\n  WHERE ((profiles_1.id = auth.uid()) AND (profiles_1.role = 'admin'::text)))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Admins can insert any profile",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(EXISTS ( SELECT 1\n   FROM profiles profiles_1\n  WHERE ((profiles_1.id = auth.uid()) AND (profiles_1.role = 'admin'::text))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Admins can update any profile",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles profiles_1\n  WHERE ((profiles_1.id = auth.uid()) AND (profiles_1.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles profiles_1\n  WHERE ((profiles_1.id = auth.uid()) AND (profiles_1.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Admins can view all profiles",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (get_user_role(auth.uid()) = 'admin'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Service role can insert profile",
+      "roles": "{service_role}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can insert own profile",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((auth.uid() IS NOT NULL) AND (id = auth.uid()))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can insert their own profile.",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(( SELECT auth.uid() AS uid) = id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can update own profile",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "((auth.uid() IS NOT NULL) AND (id = auth.uid()))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (id = auth.uid()))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can view their own profile",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (id = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "purchases",
+      "policyname": "Admins can view all purchases",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "purchases",
+      "policyname": "Users can view their own purchases",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "services",
+      "policyname": "Admins can insert services",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "services",
+      "policyname": "Admins can manage services",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "services",
+      "policyname": "Public read services",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tailor_cards",
+      "policyname": "Admins can manage all tailor cards",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tailor_cards",
+      "policyname": "Users can view own tailor card",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "trusted_by_logos",
+      "policyname": "trusted_by_logos: admin write",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": "(auth.role() = 'authenticated'::text)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "trusted_by_logos",
+      "policyname": "trusted_by_logos: public read",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_access_grants",
+      "policyname": "Admins can manage grants",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_access_grants",
+      "policyname": "Users can view their own grants",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_progress",
+      "policyname": "Users can insert own progress",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_progress",
+      "policyname": "Users can update own progress.",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_progress",
+      "policyname": "Users can view own progress",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_questions",
+      "policyname": "Admins can manage all questions",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_questions",
+      "policyname": "Users can insert own questions",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_questions",
+      "policyname": "Users can view own questions",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (user_id = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "wardrobe_items",
+      "policyname": "Admins can manage all wardrobe items",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "wardrobe_items",
+      "policyname": "Users can insert own wardrobe items during intake",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "wardrobe_items",
+      "policyname": "Users can view own wardrobe items",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND ((user_id = auth.uid()) OR (wardrobe_id IN ( SELECT wardrobes.id\n   FROM wardrobes\n  WHERE (wardrobes.owner_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "wardrobes",
+      "policyname": "Admin full access to wardrobes",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((auth.uid() IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "wardrobes",
+      "policyname": "Users can view own wardrobes",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() IS NOT NULL) AND (owner_id = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_events",
+      "policyname": "Service Role Full Access",
+      "roles": "{service_role}",
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "Admin All Access",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((bucket_id = 'boutique'::text) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))",
+      "with_check": "((bucket_id = 'boutique'::text) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "Admins can upload assets",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(bucket_id = 'vault-assets'::text)"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "Anyone can upload an avatar.",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(bucket_id = 'avatars'::text)"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "Avatar images are publicly accessible.",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(bucket_id = 'avatars'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "Public Access",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(bucket_id = 'boutique'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "studio_wardrobe_owner_delete",
+      "roles": "{authenticated}",
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'studio-wardrobe'::text) AND can_access_wardrobe_object(name))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "studio_wardrobe_owner_insert",
+      "roles": "{authenticated}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((bucket_id = 'studio-wardrobe'::text) AND can_access_wardrobe_object(name))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "studio_wardrobe_owner_read",
+      "roles": "{authenticated}",
+      "cmd": "SELECT",
+      "qual": "((bucket_id = 'studio-wardrobe'::text) AND can_access_wardrobe_object(name))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "studio_wardrobe_owner_update",
+      "roles": "{authenticated}",
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'studio-wardrobe'::text) AND can_access_wardrobe_object(name))",
+      "with_check": null
+    }
+  ],
+  "functions": [
+    {
+      "proname": "can_access_wardrobe_object",
+      "prosecdef": true,
+      "proacl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.can_access_wardrobe_object(object_name text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'storage'\nAS $function$\r\n  SELECT\r\n    (storage.foldername(object_name))[1] = auth.uid()::text\r\n    OR (\r\n      (storage.foldername(object_name))[1] = 'wardrobe'\r\n      AND (\r\n        (storage.foldername(object_name))[2] = auth.uid()::text\r\n        OR (storage.foldername(object_name))[2] IN (\r\n          SELECT id::text FROM public.wardrobes WHERE owner_id = auth.uid()\r\n        )\r\n      )\r\n    )\r\n    OR EXISTS (\r\n      SELECT 1 FROM public.profiles p\r\n      WHERE p.id = auth.uid() AND p.role = 'admin'\r\n    );\r\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    },
+    {
+      "proname": "check_access",
+      "prosecdef": true,
+      "proacl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.check_access(check_user_id uuid, check_object_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\nDECLARE\r\n    user_profile public.profiles%ROWTYPE;\r\n    is_standalone_course boolean;\r\n    parent_masterclass_id uuid;\r\nBEGIN\r\n    -- 1. Fetch User Profile\r\n    SELECT * INTO user_profile FROM public.profiles WHERE id = check_user_id;\r\n    IF user_profile IS NULL THEN RETURN false; END IF;\r\n\r\n    -- 2. Global Overrides\r\n    IF user_profile.role = 'admin' OR user_profile.has_full_unlock THEN RETURN true; END IF;\r\n\r\n    -- 3. Course Pass Logic\r\n    IF user_profile.has_course_pass THEN\r\n        SELECT EXISTS (SELECT 1 FROM public.chapters WHERE id = check_object_id AND is_standalone = true) INTO is_standalone_course;\r\n        IF is_standalone_course THEN RETURN true; END IF;\r\n    END IF;\r\n\r\n    -- 4. Direct Grant Check\r\n    IF EXISTS (SELECT 1 FROM public.user_access_grants WHERE user_id = check_user_id AND (masterclass_id = check_object_id OR chapter_id = check_object_id)) THEN RETURN true; END IF;\r\n\r\n    -- 5. Parent Masterclass Check (Inheritance)\r\n    SELECT masterclass_id INTO parent_masterclass_id FROM public.chapters WHERE id = check_object_id;\r\n    \r\n    IF parent_masterclass_id IS NOT NULL THEN\r\n        IF EXISTS (SELECT 1 FROM public.user_access_grants WHERE user_id = check_user_id AND masterclass_id = parent_masterclass_id) THEN\r\n            RETURN true;\r\n        END IF;\r\n    END IF;\r\n\r\n    RETURN false;\r\nEND;\r\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    },
+    {
+      "proname": "check_rate_limit",
+      "prosecdef": true,
+      "proacl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.check_rate_limit(p_key text, p_max integer, p_window interval)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_count integer;\r\nBEGIN\r\n  INSERT INTO public.rate_limits (key, count, window_start)\r\n    VALUES (p_key, 1, now())\r\n  ON CONFLICT (key) DO UPDATE SET\r\n    count = CASE\r\n      WHEN public.rate_limits.window_start < now() - p_window THEN 1\r\n      ELSE public.rate_limits.count + 1\r\n    END,\r\n    window_start = CASE\r\n      WHEN public.rate_limits.window_start < now() - p_window THEN now()\r\n      ELSE public.rate_limits.window_start\r\n    END\r\n  RETURNING count INTO v_count;\r\n\r\n  -- Allowed when this request is within the max for the current window.\r\n  RETURN v_count <= p_max;\r\nEND;\r\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    },
+    {
+      "proname": "check_wardrobe_eligibility",
+      "prosecdef": false,
+      "proacl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.check_wardrobe_eligibility()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\r\nBEGIN\r\n    -- Check if the user is an active studio client\r\n    -- We assume the 'profiles' table is the source of truth\r\n    IF NOT EXISTS (\r\n        SELECT 1 FROM public.profiles\r\n        WHERE id = NEW.user_id\r\n        AND active_studio_client = TRUE\r\n    ) THEN\r\n        -- Block creation silently (return NULL cancels the insert in BEFORE trigger)\r\n        -- This prevents errors in the signup flow if some legacy logic tries to create it.\r\n        RETURN NULL; \r\n    END IF;\r\n\r\n    RETURN NEW;\r\nEND;\r\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    },
+    {
+      "proname": "clone_lookbook",
+      "prosecdef": true,
+      "proacl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.clone_lookbook(lookbook_id uuid, target_profile_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\nDECLARE\r\n    new_lookbook_id UUID;\r\n    item_record RECORD;\r\n    new_item_id UUID;\r\n    original_item_owner UUID;\r\nBEGIN\r\n    -- 1. Get original lookbook owner to check if we need to clone items too\r\n    SELECT user_id INTO original_item_owner FROM public.lookbooks WHERE id = lookbook_id;\r\n\r\n    -- 2. Create the new lookbook\r\n    INSERT INTO public.lookbooks (\r\n        user_id, title, collection_name, status, metadata\r\n    )\r\n    SELECT\r\n        target_profile_id,\r\n        title || ' (Copy)',\r\n        collection_name,\r\n        'Draft', -- Reset to draft\r\n        metadata\r\n    FROM public.lookbooks\r\n    WHERE id = lookbook_id\r\n    RETURNING id INTO new_lookbook_id;\r\n\r\n    -- 3. Clone items and link them\r\n    -- We assume lookbooks largely consist of items we want to copy into the new user's wardrobe (e.g. from Warehouse)\r\n    \r\n    FOR item_record IN \r\n        SELECT li.item_id, li.position\r\n        FROM public.lookbook_items li\r\n        WHERE li.lookbook_id = lookbook_id\r\n    LOOP\r\n        -- Clone item to new user\r\n        new_item_id := public.clone_wardrobe_item(item_record.item_id, target_profile_id);\r\n        \r\n        -- Link new item to new lookbook\r\n        INSERT INTO public.lookbook_items (lookbook_id, item_id, position)\r\n        VALUES (new_lookbook_id, new_item_id, item_record.position);\r\n        \r\n    END LOOP;\r\n\r\n    RETURN new_lookbook_id;\r\nEND;\r\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    },
+    {
+      "proname": "clone_wardrobe_item",
+      "prosecdef": true,
+      "proacl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.clone_wardrobe_item(item_id uuid, target_profile_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nDECLARE\r\n    new_item_id UUID;\r\nBEGIN\r\n    INSERT INTO public.wardrobe_items (\r\n        user_id, image_url, category, client_note, internal_note, status, product_link_id, is_general_library\r\n    )\r\n    SELECT\r\n        target_profile_id, -- New owner\r\n        image_url,\r\n        category,\r\n        client_note,\r\n        internal_note,\r\n        'Keep', -- Default status for cloned items\r\n        product_link_id,\r\n        FALSE -- Cloned items are specific to the client, not general library (unless specified otherwise)\r\n    FROM public.wardrobe_items\r\n    WHERE id = item_id\r\n    RETURNING id INTO new_item_id;\r\n\r\n    RETURN new_item_id;\r\nEND;\r\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    },
+    {
+      "proname": "get_user_role",
+      "prosecdef": true,
+      "proacl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.get_user_role(user_id uuid)\n RETURNS text\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT role FROM public.profiles WHERE id = user_id;\r\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    },
+    {
+      "proname": "handle_new_purchase",
+      "prosecdef": true,
+      "proacl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.handle_new_purchase()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\nDECLARE\r\n    service_unlocks BOOLEAN;\r\nBEGIN\r\n    SELECT unlocks_studio_access INTO service_unlocks\r\n    FROM public.services\r\n    WHERE price_id = NEW.product_id\r\n    LIMIT 1;\r\n\r\n    IF service_unlocks = TRUE THEN\r\n        UPDATE public.profiles\r\n        SET \r\n            active_studio_client = TRUE,\r\n            studio_permissions = jsonb_set(\r\n                jsonb_set(\r\n                    COALESCE(studio_permissions, '{}'::jsonb),\r\n                    '{lookbook}', 'true'\r\n                ),\r\n                '{wardrobe}', 'true'\r\n            )\r\n        WHERE id = NEW.user_id;\r\n\r\n        INSERT INTO public.tailor_cards (user_id)\r\n        VALUES (NEW.user_id)\r\n        ON CONFLICT (user_id) DO NOTHING;\r\n    END IF;\r\n\r\n    RETURN NEW;\r\nEND;\r\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    },
+    {
+      "proname": "handle_new_user",
+      "prosecdef": true,
+      "proacl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.handle_new_user()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  new_username text;\r\n  pf_exists boolean;\r\nBEGIN\r\n  -- Skip if a profile already exists (avoid PK violation).\r\n  SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = new.id) INTO pf_exists;\r\n  IF pf_exists THEN\r\n    RETURN new;\r\n  END IF;\r\n\r\n  new_username := new.raw_user_meta_data->>'username';\r\n\r\n  IF new_username IS NULL OR length(new_username) < 3 THEN\r\n    new_username := split_part(new.email, '@', 1);\r\n    IF length(new_username) < 3 THEN\r\n      new_username := new_username || '_' || floor(random() * 1000)::text;\r\n    END IF;\r\n  END IF;\r\n\r\n  IF EXISTS (SELECT 1 FROM public.profiles WHERE username = new_username) THEN\r\n    new_username := new_username || '_' || floor(random() * 1000)::text;\r\n  END IF;\r\n\r\n  INSERT INTO public.profiles (id, full_name, username, avatar_url, email, role, language_preference)\r\n  VALUES (\r\n    new.id,\r\n    COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', 'New Stylist'),\r\n    new_username,\r\n    new.raw_user_meta_data->>'avatar_url',\r\n    new.email,\r\n    'user', -- SECURITY: never trust client-supplied role metadata.\r\n    COALESCE(new.raw_user_meta_data->>'language', 'en')\r\n  );\r\n\r\n  RETURN new;\r\nEND;\r\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    },
+    {
+      "proname": "handle_updated_at",
+      "prosecdef": false,
+      "proacl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.handle_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\r\nBEGIN\r\n    NEW.updated_at = NOW();\r\n    RETURN NEW;\r\nEND;\r\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    }
+  ],
+  "triggers": [
+    {
+      "table_name": "essence_responses",
+      "definition": "CREATE TRIGGER on_essence_response_update BEFORE UPDATE ON public.essence_responses FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+    },
+    {
+      "table_name": "lookbooks",
+      "definition": "CREATE TRIGGER handle_updated_at_lookbooks BEFORE UPDATE ON public.lookbooks FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+    },
+    {
+      "table_name": "purchases",
+      "definition": "CREATE TRIGGER on_purchase_created AFTER INSERT ON public.purchases FOR EACH ROW EXECUTE FUNCTION handle_new_purchase()"
+    },
+    {
+      "table_name": "services",
+      "definition": "CREATE TRIGGER on_services_update BEFORE UPDATE ON public.services FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+    },
+    {
+      "table_name": "tailor_cards",
+      "definition": "CREATE TRIGGER ensure_studio_access BEFORE INSERT ON public.tailor_cards FOR EACH ROW EXECUTE FUNCTION check_wardrobe_eligibility()"
+    },
+    {
+      "table_name": "tailor_cards",
+      "definition": "CREATE TRIGGER handle_updated_at_tailor_cards BEFORE UPDATE ON public.tailor_cards FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "definition": "CREATE TRIGGER handle_updated_at_wardrobe_items BEFORE UPDATE ON public.wardrobe_items FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+    }
+  ],
+  "columnPrivileges": [
+    {
+      "table_name": "chapters",
+      "column_name": "available_at",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "available_at",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "available_at",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "available_at",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "available_at",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "available_at",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "available_at",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "available_at",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "category",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "category",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "category",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "category",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "category",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "category",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "category",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "category",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description_es",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description_es",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description_es",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description_es",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description_es",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description_es",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description_es",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "description_es",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_published",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_published",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_published",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_published",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_published",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_published",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_published",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_published",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_standalone",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_standalone",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_standalone",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_standalone",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_standalone",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_standalone",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_standalone",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "is_standalone",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "lab_questions",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "lab_questions",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "lab_questions",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "lab_questions",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "lab_questions",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "lab_questions",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "lab_questions",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "lab_questions",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "masterclass_id",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "masterclass_id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "masterclass_id",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "masterclass_id",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "masterclass_id",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "masterclass_id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "masterclass_id",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "masterclass_id",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "order_index",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "order_index",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "order_index",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "order_index",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "order_index",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "order_index",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "order_index",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "order_index",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "price_id",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "price_id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "price_id",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "price_id",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "price_id",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "price_id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "price_id",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "price_id",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "resource_urls",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "resource_urls",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "resource_urls",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "resource_urls",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "resource_urls",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "resource_urls",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "resource_urls",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "resource_urls",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "slug",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "slug",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "slug",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "slug",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "slug",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "slug",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "slug",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "slug",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "stripe_product_id",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "stripe_product_id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "stripe_product_id",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "stripe_product_id",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "stripe_product_id",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "stripe_product_id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "stripe_product_id",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "stripe_product_id",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle_es",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle_es",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle_es",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle_es",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle_es",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle_es",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle_es",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "subtitle_es",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways_es",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways_es",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways_es",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways_es",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways_es",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways_es",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways_es",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "takeaways_es",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "thumbnail_url",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "thumbnail_url",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "thumbnail_url",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "thumbnail_url",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "thumbnail_url",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "thumbnail_url",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "thumbnail_url",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "thumbnail_url",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title_es",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title_es",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title_es",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title_es",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title_es",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title_es",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title_es",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "title_es",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id_es",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id_es",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id_es",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id_es",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id_es",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "chapters",
+      "column_name": "video_id_es",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "active",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "active",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "active",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "active",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "active",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "active",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "active",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "active",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "commission_rate",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "commission_rate",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "commission_rate",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "commission_rate",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "commission_rate",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "commission_rate",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_email",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_email",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_email",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_email",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_email",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_email",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_name",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_name",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_name",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_name",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_name",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "contact_name",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "internal_notes",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "internal_notes",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "internal_notes",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "internal_notes",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "internal_notes",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "internal_notes",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "logo_url",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "logo_url",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "logo_url",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "logo_url",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "logo_url",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "logo_url",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "logo_url",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "logo_url",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "name",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "name",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "name",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "name",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "name",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "name",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "name",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "name",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "order_index",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "order_index",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "order_index",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "order_index",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "order_index",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "order_index",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "order_index",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "order_index",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "partnership_status",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "partnership_status",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "partnership_status",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "partnership_status",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "partnership_status",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "partnership_status",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "partnership_status",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "partnership_status",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "website_url",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "website_url",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "website_url",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "website_url",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "website_url",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "website_url",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "website_url",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "partner_brands",
+      "column_name": "website_url",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "active_studio_client",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "active_studio_client",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "active_studio_client",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "active_studio_client",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "active_studio_client",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "active_studio_client",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "active_studio_client",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "active_studio_client",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "avatar_url",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "avatar_url",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "avatar_url",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "avatar_url",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "avatar_url",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "avatar_url",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "avatar_url",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "avatar_url",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "converted_at",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "converted_at",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "converted_at",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "converted_at",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "converted_at",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "converted_at",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "converted_at",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "converted_at",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "email",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "email",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "email",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "email",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "email",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "email",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "email",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "email",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "full_name",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "full_name",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "full_name",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "full_name",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "full_name",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "full_name",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "full_name",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "full_name",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_course_pass",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_course_pass",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_course_pass",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_course_pass",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_course_pass",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_course_pass",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_course_pass",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_course_pass",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_full_unlock",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_full_unlock",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_full_unlock",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_full_unlock",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_full_unlock",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_full_unlock",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_full_unlock",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "has_full_unlock",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "intake_token",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "intake_token",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "intake_token",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "intake_token",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "intake_token",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "intake_token",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "intake_token",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "intake_token",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "is_guest",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "is_guest",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "is_guest",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "is_guest",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "is_guest",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "is_guest",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "is_guest",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "is_guest",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "language_preference",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "language_preference",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "language_preference",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "language_preference",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "language_preference",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "language_preference",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "language_preference",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "language_preference",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "role",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "role",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "role",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "role",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "role",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "role",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "role",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "role",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "status",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "status",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "status",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "status",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "status",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "status",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "status",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "status",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "studio_permissions",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "studio_permissions",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "studio_permissions",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "studio_permissions",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "studio_permissions",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "studio_permissions",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "studio_permissions",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "studio_permissions",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "style_essentials",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "style_essentials",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "style_essentials",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "style_essentials",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "style_essentials",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "style_essentials",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "style_essentials",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "style_essentials",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "username",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "username",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "username",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "username",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "username",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "username",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "username",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "username",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "website",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "website",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "website",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "website",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "website",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "website",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "website",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "website",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "brand",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "brand",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "brand",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "brand",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "brand",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "brand",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "category",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "category",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "category",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "category",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "category",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "category",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "client_note",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "client_note",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "client_note",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "client_note",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "client_note",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "client_note",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "created_at",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "created_at",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "id",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "id",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "image_url",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "image_url",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "image_url",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "image_url",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "image_url",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "internal_note",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "internal_note",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "is_general_library",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "is_general_library",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "is_general_library",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "is_general_library",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "is_general_library",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "notes",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "notes",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "notes",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "notes",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "notes",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "product_link_id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "product_link_id",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "product_link_id",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "product_link_id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "product_link_id",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "status",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "status",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "status",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "status",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "status",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "tags",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "tags",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "tags",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "tags",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "tags",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "tags",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "updated_at",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "updated_at",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "user_id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "user_id",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "user_id",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "user_id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "user_id",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "wardrobe_id",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "wardrobe_id",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "wardrobe_id",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "wardrobe_id",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "column_name": "wardrobe_id",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    }
+  ],
+  "foreignKeys": [
+    {
+      "table_name": "admin_notifications",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "boutique_clicks",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "boutique_clicks",
+      "definition": "FOREIGN KEY (item_id) REFERENCES boutique_items(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "boutique_collection_items",
+      "definition": "FOREIGN KEY (item_id) REFERENCES boutique_items(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "boutique_collection_items",
+      "definition": "FOREIGN KEY (collection_id) REFERENCES boutique_collections(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "boutique_items",
+      "definition": "FOREIGN KEY (brand_id) REFERENCES partner_brands(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "boutique_saves",
+      "definition": "FOREIGN KEY (item_id) REFERENCES boutique_items(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "boutique_saves",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "chapters",
+      "definition": "FOREIGN KEY (masterclass_id) REFERENCES masterclasses(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "essence_responses",
+      "definition": "FOREIGN KEY (masterclass_id) REFERENCES masterclasses(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "essence_responses",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "essence_responses",
+      "definition": "FOREIGN KEY (chapter_id) REFERENCES chapters(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "lookbook_items",
+      "definition": "FOREIGN KEY (lookbook_id) REFERENCES lookbooks(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "lookbook_items",
+      "definition": "FOREIGN KEY (item_id) REFERENCES wardrobe_items(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "lookbooks",
+      "definition": "FOREIGN KEY (wardrobe_id) REFERENCES wardrobes(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "lookbooks",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "purchases",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "tailor_cards",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "tailor_cards",
+      "definition": "FOREIGN KEY (last_updated_by) REFERENCES auth.users(id)"
+    },
+    {
+      "table_name": "user_access_grants",
+      "definition": "FOREIGN KEY (chapter_id) REFERENCES chapters(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "user_access_grants",
+      "definition": "FOREIGN KEY (masterclass_id) REFERENCES masterclasses(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "user_access_grants",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "user_progress",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id)"
+    },
+    {
+      "table_name": "user_questions",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "definition": "FOREIGN KEY (product_link_id) REFERENCES boutique_items(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "wardrobe_items",
+      "definition": "FOREIGN KEY (wardrobe_id) REFERENCES wardrobes(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "wardrobes",
+      "definition": "FOREIGN KEY (owner_id) REFERENCES profiles(id) ON DELETE SET NULL"
+    }
+  ],
+  "buckets": [
+    {
+      "id": "avatars",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "boutique",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "studio-wardrobe",
+      "public": false,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "vault-assets",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    }
+  ],
+  "catalogReadiness": [
+    {
+      "kind": "masterclasses",
+      "total": "3",
+      "published": "1",
+      "priced": "1"
+    },
+    {
+      "kind": "chapters",
+      "total": "20",
+      "published": "5",
+      "priced": "6"
+    }
+  ],
+  "videoReadiness": [
+    {
+      "total": "20",
+      "missing_en": "5",
+      "missing_es": "5"
+    }
+  ],
+  "publishedVideoReadiness": [
+    {
+      "published_modules": "5",
+      "missing_en": "5",
+      "missing_es": "5"
+    }
+  ],
+  "catalogPricing": [
+    {
+      "kind": "masterclass",
+      "title": "Colorimetry",
+      "display": "$50",
+      "active": true,
+      "liveMode": false,
+      "amount": 50,
+      "currency": "usd",
+      "productMatches": true
+    },
+    {
+      "kind": "offer",
+      "title": "The Full Learning Access",
+      "display": "$150",
+      "active": true,
+      "liveMode": false,
+      "amount": 150,
+      "currency": "usd",
+      "productMatches": true
+    },
+    {
+      "kind": "offer",
+      "title": "Course Pass",
+      "display": "$ 50",
+      "active": true,
+      "liveMode": false,
+      "amount": 50,
+      "currency": "usd",
+      "productMatches": true
+    }
+  ]
+}

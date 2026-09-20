@@ -1,0 +1,768 @@
+{
+  "checkedAt": "2026-09-20T02:52:21.024Z",
+  "pages": [
+    {
+      "route": "/en",
+      "url": "https://www.theacstyle.com/en",
+      "status": 200,
+      "title": "The AC Style | Premier Personal Styling",
+      "lang": "en",
+      "headings": [
+        "Style, Confidence, YOU."
+      ],
+      "horizontalOverflow": true,
+      "analyticsLoaded": false,
+      "unnamedButtons": 7,
+      "imagesMissingAlt": 0,
+      "links": [
+        {
+          "text": "AC Styling",
+          "href": "/en"
+        },
+        {
+          "text": "About",
+          "href": "#about"
+        },
+        {
+          "text": "Services",
+          "href": "#services"
+        },
+        {
+          "text": "Contact",
+          "href": "#contact"
+        },
+        {
+          "text": "EN",
+          "href": "/en"
+        },
+        {
+          "text": "ES",
+          "href": "/es"
+        },
+        {
+          "text": "Book Intro Session",
+          "href": "/en/book"
+        },
+        {
+          "text": "Book Intro Session",
+          "href": "https://calendly.com/fashionstylist-ac/30min"
+        },
+        {
+          "text": "Personal StylistElevate your wardrobe with a stylist who helps refine your look and build outfits th",
+          "href": "/book"
+        },
+        {
+          "text": "Personal ShoppingSkip the stress — we'll curate pieces that fit your style, shape, and budget, onlin",
+          "href": "/book"
+        },
+        {
+          "text": "Closet DetoxDeclutter and organize your closet. We'll help decide what to keep, tailor, or let go wi",
+          "href": "/book"
+        },
+        {
+          "text": "Corporate ConsultingEnhance your team's presence through dress code strategy, styling support, and i",
+          "href": "/book"
+        },
+        {
+          "text": "Online Services",
+          "href": "/catalogs/online-services_compressed.pdf"
+        },
+        {
+          "text": "In-Person Services",
+          "href": "/catalogs/in-person-services_compressed.pdf"
+        },
+        {
+          "text": "Corporate",
+          "href": "/catalogs/corporate.pdf"
+        },
+        {
+          "text": "Book Intro Session",
+          "href": "/en/book"
+        },
+        {
+          "text": "hello@theacstyle.com",
+          "href": "mailto:hello@theacstyle.com"
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/ac.stylingcoach/"
+        },
+        {
+          "text": "",
+          "href": "https://www.tiktok.com/@ac.styling"
+        },
+        {
+          "text": "Home",
+          "href": "/en"
+        },
+        {
+          "text": "About",
+          "href": "#about"
+        },
+        {
+          "text": "Services",
+          "href": "#services"
+        },
+        {
+          "text": "Contact",
+          "href": "#contact"
+        },
+        {
+          "text": "hello@theacstyle.com",
+          "href": "mailto:hello@theacstyle.com"
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/ac.stylingcoach/"
+        },
+        {
+          "text": "",
+          "href": "https://www.tiktok.com/@ac.styling"
+        },
+        {
+          "text": "Privacy Policy",
+          "href": "/en/legal/privacy"
+        },
+        {
+          "text": "Terms of Service",
+          "href": "/en/legal/terms"
+        },
+        {
+          "text": "Refund Policy",
+          "href": "/en/legal/refunds"
+        }
+      ],
+      "errors": [],
+      "headers": {
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "x-frame-options": "DENY",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-vercel-cache": "HIT"
+      }
+    },
+    {
+      "route": "/es",
+      "url": "https://www.theacstyle.com/es",
+      "status": 200,
+      "title": "The AC Style | Premier Personal Styling",
+      "lang": "es",
+      "headings": [
+        "Estilo, Confianza, TÚ."
+      ],
+      "horizontalOverflow": true,
+      "analyticsLoaded": false,
+      "unnamedButtons": 7,
+      "imagesMissingAlt": 0,
+      "links": [
+        {
+          "text": "AC Styling",
+          "href": "/es"
+        },
+        {
+          "text": "Acerca",
+          "href": "#about"
+        },
+        {
+          "text": "Servicios",
+          "href": "#services"
+        },
+        {
+          "text": "Contacto",
+          "href": "#contact"
+        },
+        {
+          "text": "EN",
+          "href": "/en"
+        },
+        {
+          "text": "ES",
+          "href": "/es"
+        },
+        {
+          "text": "Reservar Sesión de Introducción",
+          "href": "/es/book"
+        },
+        {
+          "text": "Reservar Sesión de Introducción",
+          "href": "https://calendly.com/fashionstylist-ac/30min"
+        },
+        {
+          "text": "Estilista PersonalEleva tu guardarropa con un estilista que te ayuda a refinar tu look y crear outfi",
+          "href": "/book"
+        },
+        {
+          "text": "Compras PersonalesSáltate el estrés — curaremos piezas que se ajusten a tu estilo, forma y presupues",
+          "href": "/book"
+        },
+        {
+          "text": "Detox de ClósetDespeja y organiza tu clóset. Te ayudaremos a decidir qué guardar, arreglar o dejar i",
+          "href": "/book"
+        },
+        {
+          "text": "Consultoría CorporativaMejora la presencia de tu equipo a través de estrategias de código de vestime",
+          "href": "/book"
+        },
+        {
+          "text": "Servicios Online",
+          "href": "/catalogs/online-services_compressed.pdf"
+        },
+        {
+          "text": "Servicios Presenciales",
+          "href": "/catalogs/in-person-services_compressed.pdf"
+        },
+        {
+          "text": "Corporativo",
+          "href": "/catalogs/corporate.pdf"
+        },
+        {
+          "text": "Reservar Sesión de Introducción",
+          "href": "/es/book"
+        },
+        {
+          "text": "hello@theacstyle.com",
+          "href": "mailto:hello@theacstyle.com"
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/ac.stylingcoach/"
+        },
+        {
+          "text": "",
+          "href": "https://www.tiktok.com/@ac.styling"
+        },
+        {
+          "text": "Inicio",
+          "href": "/es"
+        },
+        {
+          "text": "Acerca",
+          "href": "#about"
+        },
+        {
+          "text": "Servicios",
+          "href": "#services"
+        },
+        {
+          "text": "Contacto",
+          "href": "#contact"
+        },
+        {
+          "text": "hello@theacstyle.com",
+          "href": "mailto:hello@theacstyle.com"
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/ac.stylingcoach/"
+        },
+        {
+          "text": "",
+          "href": "https://www.tiktok.com/@ac.styling"
+        },
+        {
+          "text": "Política de Privacidad",
+          "href": "/es/legal/privacy"
+        },
+        {
+          "text": "Términos de Servicio",
+          "href": "/es/legal/terms"
+        },
+        {
+          "text": "Política de Reembolsos",
+          "href": "/es/legal/refunds"
+        }
+      ],
+      "errors": [],
+      "headers": {
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "x-frame-options": "DENY",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-vercel-cache": "HIT"
+      }
+    },
+    {
+      "route": "/en/vault-access",
+      "url": "https://www.theacstyle.com/en/vault-access",
+      "status": 200,
+      "title": "The Vault | AC Styling",
+      "lang": "en",
+      "headings": [
+        "Your style already speaks for you. Learn to direct it."
+      ],
+      "horizontalOverflow": false,
+      "robots": "noindex, nofollow",
+      "canonical": "https://www.theacstyle.com/en/vault-access",
+      "analyticsLoaded": false,
+      "unnamedButtons": 0,
+      "imagesMissingAlt": 0,
+      "links": [
+        {
+          "text": "AC Styling",
+          "href": "/en"
+        },
+        {
+          "text": "About",
+          "href": "#about"
+        },
+        {
+          "text": "Services",
+          "href": "#services"
+        },
+        {
+          "text": "Contact",
+          "href": "#contact"
+        },
+        {
+          "text": "EN",
+          "href": "/en/vault-access"
+        },
+        {
+          "text": "ES",
+          "href": "/es/vault-access"
+        },
+        {
+          "text": "Get access",
+          "href": "#offer"
+        },
+        {
+          "text": "See what's inside",
+          "href": "#catalog"
+        },
+        {
+          "text": "Book a thirty-minute session",
+          "href": "/en/book"
+        },
+        {
+          "text": "Message us on WhatsApp",
+          "href": "https://wa.me/13054131472"
+        },
+        {
+          "text": "Read the policy",
+          "href": "/en/legal/refunds"
+        },
+        {
+          "text": "Get access",
+          "href": "/en/vault/join"
+        },
+        {
+          "text": "Home",
+          "href": "/en"
+        },
+        {
+          "text": "About",
+          "href": "#about"
+        },
+        {
+          "text": "Services",
+          "href": "#services"
+        },
+        {
+          "text": "Contact",
+          "href": "#contact"
+        },
+        {
+          "text": "hello@theacstyle.com",
+          "href": "mailto:hello@theacstyle.com"
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/ac.stylingcoach/"
+        },
+        {
+          "text": "",
+          "href": "https://www.tiktok.com/@ac.styling"
+        },
+        {
+          "text": "Privacy Policy",
+          "href": "/en/legal/privacy"
+        },
+        {
+          "text": "Terms of Service",
+          "href": "/en/legal/terms"
+        },
+        {
+          "text": "Refund Policy",
+          "href": "/en/legal/refunds"
+        },
+        {
+          "text": "Get access",
+          "href": "#offer"
+        }
+      ],
+      "errors": [],
+      "headers": {
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "x-frame-options": "DENY",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-vercel-cache": "STALE"
+      }
+    },
+    {
+      "route": "/es/vault-access",
+      "url": "https://www.theacstyle.com/es/vault-access",
+      "status": 200,
+      "title": "El Vault | AC Styling",
+      "lang": "es",
+      "headings": [
+        "Tu estilo ya habla por ti. Aprende a dirigirlo."
+      ],
+      "horizontalOverflow": false,
+      "robots": "noindex, nofollow",
+      "canonical": "https://www.theacstyle.com/es/vault-access",
+      "analyticsLoaded": false,
+      "unnamedButtons": 0,
+      "imagesMissingAlt": 0,
+      "links": [
+        {
+          "text": "AC Styling",
+          "href": "/es"
+        },
+        {
+          "text": "Acerca",
+          "href": "#about"
+        },
+        {
+          "text": "Servicios",
+          "href": "#services"
+        },
+        {
+          "text": "Contacto",
+          "href": "#contact"
+        },
+        {
+          "text": "EN",
+          "href": "/en/vault-access"
+        },
+        {
+          "text": "ES",
+          "href": "/es/vault-access"
+        },
+        {
+          "text": "Obtener acceso",
+          "href": "#offer"
+        },
+        {
+          "text": "Ver qué hay dentro",
+          "href": "#catalog"
+        },
+        {
+          "text": "Agendar sesión de treinta minutos",
+          "href": "/es/book"
+        },
+        {
+          "text": "Escríbenos por WhatsApp",
+          "href": "https://wa.me/13054131472"
+        },
+        {
+          "text": "Ver la política",
+          "href": "/es/legal/refunds"
+        },
+        {
+          "text": "Obtener acceso",
+          "href": "/es/vault/join"
+        },
+        {
+          "text": "Inicio",
+          "href": "/es"
+        },
+        {
+          "text": "Acerca",
+          "href": "#about"
+        },
+        {
+          "text": "Servicios",
+          "href": "#services"
+        },
+        {
+          "text": "Contacto",
+          "href": "#contact"
+        },
+        {
+          "text": "hello@theacstyle.com",
+          "href": "mailto:hello@theacstyle.com"
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/ac.stylingcoach/"
+        },
+        {
+          "text": "",
+          "href": "https://www.tiktok.com/@ac.styling"
+        },
+        {
+          "text": "Política de Privacidad",
+          "href": "/es/legal/privacy"
+        },
+        {
+          "text": "Términos de Servicio",
+          "href": "/es/legal/terms"
+        },
+        {
+          "text": "Política de Reembolsos",
+          "href": "/es/legal/refunds"
+        },
+        {
+          "text": "Obtener acceso",
+          "href": "#offer"
+        }
+      ],
+      "errors": [],
+      "headers": {
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "x-frame-options": "DENY",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-vercel-cache": "STALE"
+      }
+    },
+    {
+      "route": "/en/book",
+      "url": "https://www.theacstyle.com/en/book",
+      "status": 200,
+      "title": "The AC Style | Premier Personal Styling",
+      "lang": "en",
+      "headings": [],
+      "horizontalOverflow": false,
+      "analyticsLoaded": false,
+      "unnamedButtons": 0,
+      "imagesMissingAlt": 0,
+      "links": [
+        {
+          "text": "AC Styling",
+          "href": "/en"
+        },
+        {
+          "text": "About",
+          "href": "#about"
+        },
+        {
+          "text": "Services",
+          "href": "#services"
+        },
+        {
+          "text": "Contact",
+          "href": "#contact"
+        },
+        {
+          "text": "EN",
+          "href": "/en/book"
+        },
+        {
+          "text": "ES",
+          "href": "/es/book"
+        },
+        {
+          "text": "Home",
+          "href": "/en"
+        },
+        {
+          "text": "About",
+          "href": "#about"
+        },
+        {
+          "text": "Services",
+          "href": "#services"
+        },
+        {
+          "text": "Contact",
+          "href": "#contact"
+        },
+        {
+          "text": "hello@theacstyle.com",
+          "href": "mailto:hello@theacstyle.com"
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/ac.stylingcoach/"
+        },
+        {
+          "text": "",
+          "href": "https://www.tiktok.com/@ac.styling"
+        },
+        {
+          "text": "Privacy Policy",
+          "href": "/en/legal/privacy"
+        },
+        {
+          "text": "Terms of Service",
+          "href": "/en/legal/terms"
+        },
+        {
+          "text": "Refund Policy",
+          "href": "/en/legal/refunds"
+        }
+      ],
+      "errors": [],
+      "headers": {
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "x-frame-options": "DENY",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-vercel-cache": "HIT"
+      }
+    },
+    {
+      "route": "/es/book",
+      "url": "https://www.theacstyle.com/es/book",
+      "status": 200,
+      "title": "The AC Style | Premier Personal Styling",
+      "lang": "es",
+      "headings": [],
+      "horizontalOverflow": false,
+      "analyticsLoaded": false,
+      "unnamedButtons": 0,
+      "imagesMissingAlt": 0,
+      "links": [
+        {
+          "text": "AC Styling",
+          "href": "/es"
+        },
+        {
+          "text": "Acerca",
+          "href": "#about"
+        },
+        {
+          "text": "Servicios",
+          "href": "#services"
+        },
+        {
+          "text": "Contacto",
+          "href": "#contact"
+        },
+        {
+          "text": "EN",
+          "href": "/en/book"
+        },
+        {
+          "text": "ES",
+          "href": "/es/book"
+        },
+        {
+          "text": "Inicio",
+          "href": "/es"
+        },
+        {
+          "text": "Acerca",
+          "href": "#about"
+        },
+        {
+          "text": "Servicios",
+          "href": "#services"
+        },
+        {
+          "text": "Contacto",
+          "href": "#contact"
+        },
+        {
+          "text": "hello@theacstyle.com",
+          "href": "mailto:hello@theacstyle.com"
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/ac.stylingcoach/"
+        },
+        {
+          "text": "",
+          "href": "https://www.tiktok.com/@ac.styling"
+        },
+        {
+          "text": "Política de Privacidad",
+          "href": "/es/legal/privacy"
+        },
+        {
+          "text": "Términos de Servicio",
+          "href": "/es/legal/terms"
+        },
+        {
+          "text": "Política de Reembolsos",
+          "href": "/es/legal/refunds"
+        }
+      ],
+      "errors": [],
+      "headers": {
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "x-frame-options": "DENY",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-vercel-cache": "HIT"
+      }
+    },
+    {
+      "route": "/en/vault/courses",
+      "url": "https://www.theacstyle.com/en/login?next=%2Fen%2Fvault%2Fcourses",
+      "status": 200,
+      "title": "The AC Style | Premier Personal Styling",
+      "lang": "en",
+      "headings": [
+        "Elevate your personal style journey."
+      ],
+      "horizontalOverflow": false,
+      "analyticsLoaded": false,
+      "unnamedButtons": 0,
+      "imagesMissingAlt": 0,
+      "links": [
+        {
+          "text": "Start your membership",
+          "href": "/en/vault/join"
+        }
+      ],
+      "errors": [],
+      "headers": {
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "x-frame-options": "DENY",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-vercel-cache": "HIT"
+      }
+    },
+    {
+      "route": "/en/vault/services",
+      "url": "https://www.theacstyle.com/en/login?next=%2Fen%2Fvault%2Fservices",
+      "status": 200,
+      "title": "The AC Style | Premier Personal Styling",
+      "lang": "en",
+      "headings": [
+        "Elevate your personal style journey."
+      ],
+      "horizontalOverflow": false,
+      "analyticsLoaded": false,
+      "unnamedButtons": 0,
+      "imagesMissingAlt": 0,
+      "links": [
+        {
+          "text": "Start your membership",
+          "href": "/en/vault/join"
+        }
+      ],
+      "errors": [],
+      "headers": {
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "x-frame-options": "DENY",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-vercel-cache": "HIT"
+      }
+    },
+    {
+      "route": "/en/vault/boutique",
+      "url": "https://www.theacstyle.com/en/login?next=%2Fen%2Fvault%2Fboutique",
+      "status": 200,
+      "title": "The AC Style | Premier Personal Styling",
+      "lang": "en",
+      "headings": [
+        "Elevate your personal style journey."
+      ],
+      "horizontalOverflow": false,
+      "analyticsLoaded": false,
+      "unnamedButtons": 0,
+      "imagesMissingAlt": 0,
+      "links": [
+        {
+          "text": "Start your membership",
+          "href": "/en/vault/join"
+        }
+      ],
+      "errors": [],
+      "headers": {
+        "content-security-policy-report-only": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com; frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "x-frame-options": "DENY",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-vercel-cache": "HIT"
+      }
+    }
+  ]
+}
