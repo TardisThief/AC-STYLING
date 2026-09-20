@@ -391,7 +391,7 @@ genuine legal exposure. **1–6 are done; 7 is next.**
   containing nothing but an image with `alt=""`, and no `aria-label` — so every
   one of them had *no accessible name whatsoever*, announced as a row of bare
   "button". The name belongs on the control, so the button now carries
-  `aria-label={\`Add ${item.category} to the lookbook\`}` and the image inside
+  an `aria-label` naming the garment and the image inside
   stays decorative. Separately, the garment placed **on** the lookbook canvas
   had `alt=""` although it is the substance of the document — a client using a
   screen reader got an empty page — so it now describes itself by category.
