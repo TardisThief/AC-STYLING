@@ -460,5 +460,13 @@
         "vaultBody": "Something went wrong opening this part of the Vault. Your progress and your purchases are safe.",
         "vaultHome": "Back to the Vault",
         "digest": "Reference"
+    },
+    "Breadcrumbs": {
+        "label": "Breadcrumb",
+        "vault": "The Vault",
+        "courses": "Courses",
+        "foundations": "Foundations",
+        "masterclass": "Masterclass",
+        "essenceLab": "Essence Lab"
     }
 }

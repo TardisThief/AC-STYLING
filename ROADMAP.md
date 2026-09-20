@@ -226,7 +226,7 @@ Most of this phase is propagating patterns that already exist in the repo
 rather than inventing anything.
 
 Order below is the agreed execution order. 1–2 unblock launch; 3–4 are the only
-genuine legal exposure. **1–7 are done; 8 is next.**
+genuine legal exposure. **1–8 are done; 9 is next.**
 
 - ~~**1. Roll `buildMetadata` out site-wide.**~~ — **done (2026-09-19)**. Added
   `pageMetadata()` to `app/lib/seo.ts`, which reduces a route to one line and
@@ -439,9 +439,43 @@ genuine legal exposure. **1–7 are done; 8 is next.**
   source. One small thing left: `public/logo.png` is 150×150, which clears
   Google's 112×112 floor but is not generous; a larger logo would be a
   five-minute improvement if one exists.
-- **8. Breadcrumbs in the Vault.** `vault/courses/[slug]/essence-lab` is four
-  levels deep with no positional affordance. The routes are gated so there is no
-  SEO argument here — this is purely the UX one, which is why it sits below 1–7.
+- ~~**8. Breadcrumbs in the Vault.**~~ — **done (2026-09-20)**. New
+  `components/vault/VaultBreadcrumbs.tsx`, wired into the five routes that sit
+  two or more levels below the Vault root.
+
+  The premise needed correcting: those pages were not *without* an affordance,
+  they each had a single "Back to …" link. That answers "how do I leave" but
+  not "where am I", which is the actual gap on a four-level route. So the trail
+  **replaces** that link rather than sitting beside it — a breadcrumb whose
+  last hop goes to the same place as an adjacent back button is the same
+  control twice.
+
+  The Vault root crumb is prepended by the component, not by each call site,
+  where it could be forgotten or worded differently. Fixed parts of the
+  hierarchy resolve through a new `Breadcrumbs` message namespace (both
+  locales); database titles are passed through verbatim, so a chapter that
+  happens to be called "courses" is not mistaken for the `courses` key — there
+  is a test for exactly that.
+
+  `foundations/[slug]` previously said "Back to Masterclass" generically; the
+  crumb now names the masterclass. That needed its own small query rather than
+  an embedded join, because `CHAPTER_CATALOG_COLUMNS` is one unbroken string
+  literal that Supabase parses to infer the row type, and adding to it
+  collapses the type to `GenericStringError`. It falls back to the generic
+  label if that lookup returns nothing.
+
+  **No `BreadcrumbList` structured data**, deliberately: every route this
+  renders on is gated and ships `noindex`, so it would be markup aimed at a
+  crawler that has been told not to look.
+
+  Verified by six unit tests (`tests/unit/vault-breadcrumbs.test.tsx`) rather
+  than in a browser, because `/vault` redirects anonymous requests at the proxy
+  and a runtime check has no session — the same limitation as the Vault error
+  boundary in item 5. They pin the landmark and list semantics, that the root
+  is always present, that ancestors are links while the current page is not,
+  and `aria-current="page"`. Removing the five now-dead `ArrowLeft` imports (and
+  one `Link`) kept the warning count flat at 156; the other unused-import
+  warnings in those files are pre-existing and were left alone.
 - **9. Loading skeletons beyond marketing.** `(marketing)/loading.tsx` is the only
   one in the app, and the Vault pages are the slow ones. Subsumes the open Studio
   P3 item (`"Loading Wardrobe..."` should be a skeleton).

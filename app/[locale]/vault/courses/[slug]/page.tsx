@@ -1,7 +1,7 @@
 
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
-import { ArrowLeft, FileText, CheckCircle2, Download } from "lucide-react";
+import { FileText, CheckCircle2, Download } from "lucide-react";
 import { redirect } from "next/navigation";
 import VaultVideoPlayer from "@/components/vault/VaultVideoPlayer";
 import MarkComplete from "@/components/vault/MarkComplete";
@@ -14,6 +14,7 @@ import UnlockButton from "@/components/monetization/UnlockButton";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
+import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
 
 export const generateMetadata = pageMetadata({ key: 'vaultCourse' });
 
@@ -110,10 +111,12 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
         <section className="min-h-screen pb-20">
             {/* Nav */}
             <div className="mb-8">
-                <Link href="/vault/courses" className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-6 group">
-                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Courses
-                </Link>
+                <VaultBreadcrumbs
+                    trail={[
+                        { key: "courses", href: "/vault/courses" },
+                        { label: title ?? undefined },
+                    ]}
+                />
                 <div className="flex items-baseline gap-4">
                     <div>
                         <span className="inline-block px-3 py-1 mb-2 text-xs font-bold tracking-widest uppercase bg-ac-gold/10 text-ac-gold rounded-sm">

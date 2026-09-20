@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
-import { ArrowLeft, FileText, CheckCircle2, Download, Lock } from "lucide-react";
+import { FileText, CheckCircle2, Download, Lock } from "lucide-react";
 import { redirect } from "next/navigation";
 import VaultVideoPlayer from "@/components/vault/VaultVideoPlayer";
 import MarkComplete from "@/components/vault/MarkComplete";
@@ -11,6 +11,7 @@ import { getChapterVideo } from "@/app/actions/vault/chapter-video";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
+import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
 
 export const generateMetadata = pageMetadata({ key: 'vaultFoundation' });
 
@@ -53,6 +54,20 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
             .limit(1)
             .single();
         if (next) nextChapterSlug = next.slug;
+    }
+
+
+    // Named parent crumb. A separate query on purpose: CHAPTER_CATALOG_COLUMNS
+    // is one unbroken literal that Supabase parses to infer the row shape, so
+    // an embedded join cannot be added to it without collapsing that type.
+    let masterclassTitle: string | null = null;
+    if (chapter.masterclass_id) {
+        const { data: mc } = await supabase
+            .from('masterclasses')
+            .select('title, title_es')
+            .eq('id', chapter.masterclass_id)
+            .single();
+        if (mc) masterclassTitle = locale === 'es' && mc.title_es ? mc.title_es : mc.title;
     }
 
     // Localize Content
@@ -110,13 +125,18 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
             {/* Nav ... */}
             <div className="mb-8">
                 {/* ... default nav content ... */}
-                <Link
-                    href={chapter.masterclass_id ? `/vault/foundations/masterclass/${chapter.masterclass_id}` : '/vault/foundations'}
-                    className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-6 group"
-                >
-                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to {chapter.masterclass_id ? 'Masterclass' : 'Collections'}
-                </Link>
+                <VaultBreadcrumbs
+                    trail={[
+                        { key: "foundations", href: "/vault/foundations" },
+                        ...(chapter.masterclass_id
+                            ? [{
+                                ...(masterclassTitle ? { label: masterclassTitle } : { key: "masterclass" as const }),
+                                href: `/vault/foundations/masterclass/${chapter.masterclass_id}`,
+                            }]
+                            : []),
+                        { label: title ?? undefined },
+                    ]}
+                />
                 {/* ... header ... */}
                 {/* order_index is authored 1-based in admin ("Order Index" = the show
                     order), so it renders as-is. Adding 1 here made show order 1 read "2". */}

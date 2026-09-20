@@ -1,6 +1,6 @@
 
 import { Link } from "@/i18n/routing";
-import { ArrowLeft, PlayCircle, FolderOpen, Check, Lock, Unlock } from "lucide-react";
+import { PlayCircle, FolderOpen, Check, Lock, Unlock } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { checkAccess } from "@/utils/access-control";
@@ -13,6 +13,7 @@ import { parseVimeoId } from "@/app/lib/vimeo";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
+import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
 
 export const generateMetadata = pageMetadata({ key: 'vaultMasterclass' });
 
@@ -88,10 +89,12 @@ export default async function MasterclassPage({ params }: { params: Promise<{ id
             <CheckoutSyncHandler />
             {/* Nav */}
             <div className="mb-8 border-b border-ac-taupe/10 pb-6">
-                <Link href="/vault/foundations" className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-6 group">
-                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Collections
-                </Link>
+                <VaultBreadcrumbs
+                    trail={[
+                        { key: "foundations", href: "/vault/foundations" },
+                        { label: mcTitle ?? undefined },
+                    ]}
+                />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
                     {/* Thumbnail / Video */}

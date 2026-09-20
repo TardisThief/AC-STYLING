@@ -1,5 +1,5 @@
 import { Link } from "@/i18n/routing";
-import { ArrowLeft, BookOpen, Lock } from "lucide-react";
+import { BookOpen, Lock } from "lucide-react";
 import { redirect } from "next/navigation";
 import EssenceLab from "@/components/vault/EssenceLab";
 import CompleteChapterButton from "@/components/vault/CompleteChapterButton";
@@ -8,6 +8,7 @@ import { checkAccess } from "@/utils/access-control";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
+import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
 
 export const generateMetadata = pageMetadata({ key: 'vaultEssenceLab' });
 
@@ -34,13 +35,18 @@ export default async function FoundationsEssenceLabPage({ params }: { params: Pr
     if (!hasAccess) {
         return (
             <section className="min-h-screen pb-20 pt-6 max-w-4xl mx-auto px-4">
-                <Link
-                    href={`/vault/foundations/${slug}`}
-                    className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-8 group w-fit"
-                >
-                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Video
-                </Link>
+                <VaultBreadcrumbs
+                    trail={[
+                        { key: "foundations", href: "/vault/foundations" },
+                        {
+                            // `title` is declared further down, past this early
+                            // return, so the locked branch localizes it itself.
+                            label: (locale === "es" && chapter.title_es ? chapter.title_es : chapter.title) ?? undefined,
+                            href: `/vault/foundations/${slug}`,
+                        },
+                        { key: "essenceLab" },
+                    ]}
+                />
                 <div className="flex flex-col items-center justify-center text-center py-24 bg-white/40 backdrop-blur-md border border-ac-taupe/10 rounded-sm">
                     <div className="w-14 h-14 bg-ac-taupe/10 rounded-full flex items-center justify-center mb-6">
                         <Lock size={24} className="text-ac-taupe/50" />
@@ -126,13 +132,13 @@ export default async function FoundationsEssenceLabPage({ params }: { params: Pr
         <section className="min-h-screen pb-20 pt-6 max-w-4xl mx-auto px-4">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8 gap-6 border-b border-ac-taupe/10 pb-6">
                 <div>
-                    <Link
-                        href={`/vault/foundations/${slug}`}
-                        className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-4 group w-fit"
-                    >
-                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                        Back to Video
-                    </Link>
+                    <VaultBreadcrumbs
+                        trail={[
+                            { key: "foundations", href: "/vault/foundations" },
+                            { label: title ?? undefined, href: `/vault/foundations/${slug}` },
+                            { key: "essenceLab" },
+                        ]}
+                    />
                     <span className="text-ac-gold uppercase tracking-widest text-[10px] font-bold block mb-1">
                         Essence Lab
                     </span>

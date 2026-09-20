@@ -460,5 +460,13 @@
         "vaultBody": "Algo salió mal al abrir esta parte del Vault. Tu progreso y tus compras están a salvo.",
         "vaultHome": "Volver al Vault",
         "digest": "Referencia"
+    },
+    "Breadcrumbs": {
+        "label": "Ruta de navegación",
+        "vault": "El Vault",
+        "courses": "Cursos",
+        "foundations": "Fundamentos",
+        "masterclass": "Masterclass",
+        "essenceLab": "Essence Lab"
     }
 }

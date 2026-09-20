@@ -1,5 +1,4 @@
-import { Link } from "@/i18n/routing";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { redirect } from "next/navigation";
 import EssenceLab from "@/components/vault/EssenceLab";
 import CompleteChapterButton from "@/components/vault/CompleteChapterButton";
@@ -8,6 +7,7 @@ import { checkAccess } from "@/utils/access-control";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
+import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
 
 export const generateMetadata = pageMetadata({ key: 'vaultEssenceLab' });
 
@@ -79,13 +79,13 @@ export default async function CoursesEssenceLabPage({ params }: { params: Promis
         <section className="min-h-screen pb-20 pt-6 max-w-4xl mx-auto px-4">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8 gap-6 border-b border-ac-taupe/10 pb-6">
                 <div>
-                    <Link
-                        href={`/vault/courses/${slug}`}
-                        className="flex items-center gap-2 text-sm uppercase tracking-widest text-ac-taupe/60 hover:text-ac-olive transition-colors mb-4 group w-fit"
-                    >
-                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                        Back to Video
-                    </Link>
+                    <VaultBreadcrumbs
+                        trail={[
+                            { key: "courses", href: "/vault/courses" },
+                            { label: title ?? undefined, href: `/vault/courses/${slug}` },
+                            { key: "essenceLab" },
+                        ]}
+                    />
                     <span className="text-ac-gold uppercase tracking-widest text-[10px] font-bold block mb-1">
                         Essence Lab
                     </span>
