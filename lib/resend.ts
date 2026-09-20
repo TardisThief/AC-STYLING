@@ -1,15 +1,23 @@
 import { Resend } from 'resend';
+import { htmlToText } from './html-to-text';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+/** Where replies should go. The sending address is not a monitored inbox. */
+const REPLY_TO = 'fashionstylist.ac@gmail.com';
+
 
 export const sendEmail = async ({
     to,
     subject,
     html,
+    text,
 }: {
     to: string;
     subject: string;
     html: string;
+    /** Overrides the derived plain-text part; rarely needed. */
+    text?: string;
 }) => {
     console.log('[Resend] Attempting to send email...');
     console.log('[Resend] To:', to);
@@ -26,6 +34,10 @@ export const sendEmail = async ({
             to,
             subject,
             html,
+            // multipart/alternative rather than HTML-only: see htmlToText above.
+            text: text ?? htmlToText(html),
+            // The from address is unmonitored; replies belong in the real inbox.
+            replyTo: REPLY_TO,
         });
         console.log('[Resend] Success:', data);
         return { success: true, data };
@@ -34,3 +46,5 @@ export const sendEmail = async ({
         return { success: false, error };
     }
 };
+
+export { htmlToText };
