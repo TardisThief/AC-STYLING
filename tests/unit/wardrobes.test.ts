@@ -2,9 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock Supabase admin client
 const mockFrom = vi.fn()
+// Returns the uploaded object by default; individual tests override it to
+// simulate an upload that never landed.
+const mockStorageList = vi.fn(async () => ({ data: [{ name: 'photo.jpg' }], error: null }))
+
 const mockStorage = {
     from: vi.fn(() => ({
         upload: vi.fn(),
+        list: mockStorageList,
         getPublicUrl: vi.fn(() => ({ data: { publicUrl: 'https://test.url/image.jpg' } })),
         createSignedUploadUrl: vi.fn(() => ({ data: { signedUrl: 'https://signed.url' }, error: null })),
     })),
@@ -30,6 +35,11 @@ import { getWardrobeByToken, getSignedUploadUrl, createWardrobeItem } from '@/ap
 describe('Wardrobes Server Actions', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        // clearAllMocks does not drain a mockReturnValueOnce queue, so an
+        // unconsumed entry from a test that returned early would be handed to
+        // the next one. Reset drains it.
+        mockFrom.mockReset()
+        mockStorageList.mockResolvedValue({ data: [{ name: 'photo.jpg' }], error: null })
     })
 
     describe('getWardrobeByToken', () => {
@@ -115,7 +125,7 @@ describe('Wardrobes Server Actions', () => {
                 insert: vi.fn().mockResolvedValue({ error: null }),
             })
 
-            const result = await createWardrobeItem('valid-token', 'wardrobe/123/photo.jpg', 'tops', 'My note')
+            const result = await createWardrobeItem('valid-token', 'wardrobe/wardrobe-123/photo.jpg', 'tops', 'My note')
 
             expect(result.success).toBe(true)
         })
@@ -130,6 +140,75 @@ describe('Wardrobes Server Actions', () => {
             const result = await createWardrobeItem('invalid-token', 'path', 'category', 'note')
 
             expect(result.success).toBe(false)
+        })
+
+        // F10. A valid token used to admit ANY filePath, so a holder of
+        // wardrobe A's token could create an item in A pointing at an object
+        // under another wardrobe's folder, or another user's.
+        describe('upload path boundary', () => {
+            const validToken = () => {
+                mockFrom.mockReturnValueOnce({
+                    select: vi.fn().mockReturnThis(),
+                    eq: vi.fn().mockReturnThis(),
+                    single: vi.fn().mockResolvedValue({
+                        data: { id: 'wardrobe-123', owner_id: null },
+                        error: null,
+                    }),
+                })
+            }
+
+            const insertSpy = () => {
+                const insert = vi.fn().mockResolvedValue({ error: null })
+                mockFrom.mockReturnValueOnce({ insert })
+                return insert
+            }
+
+            it.each([
+                ['another wardrobe', 'wardrobe/wardrobe-999/photo.jpg'],
+                ['another user folder', 'some-other-user-id/photo.jpg'],
+                ['a traversal', 'wardrobe/wardrobe-123/../wardrobe-999/photo.jpg'],
+                ['an absolute path', '/etc/passwd'],
+                ['the bare folder with no file', 'wardrobe/wardrobe-123/'],
+                ['an empty path', ''],
+            ])('refuses a path pointing at %s', async (_label, badPath) => {
+                validToken()
+                const insert = insertSpy()
+
+                const result = await createWardrobeItem('valid-token', badPath, 'tops', '')
+
+                expect(result.success).toBe(false)
+                expect(insert).not.toHaveBeenCalled()
+            })
+
+            it('accepts the owner folder for an owned wardrobe', async () => {
+                mockFrom.mockReturnValueOnce({
+                    select: vi.fn().mockReturnThis(),
+                    eq: vi.fn().mockReturnThis(),
+                    single: vi.fn().mockResolvedValue({
+                        data: { id: 'wardrobe-123', owner_id: 'owner-456' },
+                        error: null,
+                    }),
+                })
+                const insert = insertSpy()
+
+                const result = await createWardrobeItem('valid-token', 'owner-456/photo.jpg', 'tops', '')
+
+                expect(result.success).toBe(true)
+                expect(insert).toHaveBeenCalled()
+            })
+
+            it('refuses when the upload never actually landed', async () => {
+                validToken()
+                const insert = insertSpy()
+                mockStorageList.mockResolvedValue({ data: [], error: null })
+
+                const result = await createWardrobeItem('valid-token', 'wardrobe/wardrobe-123/photo.jpg', 'tops', '')
+
+                // Otherwise an item row is created pointing at nothing, which
+                // surfaces later as a broken image with no obvious cause.
+                expect(result.success).toBe(false)
+                expect(insert).not.toHaveBeenCalled()
+            })
         })
     })
 })

@@ -22,7 +22,10 @@ export async function processOnboarding() {
 
     if (intakeToken) {
         const adminSupabase = createAdminClient();
-        console.log('[Onboarding] Found intake token:', intakeToken);
+        // The token is a bearer credential: anyone holding it can claim the
+        // wardrobe. Logging its value puts it in every log sink that ever
+        // sees this line, so only its presence is recorded.
+        console.log('[Onboarding] Found intake token (value withheld)');
 
         const { data: pendingProfile } = await adminSupabase
             .from('profiles')
@@ -82,7 +85,7 @@ export async function processOnboarding() {
     // 2. WARDROBE CLAIM LOGIC
     const wardrobeToken = cookieStore.get('wardrobe_claim_token')?.value;
     if (wardrobeToken) {
-        console.log('[Onboarding] Claiming wardrobe:', wardrobeToken);
+        console.log('[Onboarding] Claiming wardrobe (token value withheld)');
         const claimResult = await claimWardrobe(wardrobeToken);
         if (claimResult.success) {
             claimedWardrobeId = claimResult.wardrobeId || null;

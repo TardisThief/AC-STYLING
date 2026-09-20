@@ -207,6 +207,28 @@ export async function getSignedUploadUrl(
 }
 
 /**
+ * Is this storage path one that an upload for this wardrobe could have used?
+ *
+ * Accepts the guest-intake folder `wardrobe/<id>/…` that `getSignedUploadUrl`
+ * issues, and the owner folder `<ownerId>/…` that owned wardrobes use per
+ * lib/wardrobe-paths.ts. Everything else is refused, including traversal and
+ * any path belonging to a different wardrobe or user.
+ */
+function isPathWithinWardrobe(
+    filePath: string,
+    wardrobeId: string,
+    ownerId: string | null
+): boolean {
+    if (!filePath || filePath.includes('..') || filePath.startsWith('/')) return false;
+
+    const allowed = [`wardrobe/${wardrobeId}/`];
+    if (ownerId) allowed.push(`${ownerId}/`);
+
+    // A trailing segment is required: the prefix alone is a folder, not a file.
+    return allowed.some((prefix) => filePath.startsWith(prefix) && filePath.length > prefix.length);
+}
+
+/**
  * Step 2: Create the wardrobe item record after client uploads directly to storage
  */
 export async function createWardrobeItem(
@@ -229,13 +251,39 @@ export async function createWardrobeItem(
         return { success: false, error: "Invalid or expired upload link" };
     }
 
+    // 2. The path must be one this token could actually have been issued.
+    //
+    // Previously any `filePath` was accepted, so a holder of wardrobe A's
+    // token could create an item in A pointing at an object under wardrobe B's
+    // folder — or under another user's folder entirely. Whether that image
+    // then rendered depended on storage policy rather than on this check,
+    // which is the wrong place for the boundary to live (F10).
+    if (!isPathWithinWardrobe(filePath, wardrobe.id, wardrobe.owner_id)) {
+        console.error('[createWardrobeItem] Rejected out-of-scope path for wardrobe', wardrobe.id);
+        return { success: false, error: "Invalid upload path" };
+    }
+
     try {
-        // 2. Get public URL for the uploaded file
+        // 3. The object must exist. Without this an item row can be created
+        // pointing at nothing, which shows up later as a broken image with no
+        // obvious cause.
+        const folder = filePath.slice(0, filePath.lastIndexOf('/'));
+        const name = filePath.slice(filePath.lastIndexOf('/') + 1);
+        const { data: found, error: listError } = await supabase.storage
+            .from('studio-wardrobe')
+            .list(folder, { search: name, limit: 1 });
+
+        if (listError) throw listError;
+        if (!found?.some((f) => f.name === name)) {
+            return { success: false, error: "Upload not found. Please try again." };
+        }
+
+        // 4. Get public URL for the uploaded file
         const { data: { publicUrl } } = supabase.storage
             .from('studio-wardrobe')
             .getPublicUrl(filePath);
 
-        // 3. Insert into database
+        // 5. Insert into database
         const { error: dbError } = await supabase
             .from('wardrobe_items')
             .insert({
@@ -480,15 +528,29 @@ export async function claimWardrobe(token: string): Promise<{ success: boolean; 
         return { success: true, wardrobeId: wardrobe.id };
     }
 
-    // 3. Claim it (Update Owner)
-    const { error: updateError } = await adminSupabase
+    // 3. Claim it, atomically.
+    //
+    // The ownership check above and this write used to be two steps against a
+    // row anyone with the token could reach, so two holders could both pass
+    // the check and both write — last one wins, and the first claimant was
+    // told they had succeeded. Adding `owner_id IS NULL` to the update makes
+    // the database pick exactly one winner: the loser gets no row back.
+    const { data: claimed, error: updateError } = await adminSupabase
         .from('wardrobes')
         .update({ owner_id: user.id, updated_at: new Date().toISOString() })
-        .eq('id', wardrobe.id);
+        .eq('id', wardrobe.id)
+        .is('owner_id', null)
+        .select('id')
+        .maybeSingle();
 
     if (updateError) {
         console.error('[claimWardrobe] Update failed:', updateError.message);
         return { success: false, error: updateError.message };
+    }
+
+    if (!claimed) {
+        // Someone claimed it between the read above and this write.
+        return { success: false, error: "This wardrobe is already owned by another user." };
     }
 
     // 4. Enable Studio Access for the claiming user
