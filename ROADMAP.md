@@ -2,12 +2,69 @@
 
 Status as of 2026-09-19. See
 [docs/archive/AUDIT-2026-07-10.md](docs/archive/AUDIT-2026-07-10.md) for the
-security audit this follows from (all P0/P1 closed), and
+historical security audit this follows from, and
 [supabase/migrations/README.md](supabase/migrations/README.md) for DB state.
+
+## September assessment — Product owner review and execution tracking
+
+The [repository and ecosystem assessment](docs/ASSESSMENT-2026-09-19.md)
+adds findings F01–F16 backed by live schema inspection and public browser checks.
+**The historical P0/P1 closure below is not a current security clearance.**
+Keep completed fixes in the history; track the newly found gaps separately.
+
+Product owner comments for consideration:
+
+- Put database authorization and reliable payment delivery ahead of Phase 4
+  editorial/personalization work. A polished sales page alone is not launch readiness.
+- Existing backlog already covers video/live Stripe, legal translations, shared
+  animation cost, hero image loading, error boundaries, skeletons, and CSP.
+  The handover remains the owner of content/payment launch configuration.
+- Revisit the scope of completed SSRF, email-limiting, payment-idempotency,
+  accessibility, and account-deletion work against F02/F05/F07/F11/F14.
+  This does not undo the fixes already shipped.
+- Metadata, booking content, and consent are implemented in source; verify their
+  actual production deployment (F14) before marking the release verified.
+- Translation work remains with the other agent. Security work must avoid legal
+  copy and translation files and coordinate shared-file changes before editing.
+
+### Dependency checks and current status
+
+DB access reconfirmed 2026-09-19: direct PostgreSQL connection as `postgres`,
+26 public tables and 72 public/storage policies, schema-management privileges
+and ability to test application roles. Inspection used `BEGIN READ ONLY`.
+This is the shared production instance. Live Vercel settings, Vimeo playback
+restrictions, email delivery, and backup restoration remain unverified.
+
+| Priority | Assessment | Dependencies / acceptance | Progress |
+|---|---|---|---|
+| Immediate | F01–F04: profile privileges, RPC execution, boutique/storage policies | Deploy coordinated server actions BEFORE migration 12; agent applies SQL; verify roles and upload behavior in production | **Deployed, applied, and verified.** Release `87dea9e`; migration 12 committed 2026-09-20 03:53 UTC (September 19 EDT). All 13 structural and 33 live smoke checks pass; fixtures removed. Agent migration authority is now documented. |
+| Immediate | F08: patched Next.js | Align Next and eslint-config-next; verify Node/React requirements; lint, tests, typecheck, production build | **Next.js 16.3.5 deployed** in release `87dea9e`; CI, tests, lint, TypeScript and build pass. Four Puppeteer/extract-zip high findings remain; no forced downgrade. |
+| Before payments | F05–F07: fulfillment, claim lifecycle, SSRF | Requires protected entitlements; durable replay-safe grants; all password-setting paths; safe remote-image delivery | Queued after authorization dependencies |
+| Before promotion | F09/F14: real content/live payments and deployed behavior | Alejandra's videos, owner-managed Stripe/Vimeo, deployment verification; preserve noindex until complete | Open; see Vault handover |
+| Release assurance | F10–F13: token boundaries, deletion, restoration, integration tests | Role tests and purchase model first; retention decision before deletion changes | F13 partially implemented: 31 isolated PostgreSQL authorization tests now included in CI. F10–F12 remain open, including restoration's 100-session limit. |
+| Stabilization | F15–F16: localization, performance, recovery/operations | Translation coordination; measured performance; recoverable schema/storage and alerts | Open; translations handled separately |
+
+Progress entries distinguish **implemented**, **validated locally**, **applied to
+DB**, **deployed**, and **verified in production**. A passing unit test or a SQL
+file alone does not close a live finding. Update this table at each milestone.
+
+**2026-09-19 production checkpoint:**
+[release dependencies, sequence, and smoke checks](docs/RELEASE-2026-09-19-AUTHORIZATION.md)
+and the [sanitized verification record](docs/AUTHORIZATION-VERIFICATION-2026-09-19.json)
+record the completed rollout. Full suite: **38 files / 320 tests passed**; lint:
+**0 errors / 159 existing warnings locally, 160 on the production-based release**.
+Production build, TypeScript and GitHub CI pass. The live verifier now passes
+all 13 checks; all 33 production smoke checks pass. Customer records/files were
+preserved and temporary verification fixtures removed. The release excludes the
+five previously unpushed commits and unfinished translation work. Next work is
+F05–F07; fulfillment must also reconcile the live trigger's price-ID/product-ID
+mismatch and propagate failed grants. Translation/legal files remain with the
+other agent.
 
 ## Done & deployed
 
-**P0 (security) and P1 (hardening + robustness) are complete and in production:**
+**Historical July P0/P1 work recorded as complete and in production** (new
+September findings are tracked above):
 auth guards, service-role leak fixes, SSRF guards, open-redirect fix, security
 headers, mock-checkout removal; DB migrations 01–07 applied (handle_new_user
 hardening, partner_brands column grants, studio-wardrobe lockdown, email

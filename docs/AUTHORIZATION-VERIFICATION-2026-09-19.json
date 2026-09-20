@@ -1,0 +1,172 @@
+{
+  "file": "supabase/migrations/20260919_12_authorization_boundaries.sql",
+  "sha256": "3596234fa64f301080e0d5eb4a179e478da8fad92ae2b6829436fd3d813734d2",
+  "appliedAt": "2026-09-20T03:53:16.658Z",
+  "applicationCommit": "87dea9e20bb836da660c6697da53a24f4070352f",
+  "deploymentId": 6548762389,
+  "state": "committed",
+  "verification": "passed",
+  "verifiedAt": "2026-09-20T03:56:10.481Z",
+  "deploymentUrl": "https://ac-styling-nnnowmc52-manuels-projects-7a90ccbf.vercel.app",
+  "ciUrl": "https://github.com/TardisThief/AC-STYLING/actions/runs/35487575898",
+  "localTests": {
+    "files": 38,
+    "passed": 320
+  },
+  "releaseLint": {
+    "errors": 0,
+    "warnings": 160
+  },
+  "productionStructuralChecks": {
+    "passed": 13,
+    "failed": 0
+  },
+  "productionSmokeChecks": [
+    {
+      "name": "Deployed admin Studio action succeeds",
+      "ok": true
+    },
+    {
+      "name": "Deployed Studio action persists entitlements",
+      "ok": true
+    },
+    {
+      "name": "Deployed admin Studio revocation succeeds",
+      "ok": true
+    },
+    {
+      "name": "Deployed Studio revocation persists",
+      "ok": true
+    },
+    {
+      "name": "Member cannot invoke privileged Studio action",
+      "ok": true
+    },
+    {
+      "name": "Self-profile editing remains available",
+      "ok": true
+    },
+    {
+      "name": "Member role/entitlement escalation denied",
+      "ok": true
+    },
+    {
+      "name": "Admin browser cannot bypass privileged actions",
+      "ok": true
+    },
+    {
+      "name": "Direct member rate-limit RPC denied",
+      "ok": true
+    },
+    {
+      "name": "Anonymous clone RPC execution denied",
+      "ok": true
+    },
+    {
+      "name": "Member own-folder avatar upload succeeds",
+      "ok": true
+    },
+    {
+      "name": "Member other-folder avatar upload denied",
+      "ok": true
+    },
+    {
+      "name": "Anonymous avatar upload denied",
+      "ok": true
+    },
+    {
+      "name": "Member Vault upload denied",
+      "ok": true
+    },
+    {
+      "name": "Admin Vault PNG upload succeeds",
+      "ok": true
+    },
+    {
+      "name": "Admin Vault PDF upload succeeds",
+      "ok": true
+    },
+    {
+      "name": "Storage rejects SVG uploads",
+      "ok": true
+    },
+    {
+      "name": "Storage rejects uploads exceeding 15 MB",
+      "ok": true
+    },
+    {
+      "name": "Temporary identities and objects removed",
+      "ok": true
+    },
+    {
+      "name": "Admin can create boutique collection",
+      "ok": true
+    },
+    {
+      "name": "Member cannot create boutique collection",
+      "ok": true
+    },
+    {
+      "name": "Member cannot edit boutique collection",
+      "ok": true
+    },
+    {
+      "name": "Admin can edit boutique collection",
+      "ok": true
+    },
+    {
+      "name": "Member cannot edit collection membership",
+      "ok": true
+    },
+    {
+      "name": "Admin can edit collection membership",
+      "ok": true
+    },
+    {
+      "name": "Member can record own boutique click",
+      "ok": true
+    },
+    {
+      "name": "Member cannot forge click attribution",
+      "ok": true
+    },
+    {
+      "name": "Anonymous click remains available",
+      "ok": true
+    },
+    {
+      "name": "Member cannot read click analytics",
+      "ok": true
+    },
+    {
+      "name": "Admin can read click analytics",
+      "ok": true
+    },
+    {
+      "name": "Admin can authorize signed Vault upload",
+      "ok": true
+    },
+    {
+      "name": "Authorized signed Vault upload succeeds",
+      "ok": true
+    },
+    {
+      "name": "Temporary identities, analytics, collections and uploads removed",
+      "ok": true
+    }
+  ],
+  "temporaryFixturesRemaining": {
+    "accounts": 0,
+    "objects": 0,
+    "collections": 0
+  },
+  "policyInventory": {
+    "total": 72,
+    "unexpectedChanges": 0
+  },
+  "limitations": [
+    "Standalone updateProfileStatus has no current UI caller and is covered by unit tests, not a live endpoint smoke test.",
+    "Purchase restoration replay/error handling remains in the payment work.",
+    "Four Puppeteer dependency audit findings remain."
+  ]
+}

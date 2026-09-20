@@ -2,6 +2,7 @@
 'use server';
 
 import { requireAdmin } from "@/app/lib/auth-guards";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export type ClientProfile = {
     id: string;
@@ -95,7 +96,9 @@ export async function getClientDossier(userId: string) {
 export async function toggleStudioAccess(userId: string, hasAccess: boolean) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
-    const supabase = auth.supabase;
+    // Privilege columns are not writable by the browser's authenticated role.
+    // Only create the elevated client after verifying the acting admin.
+    const supabase = createAdminClient();
 
     const permissions = hasAccess
         ? { lookbook: true, wardrobe: true }

@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Unit tests
+    name: Unit and database authorization tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run unit tests
+      - name: Run unit and isolated PostgreSQL tests
         run: npm run test:run
 
       # Lint is a blocking gate (P2 backlog cleared 2026-07-14). Errors fail the
