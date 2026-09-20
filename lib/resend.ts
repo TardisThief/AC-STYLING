@@ -3,8 +3,19 @@ import { htmlToText } from './html-to-text';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-/** Where replies should go. The sending address is not a monitored inbox. */
-const REPLY_TO = 'fashionstylist.ac@gmail.com';
+/*
+ * There is deliberately no Reply-To header.
+ *
+ * Pointing it at the brand's Gmail address cost 2.503 spam points on
+ * mail-tester (FREEMAIL_FORGED_REPLYTO) — a Reply-To on a freemail domain that
+ * does not match the From domain is a textbook phishing signature, and filters
+ * score it accordingly. Dropping it took the same message from 7.6/10 to a
+ * clean run.
+ *
+ * With no Reply-To, replies go to the From address, hello@theacstyle.com.
+ * That mailbox needs to actually deliver somewhere — see docs/OWNER-ACTIONS.md.
+ * A Reply-To may come back only if it is on theacstyle.com itself.
+ */
 
 
 export const sendEmail = async ({
@@ -36,8 +47,6 @@ export const sendEmail = async ({
             html,
             // multipart/alternative rather than HTML-only: see htmlToText above.
             text: text ?? htmlToText(html),
-            // The from address is unmonitored; replies belong in the real inbox.
-            replyTo: REPLY_TO,
         });
         console.log('[Resend] Success:', data);
         return { success: true, data };
