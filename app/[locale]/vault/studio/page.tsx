@@ -2,6 +2,10 @@ import { redirect } from "next/navigation";
 import StudioDashboard from "@/components/studio/StudioDashboard";
 import { getViewer } from "@/app/lib/vault-user";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultStudio' });
+
 export default async function StudioPage({
     params
 }: {

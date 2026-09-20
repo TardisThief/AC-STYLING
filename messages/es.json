@@ -1,4 +1,138 @@
 {
+    "BookPage": {
+        "eyebrow": "El Atelier",
+        "heading": "Agenda una consulta con Alejandra",
+        "intro": "Treinta minutos, uno a uno. Hablamos de dónde está tu clóset hoy, a dónde quieres llevarlo y cuál servicio realmente te lleva ahí — antes de que gastes nada.",
+        "expectTitle": "Qué pasa en la llamada",
+        "expect1Title": "Tú hablas, yo escucho",
+        "expect1Body": "Lo que tienes, lo que evitas, lo que compras una y otra vez y nunca te pones. Aquí no hay respuestas equivocadas ni nada que preparar.",
+        "expect2Title": "Nombramos el problema real",
+        "expect2Body": "A la mayoría de los clósets no les falta ropa. Les falta un hilo conductor. Encontramos el tuyo.",
+        "expect3Title": "Te vas con una dirección",
+        "expect3Body": "Una recomendación clara — un servicio, el Vault, o ninguno — y el porqué detrás. Sin presión de contratar nada en la llamada.",
+        "faqTitle": "Antes de agendar",
+        "faq1Q": "¿Cuánto dura la consulta?",
+        "faq1A": "Treinta minutos, por videollamada. Si necesitamos más tiempo, te lo decimos y lo agendamos bien en lugar de correr.",
+        "faq2Q": "¿Tiene algún costo?",
+        "faq2A": "No. La consulta es gratuita y no te obliga a contratar ningún servicio después.",
+        "faq3Q": "¿Qué debo preparar?",
+        "faq3A": "Nada. Si te sirve, ten tu clóset cerca — pero ven como estás y trabajamos desde ahí.",
+        "faq4Q": "¿Podemos hablar en español?",
+        "faq4A": "Sí. Alejandra trabaja en español y en inglés; elige el idioma en el que piensas.",
+        "schedulerTitle": "Elige tu horario",
+        "schedulerFallback": "El calendario se está cargando. Si no aparece, ábrelo en una pestaña nueva.",
+        "schedulerFallbackLink": "Abrir el calendario"
+    },
+    "Meta": {
+        "home": {
+            "title": "Asesoría de Imagen y Estilismo Personal | AC Styling",
+            "description": "Estilismo personal, depuración de clóset y dirección editorial con Alejandra Carrillo. Construye un clóset que se lea inconfundiblemente tuyo."
+        },
+        "book": {
+            "title": "Agenda tu consulta | AC Styling",
+            "description": "Agenda una consulta de estilismo personal con Alejandra Carrillo. Elige el horario que te acomode y cuéntanos qué quieres cambiar."
+        },
+        "legalTerms": {
+            "title": "Términos y Condiciones | AC Styling",
+            "description": "Los términos que rigen el uso del sitio de AC Styling, el Vault y nuestros servicios de estilismo."
+        },
+        "legalPrivacy": {
+            "title": "Aviso de Privacidad | AC Styling",
+            "description": "Qué datos personales recopila AC Styling, para qué, cuánto tiempo los conservamos y qué derechos tienes sobre ellos."
+        },
+        "legalRefunds": {
+            "title": "Política de Reembolsos | AC Styling",
+            "description": "Cómo funcionan los reembolsos en los servicios de AC Styling, el acceso al Vault y las compras de la boutique."
+        },
+        "authLogin": {
+            "title": "Iniciar sesión | AC Styling",
+            "description": "Inicia sesión en tu cuenta de AC Styling para entrar al Vault y a tu Studio."
+        },
+        "authSignup": {
+            "title": "Crea tu cuenta | AC Styling",
+            "description": "Crea tu cuenta de AC Styling para empezar el Essence Lab y abrir tu Vault."
+        },
+        "authForgotPassword": {
+            "title": "Restablece tu contraseña | AC Styling",
+            "description": "Envíate un enlace para restablecer la contraseña de tu cuenta de AC Styling."
+        },
+        "authUpdatePassword": {
+            "title": "Elige una nueva contraseña | AC Styling",
+            "description": "Define una nueva contraseña para tu cuenta de AC Styling."
+        },
+        "authConfirm": {
+            "title": "Confirmando tu cuenta | AC Styling",
+            "description": "Espera un momento mientras confirmamos tu cuenta de AC Styling."
+        },
+        "vaultHome": {
+            "title": "Tu Vault | AC Styling",
+            "description": "Tu biblioteca, tu progreso y lo que Alejandra eligió para ti esta semana."
+        },
+        "vaultCourses": {
+            "title": "Cursos | AC Styling",
+            "description": "Tus cursos y el punto exacto donde quedaste en cada uno."
+        },
+        "vaultCourse": {
+            "title": "Lección | AC Styling",
+            "description": "Una lección de tu biblioteca de cursos de AC Styling."
+        },
+        "vaultFoundations": {
+            "title": "Fundamentos | AC Styling",
+            "description": "Las masterclasses que sostienen el método: color, silueta, proporción y presencia."
+        },
+        "vaultFoundation": {
+            "title": "Capítulo | AC Styling",
+            "description": "Un capítulo de las masterclasses de Fundamentos de AC Styling."
+        },
+        "vaultMasterclass": {
+            "title": "Masterclass | AC Styling",
+            "description": "Una masterclass de la biblioteca de Fundamentos de AC Styling."
+        },
+        "vaultEssenceLab": {
+            "title": "Essence Lab | AC Styling",
+            "description": "Recorre el Essence Lab y convierte lo aprendido en tu propio brief de estilo."
+        },
+        "vaultEssence": {
+            "title": "Tu Esencia | AC Styling",
+            "description": "Tu perfil de esencia: los colores, las formas y las firmas que el Lab encontró en ti."
+        },
+        "vaultBoutique": {
+            "title": "La Boutique | AC Styling",
+            "description": "Piezas que Alejandra eligió, reunió y emparejó con tu esencia."
+        },
+        "vaultServices": {
+            "title": "Servicios | AC Styling",
+            "description": "Servicios de estilismo uno a uno disponibles para ti como miembro del Vault."
+        },
+        "vaultStudio": {
+            "title": "El Studio | AC Styling",
+            "description": "Clósets, lookbooks y fichas de sastrería de tus clientas."
+        },
+        "vaultMyStudio": {
+            "title": "Mi Studio | AC Styling",
+            "description": "Tu clóset virtual, tus lookbooks y tus notas de sastrería, en un solo lugar."
+        },
+        "vaultProfile": {
+            "title": "Tu Perfil | AC Styling",
+            "description": "Los datos de tu cuenta, tu idioma y qué pasa con tu información."
+        },
+        "vaultStyleCard": {
+            "title": "Tu Style Card | AC Styling",
+            "description": "Tu style card: la versión corta de tu esencia, lista para llevar contigo."
+        },
+        "vaultJoin": {
+            "title": "Únete al Vault | AC Styling",
+            "description": "Desbloquea el Vault completo de AC Styling y quédate con cada masterclass para siempre."
+        },
+        "vaultAdmin": {
+            "title": "Gestor de Contenido | AC Styling",
+            "description": "Administra cursos, capítulos, ofertas, servicios y la boutique."
+        },
+        "studioUpload": {
+            "title": "Sube tu Clóset | AC Styling",
+            "description": "Agrega las piezas de tu clóset para que Alejandra trabaje con lo que realmente tienes."
+        }
+    },
     "Navbar": {
         "about": "Acerca",
         "services": "Servicios",

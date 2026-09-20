@@ -5,6 +5,10 @@ import { getDashboardPulse, getMasterclassCompletionStatus, getEditorialContent 
 import { getTranslations } from "next-intl/server";
 import { getViewer } from "@/app/lib/vault-user";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultHome' });
+
 export default async function VaultPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
     const t = await getTranslations({ locale, namespace: 'Vault' });

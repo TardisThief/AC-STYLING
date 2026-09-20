@@ -7,6 +7,10 @@ import { createClient } from "@/utils/supabase/server";
 import FullAccessUnlock from "@/components/vault/FullAccessUnlock";
 import MasterclassCard from "@/components/vault/MasterclassCard";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultFoundations' });
+
 export default async function FoundationsPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
     const t = await getTranslations({ locale, namespace: 'Foundations' });

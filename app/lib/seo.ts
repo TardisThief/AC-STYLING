@@ -79,3 +79,51 @@ export function buildMetadata({
         },
     };
 }
+
+/**
+ * Per-page `generateMetadata`, reduced to one line at the call site.
+ *
+ * Before this, `buildMetadata` existed but was wired up on exactly one page, so
+ * 24 of 30 routes inherited the locale layout's single generic title and
+ * shipped no canonical and no hreflang. The copy lives under the `Meta`
+ * namespace in `messages/*.json`, keyed by `key`, like every other
+ * user-facing string.
+ *
+ * `path` is the locale-less public path. Omit it for gated routes: a noindex
+ * page has nothing to be canonical about, and pointing one at a parent path
+ * would be an actively wrong signal. Those get a title, a description and
+ * `noindex, nofollow` — which is what a browser tab and a shared link need,
+ * and nothing more.
+ */
+export function pageMetadata({
+    path,
+    key,
+    ogImage,
+}: {
+    path?: string;
+    key: string;
+    ogImage?: string;
+}) {
+    return async function generateMetadata({
+        params,
+    }: {
+        params: Promise<{ locale: string }>;
+    }): Promise<Metadata> {
+        const { locale } = await params;
+        const { getTranslations } = await import('next-intl/server');
+        const t = await getTranslations({ locale, namespace: 'Meta' });
+        const title = t(`${key}.title`);
+        const description = t(`${key}.description`);
+
+        if (!path) {
+            return {
+                metadataBase: new URL(SITE_URL),
+                title,
+                description,
+                robots: { index: false, follow: false },
+            };
+        }
+
+        return buildMetadata({ locale, path, title, description, ogImage });
+    };
+}

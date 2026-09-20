@@ -1,11 +1,8 @@
-
-import { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 
-export const metadata: Metadata = {
-    title: 'Privacy Policy | AC Styling',
-    description: 'Privacy Notice for AC Styling services and website.',
-};
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ path: '/legal/privacy', key: 'legalPrivacy' });
 
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;

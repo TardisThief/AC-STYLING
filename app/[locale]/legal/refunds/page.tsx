@@ -1,11 +1,8 @@
-
-import { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 
-export const metadata: Metadata = {
-    title: 'Refund Policy | AC Styling',
-    description: 'Refund Policy for AC Styling services and website.',
-};
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ path: '/legal/refunds', key: 'legalRefunds' });
 
 export default async function RefundsPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;

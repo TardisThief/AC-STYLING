@@ -7,6 +7,10 @@ import { createClient } from "@/utils/supabase/server";
 import { checkAccess } from "@/utils/access-control";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultEssenceLab' });
+
 export default async function FoundationsEssenceLabPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
     const { slug, locale } = await params;
     const decodedSlug = decodeURIComponent(slug);

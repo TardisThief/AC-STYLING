@@ -1,11 +1,8 @@
-
-import { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 
-export const metadata: Metadata = {
-  title: 'Terms of Service | AC Styling',
-  description: 'Terms of Service for AC Styling services and website.',
-};
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ path: '/legal/terms', key: 'legalTerms' });
 
 const TERMS_HTML = `
 <style>
@@ -312,7 +309,6 @@ const TERMS_HTML = `
     </div>
   </div>
 
-
   <div id="copyrightyes" class="section">
     <div class="MsoNormal" data-custom-class="heading_1" style="line-height: 1.5;"><strong><h2>15. COPYRIGHT INFRINGEMENTS</h2></strong></div>
     <div class="MsoNormal" data-custom-class="body_text" style="line-height: 1.5;">
@@ -471,7 +467,6 @@ const TERMS_HTML = `
       <a href="mailto:fashionstylist.ac@gmail.com" data-custom-class="link">fashionstylist.ac@gmail.com</a>
     </div>
   </div>
-
 
 </div>
 `;

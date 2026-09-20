@@ -3,6 +3,10 @@ import { getJourneyStats } from '@/app/actions/vault/journey';
 import { redirect } from 'next/navigation';
 import StyleCardClient from '@/components/vault/StyleCardClient';
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultStyleCard' });
+
 export default async function StyleCardPage() {
     const [hubData, journey] = await Promise.all([
         getProfileHubData(),

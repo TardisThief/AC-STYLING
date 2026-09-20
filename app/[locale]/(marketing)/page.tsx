@@ -7,6 +7,10 @@ import Footer from "@/components/Footer";
 import Contact from "@/components/Contact";
 import { setRequestLocale } from 'next-intl/server';
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ path: '/', key: 'home' });
+
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
     setRequestLocale(locale);

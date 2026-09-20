@@ -1,5 +1,9 @@
 import AdminDashboard from "@/components/admin/AdminDashboard";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultAdmin' });
+
 export default async function AdminPage() {
     return (
         <div>

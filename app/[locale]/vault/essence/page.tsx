@@ -5,6 +5,10 @@ import EssenceJournal from "@/components/vault/EssenceJournal";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/routing";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultEssence' });
+
 export default async function EssencePage() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

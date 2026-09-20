@@ -8,6 +8,10 @@ import SafeImage from "@/components/ui/SafeImage";
 import CheckoutSyncHandler from "@/components/monetization/CheckoutSyncHandler";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultCourses' });
+
 export default async function CoursesPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
     const t = await getTranslations({ locale, namespace: 'Courses' });

@@ -10,6 +10,10 @@ import { checkAccess } from "@/utils/access-control";
 import { getChapterVideo } from "@/app/actions/vault/chapter-video";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultFoundation' });
+
 export default async function LessonPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
     const { slug, locale } = await params;
     // Decode likely URL-encoded slugs from legacy data

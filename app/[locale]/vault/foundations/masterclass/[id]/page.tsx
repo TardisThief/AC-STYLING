@@ -12,6 +12,10 @@ import SafeImage from "@/components/ui/SafeImage";
 import { parseVimeoId } from "@/app/lib/vimeo";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultMasterclass' });
+
 export const dynamic = 'force-dynamic';
 
 export default async function MasterclassPage({ params }: { params: Promise<{ id: string, locale: string }> }) {

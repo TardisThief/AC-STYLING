@@ -2,6 +2,10 @@ import { redirect } from "next/navigation";
 import { getWardrobeByToken } from "@/app/actions/wardrobes";
 import WardrobeUploadLanding from "@/components/studio/WardrobeUploadLanding";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'studioUpload' });
+
 export const dynamic = 'force-dynamic';
 
 interface Props {

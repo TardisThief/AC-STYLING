@@ -7,6 +7,10 @@ import AccountSettings from '@/components/vault/AccountSettings';
 import { Link } from '@/i18n/routing';
 import { Printer } from 'lucide-react';
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultProfile' });
+
 export default async function ProfileHub() {
     const [hubData, journey] = await Promise.all([
         getProfileHubData(),

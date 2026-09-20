@@ -1,6 +1,6 @@
 # AC Styling — Engineering Roadmap
 
-Status as of 2026-09-13. See
+Status as of 2026-09-19. See
 [docs/archive/AUDIT-2026-07-10.md](docs/archive/AUDIT-2026-07-10.md) for the
 security audit this follows from (all P0/P1 closed), and
 [supabase/migrations/README.md](supabase/migrations/README.md) for DB state.
@@ -40,7 +40,7 @@ Vimeo teaser handling.
   Remaining optional cleanup: `scripts/cleanup_orphaned_wardrobe_files.ts` (44
   orphaned files, dry-run first).
 
-## Phase 2 — Code Health & Dev Velocity (current)
+## Phase 2 — Code Health & Dev Velocity
 
 - ~~`no-explicit-any` cleanup → flip CI's lint step to a blocking gate~~ —
   **done (2026-07-14, unmerged on Dev)**. The "~1500 errors" were mostly ESLint
@@ -152,6 +152,95 @@ single source for this thread; do not duplicate its state here.
 - The marketing `Hero` preloads both crops on every device (fixed on the Vault
   hero, same one-line fix).
 
+## Phase 3.5 — Launch readiness: SEO, legal, a11y (current)
+
+Opened 2026-09-19 from an audit of the codebase against four widely-circulated
+"things to add before launching" checklists (SEO, legal/compliance, performance,
+pre-launch). ~80 listed items collapsed to the 10 below: most of the rest were
+already shipped (`app/lib/seo.ts`, `robots.ts`, `sitemap.ts`, `not-found.tsx`,
+the legal pages, account deletion, cookieless first-party analytics) or are
+Vercel/Next defaults (HTTPS, CDN, minification, code splitting, image
+compression, connection pooling).
+
+The through-line: **`/vault-access` is the only page on the site that is
+launch-ready.** It has metadata, canonical, hreflang, an OG image, an `<h1>`,
+FAQ copy and `Course` + `FAQPage` JSON-LD. The other 29 routes have none of it.
+Most of this phase is propagating patterns that already exist in the repo
+rather than inventing anything.
+
+Order below is the agreed execution order. 1–2 unblock launch; 3–4 are the only
+genuine legal exposure. **1–2 are done; 3 is next.**
+
+- ~~**1. Roll `buildMetadata` out site-wide.**~~ — **done (2026-09-19)**. Added
+  `pageMetadata()` to `app/lib/seo.ts`, which reduces a route to one line and
+  reads its copy from the new `Meta` namespace in `messages/{en,es}.json` (27
+  keys, both locales at parity). All 30 routes now carry a unique title and
+  description; public routes also get canonical + `hreflang` (`en`/`es`/
+  `x-default`) + OG/Twitter, and gated routes get `noindex, nofollow` and
+  deliberately **no** canonical — a noindex page has nothing to be canonical
+  about, and pointing one at a parent would be a wrong signal. Six pages were
+  client components and so could never export `generateMetadata`; each was split
+  into a server wrapper plus a colocated `*Client.tsx` (the five `(auth)` routes
+  and `vault/join` — the last one found by the build, not by grep, because it
+  writes `'use client'` in single quotes). Verified in the emitted HTML, not just
+  the build log. Prerendering did not regress: 20 pages still SSG.
+- ~~**2. Give `/book` a document.**~~ — **done (2026-09-19)**. Was a bare Calendly
+  iframe: no `<h1>`, no copy, no metadata, and an unused
+  `useTranslations('Services')`. Now a server component with an `h1`, a
+  three-step "what happens in the call" list, a four-question FAQ in a `dl`, and
+  labelled sections — 281 visible words, up from effectively zero. The scheduler
+  is isolated in `CalendlyEmbed.tsx` as the page's only client component, moved
+  to `strategy="lazyOnload"`, and given a `<noscript>` direct link so the booking
+  path survives the widget being blocked. Still prerendered in both locales.
+  Remaining: the FAQ copy is ready to carry `FAQPage` JSON-LD, which is folded
+  into item 7.
+- **3. Reconcile the cookie/tracking story.** `legal/privacy` describes Google
+  Analytics and third-party ad tracking that the site does not run (it runs
+  cookieless first-party Vercel Analytics), and omits the one third party that
+  *does* set cookies: the Calendly widget on `/book`. So: correct the policy to
+  match reality, then add a consent gate in front of the Calendly script. With an
+  `es` locale and an EU-facing audience this is the item with actual downside.
+- **4. Translate the legal pages.** `privacy`, `terms` and `refunds` contain zero
+  `useTranslations`/`getTranslations` — a Spanish visitor gets English terms.
+  The one place where bilingual carries legal weight rather than UX weight.
+- **5. Add `error.tsx` / `global-error.tsx`.** There is no error boundary file
+  anywhere in `app/`. A render error in the Vault drops the user on Next's
+  default error screen; the 404 is branded and its 500 counterpart does not
+  exist. Localized, matching `not-found.tsx`.
+- **6. Alt-text sweep.** Confirmed missing on raw `<img>` in
+  `components/admin/BoutiqueManager.tsx` and `components/admin/CollectionsManager.tsx`
+  (2 instances). Plus ~16 `alt=""` to triage — decorative is a legitimate answer,
+  unlabelled content is not. Pairs with the open Studio P3 "~11 raw `<img>`" item.
+- **7. `Organization` schema on the home page.** The site's only JSON-LD is on
+  `/vault-access`. The brand entity belongs on the root.
+- **8. Breadcrumbs in the Vault.** `vault/courses/[slug]/essence-lab` is four
+  levels deep with no positional affordance. The routes are gated so there is no
+  SEO argument here — this is purely the UX one, which is why it sits below 1–7.
+- **9. Loading skeletons beyond marketing.** `(marketing)/loading.tsx` is the only
+  one in the app, and the Vault pages are the slow ones. Subsumes the open Studio
+  P3 item (`"Loading Wardrobe..."` should be a skeleton).
+- **10. Email footers.** All four templates in `lib/email-templates.ts` are
+  transactional, so no unsubscribe link is strictly required — but none carries a
+  physical business address, which CAN-SPAM does require of anything promotional.
+  `getPurchaseWelcomeHtml` is the borderline one. Decide its character, then give
+  it the right footer.
+
+### Considered and rejected
+
+- **`llms.txt`** — unratified, honored by no crawler.
+- **"Remove noindex tags"** — ours is deliberate and documented; it lifts with
+  `VAULT_INDEXABLE` per the handover, not as a checklist item.
+- **Maps, directions, `LocalBusiness` schema** — a service brand with no
+  storefront. Revisit only if in-person clients are seen at a fixed address.
+- **Thank-you page** — `/welcome` already is one.
+- **Load balancer, CDN, HTTPS, minification, image compression** — Vercel.
+- **Sticky mobile CTA** — deliberately not, pending the framer-motion decision on
+  the shared chrome; it would add to the critical path this repo is trying to cut.
+
+One-off worth doing alongside: confirm the `Testimonials` entries are real and
+attributable. Unverifiable testimonials are the checklist item that actually
+draws FTC complaints.
+
 ## Phase 4 — North-star features (built on Phase 3's design language)
 
 - Improve editorial content pull: **"Style of the Week"** + **"Ale's Pick"**,
@@ -175,4 +264,7 @@ single source for this thread; do not duplicate its state here.
 zod (P1) yields the real types that make the `any` cleanup (P2) safer and
 faster. The impeccable design pass (P3) sets the visual language the P4
 editorial/carousel features live in — designing the system before building the
-features, not retrofitting.
+features, not retrofitting. Phase 3.5 sits between them because it is launch
+gating, not feature work: shipping P4 editorial surfaces onto pages that carry
+no metadata and a privacy policy describing tracking we do not run would mean
+doing 3.5 twice.

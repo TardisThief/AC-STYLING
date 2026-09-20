@@ -6,6 +6,10 @@ import { Link } from "@/i18n/routing";
 import { ArrowLeft, Sparkles, ArrowRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultServices' });
+
 export default async function ServicesPage({ params }: { params: { locale: string } }) {
     const { locale } = params;
     const t = await getTranslations({ locale, namespace: 'Studio' });

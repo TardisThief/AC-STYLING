@@ -13,6 +13,10 @@ import InteractiveGate from "@/components/auth/InteractiveGate";
 import UnlockButton from "@/components/monetization/UnlockButton";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultCourse' });
+
 export default async function CourseLessonPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
     const { slug, locale } = await params;
     // Decode likely URL-encoded slugs from legacy data

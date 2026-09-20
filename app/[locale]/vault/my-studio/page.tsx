@@ -4,6 +4,10 @@ import ClientStudioDashboard from "@/components/studio/ClientStudioDashboard";
 import { getMyWardrobe } from "@/app/actions/wardrobes";
 import { getViewer } from "@/app/lib/vault-user";
 
+import { pageMetadata } from '@/app/lib/seo';
+
+export const generateMetadata = pageMetadata({ key: 'vaultMyStudio' });
+
 export default async function MyStudioPage() {
     // Shared with the Vault layout via React cache(): this page used to repeat
     // the layout's getUser + profiles round-trips instead of reusing them.
