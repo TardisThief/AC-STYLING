@@ -617,15 +617,89 @@ no accessible name** — the carousel's two arrows and five dots, exactly as the
 assessment described. Mobile overflow at 360/390px and the mobile menu's
 Escape/focus-trap behaviour were not re-measured here.
 
-## Phase 4 — North-star features (built on Phase 3's design language)
+## Phase 3.6 — Close-out before content (current)
 
-- Improve editorial content pull: **"Style of the Week"** + **"Ale's Pick"**,
-  personalized via Essence Lab answers.
-- Present it as a **carousel that funnels into the boutique**.
-- Build on existing infra: `getEditorialContent` (`app/actions/dashboard.ts`),
-  `essence_responses`, the boutique.
+Opened 2026-09-20. The engineering phase is finished in substance: every
+security finding in the assessment is closed and deployed. **Ops polish
+(Phase 4) and the north-star features are deliberately parked** — see below —
+so what remains is a short, bounded list of things that either block content
+work outright or would quietly rot while attention is elsewhere.
 
-## Deferred — Ops polish (intentionally after Phase 4)
+Ordered so the first item unblocks the rest.
+
+- **1. Make the catalog round-trip cleanly — this is the gate.**
+  `node scripts/export_catalog.mjs` followed by `node scripts/import_catalog.mjs`
+  on live data reports **24 errors**, so the tool the content work depends on
+  refuses to run against the content it just exported. Both causes are in the
+  data, not the script:
+
+  - **8 chapters carry `lab_questions` using the legacy `question` key.** The
+    Essence Lab renders `label`, so those prompts render **blank**. All 8 are
+    `is_published = false`, which is the only reason no customer has hit it —
+    it fires the moment they are published.
+  - **6 modules have `masterclass_id` set and `is_standalone = true`**, which
+    cannot both be true: a module inside a masterclass is not standalone.
+
+  One careful migration. Fix it and the content pipeline is usable; skip it and
+  every import is a fight.
+
+- **2. Make CI run the build and a typecheck.** It runs `test:run` and `lint`
+  and nothing else. Three failures during this session passed both and still
+  broke `npm run build` — the `"use server"` export rule, and two test-typing
+  errors. About twenty lines of workflow, and it matters more once content
+  edits land from someone who is not watching build output.
+
+- **3. Fix the stale E2E assertions.** Three expect anonymous access to
+  `/courses`, `/services` and `/boutique`; production redirects all three to
+  login. A test asserting the opposite of the system makes the whole suite
+  untrustworthy. Part of F13.
+
+- **4. Finish the accessibility close-out.** Verified against production
+  2026-09-20: the home page serves 11 buttons with no text content and only 4
+  `aria-label`s, so **seven controls have no accessible name** — the carousel's
+  two arrows and five dots. Plus mobile overflow at 360/390px and the mobile
+  menu ignoring Escape with no focus trap. The rest of F14.
+
+- **5. Close the last two Spanish gaps in the customer journey.** The
+  update-password form is English-only and redirects to a locale-less `/vault`;
+  the welcome email is English-only. Both sit in the purchase and recovery
+  path, and authoring the catalogue bilingually makes them more visible. Part
+  of F15.
+
+**Then the work is content**, and `docs/CATALOG-CONTENT-GUIDE.md` is the entry
+point: the JSON shape, the template, and the export/import scripts.
+
+### Why Ops polish and north-star are parked
+
+Not abandoned — parked, with reasons recorded so the decision is not
+re-litigated from scratch.
+
+- **Phase 4 (Ops polish)** — CSP is still decorative and the UI surface is
+  about to change again as content lands, which is exactly the churn that
+  breaks a nonce-based policy. Harden once, against the settled surface.
+- **North-star features** — deferred for the reason noted in that section: they
+  are editorial *surfaces*, and there is no editorial content to put in them
+  yet. Building them first means designing against placeholders. The
+  masterclasses-first idea recorded there is the right shape — ship what can be
+  delivered, mark the rest "coming soon" rather than half-building it.
+- **F12 (lookup and restoration scale limits)** — guest resolution pages
+  through at most 2,000 auth users; `syncStripePurchases` scans 100 sessions.
+  Real, invisible at 55 users, and it fires exactly when growth goes well. It
+  belongs before a marketing push, not before content.
+- **F16 (recovery, observability, migration repeatability)** — staging
+  database, rehearsed restoration, alerting on paid-but-unfulfilled purchases.
+  The largest item and the most dependent on hosting and budget decisions. Two
+  of its sub-items closed along the way: the error boundaries and loading
+  states now exist, and the migrations README inventories everything through 16.
+
+### What actually gates the launch
+
+None of the above. **F09**: the five published Vault modules have no usable
+video — every `video_id` in the catalog export reads `pending_video` or
+`TODO_FILL_IN`. And the **Stripe live cutover**, owner action 1. Both are
+yours, not the code's.
+
+## Phase 4 — Ops polish 
 
 - **CSP hardening** (Report-Only → enforced): defer. It's currently decorative
   (Report-Only, no report endpoint, `unsafe-inline`), and Phases 3–4 UI churn
@@ -634,6 +708,18 @@ Escape/focus-trap behaviour were not re-measured here.
 - **Supabase CLI / Docker (WSL2)** workflow: timeboxed attempt at the Phase 4
   boundary (schema work benefits from `db diff`/`db pull`); do not rabbit-hole —
   the manual SQL + `pg_dump` workflow is proven.
+
+
+## North-star features (built on Phase 3's design language)
+
+- Need to decide if Ale wants the Style of the Week, and boutique to go live now, we might hide some functionalities as coming soon for firts launch and focus on the masterclasses
+- Improve editorial content pull: **"Style of the Week"** + **"Ale's Pick"**,
+  personalized via Essence Lab answers.
+- Present it as a **carousel that funnels into the boutique**.
+- Build on existing infra: `getEditorialContent` (`app/actions/dashboard.ts`),
+  `essence_responses`, the boutique.
+
+
 
 ## Sequencing rationale
 
