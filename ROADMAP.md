@@ -226,7 +226,7 @@ Most of this phase is propagating patterns that already exist in the repo
 rather than inventing anything.
 
 Order below is the agreed execution order. 1–2 unblock launch; 3–4 are the only
-genuine legal exposure. **1–5 are done; 6 is next.**
+genuine legal exposure. **1–6 are done; 7 is next.**
 
 - ~~**1. Roll `buildMetadata` out site-wide.**~~ — **done (2026-09-19)**. Added
   `pageMetadata()` to `app/lib/seo.ts`, which reduces a route to one line and
@@ -372,10 +372,42 @@ genuine legal exposure. **1–5 are done; 6 is next.**
   `headers()` and pick its own strings — it is outside `[locale]` so it has no
   `params`, but it can read cookies. Not done, because it is beyond this item
   and costs the 404 its static rendering.
-- **6. Alt-text sweep.** Confirmed missing on raw `<img>` in
-  `components/admin/BoutiqueManager.tsx` and `components/admin/CollectionsManager.tsx`
-  (2 instances). Plus ~16 `alt=""` to triage — decorative is a legitimate answer,
-  unlabelled content is not. Pairs with the open Studio P3 "~11 raw `<img>`" item.
+- ~~**6. Alt-text sweep.**~~ — **done (2026-09-20)**. Inventoried every
+  `<img>`, `next/image` and `SafeImage` in `app/` and `components/`: 3 with no
+  `alt` at all (matching the 3 `jsx-a11y/alt-text` warnings, and the same 3 the
+  2026-09-19 assessment counted), 15 with `alt=""` to triage, 37 already
+  labelled.
+
+  The three unlabelled ones — the boutique manager's row thumbnail and the
+  collections manager's item and cover thumbnails — each sit immediately beside
+  the record's name in text, so they got `alt=""` rather than a label: naming
+  them would make a screen reader announce the same name twice. All 15 existing
+  `alt=""` were checked individually and all 15 are correct — avatars beside
+  the person's name, background photographs behind their own heading, card
+  thumbnails above the card's title. `npm run lint` alt-text warnings: 3 → 0.
+
+  **The sweep turned up a worse bug than the missing alts.** The lookbook's
+  wardrobe-asset picker (`DigitalLookbook.tsx`) rendered a grid of `<button>`s
+  containing nothing but an image with `alt=""`, and no `aria-label` — so every
+  one of them had *no accessible name whatsoever*, announced as a row of bare
+  "button". The name belongs on the control, so the button now carries
+  `aria-label={\`Add ${item.category} to the lookbook\`}` and the image inside
+  stays decorative. Separately, the garment placed **on** the lookbook canvas
+  had `alt=""` although it is the substance of the document — a client using a
+  screen reader got an empty page — so it now describes itself by category.
+  `CanvasItem` gained an explicit `category` field, since the interface's index
+  signature typed the spread-in value `unknown`.
+
+  A follow-up scan for *any* interactive control whose only content is an image
+  with no accessible name now returns **0** across `app/` and `components/`;
+  the lookbook picker was the only one.
+
+  Two things deliberately left alone: the ~30 `no-img-element` warnings (a
+  performance question, not accessibility — many are blob previews that are
+  legitimately raw `<img>`), and the fact that the Studio components are
+  hardcoded English, so the new labels are too. That the admin/Studio UI is
+  untranslated is a real gap but a separate one; item 4 covered the customer-
+  facing legal pages, not the stylist's tooling.
 - **7. `Organization` schema on the home page.** The site's only JSON-LD is on
   `/vault-access`. The brand entity belongs on the root.
 - **8. Breadcrumbs in the Vault.** `vault/courses/[slug]/essence-lab` is four

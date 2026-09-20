@@ -19,6 +19,8 @@ interface CanvasItem {
     y?: number;
     width?: number;
     image_url?: string | null;
+    /** Spread in from the WardrobeItem; the index signature would type it `unknown`. */
+    category?: string | null;
     [key: string]: unknown;
 }
 
@@ -327,7 +329,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                         className={`absolute cursor-move ${selectedCanvasItem === index.toString() && !isClientView ? 'ring-1 ring-ac-gold ring-offset-2' : ''}`}
                                         style={{ left: item.x || '10%', top: item.y || '10%', width: item.width || 150 }}
                                     >
-                                        <img src={item.image_url ?? undefined} alt="" className="w-full h-full object-contain pointer-events-none drop-shadow-xl" />
+                                        <img src={item.image_url ?? undefined} alt={item.category ? `${item.category} on the lookbook` : "Wardrobe item on the lookbook"} className="w-full h-full object-contain pointer-events-none drop-shadow-xl" />
 
                                         {/* Resize / Remove Handles - Only for Admin */}
                                         {selectedCanvasItem === index.toString() && !isClientView && (
@@ -366,6 +368,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                             <button
                                                 key={item.id}
                                                 onClick={() => setCanvasItems([...canvasItems, { ...item, x: 50, y: 50, width: 150 }])}
+                                                aria-label={item.category ? `Add ${item.category} to the lookbook` : "Add wardrobe item to the lookbook"}
                                                 className="aspect-[3/4] border border-ac-taupe/10 rounded-sm overflow-hidden hover:border-ac-gold transition-all relative group"
                                             >
                                                 <img src={item.image_url ?? undefined} alt="" className="w-full h-full object-cover" />

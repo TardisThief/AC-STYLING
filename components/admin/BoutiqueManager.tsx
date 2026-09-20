@@ -141,7 +141,7 @@ export default function BoutiqueManager() {
                                     <tr key={obj.id} className="hover:bg-white/40">
                                         <td className="p-4 flex items-center gap-3">
                                             {((obj as PartnerBrand).logo_url || (obj as BoutiqueItem).image_url) && (
-                                                <img src={((obj as PartnerBrand).logo_url || (obj as BoutiqueItem).image_url) ?? undefined} className="w-8 h-8 object-cover rounded-sm bg-white" />
+                                                <img src={((obj as PartnerBrand).logo_url || (obj as BoutiqueItem).image_url) ?? undefined} alt="" className="w-8 h-8 object-cover rounded-sm bg-white" />
                                             )}
                                             {obj.name}
                                         </td>

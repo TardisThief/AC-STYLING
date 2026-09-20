@@ -225,7 +225,7 @@ export default function CollectionsManager({ items }: CollectionsManagerProps) {
                                             onChange={() => toggleItem(item.id)}
                                         />
                                         {item.image_url && (
-                                            <img src={item.image_url} className="w-8 h-8 object-cover rounded-sm bg-white border border-ac-taupe/10" />
+                                            <img src={item.image_url} alt="" className="w-8 h-8 object-cover rounded-sm bg-white border border-ac-taupe/10" />
                                         )}
                                         <span className="text-sm text-ac-taupe">{item.name}</span>
                                     </label>
@@ -273,7 +273,7 @@ export default function CollectionsManager({ items }: CollectionsManagerProps) {
                                 <tr key={col.id} className={`hover:bg-white/40 ${!col.active ? 'opacity-40' : ''}`}>
                                     <td className="p-4">
                                         {col.cover_image_url ? (
-                                            <img src={col.cover_image_url} className="w-12 h-8 object-cover rounded-sm bg-white border border-ac-taupe/10" />
+                                            <img src={col.cover_image_url} alt="" className="w-12 h-8 object-cover rounded-sm bg-white border border-ac-taupe/10" />
                                         ) : (
                                             <div className="w-12 h-8 rounded-sm bg-ac-taupe/5 border border-ac-taupe/10" />
                                         )}
