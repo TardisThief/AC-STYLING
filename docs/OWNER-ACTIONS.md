@@ -113,6 +113,14 @@ structured data, but is not generous. Swap it if a larger original exists.
 
 These are code work, tracked in `ROADMAP.md` and
 `docs/ASSESSMENT-2026-09-19.md`, listed here only so the launch picture is in
-one place: **F06** (the purchase-claim credential stays valid after the email
-recovery path — an account-takeover window) and **F07** (SSRF validation only
-checks the first destination, not redirects).
+one place.
+
+- ~~**F06** — purchase-claim credential stayed valid after the email recovery
+  path~~ — **fixed 2026-09-20**, migration 13 applied and verified.
+- **F05** — partially done. Fulfillment no longer reports success it did not
+  achieve; the durable fulfillment-state record, the `payment_status` check,
+  and refund/dispute reconciliation are still open.
+- **F07** — SSRF validation only checks the first destination, not redirects.
+  Still open.
+- **F08** — Next.js sits inside current advisory ranges; a dependency upgrade
+  is still open.
