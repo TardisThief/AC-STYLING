@@ -154,13 +154,17 @@ describe('safeFetch', () => {
     })
 
     it('does not let fetch follow redirects on its own', async () => {
-        // Typed with the fetch signature so the init argument is inspectable.
-        const spy = vi.fn(async (_input: unknown, _init?: RequestInit) => respond('PNGDATA'))
-        globalThis.fetch = spy as never
+        // Rest args rather than named-but-unused ones, which this repo's lint
+        // flags even when underscore-prefixed.
+        let seenInit: RequestInit | undefined
+        globalThis.fetch = (async (...args: [unknown, RequestInit?]) => {
+            seenInit = args[1]
+            return respond('PNGDATA')
+        }) as never
 
         await safeFetch('https://example.com/a.png')
 
         // `redirect: 'manual'` is what makes every hop visible to the guard.
-        expect(spy.mock.calls[0][1]?.redirect).toBe('manual')
+        expect(seenInit?.redirect).toBe('manual')
     })
 })
