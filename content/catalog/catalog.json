@@ -1,0 +1,898 @@
+{
+  "$schema": "docs/CATALOG-CONTENT-GUIDE.md",
+  "exported_at": "2026-09-20T21:41:46.341Z",
+  "masterclasses": [
+    {
+      "title": "Colorimetry",
+      "subtitle": "The Power of Color: Elevate Your Image",
+      "description": "Learn the technical foundation of color harmonies, color psychology, dimensions, and seasons to define your personal colorimetry and elevate your image.",
+      "title_es": "Colorimetría",
+      "subtitle_es": "El poder del color: Eleva tu imagen",
+      "description_es": "Aprende la base técnica de las armonías de color, la psicología, las dimensiones y las estaciones para definir tu colorimetría personal y elevar tu imagen.",
+      "thumbnail_url": "https://vitrtidtvkdoghcwgxjl.supabase.co/storage/v1/object/public/vault-assets/1783815979511-IMG_5601.jpeg",
+      "video_url": "https://vimeo.com/1207933620",
+      "order_index": 1,
+      "price_display": "$50",
+      "runtime_minutes": 60,
+      "stripe_product_id": "prod_UrtCFFnq2AG9cb",
+      "price_id": "price_1Ts9QGGg4NoVaWzLLAAO0zqr",
+      "is_published": true,
+      "available_at": null,
+      "modules": [
+        {
+          "slug": "color-theory",
+          "title": "Color Theory",
+          "subtitle": null,
+          "description": "We will build the technical foundation of color harmonies to create looks (complementary, analogous, monochromatic). The goal is to understand how to combine colors in a coherent, aesthetic, and strategic way.",
+          "title_es": "La teoría del color",
+          "subtitle_es": null,
+          "description_es": "Construiremos la base técnica de las armonías de color para crear looks (complementarios, análogos, monocromáticos). El objetivo es entender cómo combinar colores de forma coherente, estética y estratégica.",
+          "video_id": "TODO_FILL_IN",
+          "video_id_es": "TODO_FILL_IN",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 1,
+          "is_standalone": false,
+          "takeaways": [
+            "The concept of color in design",
+            "Complementary colors",
+            "Chromatic harmony",
+            "Contrast and saturation"
+          ],
+          "takeaways_es": [
+            "El concepto de color en diseño",
+            "Colores complementarios",
+            "Armonía cromática",
+            "Contraste y saturación"
+          ],
+          "lab_questions": [
+            {
+              "key": "col_m1_q1",
+              "label": "What type of looks do you use most: safe (neutrals) or risky (contrasts)?",
+              "label_es": "¿Qué tipos de looks usas más: seguras (neutros) o arriesgadas (contrastes)?",
+              "placeholder": "e.g., I mostly use safe neutrals...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Principalmente uso neutros..."
+            },
+            {
+              "key": "col_m1_q2",
+              "label": "Do you feel comfortable combining colors or do you usually repeat formulas?",
+              "label_es": "¿Te sientes cómodo/a combinando colores o sueles repetir fórmulas?",
+              "placeholder": "e.g., I tend to repeat what works...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Suelo repetir lo que me funciona...",
+              "mappingCategory": "archetype"
+            },
+            {
+              "key": "col_m1_q3",
+              "label": "What color combination makes you feel most confident and why?",
+              "label_es": "¿Qué combinación de colores te hace sentir más seguro/a y por qué?",
+              "placeholder": "e.g., Black and white because...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Blanco y negro porque...",
+              "mappingCategory": "power_features"
+            },
+            {
+              "key": "col_m1_q4",
+              "label": "Is your current style more harmonious or contrasted?",
+              "label_es": "¿Tu estilo actual es más armónico o contrastado?",
+              "placeholder": "e.g., Very contrasted...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Muy contrastado...",
+              "mappingCategory": "color_energy"
+            },
+            {
+              "key": "col_m1_q5",
+              "label": "What combination would you like to start incorporating but haven't dared to yet?",
+              "label_es": "¿Qué combinación te gustaría empezar a incorporar y aún no te atreves?",
+              "placeholder": "e.g., Red and pink...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Rojo y rosa..."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": true,
+          "available_at": null
+        },
+        {
+          "slug": "color-psychology",
+          "title": "Color Psychology",
+          "subtitle": null,
+          "description": "In this module, we will understand how color communicates before words. We will explore how colors impact perception (authority, approachability, sophistication, creativity) and how to use them intentionally according to the message you want to project.",
+          "title_es": "La psicología del color",
+          "subtitle_es": null,
+          "description_es": "En este módulo entenderemos cómo el color comunica antes que la palabra. Exploraremos cómo los colores impactan la percepción y cómo utilizarlos de forma intencional según el mensaje que quieres proyectar.",
+          "video_id": "TODO_FILL_IN",
+          "video_id_es": "TODO_FILL_IN",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 2,
+          "is_standalone": false,
+          "takeaways": [
+            "Visual perception",
+            "Emotional association",
+            "Non-verbal communication",
+            "Personal visual identity",
+            "Color as a strategic tool"
+          ],
+          "takeaways_es": [
+            "Percepción visual",
+            "Asociación emocional",
+            "Comunicación no verbal",
+            "Identidad visual personal",
+            "Color como herramienta estratégica"
+          ],
+          "lab_questions": [
+            {
+              "key": "col_m2_q1",
+              "label": "What emotions do you want to generate for yourself and in others when they see you for the first time?",
+              "label_es": "¿Qué emociones quieres generar en ti misma, y en los demás cuando te ven por primera vez?",
+              "placeholder": "e.g., Trust and authority...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Confianza y autoridad...",
+              "mappingCategory": "archetype"
+            },
+            {
+              "key": "col_m2_q2",
+              "label": "Does your current way of dressing communicate authority, approachability, or creativity? Why?",
+              "label_es": "¿Tu forma actual de vestir comunica autoridad, cercanía o creatividad? ¿Por qué?",
+              "placeholder": "e.g., Approachability, because...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Cercanía, porque..."
+            },
+            {
+              "key": "col_m2_q3",
+              "label": "What colors predominate in your closet and what do they say about your personality?",
+              "label_es": "¿Qué colores predominan en tu clóset y qué dicen sobre tu personalidad?",
+              "placeholder": "e.g., Blues and grays...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Azules y grises..."
+            },
+            {
+              "key": "col_m2_q4",
+              "label": "Is there any color you avoid? Why do you think that is?",
+              "label_es": "¿Hay algún color que evitas? ¿A qué crees que se debe?",
+              "placeholder": "e.g., Yellow, because...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Amarillo, porque..."
+            },
+            {
+              "key": "col_m2_q5",
+              "label": "How does your choice of color change depending on the environment (work, dates, events)?",
+              "label_es": "¿Cómo cambia tu elección de color según el entorno (trabajo, citas, eventos)?",
+              "placeholder": "e.g., I wear darker colors for work...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Uso colores más oscuros para el trabajo..."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": true,
+          "available_at": null
+        },
+        {
+          "slug": "color-dimensions",
+          "title": "Color Dimensions",
+          "subtitle": null,
+          "description": "We will analyze the three key dimensions: temperature (warm/cool), value (light/dark), and intensity (soft/bright). This module is fundamental because it connects directly with your physical characteristics.",
+          "title_es": "Dimensiones del color",
+          "subtitle_es": null,
+          "description_es": "Analizaremos las tres dimensiones clave: temperatura (cálido/frío), valor (claro/oscuro) e intensidad (suave/brillante). Este módulo conecta directamente con tus características físicas.",
+          "video_id": "TODO_FILL_IN",
+          "video_id_es": "TODO_FILL_IN",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 3,
+          "is_standalone": false,
+          "takeaways": [
+            "Temperature (warm vs cool)",
+            "Value (light vs deep)",
+            "Intensity (soft vs bright)",
+            "Personal contrast",
+            "Skin undertone",
+            "Natural harmony"
+          ],
+          "takeaways_es": [
+            "Temperatura (warm vs cool)",
+            "Valor (light vs deep)",
+            "Intensidad (soft vs bright)",
+            "Contraste personal",
+            "Subtono de piel",
+            "Armonía natural"
+          ],
+          "lab_questions": [
+            {
+              "key": "col_m3_q1",
+              "label": "Is your natural contrast high (light skin + dark hair) or low (everything in similar tones)?",
+              "label_es": "¿Tu contraste natural es alto (piel clara + cabello oscuro) o bajo (todo en tonos similares)?",
+              "placeholder": "e.g., High contrast...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Contraste alto...",
+              "mappingCategory": "style_words"
+            },
+            {
+              "key": "col_m3_q2",
+              "label": "Does your skin tend more towards warm tones (yellow/golden) or cool tones (pink/bluish)?",
+              "label_es": "¿Tu piel tiende más a tonos cálidos (amarillos/dorados) o fríos (rosados/azulados)?",
+              "placeholder": "e.g., Warm tones...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Tonos cálidos...",
+              "mappingCategory": "archetype"
+            },
+            {
+              "key": "col_m3_q3",
+              "label": "Do intense or muted colors flatter you more?",
+              "label_es": "¿Te favorecen más los colores intensos o los apagados?",
+              "placeholder": "e.g., Muted colors...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Colores apagados..."
+            },
+            {
+              "key": "col_m3_q4",
+              "label": "What colors make you look more luminous without makeup?",
+              "label_es": "¿Qué colores te hacen ver más luminoso/a sin maquillaje?",
+              "placeholder": "e.g., Soft pinks...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Rosas suaves...",
+              "mappingCategory": "archetype"
+            },
+            {
+              "key": "col_m3_q5",
+              "label": "What garments do you feel \"dull\" you visually?",
+              "label_es": "¿Qué prendas sientes que “te apagan” visualmente?",
+              "placeholder": "e.g., Bright neon tops...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Tops de colores neón..."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": true,
+          "available_at": null
+        },
+        {
+          "slug": "the-4-color-seasons",
+          "title": "The 4 Color Seasons",
+          "subtitle": null,
+          "description": "I introduce you to the classic system of seasons: spring, summer, autumn, and winter. The goal is to identify your patterns and bring you closer to an ideal palette that enhances your natural features.",
+          "title_es": "Las 4 estaciones de color",
+          "subtitle_es": null,
+          "description_es": "Te introduzco en el sistema clásico de estaciones: primavera, verano, otoño e invierno. El objetivo es identificar tus patrones y acercarte a una paleta ideal que potencie tus rasgos naturales.",
+          "video_id": "TODO_FILL_IN",
+          "video_id_es": "TODO_FILL_IN",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 4,
+          "is_standalone": false,
+          "takeaways": [
+            "Chromatic seasons",
+            "Color palettes",
+            "Natural harmony",
+            "Visual identification"
+          ],
+          "takeaways_es": [
+            "Estaciones cromáticas",
+            "Paletas de color",
+            "Armonía natural",
+            "Identificación visual"
+          ],
+          "lab_questions": [
+            {
+              "key": "col_m4_q1",
+              "label": "Which season do you intuitively identify with and why?",
+              "label_es": "¿Con cuál estación te identificas intuitivamente y por qué?",
+              "placeholder": "e.g., Autumn, because...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Otoño, porque..."
+            },
+            {
+              "key": "col_m4_q2",
+              "label": "Do your best garments coincide in the same color range?",
+              "label_es": "¿Tus mejores prendas coinciden en una misma gama de color?",
+              "placeholder": "e.g., Yes, mostly earth tones...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Sí, mayoría tonos tierra..."
+            },
+            {
+              "key": "col_m4_q3",
+              "label": "Do you receive more compliments with cool or warm colors?",
+              "label_es": "¿Recibes más cumplidos con colores fríos o cálidos?",
+              "placeholder": "e.g., Warm colors...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Colores cálidos..."
+            },
+            {
+              "key": "col_m4_q4",
+              "label": "Does your style align more with vibrant or soft colors?",
+              "label_es": "¿Tu estilo se alinea más con colores vibrantes o suaves?",
+              "placeholder": "e.g., Soft colors...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Colores suaves..."
+            },
+            {
+              "key": "col_m4_q5",
+              "label": "Which season do you think best reflects your personality in addition to your physique?",
+              "label_es": "¿Qué estación crees que refleja mejor tu personalidad además de tu físico?",
+              "placeholder": "e.g., Winter...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Invierno..."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": true,
+          "available_at": null
+        },
+        {
+          "slug": "defining-your-colorimetry",
+          "title": "Defining Your Colorimetry",
+          "subtitle": null,
+          "description": "You will integrate everything learned to determine your personal palette. It includes practical methodology: analysis of skin, eyes, hair, and contrast.",
+          "title_es": "Definir tu colorimetría",
+          "subtitle_es": null,
+          "description_es": "Integrarás todo lo aprendido para determinar tu paleta personal. Incluye metodología práctica: análisis de piel, ojos, cabello y contraste.",
+          "video_id": "TODO_FILL_IN",
+          "video_id_es": "TODO_FILL_IN",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 5,
+          "is_standalone": false,
+          "takeaways": [
+            "Personal diagnosis",
+            "Style coherence",
+            "Closet optimization",
+            "Smart shopping"
+          ],
+          "takeaways_es": [
+            "Diagnóstico personal",
+            "Coherencia de estilo",
+            "Optimización del clóset",
+            "Compra inteligente"
+          ],
+          "lab_questions": [
+            {
+              "key": "col_m5_power_colors",
+              "label": "What colors do you identify as your 'power colors'?",
+              "label_es": "¿Qué colores identificas como tus 'power colors'?",
+              "placeholder": "e.g., Emerald green, Navy blue...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Verde esmeralda, Azul marino...",
+              "mappingCategory": "color_energy"
+            },
+            {
+              "key": "col_m5_q2",
+              "label": "What percentage of your current closet is aligned with your colorimetry?",
+              "label_es": "¿Qué porcentaje de tu clóset actual está alineado con tu colorimetría?",
+              "placeholder": "e.g., About 50%...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Cerca del 50%..."
+            },
+            {
+              "key": "col_m5_q3",
+              "label": "What immediate changes can you make to improve your image with color?",
+              "label_es": "¿Qué cambios inmediatos puedes hacer para mejorar tu imagen con color?",
+              "placeholder": "e.g., Buy more cool-toned tops...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Comprar más tops de tonos fríos..."
+            },
+            {
+              "key": "col_m5_q4",
+              "label": "What mistakes have you made when choosing colors in the past?",
+              "label_es": "¿Qué errores has cometido al elegir colores en el pasado?",
+              "placeholder": "e.g., Forcing pastel colors...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Forzar colores pastel..."
+            },
+            {
+              "key": "col_m5_q5",
+              "label": "How can you use color to reinforce your personal or professional goals?",
+              "label_es": "¿Cómo puedes usar el color para reforzar tus objetivos personales o profesionales?",
+              "placeholder": "e.g., Wearing authoritative colors to big meetings...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Usando colores de autoridad en reuniones importantes..."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": true,
+          "available_at": null
+        }
+      ]
+    },
+    {
+      "title": "The AC Method",
+      "subtitle": "Identity & Expression",
+      "description": "The Core Identity Course. Defining who you are before deciding what to wear.",
+      "title_es": "El Método AC",
+      "subtitle_es": "Identidad y Expresión",
+      "description_es": "El Curso de Identidad Central. Definiendo quién eres antes de decidir qué ponerte.",
+      "thumbnail_url": null,
+      "video_url": "https://vimeo.com/pending_m1",
+      "order_index": 1,
+      "price_display": null,
+      "runtime_minutes": null,
+      "stripe_product_id": null,
+      "price_id": null,
+      "is_published": false,
+      "available_at": null,
+      "modules": [
+        {
+          "slug": "unit-1-1-style-vs-trend",
+          "title": "Style vs. Trend",
+          "subtitle": null,
+          "description": "Trends expire; style is a permanent language.",
+          "title_es": "Definición de estilo: tendencia vs estilo",
+          "subtitle_es": null,
+          "description_es": "Las tendencias caducan; el estilo es un lenguaje permanente.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 1,
+          "is_standalone": true,
+          "takeaways": [
+            "Fashion is consumed; style is cultivated."
+          ],
+          "takeaways_es": [
+            "La moda se consume; el estilo se cultiva."
+          ],
+          "lab_questions": [
+            {
+              "key": "trend_vs_style",
+              "type": "textarea",
+              "question": "Tag 3 items you bought for a trend and 3 for your style."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-1-2-universal-styles",
+          "title": "The Universal Styles",
+          "subtitle": "",
+          "description": "The 7 foundational languages of fashion.",
+          "title_es": "Los estilos universales",
+          "subtitle_es": "",
+          "description_es": "Los 7 lenguajes fundamentales de la moda.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": "",
+          "category": "masterclass",
+          "order_index": 2,
+          "is_standalone": false,
+          "takeaways": [
+            "Identify your base archetype."
+          ],
+          "takeaways_es": [
+            "Identifica tu arquetipo base."
+          ],
+          "lab_questions": [
+            {
+              "key": "universal_style_select",
+              "type": "text",
+              "label": "What is your Style?",
+              "question": "Select your top 1-2 Universal Styles.",
+              "placeholder": "Elegant, Classic ...",
+              "mapToEssence": true
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": "",
+          "price_id": "",
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-1-3-substyles",
+          "title": "Sub-styles",
+          "subtitle": null,
+          "description": "Nuance and personalization.",
+          "title_es": "Subestilos",
+          "subtitle_es": null,
+          "description_es": "Matices y personalización.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 3,
+          "is_standalone": true,
+          "takeaways": [
+            "Mix universal styles to create your unique signature."
+          ],
+          "takeaways_es": [
+            "Mezcla estilos universales para crear tu firma única."
+          ],
+          "lab_questions": [
+            {
+              "key": "substyle_name",
+              "type": "text",
+              "question": "Name your personal sub-style."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-1-4-personality",
+          "title": "Personality & Dressing",
+          "subtitle": null,
+          "description": "Your wardrobe is your psychological mirror.",
+          "title_es": "¿Cómo tu personalidad impacta en tu estilo?",
+          "subtitle_es": null,
+          "description_es": "Tu armario es tu espejo psicológico.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 4,
+          "is_standalone": true,
+          "takeaways": [
+            "Your values dictate your fabric and color choices."
+          ],
+          "takeaways_es": [
+            "Tus valores dictan tus elecciones de tela y color."
+          ],
+          "lab_questions": [
+            {
+              "key": "style_personality",
+              "type": "textarea",
+              "question": "Complete the Style Personality Profile."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-1-5-rediscovery",
+          "title": "Style Rediscovery",
+          "subtitle": null,
+          "description": "Peeling back the layers of societal expectations.",
+          "title_es": "Ejercicios para redescubrir tu estilo",
+          "subtitle_es": null,
+          "description_es": "Quitando las capas de expectativas sociales.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 5,
+          "is_standalone": true,
+          "takeaways": [
+            "Separate what you actually like from what you should like."
+          ],
+          "takeaways_es": [
+            "Separa lo que realmente te gusta de lo que deberías gustarte."
+          ],
+          "lab_questions": [
+            {
+              "key": "moodboard_link",
+              "type": "url",
+              "question": "Upload your Essence Moodboard link."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-1-6-lifestyle",
+          "title": "Lifestyle Integration",
+          "subtitle": null,
+          "description": "Bridging the gap between fantasy and reality.",
+          "title_es": "Integración al estilo de vida",
+          "subtitle_es": null,
+          "description_es": "Cerrando la brecha entre la fantasía y la realidad.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 6,
+          "is_standalone": true,
+          "takeaways": [
+            "Align your wardrobe with your 168-hour reality."
+          ],
+          "takeaways_es": [
+            "Alinea tu guardarropa con tu realidad de 168 horas."
+          ],
+          "lab_questions": [
+            {
+              "key": "lifestyle_grid",
+              "type": "grid",
+              "question": "Complete the Lifestyle Grid."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        }
+      ]
+    },
+    {
+      "title": "Body Shape",
+      "subtitle": "Architecture & Geometry",
+      "description": "The Technical Course. Honoring your architecture through visual strategy.",
+      "title_es": "Forma del Cuerpo",
+      "subtitle_es": "Arquitectura y Geometría",
+      "description_es": "El Curso Técnico. Honrando tu arquitectura a través de estrategia visual.",
+      "thumbnail_url": null,
+      "video_url": "https://vimeo.com/pending_m2",
+      "order_index": 2,
+      "price_display": null,
+      "runtime_minutes": null,
+      "stripe_product_id": null,
+      "price_id": null,
+      "is_published": false,
+      "available_at": null,
+      "modules": [
+        {
+          "slug": "unit-2-1-illusions",
+          "title": "Optical Illusions",
+          "subtitle": null,
+          "description": "You control where the eye goes.",
+          "title_es": "Ilusiones ópticas",
+          "subtitle_es": null,
+          "description_es": "Tú controlas a dónde va la mirada.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 1,
+          "is_standalone": true,
+          "takeaways": [
+            "Use lines and color blocks to direct the gaze."
+          ],
+          "takeaways_es": [
+            "Usa líneas y bloques de color para dirigir la mirada."
+          ],
+          "lab_questions": [
+            {
+              "key": "focal_point",
+              "type": "text",
+              "question": "Define your visual Focal Point."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-2-2-triangle",
+          "title": "The Triangle and the Inverted Triangle Shape",
+          "subtitle": "",
+          "description": "To be developed",
+          "title_es": "El cuerpo Triángulo",
+          "subtitle_es": "",
+          "description_es": "La arquitectura Pera.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": "",
+          "category": "masterclass",
+          "order_index": 2,
+          "is_standalone": false,
+          "takeaways": [
+            "Focus on balancing the upper body."
+          ],
+          "takeaways_es": [
+            "Enfócate en equilibrar la parte superior del cuerpo."
+          ],
+          "lab_questions": [],
+          "resource_urls": [],
+          "stripe_product_id": "",
+          "price_id": "",
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-2-3-rectangle",
+          "title": "The Rectangle and Tubular Shapes",
+          "subtitle": "",
+          "description": "Straight vertical lines.",
+          "title_es": "El cuerpo Rectangular",
+          "subtitle_es": "",
+          "description_es": "Líneas verticales rectas.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": "",
+          "category": "masterclass",
+          "order_index": 3,
+          "is_standalone": false,
+          "takeaways": [
+            "Focus on creating the illusion of curves."
+          ],
+          "takeaways_es": [
+            "Enfócate en crear la ilusión de curvas."
+          ],
+          "lab_questions": [],
+          "resource_urls": [],
+          "stripe_product_id": "",
+          "price_id": "",
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-2-4-round",
+          "title": "The Round and Diamond Shapes",
+          "subtitle": "",
+          "description": "The Apple architecture.",
+          "title_es": "El cuerpo Redondo",
+          "subtitle_es": "",
+          "description_es": "La arquitectura Manzana.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": "",
+          "category": "masterclass",
+          "order_index": 4,
+          "is_standalone": false,
+          "takeaways": [
+            "Focus on framing the face and elongating the center."
+          ],
+          "takeaways_es": [
+            "Enfócate en enmarcar el rostro y alargar el centro."
+          ],
+          "lab_questions": [],
+          "resource_urls": [],
+          "stripe_product_id": "",
+          "price_id": "",
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-2-5-hourglass",
+          "title": "The Hourglass Shape",
+          "subtitle": "",
+          "description": "Balanced proportions.",
+          "title_es": "El cuerpo Reloj de Arena",
+          "subtitle_es": "",
+          "description_es": "Proporciones equilibradas.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": "",
+          "category": "masterclass",
+          "order_index": 5,
+          "is_standalone": false,
+          "takeaways": [
+            "Focus on honoring your natural waistline."
+          ],
+          "takeaways_es": [
+            "Enfócate en honrar tu cintura natural."
+          ],
+          "lab_questions": [],
+          "resource_urls": [],
+          "stripe_product_id": "",
+          "price_id": "",
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-2-6-identify-canvas",
+          "title": "Identify Your Canvas",
+          "subtitle": "",
+          "description": "Measurement and acceptance.",
+          "title_es": "Identifica tu tipo de cuerpo",
+          "subtitle_es": "",
+          "description_es": "Medición y aceptación.",
+          "video_id": "pending_video",
+          "video_id_es": "pending_video_es",
+          "thumbnail_url": "",
+          "category": "masterclass",
+          "order_index": 9,
+          "is_standalone": false,
+          "takeaways": [
+            "Measure objectively to remove emotional bias."
+          ],
+          "takeaways_es": [
+            "Mídete objetivamente para eliminar el sesgo emocional."
+          ],
+          "lab_questions": [
+            {
+              "key": "measurements",
+              "type": "text",
+              "question": "Input shoulders, bust, waist, hips."
+            },
+            {
+              "key": "body_shape_tag",
+              "type": "select",
+              "question": "Select your calculated shape."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": "",
+          "price_id": "",
+          "is_published": false,
+          "available_at": null
+        }
+      ]
+    }
+  ],
+  "standalone_courses": [
+    {
+      "slug": "course-jewelry",
+      "title": "Jewelry Image Consulting",
+      "subtitle": null,
+      "description": "The scale of jewelry and matching metals.",
+      "title_es": "Asesoría de imagen en joyería",
+      "subtitle_es": null,
+      "description_es": "La escala de la joyería y combinación de metales.",
+      "video_id": "pending_video",
+      "video_id_es": "pending_video_es",
+      "thumbnail_url": null,
+      "category": "course",
+      "order_index": 10,
+      "is_standalone": true,
+      "takeaways": [],
+      "takeaways_es": [],
+      "lab_questions": [],
+      "resource_urls": [],
+      "stripe_product_id": null,
+      "price_id": null,
+      "is_published": false,
+      "available_at": null
+    },
+    {
+      "slug": "course-perfumery",
+      "title": "Perfumery Image Consulting",
+      "subtitle": null,
+      "description": "The invisible accessory and fragrance families.",
+      "title_es": "Asesoría de imagen en perfumería",
+      "subtitle_es": null,
+      "description_es": "El accesorio invisible y familias olfativas.",
+      "video_id": "pending_video",
+      "video_id_es": "pending_video_es",
+      "thumbnail_url": null,
+      "category": "course",
+      "order_index": 11,
+      "is_standalone": true,
+      "takeaways": [],
+      "takeaways_es": [],
+      "lab_questions": [],
+      "resource_urls": [],
+      "stripe_product_id": null,
+      "price_id": null,
+      "is_published": false,
+      "available_at": null
+    },
+    {
+      "slug": "course-dopamine-dressing",
+      "title": "Dopamine Dressing",
+      "subtitle": null,
+      "description": "The neurology of joy through bold colors and textures.",
+      "title_es": "Dopamine Dressing",
+      "subtitle_es": null,
+      "description_es": "La neurología de la alegría a través de colores y texturas.",
+      "video_id": "pending_video",
+      "video_id_es": "pending_video_es",
+      "thumbnail_url": null,
+      "category": "course",
+      "order_index": 12,
+      "is_standalone": true,
+      "takeaways": [],
+      "takeaways_es": [],
+      "lab_questions": [],
+      "resource_urls": [],
+      "stripe_product_id": null,
+      "price_id": null,
+      "is_published": false,
+      "available_at": null
+    }
+  ]
+}

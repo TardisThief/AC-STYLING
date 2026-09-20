@@ -1,0 +1,97 @@
+{
+  "$schema": "docs/CATALOG-CONTENT-GUIDE.md",
+  "_how_to_use": [
+    "1. Run `node scripts/export_catalog.mjs` to get catalog.json pre-filled with what is live today.",
+    "2. Fill it in using this file as the field reference. Copy a block below to add a new course.",
+    "3. Run `node scripts/import_catalog.mjs` (dry run) until it reports 0 errors.",
+    "4. Run `node scripts/import_catalog.mjs --apply`.",
+    "Every value is a DB column. null means 'not set'. Keys ending in _es are the Spanish copy.",
+    "Rows match on masterclasses.title and chapters.slug — change either one and you create a NEW row."
+  ],
+  "masterclasses": [
+    {
+      "title": "REQUIRED — English course name. This is the match key; renaming creates a new course.",
+      "subtitle": "One line under the title on the card. Optional.",
+      "description": "REQUIRED to publish — 2–4 sentences: what the student learns and walks away with.",
+      "title_es": "REQUERIDO — nombre del curso en español.",
+      "subtitle_es": "Subtítulo en español.",
+      "description_es": "Descripción en español.",
+      "thumbnail_url": "REQUIRED to publish — public URL of the 16:9 card image (upload via the admin console or Supabase Storage `vault-assets`).",
+      "video_url": "Optional free teaser: a Vimeo URL or bare id, e.g. https://vimeo.com/1207933620. Anything else and no teaser renders.",
+      "order_index": 1,
+      "price_display": "REQUIRED to publish — the string shown on the card, e.g. \"$50\". Must match the Stripe price; nothing computes it.",
+      "runtime_minutes": 60,
+      "stripe_product_id": "REQUIRED to publish — prod_… from Stripe. This is what the webhook resolves to grant access.",
+      "price_id": "REQUIRED to publish — price_… from Stripe. This is what Checkout charges.",
+      "is_published": false,
+      "available_at": null,
+      "modules": [
+        {
+          "slug": "REQUIRED-lowercase-kebab-case — the URL segment, and the match key. Never change it after launch; links and progress rows point at it.",
+          "title": "REQUIRED — module title.",
+          "subtitle": null,
+          "description": "REQUIRED to publish — what this module covers.",
+          "title_es": "Título del módulo.",
+          "subtitle_es": null,
+          "description_es": "Descripción del módulo.",
+          "video_id": "REQUIRED (NOT NULL) — the English Vimeo id, digits only, e.g. 1207933620. Use \"pending_video\" only while is_published is false.",
+          "video_id_es": "Spanish Vimeo id, or null to fall back to the English video.",
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 1,
+          "is_standalone": false,
+          "takeaways": [
+            "Bullet shown on the module page — one short line per learning point.",
+            "3–6 of these reads best."
+          ],
+          "takeaways_es": [
+            "Mismo punto, en español. Si el array está vacío se muestra el inglés."
+          ],
+          "lab_questions": [
+            {
+              "key": "unique_snake_case_key",
+              "label": "The question as the student reads it. REQUIRED — the Lab renders `label`, not `question`.",
+              "placeholder": "Example answer shown greyed out in the field.",
+              "label_es": "La pregunta en español.",
+              "placeholder_es": "Ejemplo de respuesta.",
+              "mapToEssence": false,
+              "mappingCategory": "style_words"
+            }
+          ],
+          "resource_urls": [
+            { "name": "Workbook (PDF)", "url": "https://…" }
+          ],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        }
+      ]
+    }
+  ],
+  "standalone_courses": [
+    {
+      "slug": "course-example",
+      "title": "REQUIRED — a course that is not part of any masterclass (one page, one video).",
+      "subtitle": null,
+      "description": "REQUIRED to publish.",
+      "title_es": "Título en español.",
+      "subtitle_es": null,
+      "description_es": "Descripción en español.",
+      "video_id": "REQUIRED — Vimeo id.",
+      "video_id_es": null,
+      "thumbnail_url": "REQUIRED to publish — a standalone course is its own catalog card.",
+      "category": "course",
+      "order_index": 1,
+      "is_standalone": true,
+      "takeaways": [],
+      "takeaways_es": [],
+      "lab_questions": [],
+      "resource_urls": [],
+      "stripe_product_id": "prod_… if it can be bought on its own; null if it is Full-Access-only.",
+      "price_id": "price_… paired with the product above.",
+      "is_published": false,
+      "available_at": null
+    }
+  ]
+}
