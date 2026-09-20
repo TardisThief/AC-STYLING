@@ -120,7 +120,11 @@ one place.
 - **F05** — partially done. Fulfillment no longer reports success it did not
   achieve; the durable fulfillment-state record, the `payment_status` check,
   and refund/dispute reconciliation are still open.
-- **F07** — SSRF validation only checks the first destination, not redirects.
-  Still open.
+- ~~**F07** — SSRF validation only checked the first destination~~ — **fixed
+  2026-09-20**. Every redirect hop is now re-validated, four address bypasses
+  closed (including IPv4-mapped IPv6 loopback), and the remote-image upload
+  gained a size cap, timeout and content-type allowlist. Residual, documented:
+  DNS rebinding is not fully closed, because pinning needs a connect-to-IP with
+  an explicit Host header that Node's fetch does not expose.
 - **F08** — Next.js sits inside current advisory ranges; a dependency upgrade
   is still open.
