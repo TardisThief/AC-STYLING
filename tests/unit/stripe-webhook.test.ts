@@ -53,6 +53,18 @@ vi.mock('@/lib/resend', () => ({
     sendEmail: (...args: unknown[]) => mockSendEmail(...args),
 }))
 
+// Whether a guest still needs a way in is now read from `purchase_claims`
+// rather than from this delivery's `created` flag — see the durability note in
+// the route. Mocked here so the tests control that answer directly instead of
+// reaching through the chainable DB mock.
+const mockCreateClaim = vi.fn(async (...args: unknown[]) => { void args; return true })
+const mockIsClaimOpen = vi.fn(async (...args: unknown[]) => { void args; return false })
+
+vi.mock('@/app/lib/purchase-claims', () => ({
+    createPurchaseClaim: (...args: unknown[]) => mockCreateClaim(...args),
+    isClaimOpen: (...args: unknown[]) => mockIsClaimOpen(...args),
+}))
+
 vi.mock('next/headers', () => ({
     headers: vi.fn(() => ({
         get: vi.fn((key: string) => {
@@ -71,6 +83,11 @@ describe('Stripe Webhook Handler', () => {
         mockResolveUser.mockResolvedValue({ userId: 'guest-user-1', created: true })
         mockSetPasswordLink.mockResolvedValue('https://link/set-password')
         mockSendEmail.mockResolvedValue({ success: true })
+        mockCreateClaim.mockResolvedValue(true)
+        // Reset explicitly: clearAllMocks clears recorded calls but not an
+        // implementation set with mockResolvedValue, so a `true` set by one
+        // test would otherwise leak into the next.
+        mockIsClaimOpen.mockResolvedValue(false)
     })
 
     describe('Signature Verification', () => {
@@ -98,6 +115,11 @@ describe('Stripe Webhook Handler', () => {
     describe('checkout.session.completed', () => {
         const mockSession = {
             id: 'cs_test_123',
+            // `checkout.session.completed` fires when checkout finishes, not
+            // when the money lands, so the handler now requires this. A
+            // fixture without it is an unpaid session and is deliberately not
+            // fulfilled — see the delayed-payment tests below.
+            payment_status: 'paid',
             client_reference_id: 'user-123',
             metadata: { userId: 'user-123' },
             customer_details: {
@@ -118,6 +140,7 @@ describe('Stripe Webhook Handler', () => {
         it('logs purchase correctly', async () => {
             mockListLineItems.mockResolvedValue({
                 data: [{
+                    id: 'li_test_1',
                     price: { product: 'prod_masterclass_123' },
                     amount_total: 4999,
                     currency: 'usd',
@@ -175,6 +198,9 @@ describe('Stripe Webhook Handler', () => {
         })
 
         it('emails a set-password link only for a newly created account', async () => {
+            // A claim was minted for this guest and is still unspent, which is
+            // what "she has no way in yet" now means.
+            mockIsClaimOpen.mockResolvedValue(true)
             mockConstructEvent.mockReturnValue({
                 type: 'checkout.session.completed',
                 data: {
@@ -272,6 +298,7 @@ describe('Stripe Webhook Handler', () => {
         it('grants access for masterclass purchase', async () => {
             mockListLineItems.mockResolvedValue({
                 data: [{
+                    id: 'li_test_1',
                     price: { product: { id: 'prod_masterclass_456' } },
                     amount_total: 9999,
                     currency: 'usd',
@@ -328,6 +355,7 @@ describe('Stripe Webhook Handler', () => {
         it('creates admin notification for service booking', async () => {
             mockListLineItems.mockResolvedValue({
                 data: [{
+                    id: 'li_test_1',
                     price: { product: 'prod_consultation_789' },
                     amount_total: 14999,
                     currency: 'usd',
@@ -362,6 +390,7 @@ describe('Stripe Webhook Handler', () => {
                 data: {
                     object: {
                         id: 'cs_test_456',
+                        payment_status: 'paid',
                         client_reference_id: 'user-456',
                         metadata: {},
                         customer_details: {},
@@ -371,6 +400,7 @@ describe('Stripe Webhook Handler', () => {
 
             mockListLineItems.mockResolvedValue({
                 data: [{
+                    id: 'li_test_1',
                     price: { product: 'prod_test' },
                     amount_total: 1999,
                     currency: 'usd',
@@ -410,6 +440,102 @@ describe('Stripe Webhook Handler', () => {
             const response = await POST(request)
 
             expect(response.status).toBe(500)
+        })
+    })
+
+    describe('payment settlement (F05)', () => {
+        const paidElsewhere = {
+            id: 'cs_delayed_1',
+            client_reference_id: 'user-123',
+            metadata: { userId: 'user-123' },
+            customer_details: { email: 'slow@example.com', name: 'Slow Pay' },
+            customer_email: 'slow@example.com',
+        }
+
+        const post = async () => {
+            const { POST } = await import('@/app/api/webhooks/stripe/route')
+            return POST(new Request('http://localhost:3000/api/webhooks/stripe', {
+                method: 'POST', body: JSON.stringify({}),
+            }))
+        }
+
+        it('does not grant anything for a session that is not paid yet', async () => {
+            // checkout.session.completed fires when checkout finishes, which
+            // with a delayed payment method is before the money arrives.
+            // Granting here would hand over the product on an unsettled
+            // payment. There was no such check at all before.
+            mockConstructEvent.mockReturnValue({
+                id: 'evt_unpaid',
+                type: 'checkout.session.completed',
+                data: { object: { ...paidElsewhere, payment_status: 'unpaid' } },
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const response = await post()
+
+            expect(response.status).toBe(200)
+            expect(grantAccessForProduct).not.toHaveBeenCalled()
+            expect(mockListLineItems).not.toHaveBeenCalled()
+        })
+
+        it('fulfills when the delayed payment later succeeds', async () => {
+            mockConstructEvent.mockReturnValue({
+                id: 'evt_settled',
+                type: 'checkout.session.async_payment_succeeded',
+                data: { object: { ...paidElsewhere, payment_status: 'paid' } },
+            })
+            mockListLineItems.mockResolvedValue({
+                data: [{ id: 'li_delayed', price: { product: 'prod_x' }, amount_total: 5000, currency: 'usd' }],
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const response = await post()
+
+            expect(response.status).toBe(200)
+            expect(grantAccessForProduct).toHaveBeenCalled()
+        })
+
+        it('records a failed delayed payment without granting', async () => {
+            mockConstructEvent.mockReturnValue({
+                id: 'evt_failed',
+                type: 'checkout.session.async_payment_failed',
+                data: { object: { ...paidElsewhere, payment_status: 'unpaid' } },
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const response = await post()
+
+            expect(response.status).toBe(200)
+            expect(grantAccessForProduct).not.toHaveBeenCalled()
+        })
+
+        it('acknowledges a refund and leaves access alone', async () => {
+            // Sales are final per the published policy, so revoking is a human
+            // decision. What the webhook must not do is drop it silently.
+            mockConstructEvent.mockReturnValue({
+                id: 'evt_refund',
+                type: 'charge.refunded',
+                data: { object: { id: 'ch_123' } },
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const response = await post()
+
+            expect(response.status).toBe(200)
+            expect(grantAccessForProduct).not.toHaveBeenCalled()
+        })
+
+        it('acknowledges a dispute', async () => {
+            mockConstructEvent.mockReturnValue({
+                id: 'evt_dispute',
+                type: 'charge.dispute.created',
+                data: { object: { id: 'dp_123' } },
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const response = await post()
+
+            expect(response.status).toBe(200)
         })
     })
 })
