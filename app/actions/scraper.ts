@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAdmin } from '@/app/lib/auth-guards';
-import { assertPublicUrl } from '@/app/lib/ssrf-guard';
+import { assertPublicUrl, assertSafeUrl } from '@/app/lib/ssrf-guard';
 
 export async function extractUrlMetadata(url: string) {
     if (!url) return null;
@@ -20,6 +20,11 @@ export async function extractUrlMetadata(url: string) {
     // Helper to clean text
     const clean = (str: string | undefined | null) => str ? str.trim().replace(/\n/g, ' ').replace(/\s+/g, ' ') : "";
 
+    // Declared out here so the `finally` below can always close it. It used to
+    // be closed only on the happy path, so a navigation timeout — the most
+    // common failure for this tool — leaked a Chromium process every time.
+    let browser: Awaited<ReturnType<typeof import('puppeteer-extra')['default']['launch']>> | null = null;
+
     try {
         // Lazy load Puppeteer to prevent bundle errors in Client Components
         const { default: puppeteer } = await import('puppeteer-extra');
@@ -27,11 +32,29 @@ export async function extractUrlMetadata(url: string) {
 
         puppeteer.use(StealthPlugin());
 
-        const browser = await puppeteer.launch({
+        browser = await puppeteer.launch({
             headless: true, // "new" is deprecated, true is current standard
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         const page = await browser.newPage();
+
+        // Validating the page URL says nothing about what the page then asks
+        // for. Without this, a public page can pull in subresources pointed at
+        // internal addresses and the browser fetches them for it (F07).
+        //
+        // The check here is the synchronous one: it catches literal private,
+        // loopback, link-local and multicast addresses, and non-http schemes.
+        // Resolving DNS for every subrequest would stall page loads, and this
+        // tool is admin-gated, so that trade is deliberate and noted.
+        await page.setRequestInterception(true);
+        page.on('request', (request) => {
+            try {
+                assertSafeUrl(request.url());
+                void request.continue();
+            } catch {
+                void request.abort();
+            }
+        });
 
         // Go to URL and wait for meaningful content
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
@@ -94,8 +117,6 @@ export async function extractUrlMetadata(url: string) {
             };
         });
 
-        await browser.close();
-
         // Clean and validate
         return {
             title: clean(metadata.title),
@@ -108,5 +129,12 @@ export async function extractUrlMetadata(url: string) {
     } catch (error) {
         console.error("Puppeteer Extraction Error:", error);
         return null;
+    } finally {
+        if (browser) {
+            // Never let a cleanup failure mask the real outcome.
+            await browser.close().catch((closeErr) => {
+                console.error("Puppeteer close failed:", closeErr);
+            });
+        }
     }
 }

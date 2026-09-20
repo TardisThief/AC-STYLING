@@ -177,10 +177,31 @@ export async function processWardrobeItem(
     return { success: true };
 }
 
+/**
+ * What a remote "image" is allowed to be.
+ *
+ * The old code uploaded whatever came back, labelled with whatever
+ * content-type the remote server claimed. Combined with redirect following,
+ * that turned this action into a way to copy an internal HTTP response into
+ * public storage.
+ */
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'] as const;
+
+const IMAGE_EXTENSIONS: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'image/avif': 'avif',
+};
+
+/** Wardrobe photographs; anything larger is not a garment shot. */
+const MAX_REMOTE_IMAGE_BYTES = 10 * 1024 * 1024;
+
 export async function uploadRemoteImage(imageUrl: string, userId: string) {
     const { createClient } = await import("@/utils/supabase/server");
     const { requireUser, requireAdmin } = await import("@/app/lib/auth-guards");
-    const { assertPublicUrl } = await import("@/app/lib/ssrf-guard");
+    const { safeFetch } = await import("@/app/lib/ssrf-guard");
 
     // 1. Auth Check
     const auth = await requireUser();
@@ -199,17 +220,23 @@ export async function uploadRemoteImage(imageUrl: string, userId: string) {
     const supabase = await createClient();
 
     try {
-        // 3. Validate the URL (SSRF guard), then fetch the remote image
-        const safeUrl = await assertPublicUrl(imageUrl);
-        const response = await fetch(safeUrl.toString());
-        if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+        // 3. Fetch through the SSRF guard.
+        //
+        // This used to call `assertPublicUrl` and then a bare `fetch`, which
+        // protected nothing: fetch follows redirects by default, so a public
+        // URL that 302s to 169.254.169.254 sailed past the check and the
+        // response was uploaded to storage. `safeFetch` re-validates every hop
+        // (F07), and the caps below bound what a hostile endpoint can do —
+        // this action is reachable by any authenticated user.
+        const { body: buffer, contentType } = await safeFetch(imageUrl, {
+            allowedContentTypes: ALLOWED_IMAGE_TYPES,
+            maxBytes: MAX_REMOTE_IMAGE_BYTES,
+            timeoutMs: 10_000,
+        });
 
-        const blob = await response.blob();
-        const buffer = await blob.arrayBuffer();
-        const contentType = response.headers.get('content-type') || 'image/jpeg';
-
-        // Determine extension
-        const ext = contentType.split('/')[1] || 'jpg';
+        // Derive the extension from the type we just validated, not from the
+        // URL or an arbitrary header value.
+        const ext = IMAGE_EXTENSIONS[contentType] ?? 'jpg';
         const fileName = `${Date.now()}-remote.${ext}`;
         const filePath = `${targetUserId}/${fileName}`;
 
