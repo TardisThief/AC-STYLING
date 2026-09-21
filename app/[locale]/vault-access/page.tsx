@@ -249,6 +249,36 @@ export default async function VaultLandingPage({
                     </div>
                 </section>
 
+                {/* ── Beyond colour: body shape and essence ────────────── */}
+                <section className="px-6 pb-20 md:pb-28">
+                    <div className="mx-auto max-w-2xl border-t border-ac-taupe/15 pt-20 md:pt-28">
+                        <h2 className="font-serif text-3xl leading-tight md:text-4xl">
+                            {t("beyond.title")}
+                        </h2>
+                        <p className="mt-6 text-lg leading-relaxed text-ac-taupe">
+                            {t("beyond.lede")}
+                        </p>
+
+                        <h3 className="mt-12 font-serif text-2xl text-ac-taupe">
+                            {t("beyond.shapeTitle")}
+                        </h3>
+                        <p className="mt-3 text-lg leading-relaxed text-ac-taupe">
+                            {t("beyond.shapeBody")}
+                        </p>
+
+                        {/* The essence is the point of the method, so it closes the
+                            section and carries the page's accent rule. */}
+                        <div className="mt-12 border-l-2 border-ac-olive/50 pl-5">
+                            <h3 className="font-serif text-2xl text-ac-taupe">
+                                {t("beyond.essenceTitle")}
+                            </h3>
+                            <p className="mt-3 font-serif text-2xl leading-snug text-ac-taupe md:text-[1.7rem]">
+                                {t("beyond.essenceBody")}
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
                 {/* ── Rung 4 · Method: the catalogue ───────────────────── */}
                 <section id="catalog" className="scroll-mt-24 bg-ac-beige/30 px-6 py-20 md:py-28">
                     <div className="mx-auto max-w-5xl">
@@ -468,10 +498,7 @@ export default async function VaultLandingPage({
                             )}
                         </div>
 
-                        <p className="mt-8 max-w-2xl leading-relaxed text-ac-sand/75">
-                            {t("offer.anchor")}
-                        </p>
-                        <p className="mt-3 text-xs uppercase tracking-widest text-ac-sand/75">
+                        <p className="mt-8 text-xs uppercase tracking-widest text-ac-sand/75">
                             {t("offer.secure")}
                         </p>
                     </div>

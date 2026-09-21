@@ -354,6 +354,14 @@
             "splitBody": "Las doce subestaciones piden luz real y ojo entrenado, así que las reservo para el análisis uno a uno. No es una versión recortada del método: es hasta dónde llega, honestamente, un curso.",
             "fieldAlt": "Un campo de color continuo. La temperatura va de cálido a frío en el eje horizontal y el valor de claro a oscuro en el vertical. Las cuatro estaciones —primavera, verano, otoño e invierno— aparecen como regiones suaves, no como casillas."
         },
+        "beyond": {
+            "title": "El color es el comienzo. No es el final.",
+            "lede": "Tu estación te dice qué colores te sostienen. Hay dos cosas más que deciden si un look es realmente tuyo.",
+            "shapeTitle": "Tu tipo de cuerpo y cómo usarlo",
+            "shapeBody": "No es una lista de cosas que esconder. Aprendes a leer tus proporciones y tus líneas, y a elegir cortes y siluetas que trabajen a tu favor, no en tu contra.",
+            "essenceTitle": "Tu esencia y cómo dejarla ver",
+            "essenceBody": "Esto es el corazón del método. El color y la silueta son herramientas; tu esencia es para lo que sirven. Aprendes a reconocer tu estilo y a vestirte para que hable por ti antes de que digas una palabra."
+        },
         "catalog": {
             "title": "Lo que hay dentro",
             "lede": "Cada curso es independiente. Con el Acceso Completo los tienes todos, incluidos los que se sumen después.",
@@ -398,7 +406,6 @@
             "singleTitle": "Solo Colorimetría",
             "singleBody": "Un curso, cinco módulos. Si prefieres empezar por uno.",
             "singleCta": "Comprar Colorimetría",
-            "anchor": "Para dimensionarlo: un Closet Detox uno a uno son $250 y una sesión de estilismo personal, $500. El Vault es el mismo método, a tu ritmo.",
             "secure": "Pago seguro con Stripe. Pago único.",
             "unavailable": "Disponible pronto"
         },
@@ -426,7 +433,7 @@
             "q7": "¿Qué formas de pago aceptan?",
             "a7": "Tarjeta de crédito y débito a través de Stripe.",
             "q8": "¿Hay reembolsos?",
-            "a8": "Sí, según nuestra política de reembolsos.",
+            "a8": "No. Todas las ventas son definitivas, según nuestra política de reembolsos.",
             "a8Link": "Ver la política",
             "q9": "¿Esto reemplaza trabajar contigo directamente?",
             "a9": "No, y no pretende hacerlo. El curso te da el criterio y te lleva a tu estación. El trabajo uno a uno resuelve tu subestación exacta y tu clóset real. Muchas clientas hacen las dos cosas, en ese orden."

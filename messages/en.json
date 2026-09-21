@@ -354,6 +354,14 @@
             "splitBody": "The twelve sub-seasons need real light and a trained eye, so I keep them for one-to-one analysis. It isn't a cut-down version of the method: it's honestly how far a course can take you.",
             "fieldAlt": "A continuous colour field. Temperature runs warm to cool across the horizontal axis and value runs light to dark down the vertical. The four seasons — spring, summer, autumn and winter — appear as soft regions rather than boxes."
         },
+        "beyond": {
+            "title": "Colour is where it starts. It isn't where it ends.",
+            "lede": "Your season tells you which colours hold you up. Two more things decide whether an outfit is really yours.",
+            "shapeTitle": "Your body shape, and how to use it",
+            "shapeBody": "Not a list of things to hide. You learn to read your proportions and lines, and to choose cuts and silhouettes that work with them instead of against them.",
+            "essenceTitle": "Your essence, and how to let it show",
+            "essenceBody": "This is the heart of the method. Colour and silhouette are tools; your essence is what they're for. You learn to recognise your style and to dress so it speaks for you before you say a word."
+        },
         "catalog": {
             "title": "What's inside",
             "lede": "Each course stands alone. Full Access gives you all of them, including the ones still to come.",
@@ -398,7 +406,6 @@
             "singleTitle": "Colorimetry only",
             "singleBody": "One course, five modules. If you'd rather start with one.",
             "singleCta": "Buy Colorimetry",
-            "anchor": "For scale: a one-to-one Closet Detox is $250, and a personal styling session is $500. The Vault is the same method, at your own pace.",
             "secure": "Secure payment via Stripe. One-time payment.",
             "unavailable": "Available soon"
         },
@@ -426,7 +433,7 @@
             "q7": "How can I pay?",
             "a7": "Credit and debit card, through Stripe.",
             "q8": "Can I get a refund?",
-            "a8": "Yes, under our refund policy.",
+            "a8": "No. All sales are final, as set out in our refund policy.",
             "a8Link": "Read the policy",
             "q9": "Does this replace working with you directly?",
             "a9": "No, and it isn't meant to. The course gives you the criteria and takes you to your season. Working one to one settles your exact sub-season and your real closet. Plenty of clients do both, in that order."
