@@ -378,7 +378,12 @@
             "inProductionBadge": "En producción",
             "inProductionNote": "En producción. Se suma a tu acceso cuando salga, sin costo adicional.",
             "availableOn": "Disponible el {date}",
-            "empty": "Estamos preparando los primeros cursos."
+            "empty": "Estamos preparando los primeros cursos.",
+            "railLabel": "Cursos",
+            "previous": "Curso anterior",
+            "next": "Curso siguiente",
+            "pause": "Pausar el desplazamiento automático",
+            "play": "Reanudar el desplazamiento automático"
         },
         "flagship": {
             "title": "{course}, módulo por módulo",
@@ -414,7 +419,10 @@
             "singleBody": "Un curso, cinco módulos. Si prefieres empezar por uno.",
             "singleCta": "Comprar Colorimetría",
             "secure": "Pago seguro con Stripe. Pago único.",
-            "unavailable": "Disponible pronto"
+            "unavailable": "Disponible pronto",
+            "guestCta": "Entrar como invitada",
+            "guestLoading": "Entrando al Vault…",
+            "guestError": "El acceso como invitada no está disponible ahora. Inténtalo de nuevo."
         },
         "bridge": {
             "title": "Si prefieres que lo hagamos juntas",

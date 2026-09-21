@@ -378,7 +378,12 @@
             "inProductionBadge": "In production",
             "inProductionNote": "In production. It joins your access when it's released, at no extra cost.",
             "availableOn": "Available {date}",
-            "empty": "The first courses are being prepared."
+            "empty": "The first courses are being prepared.",
+            "railLabel": "Courses",
+            "previous": "Previous course",
+            "next": "Next course",
+            "pause": "Pause auto-scroll",
+            "play": "Resume auto-scroll"
         },
         "flagship": {
             "title": "{course}, module by module",
@@ -414,7 +419,10 @@
             "singleBody": "One course, five modules. If you'd rather start with one.",
             "singleCta": "Buy Colorimetry",
             "secure": "Secure payment via Stripe. One-time payment.",
-            "unavailable": "Available soon"
+            "unavailable": "Available soon",
+            "guestCta": "Log in as a guest",
+            "guestLoading": "Entering the Vault…",
+            "guestError": "Guest access isn't available right now. Please try again."
         },
         "bridge": {
             "title": "If you'd rather we did it together",

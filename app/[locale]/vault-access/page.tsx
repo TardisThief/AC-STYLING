@@ -6,9 +6,11 @@ import { buildMetadata } from "@/app/lib/seo";
 import Navbar from "@/components/Navbar";
 import Spine from "@/components/vault-sales/Spine";
 import CatalogCard from "@/components/vault-sales/CatalogCard";
+import CatalogRail from "@/components/vault-sales/CatalogRail";
 import FlagshipCurriculum from "@/components/vault-sales/FlagshipCurriculum";
 import TrackedCta from "@/components/vault-sales/TrackedCta";
 import VaultCheckoutButton from "@/components/vault-sales/VaultCheckoutButton";
+import GuestAccessLink from "@/components/vault-sales/GuestAccessLink";
 import dynamic from "next/dynamic";
 import TrustedBy from "@/components/TrustedBy";
 
@@ -307,17 +309,18 @@ export default async function VaultLandingPage({
                         {entries.length === 0 ? (
                             <p className="mt-12 text-ac-taupe">{t("catalog.empty")}</p>
                         ) : (
-                            <div
-                                className={
-                                    // One published course should not sit stranded in a
-                                    // third of a three-column grid. The grid grows with
-                                    // the catalogue instead of assuming it is full.
-                                    entries.length === 1
-                                        ? "mt-12 grid max-w-md gap-6"
-                                        : entries.length === 2
-                                          ? "mt-12 grid gap-6 sm:grid-cols-2"
-                                          : "mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-                                }
+                            // One row that scrolls sideways (and auto-advances when it
+                            // overflows), not a grid: eight stacked cards made this the
+                            // longest scroll on the page. With few enough cards to fit,
+                            // it is simply a row with no controls.
+                            <CatalogRail
+                                label={t("catalog.railLabel")}
+                                t={{
+                                    previous: t("catalog.previous"),
+                                    next: t("catalog.next"),
+                                    pause: t("catalog.pause"),
+                                    play: t("catalog.play"),
+                                }}
                             >
                                 {entries.map((entry) => (
                                     <CatalogCard
@@ -342,7 +345,7 @@ export default async function VaultLandingPage({
                                         }}
                                     />
                                 ))}
-                            </div>
+                            </CatalogRail>
                         )}
                     </div>
                 </section>
@@ -483,6 +486,17 @@ export default async function VaultLandingPage({
                                         unavailableLabel={t("offer.unavailable")}
                                         className="inline-block bg-ac-sand px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-espresso transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
                                     />
+                                    {/* The secondary path: into the Vault as a guest,
+                                        without paying. Deliberately quieter than the
+                                        button above it. */}
+                                    <div className="mt-4">
+                                        <GuestAccessLink
+                                            label={t("offer.guestCta")}
+                                            loadingLabel={t("offer.guestLoading")}
+                                            errorLabel={t("offer.guestError")}
+                                            className="text-sm italic text-ac-sand/75 underline decoration-ac-sand/30 underline-offset-4 transition-colors hover:text-ac-sand hover:decoration-ac-sand disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
