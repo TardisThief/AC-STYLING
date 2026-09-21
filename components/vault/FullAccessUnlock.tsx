@@ -9,25 +9,37 @@ import { Loader2, Sparkles, X, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "@/i18n/routing";
 
-export default function FullAccessUnlock({ userId, hasFullAccess }: { userId?: string, hasFullAccess: boolean }) {
+/**
+ * The Vault's pass banner. `offerSlugs` is the page's preference order of
+ * passes this member does not already hold; the first ACTIVE one is shown, so
+ * which pass is on sale is decided in admin (offers.active), not here. An
+ * empty list — the member already has everything these passes give — renders
+ * nothing.
+ */
+export default function FullAccessUnlock({ userId, offerSlugs }: { userId?: string, offerSlugs: string[] }) {
     const [offer, setOffer] = useState<Offer | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const slugKey = offerSlugs.join(',');
 
     useEffect(() => {
         const load = async () => {
-            const { offer } = await getOffer('full_access');
-            if (offer && offer.active) {
-                setOffer(offer);
+            for (const slug of slugKey ? slugKey.split(',') : []) {
+                const { offer } = await getOffer(slug);
+                if (offer && offer.active) {
+                    setOffer(offer);
+                    return;
+                }
             }
+            setOffer(null);
         };
         load();
-    }, []);
+    }, [slugKey]);
 
     const router = useRouter();
 
-    // Don't show if user already has full access or if no offer exists
-    if (hasFullAccess || !offer) return null;
+    // Nothing to offer: the member holds these passes, or none is on sale
+    if (!offer) return null;
 
     const handlePurchase = async () => {
         if (!userId) {
@@ -86,7 +98,6 @@ export default function FullAccessUnlock({ userId, hasFullAccess }: { userId?: s
                             <div className="bg-ac-gold text-white px-8 py-3 rounded-sm font-bold tracking-widest uppercase hover:bg-ac-gold/80 transition-colors shadow-lg group-hover:shadow-ac-gold/20">
                                 Unlock Now • {offer.price_display}
                             </div>
-                            <span className="text-[10px] uppercase tracking-widest text-ac-taupe/40">Limited Availability</span>
                         </div>
                     </div>
                 </button>
@@ -137,7 +148,7 @@ export default function FullAccessUnlock({ userId, hasFullAccess }: { userId?: s
                                         className="w-full bg-ac-taupe text-white py-4 text-sm font-bold uppercase tracking-widest rounded-sm hover:bg-ac-taupe/90 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
                                         {loading ? <Loader2 className="animate-spin" /> : null}
-                                        {loading ? 'Processing...' : `Purchase Full Access • ${offer.price_display}`}
+                                        {loading ? 'Processing...' : `Purchase ${offer.title} • ${offer.price_display}`}
                                     </button>
                                     <p className="text-[10px] text-ac-taupe/40">
                                         Secure payment via Stripe. One-time payment.

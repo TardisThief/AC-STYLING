@@ -4,7 +4,8 @@ import { SupabaseClient } from '@supabase/supabase-js';
 /**
  * Record WHICH offer was bought and WHEN.
  *
- * The profile booleans (`has_full_unlock`, `has_course_pass`) are the fast gate
+ * The profile booleans (`has_full_unlock`, `has_course_pass`,
+ * `has_masterclass_pass`) are the fast gate
  * and stay exactly as they were. They carry no history though, so once the
  * founding window closes there is otherwise no way to tell a founding member
  * from anyone who bought later — not for pricing, not for perks, not for
@@ -79,7 +80,7 @@ function isDuplicate(error: { code?: string } | null): boolean {
 async function setProfileFlag(
     supabase: SupabaseClient,
     userId: string,
-    flag: 'has_full_unlock' | 'has_course_pass'
+    flag: 'has_full_unlock' | 'has_course_pass' | 'has_masterclass_pass'
 ): Promise<void> {
     const { error } = await supabase
         .from('profiles')
@@ -159,7 +160,7 @@ export async function grantAccessForProduct(
         return true;
     }
 
-    // 4. Offers (Full Pass / Course Pass)
+    // 4. Offers (Full Access / Masterclass Pass / Course Pass)
     const { data: offer } = await supabase
         .from('offers')
         .select('slug')
@@ -174,6 +175,11 @@ export async function grantAccessForProduct(
             await setProfileFlag(supabase, userId, 'has_full_unlock');
             await recordOfferGrant(supabase, userId, offer.slug, logFn);
             if (logFn) await logFn('success', 'Granted Full Access (Offer)');
+            return true;
+        } else if (offer.slug === 'masterclass_pass') {
+            await setProfileFlag(supabase, userId, 'has_masterclass_pass');
+            await recordOfferGrant(supabase, userId, offer.slug, logFn);
+            if (logFn) await logFn('success', 'Granted Masterclass Pass (Offer)');
             return true;
         } else if (offer.slug === 'course_pass') {
             await setProfileFlag(supabase, userId, 'has_course_pass');

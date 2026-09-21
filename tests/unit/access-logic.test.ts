@@ -171,6 +171,47 @@ describe('Access Logic - grantAccessForProduct', () => {
                 grant_type: 'purchase',
             })
         })
+
+        it('grants the masterclass pass flag, and only that flag, for masterclass_pass', async () => {
+            const offerQuery = {
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockReturnThis(),
+                maybeSingle: vi.fn().mockResolvedValue({ data: { slug: 'masterclass_pass' }, error: null }),
+            }
+            const updateEq = vi.fn().mockResolvedValue({ error: null })
+            const profileUpdate = { update: vi.fn(() => ({ eq: updateEq })) }
+            const emptyQuery = {
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockReturnThis(),
+                maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+            }
+            const grantInsert = { insert: vi.fn().mockResolvedValue({ error: null }) }
+
+            mockSupabase._mockFrom
+                .mockReturnValueOnce(emptyQuery) // Masterclass
+                .mockReturnValueOnce(emptyQuery) // Chapter
+                .mockReturnValueOnce(offerQuery)
+                .mockReturnValueOnce(profileUpdate)
+                .mockReturnValueOnce(grantInsert)
+
+            const result = await grantAccessForProduct(
+                mockSupabase as any,
+                'user-123',
+                'prod_masterclass_pass',
+                mockLog as any
+            )
+
+            expect(result).toBe(true)
+            // Not has_full_unlock: the pass must never open standalone courses.
+            expect(profileUpdate.update).toHaveBeenCalledWith({ has_masterclass_pass: true })
+            expect(updateEq).toHaveBeenCalledWith('id', 'user-123')
+            expect(mockLog).toHaveBeenCalledWith('success', 'Granted Masterclass Pass (Offer)')
+            expect(grantInsert.insert).toHaveBeenCalledWith({
+                user_id: 'user-123',
+                offer_slug: 'masterclass_pass',
+                grant_type: 'purchase',
+            })
+        })
     })
 
     describe('Masterclass Access', () => {

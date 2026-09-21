@@ -5,11 +5,12 @@
  * This extracts the inline logic from page components.
  */
 
-export type AccessLevel = 'all_access' | 'course_pass' | 'restricted' | 'basic';
+export type AccessLevel = 'all_access' | 'course_pass' | 'masterclass_pass' | 'restricted' | 'basic';
 
 export interface UserProfile {
     has_full_unlock?: boolean;
     has_course_pass?: boolean;
+    has_masterclass_pass?: boolean;
     is_guest?: boolean;
     active_studio_client?: boolean;
 }
@@ -20,8 +21,13 @@ export interface UserProfile {
  * Priority order:
  * 1. Full unlock = 'all_access'
  * 2. Course pass = 'course_pass'
- * 3. Guest = 'restricted'
- * 4. Default = 'basic'
+ * 3. Masterclass pass = 'masterclass_pass'
+ * 4. Guest = 'restricted'
+ * 5. Default = 'basic'
+ *
+ * The two passes are independent and a buyer can hold both, which a single
+ * level cannot express — so the `canAccess*` checks below read the flags, not
+ * this level.
  */
 export function getAccessLevel(profile: UserProfile | null): AccessLevel {
     if (!profile) return 'restricted';
@@ -31,6 +37,9 @@ export function getAccessLevel(profile: UserProfile | null): AccessLevel {
 
     // Course pass grants course access
     if (profile.has_course_pass) return 'course_pass';
+
+    // Masterclass pass grants every masterclass
+    if (profile.has_masterclass_pass) return 'masterclass_pass';
 
     // Guests are restricted (preview only)
     if (profile.is_guest) return 'restricted';
@@ -43,16 +52,16 @@ export function getAccessLevel(profile: UserProfile | null): AccessLevel {
  * Checks if user can access masterclass content
  */
 export function canAccessMasterclass(profile: UserProfile | null): boolean {
-    const level = getAccessLevel(profile);
-    return level === 'all_access';
+    if (!profile) return false;
+    return Boolean(profile.has_full_unlock || profile.has_masterclass_pass);
 }
 
 /**
  * Checks if user can access course content
  */
 export function canAccessCourse(profile: UserProfile | null): boolean {
-    const level = getAccessLevel(profile);
-    return level === 'all_access' || level === 'course_pass';
+    if (!profile) return false;
+    return Boolean(profile.has_full_unlock || profile.has_course_pass);
 }
 
 /**

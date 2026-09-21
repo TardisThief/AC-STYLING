@@ -5,6 +5,8 @@ import { createClient } from '@/utils/supabase/server';
 export interface JourneyStats {
     memberSince: string | null;
     hasFullAccess: boolean;
+    /** Full access or the Masterclass Pass: every masterclass, current and future. */
+    hasAllMasterclasses: boolean;
     masterclassesAccessCount: number;
     essenceLabsCompleted: number;
     coursesAccessCount: number;
@@ -21,7 +23,7 @@ export async function getJourneyStats(targetUserId?: string): Promise<JourneySta
     const [profileRes, grantsRes, progressRes, masterclassCountRes] = await Promise.all([
         supabase
             .from('profiles')
-            .select('created_at, has_full_unlock')
+            .select('created_at, has_full_unlock, has_masterclass_pass')
             .eq('id', userId)
             .single(),
         supabase
@@ -49,6 +51,7 @@ export async function getJourneyStats(targetUserId?: string): Promise<JourneySta
     return {
         memberSince: profile?.created_at || null,
         hasFullAccess: profile?.has_full_unlock ?? false,
+        hasAllMasterclasses: (profile?.has_full_unlock || profile?.has_masterclass_pass) ?? false,
         masterclassesAccessCount: masterclassGrants.length,
         essenceLabsCompleted: progress.length,
         coursesAccessCount: courseGrants.length,

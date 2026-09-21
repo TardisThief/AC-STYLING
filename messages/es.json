@@ -371,10 +371,8 @@
         },
         "catalog": {
             "title": "Lo que hay dentro",
-            "lede": "Cada curso es independiente. Con el Acceso Completo los tienes todos, incluidos los que se sumen después.",
             "modulesLabel": "módulos",
             "runtimeApprox": "alrededor de {hours} h",
-            "includedBadge": "Incluido en el Acceso Completo",
             "inProductionBadge": "En producción",
             "inProductionNote": "En producción. Se suma a tu acceso cuando salga, sin costo adicional.",
             "availableOn": "Disponible el {date}",
@@ -412,9 +410,6 @@
         },
         "offer": {
             "title": "El acceso",
-            "fullTitle": "Acceso Completo al Aprendizaje",
-            "fullBody": "Todos los cursos actuales y los que se sumen después. Un solo pago.",
-            "fullCta": "Obtener acceso completo",
             "singleTitle": "Solo Colorimetría",
             "singleBody": "Un curso, cinco módulos. Si prefieres empezar por uno.",
             "singleCta": "Comprar Colorimetría",
@@ -458,8 +453,25 @@
             "body": "Que lo diga a propósito.",
             "cta": "Obtener acceso"
         },
+        "pass": {
+            "full_access": {
+                "name": "Acceso Completo al Aprendizaje",
+                "catalogLede": "Cada curso es independiente. Con el Acceso Completo los tienes todos, incluidos los que se sumen después.",
+                "includedBadge": "Incluido en el Acceso Completo",
+                "body": "Todos los cursos actuales y los que se sumen después. Un solo pago.",
+                "cta": "Obtener acceso completo",
+                "sticky": "Acceso Completo"
+            },
+            "masterclass_pass": {
+                "name": "Pase de Masterclasses",
+                "catalogLede": "Cada masterclass es independiente. Con el Pase de Masterclasses las tienes todas, incluidas las que se sumen después.",
+                "includedBadge": "Incluida en el Pase de Masterclasses",
+                "body": "Todas las masterclasses actuales y las que se sumen después. Un solo pago.",
+                "cta": "Obtener el pase",
+                "sticky": "Pase de Masterclasses"
+            }
+        },
         "sticky": {
-            "label": "Acceso Completo",
             "cta": "Obtener acceso"
         }
     },

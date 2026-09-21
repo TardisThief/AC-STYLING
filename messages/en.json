@@ -371,10 +371,8 @@
         },
         "catalog": {
             "title": "What's inside",
-            "lede": "Each course stands alone. Full Access gives you all of them, including the ones still to come.",
             "modulesLabel": "modules",
             "runtimeApprox": "about {hours} h",
-            "includedBadge": "Included with Full Access",
             "inProductionBadge": "In production",
             "inProductionNote": "In production. It joins your access when it's released, at no extra cost.",
             "availableOn": "Available {date}",
@@ -412,9 +410,6 @@
         },
         "offer": {
             "title": "Access",
-            "fullTitle": "The Full Learning Access",
-            "fullBody": "Every course available now and everything added later. One payment.",
-            "fullCta": "Get full access",
             "singleTitle": "Colorimetry only",
             "singleBody": "One course, five modules. If you'd rather start with one.",
             "singleCta": "Buy Colorimetry",
@@ -458,8 +453,25 @@
             "body": "Make it say it on purpose.",
             "cta": "Get access"
         },
+        "pass": {
+            "full_access": {
+                "name": "The Full Learning Access",
+                "catalogLede": "Each course stands alone. Full Access gives you all of them, including the ones still to come.",
+                "includedBadge": "Included with Full Access",
+                "body": "Every course available now and everything added later. One payment.",
+                "cta": "Get full access",
+                "sticky": "Full Access"
+            },
+            "masterclass_pass": {
+                "name": "The Masterclass Pass",
+                "catalogLede": "Each masterclass stands alone. The Masterclass Pass gives you all of them, including the ones still to come.",
+                "includedBadge": "Included with the Masterclass Pass",
+                "body": "Every masterclass available now and every one added later. One payment.",
+                "cta": "Get the pass",
+                "sticky": "Masterclass Pass"
+            }
+        },
         "sticky": {
-            "label": "Full Access",
             "cta": "Get access"
         }
     },

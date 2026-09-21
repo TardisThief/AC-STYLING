@@ -257,3 +257,17 @@ export const getVaultOffers = unstable_cache(
     ['vault-offers'],
     { tags: [VAULT_CATALOG_TAG], revalidate: 3600 }
 );
+
+export type HeadlinePass = 'full_access' | 'masterclass_pass';
+
+/**
+ * The pass the sales page leads with. Full Access when it is on sale (it
+ * includes everything the Masterclass Pass does), else the Masterclass Pass.
+ * With neither active this still answers `full_access`, so the page keeps its
+ * copy and the button falls back to "Available soon".
+ */
+export function pickHeadlinePass(offers: Record<string, VaultOffer>): HeadlinePass {
+    if (offers['full_access']) return 'full_access';
+    if (offers['masterclass_pass']) return 'masterclass_pass';
+    return 'full_access';
+}

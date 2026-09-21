@@ -33,13 +33,14 @@ export default async function FoundationsPage({ params }: { params: Promise<{ lo
     // User Progress Logic & Check Full Access
     const completedChapters = new Set();
     let hasFullAccess = false;
+    let hasMasterclassPass = false;
     let isGuest = false;
 
     if (user) {
         // Parallel Fetch: Profile & Progress
         const [progressRes, profileRes] = await Promise.all([
             supabase.from('user_progress').select('content_id').eq('user_id', user.id),
-            supabase.from('profiles').select('is_guest, has_full_unlock').eq('id', user.id).single()
+            supabase.from('profiles').select('is_guest, has_full_unlock, has_masterclass_pass').eq('id', user.id).single()
         ]);
 
         const progress = progressRes.data;
@@ -47,6 +48,7 @@ export default async function FoundationsPage({ params }: { params: Promise<{ lo
 
         isGuest = profile?.is_guest || false;
         hasFullAccess = profile?.has_full_unlock || false;
+        hasMasterclassPass = profile?.has_masterclass_pass || false;
 
         progress?.forEach(p => {
             const parts = p.content_id.split('/');
@@ -91,8 +93,12 @@ export default async function FoundationsPage({ params }: { params: Promise<{ lo
                 )}
             </div>
 
-            {/* FULL ACCESS UNLOCK BANNER */}
-            <FullAccessUnlock userId={!isGuest ? user?.id : undefined} hasFullAccess={hasFullAccess} />
+            {/* PASS BANNER: the Masterclass Pass first; Full Access once it is
+                on sale again, and as the step up for a pass holder. */}
+            <FullAccessUnlock
+                userId={!isGuest ? user?.id : undefined}
+                offerSlugs={hasFullAccess ? [] : hasMasterclassPass ? ['full_access'] : ['masterclass_pass', 'full_access']}
+            />
 
             {/* MASTERCLASSES GRID */}
             {masterclasses && masterclasses.length > 0 && (

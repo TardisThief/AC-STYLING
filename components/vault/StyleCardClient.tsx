@@ -111,7 +111,7 @@ export default function StyleCardClient({ profile, essence, journey }: StyleCard
                             <div>
                                 <span className="text-[9px] uppercase tracking-widest font-sans text-[#3D3630]/40 block">Masterclasses</span>
                                 <span className="text-lg font-serif text-[#3D3630]">
-                                    {journey.hasFullAccess ? 'Full Vault Access' : `${journey.masterclassesAccessCount} of ${journey.totalMasterclasses}`}
+                                    {journey.hasFullAccess ? 'Full Vault Access' : journey.hasAllMasterclasses ? 'All Masterclasses' : `${journey.masterclassesAccessCount} of ${journey.totalMasterclasses}`}
                                 </span>
                             </div>
                             <div>

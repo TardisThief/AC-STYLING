@@ -18,11 +18,16 @@ Phases 0–3.6 are complete and deployed. In plain terms:
 
 - **The code is launch-ready.** Every code-level blocker from the 2026-09-19
   assessment (F01–F08, F10, F11) is closed. Migrations are applied and verified
-  through 18.
+  through 19.
 - **The Vault is populated but parked.** 4 masterclasses, 22 modules and 4
   standalone courses, all bilingual, all `is_published = false`. Publishing is
   a flag flip in the admin console, not a re-import.
-- **Gates are green:** `tsc` clean, lint 0 errors, 497 unit tests across 49
+- **Launch offer is the Masterclass Pass** (2026-09-21, migration 19): every
+  masterclass, current and future, for one payment, alongside single
+  masterclasses. Full Access and the Course Pass stay in the database but are
+  switched off (`offers.active`) until the first standalone course ships; the
+  sales page and Vault banner follow that switch with no code change.
+- **Gates are green:** `tsc` clean, lint 0 errors, 531 unit tests across 52
   files, production build passing, CI running all four.
 
 ## What actually holds up launch

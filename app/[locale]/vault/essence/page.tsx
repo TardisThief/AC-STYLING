@@ -20,17 +20,17 @@ export default async function EssencePage() {
     // Fetch journal data and accessible masterclasses in parallel
     const [journalData, profileRes, grantsRes, allMcRes] = await Promise.all([
         getAllEssenceData(),
-        supabase.from('profiles').select('has_full_unlock').eq('id', user.id).single(),
+        supabase.from('profiles').select('has_full_unlock, has_masterclass_pass').eq('id', user.id).single(),
         supabase.from('user_access_grants').select('masterclass_id').eq('user_id', user.id).not('masterclass_id', 'is', null),
         supabase.from('masterclasses').select('id, title').order('order_index', { ascending: true }),
     ]);
 
-    const hasFullUnlock = profileRes.data?.has_full_unlock || false;
+    const hasAllMasterclasses = profileRes.data?.has_full_unlock || profileRes.data?.has_masterclass_pass || false;
     const allMasterclasses = allMcRes.data || [];
 
     // Build set of accessible masterclass IDs
     const accessibleMcIds = new Set<string>();
-    if (hasFullUnlock) {
+    if (hasAllMasterclasses) {
         allMasterclasses.forEach(mc => accessibleMcIds.add(mc.id));
     } else {
         grantsRes.data?.forEach(g => { if (g.masterclass_id) accessibleMcIds.add(g.masterclass_id); });

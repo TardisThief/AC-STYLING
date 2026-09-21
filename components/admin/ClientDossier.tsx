@@ -82,7 +82,7 @@ export default function ClientDossier({ client, onClose }: ClientDossierProps) {
                             <div className="bg-ac-taupe/5 rounded-sm p-3 text-center">
                                 <BookOpen size={14} className="mx-auto text-ac-taupe/30 mb-1" />
                                 <div className="text-xs font-serif text-ac-taupe">
-                                    {journey.hasFullAccess ? 'Full Vault' : `${journey.masterclassesAccessCount} / ${journey.totalMasterclasses}`}
+                                    {journey.hasFullAccess ? 'Full Vault' : journey.hasAllMasterclasses ? 'Masterclass Pass' : `${journey.masterclassesAccessCount} / ${journey.totalMasterclasses}`}
                                 </div>
                                 <div className="text-[9px] uppercase tracking-widest text-ac-taupe/40">Masterclasses</div>
                             </div>

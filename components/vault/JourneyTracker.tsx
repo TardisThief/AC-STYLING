@@ -8,7 +8,9 @@ export default function JourneyTracker({ stats }: { stats: JourneyStats }) {
 
     const masterclassLabel = stats.hasFullAccess
         ? `Full Vault`
-        : `${stats.masterclassesAccessCount} of ${stats.totalMasterclasses}`;
+        : stats.hasAllMasterclasses
+            ? `${stats.totalMasterclasses} of ${stats.totalMasterclasses}`
+            : `${stats.masterclassesAccessCount} of ${stats.totalMasterclasses}`;
 
     return (
         <div className="mt-8 mb-4">

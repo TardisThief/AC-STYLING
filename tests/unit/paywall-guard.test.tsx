@@ -12,17 +12,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-// Mock the server actions
+// Mock the server actions. Offers are keyed by slug so a test can decide which
+// pass is on sale by flipping `active`, the way admin does.
+const offers: Record<string, { slug: string; title: string; price_display: string; active: boolean; price_id: string }> = {}
 vi.mock('@/app/actions/admin/manage-offers', () => ({
-    getOffer: vi.fn(() => Promise.resolve({
-        offer: {
-            slug: 'full_access',
-            title: 'Full Access Pass',
-            price_display: '$149',
-            active: true,
-            price_id: 'price_123'
-        }
-    }))
+    getOffer: vi.fn((slug: string) => Promise.resolve({ success: true, offer: offers[slug] ?? null }))
 }))
 
 vi.mock('@/app/actions/stripe', () => ({
@@ -50,44 +44,63 @@ vi.mock('framer-motion', () => ({
 // Import after mocks
 import FullAccessUnlock from '@/components/vault/FullAccessUnlock'
 
+function setOffer(slug: string, title: string, active: boolean) {
+    offers[slug] = { slug, title, price_display: '$149', active, price_id: `price_${slug}` }
+}
+
 describe('Paywall Guard Components', () => {
+    beforeEach(() => {
+        for (const k of Object.keys(offers)) delete offers[k]
+        vi.clearAllMocks()
+    })
+
     describe('FullAccessUnlock', () => {
-        it('renders unlock button when user does NOT have full access', async () => {
-            render(<FullAccessUnlock userId="user-123" hasFullAccess={false} />)
+        it('shows the Masterclass Pass while it is the pass on sale', async () => {
+            setOffer('masterclass_pass', 'Masterclass Pass', true)
+            setOffer('full_access', 'Full Access', false)
 
-            // Wait for the async offer loading
-            // The component should eventually show an unlock button
-            // Note: This may need a waitFor if the offer is loaded async
-            await vi.waitFor(() => {
-                // Check for presence of the component (it renders after offer loads)
-                // If offer loads, it should show something with "unlock" or the price
-                const body = document.body.textContent
-                return body && (body.includes('Unlock') || body.includes('$'))
-            }, { timeout: 3000 }).catch(() => {
-                // If the waitFor times out, the component returned null (no offer)
-                // This is acceptable behavior
-            })
+            render(<FullAccessUnlock userId="user-123" offerSlugs={['masterclass_pass', 'full_access']} />)
+
+            expect(await screen.findByRole('heading', { name: /Masterclass Pass/ })).toBeTruthy()
+            expect(screen.queryByText(/Full Access/)).toBeNull()
         })
 
-        it('returns null when user already has full access', () => {
-            const { container } = render(
-                <FullAccessUnlock userId="user-123" hasFullAccess={true} />
-            )
+        it('falls through to the next active pass in the order given', async () => {
+            setOffer('masterclass_pass', 'Masterclass Pass', false)
+            setOffer('full_access', 'Full Access', true)
 
-            // Component should return null (nothing rendered)
-            expect(container.innerHTML).toBe('')
+            render(<FullAccessUnlock userId="user-123" offerSlugs={['masterclass_pass', 'full_access']} />)
+
+            expect(await screen.findByRole('heading', { name: /Full Access/ })).toBeTruthy()
         })
 
-        it('returns null when no offer exists', async () => {
-            // Override mock to return no offer
+        it('offers a pass holder only the step up, never the pass they own', async () => {
+            setOffer('masterclass_pass', 'Masterclass Pass', true)
+            setOffer('full_access', 'Full Access', true)
+
+            render(<FullAccessUnlock userId="user-123" offerSlugs={['full_access']} />)
+
+            expect(await screen.findByRole('heading', { name: /Full Access/ })).toBeTruthy()
+            expect(screen.queryByText(/Masterclass Pass/)).toBeNull()
+        })
+
+        it('renders nothing and asks for nothing when the member has every pass', async () => {
+            setOffer('full_access', 'Full Access', true)
             const { getOffer } = await import('@/app/actions/admin/manage-offers')
-            vi.mocked(getOffer).mockResolvedValueOnce({ success: true, offer: null })
 
-            const { container } = render(
-                <FullAccessUnlock userId="user-456" hasFullAccess={false} />
-            )
+            const { container } = render(<FullAccessUnlock userId="user-123" offerSlugs={[]} />)
 
-            // Initially empty (offer not loaded yet, and when it loads it's null)
+            expect(container.innerHTML).toBe('')
+            expect(getOffer).not.toHaveBeenCalled()
+        })
+
+        it('renders nothing when no listed pass is on sale', async () => {
+            setOffer('masterclass_pass', 'Masterclass Pass', false)
+            const { getOffer } = await import('@/app/actions/admin/manage-offers')
+
+            const { container } = render(<FullAccessUnlock userId="user-456" offerSlugs={['masterclass_pass', 'full_access']} />)
+
+            await vi.waitFor(() => expect(getOffer).toHaveBeenCalledTimes(2))
             expect(container.innerHTML).toBe('')
         })
     })

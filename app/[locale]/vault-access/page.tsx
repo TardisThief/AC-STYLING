@@ -28,6 +28,7 @@ import {
     shouldRevealUpcoming,
     pickLocale,
     pickFlagship,
+    pickHeadlinePass,
 } from "@/app/lib/vault-catalog";
 import { isEnabled } from "@/app/lib/env-flags";
 
@@ -81,11 +82,24 @@ export default async function VaultLandingPage({
 
     const [catalog, offers] = await Promise.all([getVaultCatalog(), getVaultOffers()]);
     const reveal = shouldRevealUpcoming();
-    const entries = reveal ? catalog : catalog.filter((e) => e.is_published);
+
+    // The headline pass is whichever is on sale, decided in admin by
+    // offers.active: Full Access once courses exist, the Masterclass Pass until
+    // then. With neither active the Full Access copy stands and the button
+    // reads "Available soon", as before.
+    const passSlug = pickHeadlinePass(offers);
+    const pass = offers[passSlug];
+
+    // Every card on the page says "included with" the headline pass, so under
+    // the Masterclass Pass a standalone course has no place here: it is not
+    // included, and saying so on each card would be false.
+    const entries = catalog.filter(
+        (e) =>
+            (reveal || e.is_published) &&
+            (passSlug !== "masterclass_pass" || e.kind === "masterclass")
+    );
 
     const flagship = pickFlagship(entries);
-
-    const fullAccess = offers["full_access"];
     const singleCourse = entries.find((e) => e.is_published && e.price_display);
 
     // Course + FAQPage structured data, generated from exactly what renders so
@@ -302,7 +316,7 @@ export default async function VaultLandingPage({
                                 {t("catalog.title")}
                             </h2>
                             <p className="mt-4 text-lg leading-relaxed text-ac-taupe">
-                                {t("catalog.lede")}
+                                {t(`pass.${passSlug}.catalogLede`)}
                             </p>
                         </div>
 
@@ -338,7 +352,7 @@ export default async function VaultLandingPage({
                                             // the fallback happens to return the raw message — the exact
                                             // string the card needs. `t.raw` asks for it deliberately.
                                             runtimeApprox: t.raw("catalog.runtimeApprox"),
-                                            includedBadge: t("catalog.includedBadge"),
+                                            includedBadge: t(`pass.${passSlug}.includedBadge`),
                                             inProductionBadge: t("catalog.inProductionBadge"),
                                             inProductionNote: t("catalog.inProductionNote"),
                                             availableOn: t.raw("catalog.availableOn"),
@@ -462,27 +476,27 @@ export default async function VaultLandingPage({
                         <div className="mt-10 grid gap-px bg-ac-sand/20 md:grid-cols-2">
                             <div className="flex flex-col bg-ac-espresso p-7">
                                 <h3 className="font-serif text-2xl text-ac-sand">
-                                    {fullAccess
-                                        ? pickLocale(locale, fullAccess.title, fullAccess.title_es)
-                                        : t("offer.fullTitle")}
+                                    {pass
+                                        ? pickLocale(locale, pass.title, pass.title_es)
+                                        : t(`pass.${passSlug}.name`)}
                                 </h3>
-                                {fullAccess?.price_display && (
+                                {pass?.price_display && (
                                     <p className="mt-3 font-serif text-4xl text-ac-sand">
-                                        {fullAccess.price_display}
+                                        {pass.price_display}
                                     </p>
                                 )}
                                 <p className="mt-4 leading-relaxed text-ac-sand/75">
-                                    {t("offer.fullBody")}
+                                    {t(`pass.${passSlug}.body`)}
                                 </p>
                                 <div className="mt-7 pt-1">
                                     {/* isSignedIn is false by construction: the proxy
                                         only rewrites anonymous visitors here, so a
                                         member never sees this page. */}
                                     <VaultCheckoutButton
-                                        priceId={fullAccess?.price_id ?? null}
+                                        priceId={pass?.price_id ?? null}
                                         isSignedIn={false}
-                                        section="offer_full"
-                                        label={t("offer.fullCta")}
+                                        section={passSlug === "masterclass_pass" ? "offer_masterclass_pass" : "offer_full"}
+                                        label={t(`pass.${passSlug}.cta`)}
                                         unavailableLabel={t("offer.unavailable")}
                                         className="inline-block bg-ac-sand px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-espresso transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
                                     />
@@ -635,9 +649,9 @@ export default async function VaultLandingPage({
             <Footer />
 
             <StickyCta
-                label={t("sticky.label")}
+                label={t(`pass.${passSlug}.sticky`)}
                 cta={t("sticky.cta")}
-                price={fullAccess?.price_display ?? null}
+                price={pass?.price_display ?? null}
                 href="#offer"
             />
 

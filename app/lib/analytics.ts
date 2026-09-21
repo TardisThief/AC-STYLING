@@ -30,6 +30,7 @@ export type CtaSection =
     | 'catalog'
     | 'flagship'
     | 'offer_full'
+    | 'offer_masterclass_pass'
     | 'offer_single'
     | 'bridge'
     | 'whatsapp'

@@ -21,7 +21,7 @@ async function checkAdmin() {
     };
 }
 
-export async function createStripeProduct(name: string, amountInDollars: number, type: 'masterclass' | 'course' | 'chapter' | 'service') {
+export async function createStripeProduct(name: string, amountInDollars: number, type: 'masterclass' | 'course' | 'chapter' | 'service' | 'offer') {
     const { authorized } = await checkAdmin();
     if (!authorized) {
         return { success: false, error: "Unauthorized" };

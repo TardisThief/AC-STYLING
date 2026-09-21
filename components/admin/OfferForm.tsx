@@ -5,6 +5,12 @@ import { upsertOffer, getOffer } from "@/app/actions/admin/manage-offers";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+const OFFER_NAMES: Record<string, string> = {
+    masterclass_pass: 'Masterclass Pass',
+    full_access: 'Full Access',
+    course_pass: 'Course Pass',
+};
+
 interface OfferFormProps {
     slug: string;
     initialTitle: string;
@@ -20,7 +26,9 @@ export default function OfferForm({ slug, initialTitle, initialDescription, onCl
         id: undefined as string | undefined,
         slug: slug,
         title: initialTitle,
+        titleEs: '',
         description: initialDescription,
+        descriptionEs: '',
         priceDisplay: '',
         priceId: '',
         stripeProductId: '',
@@ -35,11 +43,13 @@ export default function OfferForm({ slug, initialTitle, initialDescription, onCl
                     id: res.offer.id,
                     slug: res.offer.slug,
                     title: res.offer.title,
+                    titleEs: res.offer.title_es || '',
                     description: res.offer.description || '',
+                    descriptionEs: res.offer.description_es || '',
                     priceDisplay: res.offer.price_display || '',
                     priceId: res.offer.price_id || '',
                     stripeProductId: res.offer.stripe_product_id || '',
-                    active: res.offer.active,
+                    active: res.offer.active ?? false,
                 });
             } else {
                 // Pre-fill defaults if not found
@@ -62,7 +72,9 @@ export default function OfferForm({ slug, initialTitle, initialDescription, onCl
             id: formData.id,
             slug: formData.slug,
             title: formData.title,
+            title_es: formData.titleEs,
             description: formData.description,
+            description_es: formData.descriptionEs,
             price_display: formData.priceDisplay,
             price_id: formData.priceId,
             stripe_product_id: formData.stripeProductId,
@@ -84,7 +96,7 @@ export default function OfferForm({ slug, initialTitle, initialDescription, onCl
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <h3 className="font-serif text-2xl text-ac-taupe border-b border-ac-taupe/10 pb-3">
-                Configure Offer: {slug === 'full_access' ? 'Full Access' : 'Course Pass'}
+                Configure Offer: {OFFER_NAMES[slug] ?? slug}
             </h3>
 
             <div className="space-y-4">
@@ -98,11 +110,29 @@ export default function OfferForm({ slug, initialTitle, initialDescription, onCl
                     />
                 </div>
                 <div>
+                    <label className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mb-2">Title (Spanish)</label>
+                    <input
+                        type="text"
+                        value={formData.titleEs}
+                        onChange={(e) => setFormData({ ...formData, titleEs: e.target.value })}
+                        className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe"
+                    />
+                </div>
+                <div>
                     <label className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mb-2">Pop-up Description</label>
                     <textarea
                         rows={3}
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe"
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mb-2">Pop-up Description (Spanish)</label>
+                    <textarea
+                        rows={3}
+                        value={formData.descriptionEs}
+                        onChange={(e) => setFormData({ ...formData, descriptionEs: e.target.value })}
                         className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe"
                     />
                 </div>
@@ -146,8 +176,7 @@ export default function OfferForm({ slug, initialTitle, initialDescription, onCl
 
                             const toastId = toast.loading("Generating Stripe Product...");
                             const { createStripeProduct } = await import('@/app/actions/admin/stripe-product');
-                            // Using 'service' type for generic offers
-                            const res = await createStripeProduct(formData.title, price, 'service');
+                            const res = await createStripeProduct(formData.title, price, 'offer');
 
                             if (res.success && res.productId && res.priceId) {
                                 setFormData(prev => ({
@@ -187,6 +216,18 @@ export default function OfferForm({ slug, initialTitle, initialDescription, onCl
                     </div>
                 </div>
             </div>
+
+            {/* On sale or not. An inactive offer is hidden from the sales page and
+                the Vault banners, and keeps its Stripe IDs for when it returns. */}
+            <label className="flex items-center gap-3 text-sm text-ac-taupe">
+                <input
+                    type="checkbox"
+                    checked={formData.active}
+                    onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                    className="h-4 w-4 accent-ac-taupe"
+                />
+                Active (on sale)
+            </label>
 
             <div className="flex justify-end gap-3 border-t border-ac-taupe/10 pt-4">
                 <button type="button" onClick={onClose} className="px-4 py-2 border border-ac-taupe/20 text-ac-taupe rounded-sm">Cancel</button>

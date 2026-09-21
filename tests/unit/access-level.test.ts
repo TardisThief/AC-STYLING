@@ -83,6 +83,26 @@ describe('Access Level Business Logic', () => {
         })
     })
 
+    describe('masterclass pass', () => {
+        it('returns "masterclass_pass" as the level', () => {
+            expect(getAccessLevel({ has_masterclass_pass: true })).toBe('masterclass_pass')
+        })
+
+        it('opens every masterclass', () => {
+            expect(canAccessMasterclass({ has_masterclass_pass: true })).toBe(true)
+        })
+
+        it('does not open standalone courses', () => {
+            expect(canAccessCourse({ has_masterclass_pass: true })).toBe(false)
+        })
+
+        it('combines with a course pass instead of being shadowed by it', () => {
+            const both = { has_course_pass: true, has_masterclass_pass: true }
+            expect(canAccessMasterclass(both)).toBe(true)
+            expect(canAccessCourse(both)).toBe(true)
+        })
+    })
+
     describe('canAccessCourse', () => {
         it('returns true for all_access users', () => {
             expect(canAccessCourse({ has_full_unlock: true })).toBe(true)

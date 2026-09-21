@@ -47,6 +47,9 @@ and match nothing.
    the handler rejects anything that fails signature verification.
 6. Make one real purchase end to end and confirm a row appears in
    `fulfillments` with `status = 'completed'`.
+7. The `masterclass_pass` offer (added 2026-09-21, created from admin with the
+   Stripe generator) is one of the rows in step 2: regenerate its product and
+   price in live mode from the same admin form.
 
 Until then everything works exactly as it does now, in the sandbox.
 
@@ -148,6 +151,10 @@ looked alarming — `app/lib/access-logic.ts` reads it to grant the full unlock 
 but step 4 of `grantAccessForProduct` falls back to the `offers` table, and
 both rows are live and correctly populated: `full_access` →
 `prod_Tu058EMscR1XkA`, `course_pass` → `prod_Tu06etw8YLkfVm`, both `active`.
+(Since 2026-09-21 the launch offer is `masterclass_pass`, and these two are
+switched off in admin until the first course ships. An inactive offer is
+skipped by step 4, so the env var matters again the day Full Access returns
+*without* its row being re-activated.)
 Verified against the production database. The env var is a redundant second
 path, not the only one. Leave it unset or set it; either works.
 

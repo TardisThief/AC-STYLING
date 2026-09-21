@@ -20,6 +20,7 @@ export interface Profile {
     active_studio_client: boolean | null;
     has_full_unlock: boolean | null;
     has_course_pass: boolean | null;
+    has_masterclass_pass: boolean | null;
     style_essentials: unknown;
     studio_permissions: unknown;
     created_at: string | null;

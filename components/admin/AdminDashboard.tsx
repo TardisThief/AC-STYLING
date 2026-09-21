@@ -21,6 +21,13 @@ import AdminNotificationsPanel from "./AdminNotificationsPanel";
 import { getUnreadNotificationCount } from "@/app/actions/notifications";
 import type { Chapter, Masterclass, Service, Profile } from "@/app/lib/types";
 
+/** Starting copy for an offer that has no row yet; the saved row wins. */
+const OFFER_DEFAULTS: Record<string, { title: string; description: string }> = {
+    masterclass_pass: { title: "Masterclass Pass", description: "Every masterclass, including the ones still to come." },
+    full_access: { title: "AC Styling: The Full Vault", description: "Every masterclass and every course, including the ones still to come." },
+    course_pass: { title: "Course Pass", description: "Unlock all standalone courses/lessons." },
+};
+
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<'notifications' | 'masterclasses' | 'chapters' | 'clients' | 'boutique' | 'services' | 'trustedby'>('notifications');
 
@@ -191,6 +198,15 @@ export default function AdminDashboard() {
                         <div className="flex gap-3">
                             {activeTab === 'masterclasses' && (
                                 <button
+                                    onClick={() => { setEditingOfferSlug('masterclass_pass'); setEditingItem(null); setIsCreating(false); }}
+                                    className="flex items-center gap-2 border border-ac-gold text-ac-gold px-4 py-2 rounded-sm hover:bg-ac-gold/10 transition-colors"
+                                >
+                                    <Sparkles size={18} />
+                                    Masterclass Pass
+                                </button>
+                            )}
+                            {activeTab === 'masterclasses' && (
+                                <button
                                     onClick={() => { setEditingOfferSlug('full_access'); setEditingItem(null); setIsCreating(false); }}
                                     className="flex items-center gap-2 border border-ac-gold text-ac-gold px-4 py-2 rounded-sm hover:bg-ac-gold/10 transition-colors"
                                 >
@@ -233,8 +249,8 @@ export default function AdminDashboard() {
                         {editingOfferSlug ? (
                             <OfferForm
                                 slug={editingOfferSlug}
-                                initialTitle={editingOfferSlug === 'full_access' ? "AC Styling: The Full Vault" : "Course Pass"}
-                                initialDescription={editingOfferSlug === 'full_access' ? "Complete access to all Masterclasses." : "Unlock all standalone courses/lessons."}
+                                initialTitle={OFFER_DEFAULTS[editingOfferSlug]?.title ?? editingOfferSlug}
+                                initialDescription={OFFER_DEFAULTS[editingOfferSlug]?.description ?? ''}
                                 onClose={handleSuccess}
                             />
                         ) : activeTab === 'masterclasses' ? (
