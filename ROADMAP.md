@@ -627,23 +627,30 @@ work outright or would quietly rot while attention is elsewhere.
 
 Ordered so the first item unblocks the rest.
 
-- ~~**1. Make the catalog round-trip cleanly.**~~ — **done (2026-09-20)**, migration 17. Round-trip errors went **24 → 10**, and all 10 remaining are `video_id` placeholders on the 5 published modules: F09, the content blocker, and nothing else. The structural defects are gone. Original text follows for the record.
+- ~~**1. Make the catalog round-trip cleanly.**~~ — **done (2026-09-20)**,
+  migration 17.
 
-- **~~1.~~ (detail) Make the catalog round-trip cleanly — this was the gate.**
-  `node scripts/export_catalog.mjs` followed by `node scripts/import_catalog.mjs`
-  on live data reports **24 errors**, so the tool the content work depends on
-  refuses to run against the content it just exported. Both causes are in the
-  data, not the script:
+  Exporting the live catalogue and feeding it straight back to
+  `import_catalog.mjs` reported **24 errors**: the tool the content work
+  depends on rejected the content it had just exported. Both causes were in
+  the data.
 
-  - **8 chapters carry `lab_questions` using the legacy `question` key.** The
-    Essence Lab renders `label`, so those prompts render **blank**. All 8 are
-    `is_published = false`, which is the only reason no customer has hit it —
-    it fires the moment they are published.
-  - **6 modules have `masterclass_id` set and `is_standalone = true`**, which
-    cannot both be true: a module inside a masterclass is not standalone.
+  - **8 Essence Lab questions across 7 chapters** used the legacy `question`
+    key with no `label`. The Lab renders `label`, so those prompts rendered
+    **blank**. Every affected chapter was unpublished, which is the only
+    reason no customer had met one — it fires on publish.
+  - **6 modules** had `masterclass_id` set with `is_standalone = true`, which
+    cannot both hold.
 
-  One careful migration. Fix it and the content pipeline is usable; skip it and
-  every import is a fight.
+  Left alone on purpose: `unit-1-2-universal-styles` has both a working
+  `label` and a different `question`, so renaming would overwrite editorial
+  copy with editorial copy. That is a content edit, not a migration's call.
+  The rename also cannot invent `label_es`, so those prompts render English in
+  both locales until the Spanish copy is written.
+
+  **Round-trip errors are now 24 → 10, and all 10 are `video_id` placeholders
+  on the 5 published modules** — F09, the content blocker, and nothing else.
+  The catalogue is structurally clean and waiting on video.
 
 - **2. Make CI run the build and a typecheck.** It runs `test:run` and `lint`
   and nothing else. Three failures during this session passed both and still
