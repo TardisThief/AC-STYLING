@@ -327,7 +327,7 @@
     "VaultSales": {
         "meta": {
             "title": "The Vault | AC Styling",
-            "description": "Self-paced courses in colour analysis, silhouette and personal style. The method Alejandra Carrillo uses with her clients.",
+            "description": "Self-paced courses in colour, body shape, style and essence, and closet curation. The method Alejandra Carrillo uses with her clients.",
             "ogAlt": "The AC Styling Vault"
         },
         "hero": {
@@ -347,20 +347,19 @@
             "cognition": "Clothes don't only change how you're read. They change how you think. In a study by Adam and Galinsky at Northwestern, two groups wore the same white coat: the group told it was a doctor's coat showed better sustained attention. Same garment, different story, different performance.",
             "thesis": "So I don't teach trends. I teach you to decide: which colours hold you up, which silhouettes represent you, and what you want to communicate before you open the closet."
         },
-        "locate": {
-            "title": "Four seasons. Find yours.",
-            "body": "Your season isn't a box. It's a position between three things: temperature, value and intensity. The course takes you there with a method you can repeat on your own, in front of the mirror.",
-            "splitTitle": "Four here. Twelve in person.",
-            "splitBody": "The twelve sub-seasons need real light and a trained eye, so I keep them for one-to-one analysis. It isn't a cut-down version of the method: it's honestly how far a course can take you.",
-            "fieldAlt": "A continuous colour field. Temperature runs warm to cool across the horizontal axis and value runs light to dark down the vertical. The four seasons — spring, summer, autumn and winter — appear as soft regions rather than boxes."
-        },
-        "beyond": {
-            "title": "Colour is where it starts. It isn't where it ends.",
-            "lede": "Your season tells you which colours hold you up. Two more things decide whether an outfit is really yours.",
-            "shapeTitle": "Your body shape, and how to use it",
+        "path": {
+            "title": "The path",
+            "lede": "Four courses, in the order they build on each other. Each one also stands alone.",
+            "colourTitle": "Colour: find your season",
+            "colourBody": "Your season isn't a box. It's a position between three things: temperature, value and intensity. The course takes you there with a method you can repeat on your own, in front of the mirror.",
+            "fieldAlt": "A continuous colour field. Temperature runs warm to cool across the horizontal axis and value runs light to dark down the vertical. The four seasons — spring, summer, autumn and winter — appear as soft regions rather than boxes.",
+            "splitNote": "Four seasons here. The twelve sub-seasons need real light and a trained eye, so I keep them for one-to-one analysis. It isn't a cut-down version: it's honestly how far a course can take you.",
+            "shapeTitle": "Body shape: use your lines",
             "shapeBody": "Not a list of things to hide. You learn to read your proportions and lines, and to choose cuts and silhouettes that work with them instead of against them.",
-            "essenceTitle": "Your essence, and how to let it show",
-            "essenceBody": "This is the heart of the method. Colour and silhouette are tools; your essence is what they're for. You learn to recognise your style and to dress so it speaks for you before you say a word."
+            "essenceTitle": "Style & essence: let it show",
+            "essenceBody": "This is the heart of the method. Colour and silhouette are tools; your essence is what they're for. You learn the universal styles, find your own mix, and finish with your essence defined in words you can dress by.",
+            "closetTitle": "Your closet: make it work for your life",
+            "closetBody": "Audit what you own, organise it, tailor what's worth keeping and buy with criteria, so your essence reaches your ordinary mornings and not only your best days."
         },
         "catalog": {
             "title": "What's inside",
@@ -419,7 +418,7 @@
         "faq": {
             "title": "Questions",
             "q1": "Do I need to know anything before I start?",
-            "a1": "No. The courses start from zero and each module builds on the one before.",
+            "a1": "No. The courses start from zero and each module builds on the one before. The masterclasses follow an order (colour, body shape, style and essence, closet), but each one stands alone.",
             "q2": "How long is it?",
             "a2": "About an hour per masterclass, split into short modules so you can take them one at a time.",
             "q3": "How do I get access?",

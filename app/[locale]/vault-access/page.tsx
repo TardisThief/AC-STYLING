@@ -222,60 +222,62 @@ export default async function VaultLandingPage({
                 </section>
                 <Spine level={3} />
 
-                {/* ── Rung 3 · Placement — the one bold element ─────────── */}
-                <section className="px-6 py-20 md:py-28">
+                {/* ── Rung 3 · Placement: the path ─────────────────────── */}
+                {/* One path in catalogue order: colour, body shape, style &
+                    essence, closet. Colour used to be its own section, from
+                    when Colorimetry was the only course; the other three were
+                    bolted on after it. The colour field stays as the page's one
+                    bold element, inside step 01. */}
+                <section id="path" className="scroll-mt-24 px-6 py-20 md:py-28">
                     <div className="mx-auto max-w-4xl">
                         <div className="mx-auto max-w-2xl">
                             <h2 className="font-serif text-3xl leading-tight md:text-4xl">
-                                {t("locate.title")}
+                                {t("path.title")}
                             </h2>
                             <p className="mt-6 text-lg leading-relaxed text-ac-taupe">
-                                {t("locate.body")}
+                                {t("path.lede")}
                             </p>
                         </div>
 
-                        <div className="mt-12">
-                            <ColorField label={t("locate.fieldAlt")} />
-                        </div>
+                        <ol className="mt-14 space-y-16 md:space-y-20">
+                            <li>
+                                <div className="mx-auto max-w-2xl">
+                                    <PathStepTitle n="01">{t("path.colourTitle")}</PathStepTitle>
+                                    <p className="mt-3 text-lg leading-relaxed text-ac-taupe">
+                                        {t("path.colourBody")}
+                                    </p>
+                                </div>
+                                <div className="mt-10">
+                                    <ColorField label={t("path.fieldAlt")} />
+                                </div>
+                                <p className="mx-auto mt-8 max-w-2xl leading-relaxed text-ac-taupe/85">
+                                    {t("path.splitNote")}
+                                </p>
+                            </li>
 
-                        <div className="mx-auto mt-12 max-w-2xl border-l-2 border-ac-olive/50 pl-5">
-                            <h3 className="font-serif text-2xl text-ac-taupe">
-                                {t("locate.splitTitle")}
-                            </h3>
-                            <p className="mt-3 leading-relaxed text-ac-taupe">
-                                {t("locate.splitBody")}
-                            </p>
-                        </div>
-                    </div>
-                </section>
+                            <li className="mx-auto max-w-2xl">
+                                <PathStepTitle n="02">{t("path.shapeTitle")}</PathStepTitle>
+                                <p className="mt-3 text-lg leading-relaxed text-ac-taupe">
+                                    {t("path.shapeBody")}
+                                </p>
+                            </li>
 
-                {/* ── Beyond colour: body shape and essence ────────────── */}
-                <section className="px-6 pb-20 md:pb-28">
-                    <div className="mx-auto max-w-2xl border-t border-ac-taupe/15 pt-20 md:pt-28">
-                        <h2 className="font-serif text-3xl leading-tight md:text-4xl">
-                            {t("beyond.title")}
-                        </h2>
-                        <p className="mt-6 text-lg leading-relaxed text-ac-taupe">
-                            {t("beyond.lede")}
-                        </p>
+                            {/* The essence is the point of the method, so it carries
+                                the page's accent rule. */}
+                            <li className="mx-auto max-w-2xl border-l-2 border-ac-olive/50 pl-5">
+                                <PathStepTitle n="03">{t("path.essenceTitle")}</PathStepTitle>
+                                <p className="mt-3 font-serif text-2xl leading-snug text-ac-taupe md:text-[1.7rem]">
+                                    {t("path.essenceBody")}
+                                </p>
+                            </li>
 
-                        <h3 className="mt-12 font-serif text-2xl text-ac-taupe">
-                            {t("beyond.shapeTitle")}
-                        </h3>
-                        <p className="mt-3 text-lg leading-relaxed text-ac-taupe">
-                            {t("beyond.shapeBody")}
-                        </p>
-
-                        {/* The essence is the point of the method, so it closes the
-                            section and carries the page's accent rule. */}
-                        <div className="mt-12 border-l-2 border-ac-olive/50 pl-5">
-                            <h3 className="font-serif text-2xl text-ac-taupe">
-                                {t("beyond.essenceTitle")}
-                            </h3>
-                            <p className="mt-3 font-serif text-2xl leading-snug text-ac-taupe md:text-[1.7rem]">
-                                {t("beyond.essenceBody")}
-                            </p>
-                        </div>
+                            <li className="mx-auto max-w-2xl">
+                                <PathStepTitle n="04">{t("path.closetTitle")}</PathStepTitle>
+                                <p className="mt-3 text-lg leading-relaxed text-ac-taupe">
+                                    {t("path.closetBody")}
+                                </p>
+                            </li>
+                        </ol>
                     </div>
                 </section>
 
@@ -620,5 +622,17 @@ export default async function VaultLandingPage({
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
         </>
+    );
+}
+
+/** A numbered step heading. The `<ol>` already gives the order to assistive tech, so the number is visual only. */
+function PathStepTitle({ n, children }: { n: string; children: React.ReactNode }) {
+    return (
+        <h3 className="flex items-baseline gap-4 font-serif text-2xl text-ac-taupe">
+            <span aria-hidden="true" className="font-sans text-xs tracking-[0.3em] text-ac-taupe/60">
+                {n}
+            </span>
+            <span>{children}</span>
+        </h3>
     );
 }

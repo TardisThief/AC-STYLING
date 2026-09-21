@@ -119,17 +119,24 @@ Then redeploy (or revalidate the `vault-catalog` cache tag) so the public sales
 page picks up the change. The admin console (`/vault/admin`) edits the same
 rows; the file and the console are interchangeable.
 
-## Current gaps (as of 2026-09-20)
+## Current gaps (as of 2026-09-21)
 
-Live rows: 3 masterclasses (Colorimetry, The AC Method, Body Shape), 17 modules,
-3 standalone courses (Jewelry, Perfumery, Dopamine Dressing).
+Live rows: 4 masterclasses, in path order Colorimetry (5 modules), Body Shape
+(6), Style & Essence (7) and Closet Curation (4) — 22 modules — plus 4
+standalone courses (Dopamine Dressing, Executive Presence, The Travel Edit,
+Accessories). Style & Essence was "The AC Method" until migration 18 renamed
+the row in place; rename a course the same way, never by editing the title in
+the file alone (the title is the match key, so that inserts a duplicate).
+
+The numbered items below were written on 2026-09-20; items 4 and 5 were fixed
+by migration 17 and the course names in them are the old ones.
 
 **Blocking publication:**
 
 1. **No real videos anywhere.** Colorimetry's 5 modules are `TODO_FILL_IN`;
    every other module and course is `pending_video`. Colorimetry is flagged
    published with placeholder videos — the importer errors on that combination.
-2. **The AC Method and Body Shape** have no `thumbnail_url`, `price_display`,
+2. **Style & Essence and Body Shape** have no `thumbnail_url`, `price_display`,
    `stripe_product_id` or `price_id`, and their `video_url` is literally
    `vimeo.com/pending_m1` / `_m2`.
 3. **Standalone courses** (Jewelry, Perfumery, Dopamine Dressing) have no
@@ -137,7 +144,7 @@ Live rows: 3 masterclasses (Colorimetry, The AC Method, Body Shape), 17 modules,
 
 **Data drift to fix while filling the file:**
 
-4. Six modules of The AC Method / Body Shape have `is_standalone: true`
+4. Six modules of Style & Essence / Body Shape have `is_standalone: true`
    despite sitting inside a masterclass — that makes the access check treat them
    as separately-gated items. Set them to `false`.
 5. Eight lab questions use `question` instead of `label` and currently render a
@@ -148,4 +155,4 @@ Live rows: 3 masterclasses (Colorimetry, The AC Method, Body Shape), 17 modules,
 
 Spanish copy (`title_es`, `subtitle_es`, `description_es`, `takeaways_es`) is
 already complete on every existing row; only the per-question `label_es` /
-`placeholder_es` are missing on the AC Method and Body Shape modules.
+`placeholder_es` are missing on the Style & Essence and Body Shape modules.

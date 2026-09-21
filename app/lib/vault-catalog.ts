@@ -187,9 +187,9 @@ export const getVaultCatalog = unstable_cache(
  *
  * The heading is interpolated from the entry this returns. It used to read
  * "Colorimetry, module by module" as fixed copy, which was true only while
- * Colorimetry was the sole published course — Body Shape and The AC Method
- * both have six modules to Colorimetry's five, so the first publish in a
- * different order would have captioned the wrong course.
+ * Colorimetry was the sole published course — Body Shape (six modules) and
+ * Style & Essence (seven) both outnumber Colorimetry's five, so the first
+ * publish in a different order would have captioned the wrong course.
  */
 export function pickFlagship(entries: CatalogEntry[]): CatalogEntry | undefined {
     return entries

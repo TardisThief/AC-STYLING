@@ -1,6 +1,6 @@
 {
   "$schema": "docs/CATALOG-CONTENT-GUIDE.md",
-  "exported_at": "2026-09-21T13:11:25.522Z",
+  "exported_at": "2026-09-21T18:59:29.724Z",
   "masterclasses": [
     {
       "title": "Colorimetry",
@@ -20,7 +20,7 @@
       "available_at": null,
       "modules": [
         {
-          "slug": "color-psychology",
+          "slug": "unit-3-1-color-psychology",
           "title": "Color Psychology",
           "subtitle": null,
           "description": "In this module, we will understand how color communicates before words. We will explore how colors impact perception (authority, approachability, sophistication, creativity) and how to use them intentionally according to the message you want to project.",
@@ -97,7 +97,7 @@
           "available_at": null
         },
         {
-          "slug": "color-theory",
+          "slug": "unit-3-2-color-theory",
           "title": "Color Theory",
           "subtitle": null,
           "description": "We will build the technical foundation of color harmonies to create looks (complementary, analogous, monochromatic). The goal is to understand how to combine colors in a coherent, aesthetic, and strategic way.",
@@ -173,7 +173,7 @@
           "available_at": null
         },
         {
-          "slug": "color-dimensions",
+          "slug": "unit-3-3-color-dimensions",
           "title": "Color Dimensions",
           "subtitle": null,
           "description": "We will analyze the three key dimensions: temperature (warm/cool), value (light/dark), and intensity (soft/bright). This module is fundamental because it connects directly with your physical characteristics.",
@@ -254,7 +254,7 @@
           "available_at": null
         },
         {
-          "slug": "the-4-color-seasons",
+          "slug": "unit-3-4-the-4-color-seasons",
           "title": "The 4 Color Seasons",
           "subtitle": null,
           "description": "I introduce you to the classic system of seasons: spring, summer, autumn, and winter. The goal is to identify your patterns and bring you closer to an ideal palette that enhances your natural features.",
@@ -329,7 +329,7 @@
           "available_at": null
         },
         {
-          "slug": "defining-your-colorimetry",
+          "slug": "unit-3-5-defining-your-colorimetry",
           "title": "Defining Your Colorimetry",
           "subtitle": null,
           "description": "You will integrate everything learned to determine your personal palette. It includes practical methodology: analysis of skin, eyes, hair, and contrast.",
@@ -822,6 +822,560 @@
       ]
     },
     {
+      "title": "Style & Essence",
+      "subtitle": "Showing your essence through fashion",
+      "description": "Colour tells you what holds you up. Your body shape tells you which lines work with you. This course is about what they're for: your essence. You learn the universal styles and your own mix of them, how your personality shows in what you wear, and you finish by defining your essence and carrying it into the life you actually live, so your style speaks for you before you say a word.",
+      "title_es": "Estilo y Esencia",
+      "subtitle_es": "Mostrar tu esencia a través de la moda",
+      "description_es": "El color te dice qué te sostiene. Tu tipo de cuerpo, qué líneas trabajan a tu favor. Este curso trata de para qué sirven: tu esencia. Aprendes los estilos universales y tu propia mezcla, cómo se ve tu personalidad en lo que llevas, y terminas definiendo tu esencia y llevándola a la vida que realmente vives, para que tu estilo hable por ti antes de que digas una palabra.",
+      "thumbnail_url": null,
+      "video_url": null,
+      "order_index": 3,
+      "price_display": null,
+      "runtime_minutes": null,
+      "stripe_product_id": null,
+      "price_id": null,
+      "is_published": false,
+      "available_at": null,
+      "modules": [
+        {
+          "slug": "unit-1-1-style-vs-trend",
+          "title": "Style vs. Trend",
+          "subtitle": null,
+          "description": "Before you can show your essence, you have to tell it apart from the noise. Fashion is an external calendar that expires; style is a language of your own that you build and keep. You learn to recognise when you are buying a trend and when you are building your identity.",
+          "title_es": "Estilo vs. tendencia",
+          "subtitle_es": null,
+          "description_es": "Antes de mostrar tu esencia, tienes que distinguirla del ruido. La moda es un calendario externo que caduca; el estilo es un lenguaje propio que se construye y permanece. Aprendes a reconocer cuándo estás comprando una tendencia y cuándo estás construyendo tu identidad.",
+          "video_id": "pending_video",
+          "video_id_es": null,
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 1,
+          "is_standalone": false,
+          "takeaways": [
+            "Fashion vs. style",
+            "The trend cycle",
+            "Impulse buying vs. identity buying",
+            "What stays when the trend moves on"
+          ],
+          "takeaways_es": [
+            "Moda vs. estilo",
+            "El ciclo de la tendencia",
+            "Compra por impulso vs. compra por identidad",
+            "Lo que se queda cuando la tendencia pasa"
+          ],
+          "lab_questions": [
+            {
+              "key": "acm_m1_q1",
+              "label": "Which garments did you buy because of a trend, and which because they were truly you?",
+              "label_es": "¿Qué prendas compraste por tendencia y cuáles porque de verdad eran tuyas?",
+              "placeholder": "e.g., The boots were a trend, the blazer is mine...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Las botas fueron tendencia, el blazer es mío...",
+              "mappingCategory": "style_words"
+            },
+            {
+              "key": "acm_m1_q2",
+              "label": "What percentage of your closet still feels current to you after two years?",
+              "label_es": "¿Qué porcentaje de tu clóset sigue vigente para ti después de dos años?",
+              "placeholder": "e.g., Maybe half...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Quizá la mitad..."
+            },
+            {
+              "key": "acm_m1_q3",
+              "label": "Which current trend attracts you, and which one puts you off? Why?",
+              "label_es": "¿Qué tendencia actual te atrae y cuál te genera rechazo? ¿Por qué?",
+              "placeholder": "e.g., I love wide tailoring, I avoid...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Me gusta la sastrería amplia, evito...",
+              "mappingCategory": "archetype"
+            },
+            {
+              "key": "acm_m1_q4",
+              "label": "When was the last time you bought something you never wore again?",
+              "label_es": "¿Cuándo fue la última vez que compraste algo que no volviste a usar?",
+              "placeholder": "e.g., A dress for one event...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Un vestido para un solo evento..."
+            },
+            {
+              "key": "acm_m1_q5",
+              "label": "If you stopped looking at social media for six months, what would you still wear?",
+              "label_es": "Si dejaras de mirar redes por seis meses, ¿qué seguirías usando?",
+              "placeholder": "e.g., Jeans, white shirts...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Jeans, camisas blancas..."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-1-2-universal-styles",
+          "title": "The Universal Styles",
+          "subtitle": null,
+          "description": "Classic, natural, romantic, dramatic, creative, elegant and seductive: we walk through the universal styles, what each one communicates and which garments, lines and textures build it. This is not about boxing you in. It is vocabulary, so you can name what your essence already is.",
+          "title_es": "Los estilos universales",
+          "subtitle_es": null,
+          "description_es": "Clásico, natural, romántico, dramático, creativo, elegante y seductor: recorremos los estilos universales, qué comunica cada uno y con qué prendas, líneas y texturas se construye. No se trata de encasillarte. Es vocabulario, para que puedas nombrar lo que tu esencia ya es.",
+          "video_id": "pending_video",
+          "video_id_es": null,
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 2,
+          "is_standalone": false,
+          "takeaways": [
+            "The universal styles and what each one says",
+            "Lines, textures and garments of each style",
+            "Dominant style and secondary style",
+            "Reading a look and naming it"
+          ],
+          "takeaways_es": [
+            "Los estilos universales y lo que comunica cada uno",
+            "Líneas, texturas y prendas de cada estilo",
+            "Estilo dominante y estilo secundario",
+            "Leer un look y saber nombrarlo"
+          ],
+          "lab_questions": [
+            {
+              "key": "acm_m2_q1",
+              "label": "Which universal style do you identify with most?",
+              "label_es": "¿Con qué estilo universal te identificas más?",
+              "placeholder": "e.g., Classic, with something natural...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Clásico, con algo de natural...",
+              "mappingCategory": "style_words"
+            },
+            {
+              "key": "acm_m2_q2",
+              "label": "Which one is your secondary style?",
+              "label_es": "¿Cuál sientes que es tu estilo secundario?",
+              "placeholder": "e.g., Romantic on weekends...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Romántico los fines de semana...",
+              "mappingCategory": "style_words"
+            },
+            {
+              "key": "acm_m2_q3",
+              "label": "Which style do you admire on others but feel is not yours?",
+              "label_es": "¿Qué estilo admiras en otras personas pero sientes que no es tuyo?",
+              "placeholder": "e.g., Dramatic, it feels like too much on me...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Dramático, en mí siento que es demasiado..."
+            },
+            {
+              "key": "acm_m2_q4",
+              "label": "Which garments in your closet belong to a style that no longer represents you?",
+              "label_es": "¿Qué prendas de tu clóset pertenecen a un estilo que ya no te representa?",
+              "placeholder": "e.g., Everything from my first job...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Todo lo de mi primer trabajo..."
+            },
+            {
+              "key": "acm_m2_q5",
+              "label": "What do you wear when you want to be taken seriously?",
+              "label_es": "¿Qué usas cuando quieres que te tomen en serio?",
+              "placeholder": "e.g., Navy blazer and straight trousers...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Blazer azul y pantalón recto...",
+              "mappingCategory": "archetype"
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-1-3-substyles",
+          "title": "Sub-styles",
+          "subtitle": null,
+          "description": "Almost nobody is a single style. Here you mix: how to combine two or three universal styles in a proportion that feels like you, and how that mix becomes your signature. We work the base formula and how it shifts with context without losing you.",
+          "title_es": "Subestilos",
+          "subtitle_es": null,
+          "description_es": "Casi nadie es un solo estilo. Aquí mezclas: cómo combinar dos o tres estilos universales en una proporción que se sienta tuya, y cómo esa mezcla se convierte en tu firma. Trabajamos la fórmula base y cómo cambia según el contexto sin perderte.",
+          "video_id": "pending_video",
+          "video_id_es": null,
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 3,
+          "is_standalone": false,
+          "takeaways": [
+            "Mixing styles without losing coherence",
+            "Proportion: dominant, secondary and accent",
+            "Your personal signature",
+            "Variations by context"
+          ],
+          "takeaways_es": [
+            "Mezclar estilos sin perder coherencia",
+            "Proporción: dominante, secundario y acento",
+            "Tu firma personal",
+            "Variaciones según el contexto"
+          ],
+          "lab_questions": [
+            {
+              "key": "acm_m3_q1",
+              "label": "How would you name your mix in three words?",
+              "label_es": "¿Cómo nombrarías tu mezcla en tres palabras?",
+              "placeholder": "e.g., Classic, warm, precise...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Clásica, cálida, precisa...",
+              "mappingCategory": "style_words"
+            },
+            {
+              "key": "acm_m3_q2",
+              "label": "What proportion feels like you: 70/30, 60/40, an even split?",
+              "label_es": "¿Qué proporción sientes tuya: 70/30, 60/40, mitad y mitad?",
+              "placeholder": "e.g., 70 classic, 30 creative...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. 70 clásico, 30 creativo..."
+            },
+            {
+              "key": "acm_m3_q3",
+              "label": "What detail repeats across your favourite looks?",
+              "label_es": "¿Qué detalle se repite en tus looks favoritos?",
+              "placeholder": "e.g., Always a strong shoe...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Siempre un zapato con carácter...",
+              "mappingCategory": "power_features"
+            },
+            {
+              "key": "acm_m3_q4",
+              "label": "Which combination has worked for you without your knowing why?",
+              "label_es": "¿Qué combinación te ha funcionado sin que supieras por qué?",
+              "placeholder": "e.g., Denim with something structured...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Denim con algo estructurado..."
+            },
+            {
+              "key": "acm_m3_q5",
+              "label": "Which accent would you like to start bringing in?",
+              "label_es": "¿Qué acento te gustaría empezar a incorporar?",
+              "placeholder": "e.g., More colour in accessories...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Más color en los accesorios..."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-1-4-personality",
+          "title": "Your Essence in What You Wear",
+          "subtitle": null,
+          "description": "The way you dress reflects how you relate to the world: how much space you take up, how much risk you take, how comfortable you are being looked at. Here we connect personality and values with concrete decisions about garment, colour and texture, and use colour and silhouette as the tools that express them.",
+          "title_es": "Tu esencia en lo que llevas",
+          "subtitle_es": null,
+          "description_es": "Tu manera de vestir refleja cómo te relacionas con el mundo: cuánto espacio ocupas, cuánto riesgo tomas, qué tan cómoda estás siendo mirada. Aquí conectamos personalidad y valores con decisiones concretas de prenda, color y textura, y usamos el color y la silueta como las herramientas que los expresan.",
+          "video_id": "pending_video",
+          "video_id_es": null,
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 4,
+          "is_standalone": false,
+          "takeaways": [
+            "Personality and visual language",
+            "Values behind your buying decisions",
+            "Comfort zone and calculated risk",
+            "Colour and silhouette as tools of expression"
+          ],
+          "takeaways_es": [
+            "Personalidad y lenguaje visual",
+            "Los valores detrás de tus decisiones de compra",
+            "Zona de confort y riesgo calculado",
+            "El color y la silueta como herramientas de expresión"
+          ],
+          "lab_questions": [
+            {
+              "key": "acm_m4_q1",
+              "label": "How would three people close to you describe you?",
+              "label_es": "¿Cómo te describirían tres personas cercanas a ti?",
+              "placeholder": "e.g., Calm, decided, warm...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Tranquila, decidida, cálida...",
+              "mappingCategory": "archetype"
+            },
+            {
+              "key": "acm_m4_q2",
+              "label": "Are you comfortable drawing attention, or do you prefer to go unnoticed?",
+              "label_es": "¿Te sientes cómoda llamando la atención o prefieres pasar desapercibida?",
+              "placeholder": "e.g., I prefer to be noticed for the detail...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Prefiero que noten el detalle...",
+              "mappingCategory": "color_energy"
+            },
+            {
+              "key": "acm_m4_q3",
+              "label": "What values do you want your image to communicate?",
+              "label_es": "¿Qué valores quieres que tu imagen comunique?",
+              "placeholder": "e.g., Rigour and closeness...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Rigor y cercanía..."
+            },
+            {
+              "key": "acm_m4_q4",
+              "label": "Which garment makes you feel like you are in costume?",
+              "label_es": "¿Qué prenda te hace sentir disfrazada?",
+              "placeholder": "e.g., Very short dresses...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Los vestidos muy cortos..."
+            },
+            {
+              "key": "acm_m4_q5",
+              "label": "In what situation does your clothing not match who you are?",
+              "label_es": "¿En qué situación tu ropa no coincide con quien eres?",
+              "placeholder": "e.g., At work I dress more severe than I am...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. En el trabajo visto más severa de lo que soy..."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-1-5-rediscovery",
+          "title": "Style Rediscovery",
+          "subtitle": null,
+          "description": "A practical module for peeling back layers: family expectations, workplace demands, what you \"should\" wear at your age. Through visual reference and memory exercises, we separate what you genuinely like from what you learned to accept, so the essence underneath has room to show.",
+          "title_es": "Redescubrir tu estilo",
+          "subtitle_es": null,
+          "description_es": "Un módulo práctico para quitar capas: expectativas familiares, exigencias del trabajo, lo que \"deberías\" usar a tu edad. Con ejercicios de referencia visual y de memoria, separamos lo que realmente te gusta de lo que aprendiste a aceptar, para que la esencia que hay debajo tenga espacio.",
+          "video_id": "pending_video",
+          "video_id_es": null,
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 5,
+          "is_standalone": false,
+          "takeaways": [
+            "Building a visual reference board",
+            "Style memory: your moments of confidence",
+            "Should vs. want",
+            "Filtering out borrowed influences"
+          ],
+          "takeaways_es": [
+            "Construir un tablero de referencia visual",
+            "Memoria de estilo: tus momentos de seguridad",
+            "Deber vs. querer",
+            "Filtrar influencias prestadas"
+          ],
+          "lab_questions": [
+            {
+              "key": "acm_m5_q1",
+              "label": "At what moment in your life did you feel most yourself in what you were wearing?",
+              "label_es": "¿En qué momento de tu vida te sentiste más tú misma con lo que llevabas puesto?",
+              "placeholder": "e.g., A trip, a specific dress...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Un viaje, un vestido en particular...",
+              "mappingCategory": "power_features"
+            },
+            {
+              "key": "acm_m5_q2",
+              "label": "What would you wear if nobody had an opinion?",
+              "label_es": "¿Qué usarías si nadie opinara?",
+              "placeholder": "e.g., More colour, more volume...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Más color, más volumen..."
+            },
+            {
+              "key": "acm_m5_q3",
+              "label": "Which dressing \"rule\" did you inherit and never question?",
+              "label_es": "¿Qué \"regla\" de vestir heredaste y nunca cuestionaste?",
+              "placeholder": "e.g., No mixing black and brown...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. No mezclar negro con café..."
+            },
+            {
+              "key": "acm_m5_q4",
+              "label": "Which images do you save as reference, and what do they have in common?",
+              "label_es": "¿Qué imágenes guardas como referencia y qué tienen en común?",
+              "placeholder": "e.g., Neutral palettes, clean lines...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Paletas neutras, líneas limpias..."
+            },
+            {
+              "key": "acm_m5_q5",
+              "label": "Which garment do you keep but never dare to wear?",
+              "label_es": "¿Qué prenda tienes guardada y no te atreves a usar?",
+              "placeholder": "e.g., A red coat...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Un abrigo rojo..."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "defining-your-essence",
+          "title": "Defining Your Essence",
+          "subtitle": null,
+          "description": "Everything comes together here. Your colours, your lines, your style mix, your personality and what came up when you peeled back the layers become one written definition of your essence: three words, a signature, your power features and your colour energy. It is the reference you dress by from now on, and the filter every future purchase has to pass.",
+          "title_es": "Define tu esencia",
+          "subtitle_es": null,
+          "description_es": "Aquí se une todo. Tus colores, tus líneas, tu mezcla de estilos, tu personalidad y lo que apareció al quitar capas se convierten en una definición escrita de tu esencia: tres palabras, una firma, tus rasgos de poder y tu energía de color. Es la referencia con la que te vistes desde ahora y el filtro por el que pasa cada compra futura.",
+          "video_id": "pending_video",
+          "video_id_es": null,
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 6,
+          "is_standalone": false,
+          "takeaways": [
+            "Colour, shape and style in one picture",
+            "Your essence in three words",
+            "Your signature and power features",
+            "Your colour energy",
+            "An essence statement you can dress by"
+          ],
+          "takeaways_es": [
+            "Color, forma y estilo en una sola imagen",
+            "Tu esencia en tres palabras",
+            "Tu firma y tus rasgos de poder",
+            "Tu energía de color",
+            "Una definición de esencia con la que vestirte"
+          ],
+          "lab_questions": [
+            {
+              "key": "ess_m6_q1",
+              "label": "After everything, which three words stay as your essence?",
+              "label_es": "Después de todo, ¿qué tres palabras quedan como tu esencia?",
+              "placeholder": "e.g., Serene, precise, warm...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Serena, precisa, cálida...",
+              "mappingCategory": "style_words"
+            },
+            {
+              "key": "ess_m6_q2",
+              "label": "Which colours and which level of contrast say \"you\" most clearly?",
+              "label_es": "¿Qué colores y qué nivel de contraste dicen \"tú\" con más claridad?",
+              "placeholder": "e.g., Warm neutrals, soft contrast, one deep accent...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Neutros cálidos, contraste suave, un acento profundo...",
+              "mappingCategory": "color_energy"
+            },
+            {
+              "key": "ess_m6_q3",
+              "label": "What is your style mix, and in what proportion?",
+              "label_es": "¿Cuál es tu mezcla de estilos y en qué proporción?",
+              "placeholder": "e.g., 60 classic, 30 natural, 10 dramatic...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. 60 clásico, 30 natural, 10 dramático...",
+              "mappingCategory": "archetype"
+            },
+            {
+              "key": "ess_m6_q4",
+              "label": "Which feature or detail will be your signature?",
+              "label_es": "¿Qué rasgo o detalle será tu firma?",
+              "placeholder": "e.g., My shoulders, and always a structured shoe...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Mis hombros, y siempre un zapato estructurado...",
+              "mappingCategory": "power_features"
+            },
+            {
+              "key": "ess_m6_q5",
+              "label": "Finish the sentence: when people see me, I want them to sense...",
+              "label_es": "Completa la frase: cuando me ven, quiero que sientan...",
+              "placeholder": "e.g., That I know exactly who I am...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Que sé exactamente quién soy..."
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        },
+        {
+          "slug": "unit-1-6-lifestyle",
+          "title": "Lifestyle Integration",
+          "subtitle": null,
+          "description": "A style you cannot wear is no use. With your essence defined, we map your real 168 hours (work, home, meetings, travel) so what you wear answers the life you lead and not one you imagine. The goal is one option you trust completely for every frequent scenario. Getting your closet to deliver it is where Closet Curation picks up.",
+          "title_es": "Integración al estilo de vida",
+          "subtitle_es": null,
+          "description_es": "El estilo que no puedes usar no sirve. Con tu esencia definida, mapeamos tus 168 horas reales (trabajo, casa, reuniones, viajes) para que lo que usas responda a la vida que llevas y no a una que imaginas. El objetivo es tener una opción en la que confíes por completo para cada escenario frecuente. Lograr que tu clóset lo haga posible es donde empieza Curaduría de Clóset.",
+          "video_id": "pending_video",
+          "video_id_es": null,
+          "thumbnail_url": null,
+          "category": "masterclass",
+          "order_index": 7,
+          "is_standalone": false,
+          "takeaways": [
+            "The 168-hour map",
+            "Frequent scenarios vs. occasional ones",
+            "The gap between your closet and your life",
+            "One trusted look per scenario"
+          ],
+          "takeaways_es": [
+            "El mapa de las 168 horas",
+            "Escenarios frecuentes vs. ocasionales",
+            "La brecha entre tu clóset y tu vida",
+            "Un look de confianza por escenario"
+          ],
+          "lab_questions": [
+            {
+              "key": "acm_m6_q1",
+              "label": "How are your 168 weekly hours actually distributed?",
+              "label_es": "¿Cómo se reparten de verdad tus 168 horas semanales?",
+              "placeholder": "e.g., 50 work, 20 social, the rest at home...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. 50 trabajo, 20 social, el resto en casa..."
+            },
+            {
+              "key": "acm_m6_q2",
+              "label": "For which frequent scenario do you have nothing to wear?",
+              "label_es": "¿Para qué escenario frecuente sientes que no tienes qué ponerte?",
+              "placeholder": "e.g., Client meetings...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Reuniones con clientes..."
+            },
+            {
+              "key": "acm_m6_q3",
+              "label": "What percentage of your closet do you actually use?",
+              "label_es": "¿Qué porcentaje de tu clóset usas realmente?",
+              "placeholder": "e.g., Around 30%...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Alrededor del 30%..."
+            },
+            {
+              "key": "acm_m6_q4",
+              "label": "What do you buy for a life you do not lead?",
+              "label_es": "¿Qué compras para una vida que no llevas?",
+              "placeholder": "e.g., Party dresses...",
+              "mapToEssence": false,
+              "placeholder_es": "ej. Vestidos de fiesta..."
+            },
+            {
+              "key": "acm_m6_q5",
+              "label": "Which scenario makes you most insecure when getting dressed?",
+              "label_es": "¿Qué escenario te genera más inseguridad al vestirte?",
+              "placeholder": "e.g., Events where I don't know the dress code...",
+              "mapToEssence": true,
+              "placeholder_es": "ej. Eventos donde no sé el código de vestimenta...",
+              "mappingCategory": "archetype"
+            }
+          ],
+          "resource_urls": [],
+          "stripe_product_id": null,
+          "price_id": null,
+          "is_published": false,
+          "available_at": null
+        }
+      ]
+    },
+    {
       "title": "Closet Curation",
       "subtitle": "System & Smart Shopping",
       "description": "The operational course: how to turn your closet into a system that works for you. Editing, organisation, fit and strategic shopping, so getting dressed stops being a daily decision and becomes a consequence of what you have already defined.",
@@ -830,7 +1384,7 @@
       "description_es": "El curso operativo: cómo convertir tu clóset en un sistema que trabaja para ti. Depuración, organización, ajuste y compra estratégica, para que vestirte deje de ser una decisión diaria y se vuelva una consecuencia de lo que ya definiste.",
       "thumbnail_url": null,
       "video_url": null,
-      "order_index": 3,
+      "order_index": 4,
       "price_display": null,
       "runtime_minutes": null,
       "stripe_product_id": null,
@@ -1128,529 +1682,9 @@
           "available_at": null
         }
       ]
-    },
-    {
-      "title": "The AC Method",
-      "subtitle": "Identity & Expression",
-      "description": "The course that defines who you are before deciding what to wear. We work on style as a language of your own: the universal styles, your sub-styles, how your personality translates into clothing, and how to bring all of it into the life you actually live.",
-      "title_es": "El Método AC",
-      "subtitle_es": "Identidad y Expresión",
-      "description_es": "El curso que define quién eres antes de decidir qué ponerte. Trabajaremos el estilo como un lenguaje propio: los estilos universales, tus subestilos, cómo tu personalidad se traduce en ropa y cómo llevar todo eso a la vida que realmente vives.",
-      "thumbnail_url": null,
-      "video_url": null,
-      "order_index": 4,
-      "price_display": null,
-      "runtime_minutes": null,
-      "stripe_product_id": null,
-      "price_id": null,
-      "is_published": false,
-      "available_at": null,
-      "modules": [
-        {
-          "slug": "unit-1-1-style-vs-trend",
-          "title": "Style vs. Trend",
-          "subtitle": null,
-          "description": "We begin by separating two things that get confused constantly: fashion and style. Fashion is an external calendar that expires; style is a language of your own that you build and keep. You will learn to recognise when you are buying a trend and when you are building your identity.",
-          "title_es": "Definición de estilo: tendencia vs estilo",
-          "subtitle_es": null,
-          "description_es": "Empezamos separando dos cosas que se confunden todo el tiempo: la moda y el estilo. La moda es un calendario externo que caduca; el estilo es un lenguaje propio que se construye y permanece. Aprenderás a reconocer cuándo estás comprando una tendencia y cuándo estás construyendo tu identidad.",
-          "video_id": "pending_video",
-          "video_id_es": null,
-          "thumbnail_url": null,
-          "category": "masterclass",
-          "order_index": 1,
-          "is_standalone": false,
-          "takeaways": [
-            "Fashion vs. style",
-            "The trend cycle",
-            "Impulse buying vs. identity buying",
-            "Permanence and visual coherence"
-          ],
-          "takeaways_es": [
-            "Moda vs. estilo",
-            "El ciclo de la tendencia",
-            "Compra por impulso vs. compra por identidad",
-            "Permanencia y coherencia visual"
-          ],
-          "lab_questions": [
-            {
-              "key": "acm_m1_q1",
-              "label": "Which garments did you buy because of a trend, and which because they were truly you?",
-              "label_es": "¿Qué prendas compraste por tendencia y cuáles porque de verdad eran tuyas?",
-              "placeholder": "e.g., The boots were a trend, the blazer is mine...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Las botas fueron tendencia, el blazer es mío...",
-              "mappingCategory": "style_words"
-            },
-            {
-              "key": "acm_m1_q2",
-              "label": "What percentage of your closet still feels current to you after two years?",
-              "label_es": "¿Qué porcentaje de tu clóset sigue vigente para ti después de dos años?",
-              "placeholder": "e.g., Maybe half...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Quizá la mitad..."
-            },
-            {
-              "key": "acm_m1_q3",
-              "label": "Which current trend attracts you, and which one puts you off? Why?",
-              "label_es": "¿Qué tendencia actual te atrae y cuál te genera rechazo? ¿Por qué?",
-              "placeholder": "e.g., I love wide tailoring, I avoid...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Me gusta la sastrería amplia, evito...",
-              "mappingCategory": "archetype"
-            },
-            {
-              "key": "acm_m1_q4",
-              "label": "When was the last time you bought something you never wore again?",
-              "label_es": "¿Cuándo fue la última vez que compraste algo que no volviste a usar?",
-              "placeholder": "e.g., A dress for one event...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Un vestido para un solo evento..."
-            },
-            {
-              "key": "acm_m1_q5",
-              "label": "If you stopped looking at social media for six months, what would you still wear?",
-              "label_es": "Si dejaras de mirar redes por seis meses, ¿qué seguirías usando?",
-              "placeholder": "e.g., Jeans, white shirts...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Jeans, camisas blancas..."
-            }
-          ],
-          "resource_urls": [],
-          "stripe_product_id": null,
-          "price_id": null,
-          "is_published": false,
-          "available_at": null
-        },
-        {
-          "slug": "unit-1-2-universal-styles",
-          "title": "The Universal Styles",
-          "subtitle": null,
-          "description": "We walk through the universal styles — classic, natural, romantic, dramatic, creative, elegant and seductive — understanding what each one communicates and which garments, lines and textures build it. This is not about boxing you in; it is about giving you vocabulary.",
-          "title_es": "Los estilos universales",
-          "subtitle_es": null,
-          "description_es": "Recorreremos los estilos universales —clásico, natural, romántico, dramático, creativo, elegante y seductor— entendiendo qué comunica cada uno y con qué prendas, líneas y texturas se construye. No se trata de encasillarte, sino de darte vocabulario.",
-          "video_id": "pending_video",
-          "video_id_es": null,
-          "thumbnail_url": null,
-          "category": "masterclass",
-          "order_index": 2,
-          "is_standalone": false,
-          "takeaways": [
-            "The universal styles and what each one says",
-            "Lines, textures and garments of each style",
-            "Dominant style and secondary style",
-            "Reading a look and naming it"
-          ],
-          "takeaways_es": [
-            "Los estilos universales y lo que comunica cada uno",
-            "Líneas, texturas y prendas de cada estilo",
-            "Estilo dominante y estilo secundario",
-            "Leer un look y saber nombrarlo"
-          ],
-          "lab_questions": [
-            {
-              "key": "acm_m2_q1",
-              "label": "Which universal style do you identify with most?",
-              "label_es": "¿Con qué estilo universal te identificas más?",
-              "placeholder": "e.g., Classic, with something natural...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Clásico, con algo de natural...",
-              "mappingCategory": "style_words"
-            },
-            {
-              "key": "acm_m2_q2",
-              "label": "Which one is your secondary style?",
-              "label_es": "¿Cuál sientes que es tu estilo secundario?",
-              "placeholder": "e.g., Romantic on weekends...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Romántico los fines de semana...",
-              "mappingCategory": "style_words"
-            },
-            {
-              "key": "acm_m2_q3",
-              "label": "Which style do you admire on others but feel is not yours?",
-              "label_es": "¿Qué estilo admiras en otras personas pero sientes que no es tuyo?",
-              "placeholder": "e.g., Dramatic, it feels like too much on me...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Dramático, en mí siento que es demasiado..."
-            },
-            {
-              "key": "acm_m2_q4",
-              "label": "Which garments in your closet belong to a style that no longer represents you?",
-              "label_es": "¿Qué prendas de tu clóset pertenecen a un estilo que ya no te representa?",
-              "placeholder": "e.g., Everything from my first job...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Todo lo de mi primer trabajo..."
-            },
-            {
-              "key": "acm_m2_q5",
-              "label": "What do you wear when you want to be taken seriously?",
-              "label_es": "¿Qué usas cuando quieres que te tomen en serio?",
-              "placeholder": "e.g., Navy blazer and straight trousers...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Blazer azul y pantalón recto...",
-              "mappingCategory": "archetype"
-            }
-          ],
-          "resource_urls": [],
-          "stripe_product_id": null,
-          "price_id": null,
-          "is_published": false,
-          "available_at": null
-        },
-        {
-          "slug": "unit-1-3-substyles",
-          "title": "Sub-styles",
-          "subtitle": null,
-          "description": "Almost nobody is a single style. In this module we mix: how to combine two or three universal styles in a proportion that feels like you, and how that mix becomes your signature. We work the base formula and its variations by context.",
-          "title_es": "Subestilos",
-          "subtitle_es": null,
-          "description_es": "Casi nadie es un solo estilo. En este módulo mezclamos: cómo combinar dos o tres estilos universales en una proporción que se sienta tuya, y cómo esa mezcla se convierte en tu firma. Trabajaremos la fórmula base y sus variaciones según el contexto.",
-          "video_id": "pending_video",
-          "video_id_es": null,
-          "thumbnail_url": null,
-          "category": "masterclass",
-          "order_index": 3,
-          "is_standalone": false,
-          "takeaways": [
-            "Mixing styles without losing coherence",
-            "Proportion: dominant, secondary and accent",
-            "Your personal signature",
-            "Variations by context"
-          ],
-          "takeaways_es": [
-            "Mezclar estilos sin perder coherencia",
-            "Proporción: dominante, secundario y acento",
-            "Tu firma personal",
-            "Variaciones según el contexto"
-          ],
-          "lab_questions": [
-            {
-              "key": "acm_m3_q1",
-              "label": "How would you name your mix in three words?",
-              "label_es": "¿Cómo nombrarías tu mezcla en tres palabras?",
-              "placeholder": "e.g., Classic, warm, precise...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Clásica, cálida, precisa...",
-              "mappingCategory": "style_words"
-            },
-            {
-              "key": "acm_m3_q2",
-              "label": "What proportion feels like you: 70/30, 60/40, an even split?",
-              "label_es": "¿Qué proporción sientes tuya: 70/30, 60/40, mitad y mitad?",
-              "placeholder": "e.g., 70 classic, 30 creative...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. 70 clásico, 30 creativo..."
-            },
-            {
-              "key": "acm_m3_q3",
-              "label": "What detail repeats across your favourite looks?",
-              "label_es": "¿Qué detalle se repite en tus looks favoritos?",
-              "placeholder": "e.g., Always a strong shoe...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Siempre un zapato con carácter...",
-              "mappingCategory": "power_features"
-            },
-            {
-              "key": "acm_m3_q4",
-              "label": "Which combination has worked for you without your knowing why?",
-              "label_es": "¿Qué combinación te ha funcionado sin que supieras por qué?",
-              "placeholder": "e.g., Denim with something structured...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Denim con algo estructurado..."
-            },
-            {
-              "key": "acm_m3_q5",
-              "label": "Which accent would you like to start bringing in?",
-              "label_es": "¿Qué acento te gustaría empezar a incorporar?",
-              "placeholder": "e.g., More colour in accessories...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Más color en los accesorios..."
-            }
-          ],
-          "resource_urls": [],
-          "stripe_product_id": null,
-          "price_id": null,
-          "is_published": false,
-          "available_at": null
-        },
-        {
-          "slug": "unit-1-4-personality",
-          "title": "Personality & Dressing",
-          "subtitle": null,
-          "description": "The way you dress reflects how you relate to the world: how much space you take up, how much risk you take, how comfortable you are being looked at. Here we connect personality traits and values with concrete decisions about garment, colour and texture.",
-          "title_es": "¿Cómo tu personalidad impacta en tu estilo?",
-          "subtitle_es": null,
-          "description_es": "Tu manera de vestir refleja cómo te relacionas con el mundo: cuánto espacio ocupas, cuánto riesgo tomas, qué tan cómoda estás siendo mirada. Aquí conectamos rasgos de personalidad y valores con decisiones concretas de prenda, color y textura.",
-          "video_id": "pending_video",
-          "video_id_es": null,
-          "thumbnail_url": null,
-          "category": "masterclass",
-          "order_index": 4,
-          "is_standalone": false,
-          "takeaways": [
-            "Personality and visual language",
-            "Values behind your buying decisions",
-            "Comfort zone and calculated risk",
-            "Coherence between who you are and what you wear"
-          ],
-          "takeaways_es": [
-            "Personalidad y lenguaje visual",
-            "Los valores detrás de tus decisiones de compra",
-            "Zona de confort y riesgo calculado",
-            "Coherencia entre quién eres y qué usas"
-          ],
-          "lab_questions": [
-            {
-              "key": "acm_m4_q1",
-              "label": "How would three people close to you describe you?",
-              "label_es": "¿Cómo te describirían tres personas cercanas a ti?",
-              "placeholder": "e.g., Calm, decided, warm...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Tranquila, decidida, cálida...",
-              "mappingCategory": "archetype"
-            },
-            {
-              "key": "acm_m4_q2",
-              "label": "Are you comfortable drawing attention, or do you prefer to go unnoticed?",
-              "label_es": "¿Te sientes cómoda llamando la atención o prefieres pasar desapercibida?",
-              "placeholder": "e.g., I prefer to be noticed for the detail...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Prefiero que noten el detalle...",
-              "mappingCategory": "color_energy"
-            },
-            {
-              "key": "acm_m4_q3",
-              "label": "What values do you want your image to communicate?",
-              "label_es": "¿Qué valores quieres que tu imagen comunique?",
-              "placeholder": "e.g., Rigour and closeness...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Rigor y cercanía..."
-            },
-            {
-              "key": "acm_m4_q4",
-              "label": "Which garment makes you feel like you are in costume?",
-              "label_es": "¿Qué prenda te hace sentir disfrazada?",
-              "placeholder": "e.g., Very short dresses...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Los vestidos muy cortos..."
-            },
-            {
-              "key": "acm_m4_q5",
-              "label": "In what situation does your clothing not match who you are?",
-              "label_es": "¿En qué situación tu ropa no coincide con quien eres?",
-              "placeholder": "e.g., At work I dress more severe than I am...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. En el trabajo visto más severa de lo que soy..."
-            }
-          ],
-          "resource_urls": [],
-          "stripe_product_id": null,
-          "price_id": null,
-          "is_published": false,
-          "available_at": null
-        },
-        {
-          "slug": "unit-1-5-rediscovery",
-          "title": "Style Rediscovery",
-          "subtitle": null,
-          "description": "A practical module for peeling back layers: family expectations, workplace demands, what you \"should\" wear at your age. Through visual reference and memory exercises, we separate what you genuinely like from what you learned to accept.",
-          "title_es": "Ejercicios para redescubrir tu estilo",
-          "subtitle_es": null,
-          "description_es": "Un módulo práctico para quitar capas: expectativas familiares, exigencias del trabajo, lo que \"deberías\" usar a tu edad. Con ejercicios de referencia visual y de memoria, separaremos lo que realmente te gusta de lo que aprendiste a aceptar.",
-          "video_id": "pending_video",
-          "video_id_es": null,
-          "thumbnail_url": null,
-          "category": "masterclass",
-          "order_index": 5,
-          "is_standalone": false,
-          "takeaways": [
-            "Building a visual reference board",
-            "Style memory: your moments of confidence",
-            "Should vs. want",
-            "Filtering out borrowed influences"
-          ],
-          "takeaways_es": [
-            "Construir un tablero de referencia visual",
-            "Memoria de estilo: tus momentos de seguridad",
-            "Deber vs. querer",
-            "Filtrar influencias prestadas"
-          ],
-          "lab_questions": [
-            {
-              "key": "acm_m5_q1",
-              "label": "At what moment in your life did you feel most yourself in what you were wearing?",
-              "label_es": "¿En qué momento de tu vida te sentiste más tú misma con lo que llevabas puesto?",
-              "placeholder": "e.g., A trip, a specific dress...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Un viaje, un vestido en particular...",
-              "mappingCategory": "power_features"
-            },
-            {
-              "key": "acm_m5_q2",
-              "label": "What would you wear if nobody had an opinion?",
-              "label_es": "¿Qué usarías si nadie opinara?",
-              "placeholder": "e.g., More colour, more volume...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Más color, más volumen..."
-            },
-            {
-              "key": "acm_m5_q3",
-              "label": "Which dressing \"rule\" did you inherit and never question?",
-              "label_es": "¿Qué \"regla\" de vestir heredaste y nunca cuestionaste?",
-              "placeholder": "e.g., No mixing black and brown...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. No mezclar negro con café..."
-            },
-            {
-              "key": "acm_m5_q4",
-              "label": "Which images do you save as reference, and what do they have in common?",
-              "label_es": "¿Qué imágenes guardas como referencia y qué tienen en común?",
-              "placeholder": "e.g., Neutral palettes, clean lines...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Paletas neutras, líneas limpias..."
-            },
-            {
-              "key": "acm_m5_q5",
-              "label": "Which garment do you keep but never dare to wear?",
-              "label_es": "¿Qué prenda tienes guardada y no te atreves a usar?",
-              "placeholder": "e.g., A red coat...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Un abrigo rojo..."
-            }
-          ],
-          "resource_urls": [],
-          "stripe_product_id": null,
-          "price_id": null,
-          "is_published": false,
-          "available_at": null
-        },
-        {
-          "slug": "unit-1-6-lifestyle",
-          "title": "Lifestyle Integration",
-          "subtitle": null,
-          "description": "A style you cannot wear is no use. We map your real 168 hours — work, home, meetings, travel — so your closet answers the life you lead and not one you imagine. The goal is one option you trust completely for every frequent scenario.",
-          "title_es": "Integración al estilo de vida",
-          "subtitle_es": null,
-          "description_es": "El estilo que no puedes usar no sirve. Mapearemos tus 168 horas reales —trabajo, casa, reuniones, viajes— para que tu clóset responda a la vida que llevas y no a una que imaginas. El objetivo es tener una opción en la que confíes por completo para cada escenario frecuente.",
-          "video_id": "pending_video",
-          "video_id_es": null,
-          "thumbnail_url": null,
-          "category": "masterclass",
-          "order_index": 6,
-          "is_standalone": false,
-          "takeaways": [
-            "The 168-hour map",
-            "Frequent scenarios vs. occasional ones",
-            "The gap between your closet and your life",
-            "One trusted look per scenario"
-          ],
-          "takeaways_es": [
-            "El mapa de las 168 horas",
-            "Escenarios frecuentes vs. ocasionales",
-            "La brecha entre tu clóset y tu vida",
-            "Un look de confianza por escenario"
-          ],
-          "lab_questions": [
-            {
-              "key": "acm_m6_q1",
-              "label": "How are your 168 weekly hours actually distributed?",
-              "label_es": "¿Cómo se reparten de verdad tus 168 horas semanales?",
-              "placeholder": "e.g., 50 work, 20 social, the rest at home...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. 50 trabajo, 20 social, el resto en casa..."
-            },
-            {
-              "key": "acm_m6_q2",
-              "label": "For which frequent scenario do you have nothing to wear?",
-              "label_es": "¿Para qué escenario frecuente sientes que no tienes qué ponerte?",
-              "placeholder": "e.g., Client meetings...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Reuniones con clientes..."
-            },
-            {
-              "key": "acm_m6_q3",
-              "label": "What percentage of your closet do you actually use?",
-              "label_es": "¿Qué porcentaje de tu clóset usas realmente?",
-              "placeholder": "e.g., Around 30%...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Alrededor del 30%..."
-            },
-            {
-              "key": "acm_m6_q4",
-              "label": "What do you buy for a life you do not lead?",
-              "label_es": "¿Qué compras para una vida que no llevas?",
-              "placeholder": "e.g., Party dresses...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Vestidos de fiesta..."
-            },
-            {
-              "key": "acm_m6_q5",
-              "label": "Which scenario makes you most insecure when getting dressed?",
-              "label_es": "¿Qué escenario te genera más inseguridad al vestirte?",
-              "placeholder": "e.g., Events where I don't know the dress code...",
-              "mapToEssence": true,
-              "placeholder_es": "ej. Eventos donde no sé el código de vestimenta...",
-              "mappingCategory": "archetype"
-            }
-          ],
-          "resource_urls": [],
-          "stripe_product_id": null,
-          "price_id": null,
-          "is_published": false,
-          "available_at": null
-        }
-      ]
     }
   ],
   "standalone_courses": [
-    {
-      "slug": "course-jewelry",
-      "title": "Jewelry Image Consulting",
-      "subtitle": null,
-      "description": "The scale of jewelry and matching metals.",
-      "title_es": "Asesoría de imagen en joyería",
-      "subtitle_es": null,
-      "description_es": "La escala de la joyería y combinación de metales.",
-      "video_id": "pending_video",
-      "video_id_es": "pending_video_es",
-      "thumbnail_url": null,
-      "category": "course",
-      "order_index": 10,
-      "is_standalone": true,
-      "takeaways": [],
-      "takeaways_es": [],
-      "lab_questions": [],
-      "resource_urls": [],
-      "stripe_product_id": null,
-      "price_id": null,
-      "is_published": false,
-      "available_at": null
-    },
-    {
-      "slug": "course-perfumery",
-      "title": "Perfumery Image Consulting",
-      "subtitle": null,
-      "description": "The invisible accessory and fragrance families.",
-      "title_es": "Asesoría de imagen en perfumería",
-      "subtitle_es": null,
-      "description_es": "El accesorio invisible y familias olfativas.",
-      "video_id": "pending_video",
-      "video_id_es": "pending_video_es",
-      "thumbnail_url": null,
-      "category": "course",
-      "order_index": 11,
-      "is_standalone": true,
-      "takeaways": [],
-      "takeaways_es": [],
-      "lab_questions": [],
-      "resource_urls": [],
-      "stripe_product_id": null,
-      "price_id": null,
-      "is_published": false,
-      "available_at": null
-    },
     {
       "slug": "course-dopamine-dressing",
       "title": "Dopamine Dressing",

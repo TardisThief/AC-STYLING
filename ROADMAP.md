@@ -18,8 +18,8 @@ Phases 0–3.6 are complete and deployed. In plain terms:
 
 - **The code is launch-ready.** Every code-level blocker from the 2026-09-19
   assessment (F01–F08, F10, F11) is closed. Migrations are applied and verified
-  through 17.
-- **The Vault is populated but parked.** 4 masterclasses, 21 modules and 6
+  through 18.
+- **The Vault is populated but parked.** 4 masterclasses, 22 modules and 4
   standalone courses, all bilingual, all `is_published = false`. Publishing is
   a flag flip in the admin console, not a re-import.
 - **Gates are green:** `tsc` clean, lint 0 errors, 497 unit tests across 49

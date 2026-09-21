@@ -7,7 +7,8 @@ shipping `noindex` until you flip it.
 
 **The page.** The public, bilingual, statically prerendered sales page lives at
 **`/vault-access`** — this is the URL for the Instagram bio. Thirteen sections:
-hero, recognition, method, placement (the colour field), catalogue, flagship
+hero, recognition, method, the path (colour with the colour field, body shape,
+style & essence, closet — in catalogue order), catalogue, flagship
 curriculum, what's included, Alejandra, proof, offer, bridge to 1:1, FAQ, close
 — plus a mobile sticky CTA.
 

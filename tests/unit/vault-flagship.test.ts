@@ -56,7 +56,7 @@ describe('pickFlagship', () => {
 
     it('ignores unpublished courses however many modules they have', () => {
         const picked = pickFlagship([
-            entry({ title: 'The AC Method', modules: modules(6), is_published: false }),
+            entry({ title: 'Style & Essence', modules: modules(7), is_published: false }),
             entry({ title: 'Colorimetry', modules: modules(5) }),
         ])
 
@@ -76,7 +76,7 @@ describe('pickFlagship', () => {
         // depending on how the rows happened to come back.
         const input = [
             entry({ title: 'Body Shape', order_index: 2, modules: modules(6) }),
-            entry({ title: 'The AC Method', order_index: 4, modules: modules(6) }),
+            entry({ title: 'Closet Curation', order_index: 4, modules: modules(6) }),
         ]
 
         expect(pickFlagship(input)?.title).toBe('Body Shape')
@@ -117,7 +117,7 @@ describe('flagship copy', () => {
 
         // The specific regression: a course name baked into the copy.
         const copy = `${flagship.title} ${flagship.lede}`
-        for (const name of ['Colorimetry', 'Colorimetría', 'Body Shape', 'AC Method']) {
+        for (const name of ['Colorimetry', 'Colorimetría', 'Body Shape', 'AC Method', 'Style & Essence', 'Estilo y Esencia']) {
             expect(copy).not.toContain(name)
         }
         expect(copy).not.toMatch(/\b(five|cinco)\b/i)

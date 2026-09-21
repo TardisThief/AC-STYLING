@@ -327,7 +327,7 @@
     "VaultSales": {
         "meta": {
             "title": "El Vault | AC Styling",
-            "description": "Cursos de colorimetría, silueta y estilo personal, a tu ritmo. El método que Alejandra Carrillo usa con sus clientas.",
+            "description": "Cursos a tu ritmo de color, tipo de cuerpo, estilo y esencia, y curaduría de clóset. El método que Alejandra Carrillo usa con sus clientas.",
             "ogAlt": "El Vault de AC Styling"
         },
         "hero": {
@@ -347,20 +347,19 @@
             "cognition": "La ropa no solo cambia cómo te leen. Cambia cómo piensas. En un estudio de Adam y Galinsky en Northwestern, dos grupos usaron la misma bata blanca: al grupo al que le dijeron que era de médico le mejoró la atención sostenida. Misma prenda, distinta historia, distinto desempeño.",
             "thesis": "Por eso no enseño tendencias. Enseño a decidir: qué colores te sostienen, qué siluetas te representan y qué quieres comunicar antes de abrir el clóset."
         },
-        "locate": {
-            "title": "Cuatro estaciones. Encuentra la tuya.",
-            "body": "Tu estación no es una casilla. Es una posición entre tres cosas: temperatura, valor e intensidad. El curso te lleva hasta ahí con un método que después puedes repetir sola, frente al espejo.",
-            "splitTitle": "Cuatro aquí. Doce en persona.",
-            "splitBody": "Las doce subestaciones piden luz real y ojo entrenado, así que las reservo para el análisis uno a uno. No es una versión recortada del método: es hasta dónde llega, honestamente, un curso.",
-            "fieldAlt": "Un campo de color continuo. La temperatura va de cálido a frío en el eje horizontal y el valor de claro a oscuro en el vertical. Las cuatro estaciones —primavera, verano, otoño e invierno— aparecen como regiones suaves, no como casillas."
-        },
-        "beyond": {
-            "title": "El color es el comienzo. No es el final.",
-            "lede": "Tu estación te dice qué colores te sostienen. Hay dos cosas más que deciden si un look es realmente tuyo.",
-            "shapeTitle": "Tu tipo de cuerpo y cómo usarlo",
+        "path": {
+            "title": "El camino",
+            "lede": "Cuatro cursos, en el orden en que se apoyan uno en otro. Cada uno también funciona por sí solo.",
+            "colourTitle": "Color: encuentra tu estación",
+            "colourBody": "Tu estación no es una casilla. Es una posición entre tres cosas: temperatura, valor e intensidad. El curso te lleva hasta ahí con un método que después puedes repetir sola, frente al espejo.",
+            "fieldAlt": "Un campo de color continuo. La temperatura va de cálido a frío en el eje horizontal y el valor de claro a oscuro en el vertical. Las cuatro estaciones —primavera, verano, otoño e invierno— aparecen como regiones suaves, no como casillas.",
+            "splitNote": "Cuatro estaciones aquí. Las doce subestaciones piden luz real y ojo entrenado, así que las reservo para el análisis uno a uno. No es una versión recortada: es hasta dónde llega, honestamente, un curso.",
+            "shapeTitle": "Tipo de cuerpo: usa tus líneas",
             "shapeBody": "No es una lista de cosas que esconder. Aprendes a leer tus proporciones y tus líneas, y a elegir cortes y siluetas que trabajen a tu favor, no en tu contra.",
-            "essenceTitle": "Tu esencia y cómo dejarla ver",
-            "essenceBody": "Esto es el corazón del método. El color y la silueta son herramientas; tu esencia es para lo que sirven. Aprendes a reconocer tu estilo y a vestirte para que hable por ti antes de que digas una palabra."
+            "essenceTitle": "Estilo y esencia: déjala ver",
+            "essenceBody": "Esto es el corazón del método. El color y la silueta son herramientas; tu esencia es para lo que sirven. Aprendes los estilos universales, encuentras tu propia mezcla y terminas con tu esencia definida en palabras con las que puedes vestirte.",
+            "closetTitle": "Tu clóset: que trabaje para tu vida",
+            "closetBody": "Revisas lo que tienes, lo organizas, arreglas lo que vale la pena conservar y compras con criterio, para que tu esencia llegue a tus mañanas de todos los días y no solo a tus mejores días."
         },
         "catalog": {
             "title": "Lo que hay dentro",
@@ -419,7 +418,7 @@
         "faq": {
             "title": "Preguntas",
             "q1": "¿Necesito saber algo antes de empezar?",
-            "a1": "No. Los cursos empiezan desde cero y cada módulo se apoya en el anterior.",
+            "a1": "No. Los cursos empiezan desde cero y cada módulo se apoya en el anterior. Las masterclasses siguen un orden (color, tipo de cuerpo, estilo y esencia, clóset), pero cada una funciona por sí sola.",
             "q2": "¿Cuánto dura?",
             "a2": "Alrededor de una hora por masterclass, repartida en módulos cortos para que puedas verlos de a uno.",
             "q3": "¿Cómo recibo el acceso?",
