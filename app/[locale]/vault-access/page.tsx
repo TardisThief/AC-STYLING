@@ -26,6 +26,7 @@ import {
     shouldRevealUpcoming,
     pickLocale,
 } from "@/app/lib/vault-catalog";
+import { isEnabled } from "@/app/lib/env-flags";
 
 const WHATSAPP_URL = "https://wa.me/13054131472";
 
@@ -60,7 +61,7 @@ export async function generateMetadata({
         // Unlisted until module video is real and Stripe is live. Flipping this
         // is a deliberate act behind an env flag, never a merge side-effect.
         // app/sitemap.ts is the other half and changes in the same commit.
-        index: process.env.VAULT_INDEXABLE === "true",
+        index: isEnabled(process.env.VAULT_INDEXABLE),
     });
 }
 

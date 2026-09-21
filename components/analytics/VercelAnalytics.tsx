@@ -1,4 +1,5 @@
 import Script from "next/script";
+import { isEnabled } from '@/app/lib/env-flags';
 
 /**
  * Loads Vercel Analytics from its first-party path.
@@ -15,7 +16,7 @@ export default function VercelAnalytics() {
     // logs "Refused to execute script ... MIME type ('text/html')" on every
     // page load. Set NEXT_PUBLIC_VERCEL_ANALYTICS=true once it is switched on
     // in the Vercel dashboard.
-    if (process.env.NEXT_PUBLIC_VERCEL_ANALYTICS !== 'true') return null;
+    if (!isEnabled(process.env.NEXT_PUBLIC_VERCEL_ANALYTICS)) return null;
 
     return (
         <Script

@@ -19,6 +19,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export { VAULT_CATALOG_TAG } from '@/app/lib/cache-tags';
 import { VAULT_CATALOG_TAG } from '@/app/lib/cache-tags';
+import { isEnabled } from '@/app/lib/env-flags';
 
 /** Columns safe to read anonymously. Mirrors migration 09's grant list. */
 const COURSE_COLUMNS =
@@ -177,7 +178,7 @@ export const getVaultCatalog = unstable_cache(
  * baked at build. Off unless explicitly enabled.
  */
 export function shouldRevealUpcoming(): boolean {
-    return process.env.VAULT_REVEAL_UPCOMING === 'true';
+    return isEnabled(process.env.VAULT_REVEAL_UPCOMING);
 }
 
 /** Pick the Spanish field when the locale is `es` and the value is non-empty. */
