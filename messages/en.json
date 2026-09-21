@@ -253,7 +253,8 @@
             },
             "boutique": {
                 "label": "The Boutique",
-                "subtitle": "Pieces Ale hand-picks"
+                "subtitle": "Pieces Ale hand-picks",
+                "soon": "Coming soon"
             },
             "essence": {
                 "label": "My Styling Essence",
@@ -271,6 +272,13 @@
             "label": "The Lab",
             "title": "Welcome to your Vault",
             "subtitle": "Your personal style journey starts here."
+        },
+        "boutique_soon": {
+            "back": "Back to Vault",
+            "eyebrow": "Coming soon",
+            "title": "The Boutique",
+            "body": "Ale is curating the pieces that define her aesthetic. The Boutique opens soon; until then, your style education is waiting.",
+            "cta": "Go to Masterclasses"
         }
     },
     "Studio": {

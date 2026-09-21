@@ -104,6 +104,21 @@ empty section and eight honest "coming soon" cards.
 
 ---
 
+## 2b-bis. `BOUTIQUE_OPEN` — the boutique is closed for Release 1
+
+Release 1 is the learning platform. While `BOUTIQUE_OPEN` is unset (the
+default), `/vault/boutique` shows a "Coming soon" screen to members; admins
+still see the real boutique so they can keep curating it from the admin tab.
+The dashboard hides Style of the Week, Ale's Pick and the Pulse's "The Edit"
+card from everyone, admins included, and the Boutique quick action reads
+"Coming soon". Services and the Essence Lab are unaffected. No code or data was
+removed. The switch lives in `app/lib/release.ts`.
+
+**Nothing to do now.** When you decide to open the boutique, set
+`BOUTIQUE_OPEN=true` in Vercel (All Environments) and redeploy.
+
+---
+
 ## 2c. Review of the Vercel variables you shared (2026-09-21)
 
 Checked every variable in the screenshot against every `process.env` read in

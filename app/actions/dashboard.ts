@@ -3,6 +3,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { CHAPTER_CATALOG_COLUMNS } from '@/app/lib/chapter-columns';
+import { isBoutiqueOpen } from '@/app/lib/release';
 
 export type PulseContent = {
     id: string; // Add ID for keys
@@ -70,25 +71,27 @@ export async function getDashboardPulse(): Promise<PulseContent[]> {
         }
     }
 
-    // 2. NEW BOUTIQUE ITEM
-    const { data: latestItem } = await supabase
-        .from('boutique_items')
-        .select('*, brand:partner_brands(name)')
-        .eq('active', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+    // 2. NEW BOUTIQUE ITEM (only once the boutique is open — see app/lib/release.ts)
+    if (isBoutiqueOpen()) {
+        const { data: latestItem } = await supabase
+            .from('boutique_items')
+            .select('*, brand:partner_brands(name)')
+            .eq('active', true)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
 
-    if (latestItem) {
-        items.push({
-            id: `boutique-${latestItem.id}`,
-            type: 'new_boutique',
-            title: latestItem.name,
-            subtitle: `Just arrived from ${latestItem.brand?.name}`,
-            image_url: latestItem.image_url,
-            link_url: '/vault/boutique',
-            label: 'The Edit'
-        });
+        if (latestItem) {
+            items.push({
+                id: `boutique-${latestItem.id}`,
+                type: 'new_boutique',
+                title: latestItem.name,
+                subtitle: `Just arrived from ${latestItem.brand?.name}`,
+                image_url: latestItem.image_url,
+                link_url: '/vault/boutique',
+                label: 'The Edit'
+            });
+        }
     }
 
     // 3. NEW LEARNING (Latest Chapter)
@@ -248,8 +251,13 @@ export async function getEditorialContent(locale: string = 'en'): Promise<Editor
     }
 
     // ── 2. Style of the Week + Ale's Pick (first active collection) ──────────
+    // Hidden until the boutique opens (app/lib/release.ts), so skip the queries.
     let styleOfWeek: EditorialContent['styleOfWeek'] = null;
     let alesPick: EditorialContent['alesPick'] = null;
+
+    if (!isBoutiqueOpen()) {
+        return { continueCourse, styleOfWeek, alesPick };
+    }
 
     const { data: featuredCollection } = await supabase
         .from('boutique_collections')

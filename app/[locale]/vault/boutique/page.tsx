@@ -4,6 +4,9 @@ import { ArrowLeft } from "lucide-react";
 import BoutiqueInterface from "@/components/boutique/BoutiqueInterface";
 import { getActiveBrands, getBoutiqueItems, getActiveCollections } from "@/app/actions/boutique";
 import { getUserSavedItemIds } from "@/app/actions/boutique-saves";
+import BoutiqueComingSoon from "@/components/boutique/BoutiqueComingSoon";
+import { canBrowseBoutique } from "@/app/lib/release";
+import { getViewer } from "@/app/lib/vault-user";
 
 import { pageMetadata } from '@/app/lib/seo';
 
@@ -11,6 +14,12 @@ export const generateMetadata = pageMetadata({ key: 'vaultBoutique' });
 
 export default async function BoutiquePage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
+
+    // Release 1: closed to members, open to admins so they can keep curating.
+    const { profile } = await getViewer();
+    if (!canBrowseBoutique(profile?.role)) {
+        return <BoutiqueComingSoon locale={locale} />;
+    }
 
     // Fetch Data
     const [brandsRes, itemsRes, collectionsRes, savedIds] = await Promise.all([

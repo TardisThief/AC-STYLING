@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createChainableMock } from '../utils/supabase-mock'
 
 // Mock Supabase using proper chainable mocks
@@ -13,14 +13,23 @@ vi.mock('@/utils/supabase/server', () => ({
 }))
 
 // Import after mocks
-import { getDashboardPulse, getMasterclassCompletionStatus } from '@/app/actions/dashboard'
+import { getDashboardPulse, getMasterclassCompletionStatus, getEditorialContent } from '@/app/actions/dashboard'
 
 describe('Dashboard Server Actions', () => {
     beforeEach(() => {
         vi.clearAllMocks()
     })
 
+    afterEach(() => {
+        vi.unstubAllEnvs()
+    })
+
     describe('getDashboardPulse', () => {
+        // These cases describe the pulse with the boutique open (app/lib/release.ts).
+        beforeEach(() => {
+            vi.stubEnv('BOUTIQUE_OPEN', 'true')
+        })
+
         it('returns empty array when user not authenticated', async () => {
             mockAuth.getUser.mockResolvedValue({ data: { user: null } })
 
@@ -100,6 +109,36 @@ describe('Dashboard Server Actions', () => {
             const continueItem = result.find(item => item.type === 'continue')
             expect(continueItem).toBeDefined()
             expect(continueItem?.title).toBe('Color Theory')
+        })
+    })
+
+    describe('while the boutique is closed (Release 1)', () => {
+        beforeEach(() => {
+            vi.stubEnv('BOUTIQUE_OPEN', '')
+        })
+
+        it('pulse never queries or advertises the boutique', async () => {
+            mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
+
+            // user_progress - empty, then latest chapter - empty. No boutique_items query.
+            mockFrom.mockReturnValueOnce(createChainableMock({ data: [], error: null }))
+            mockFrom.mockReturnValueOnce(createChainableMock({ data: null, error: null }))
+
+            const result = await getDashboardPulse()
+
+            const tables = mockFrom.mock.calls.map(([table]) => table)
+            expect(tables).not.toContain('boutique_items')
+            expect(result.some(item => item.type === 'new_boutique')).toBe(false)
+        })
+
+        it('editorial skips Style of the Week and Ale\x27s Pick', async () => {
+            mockAuth.getUser.mockResolvedValue({ data: { user: null } })
+
+            const result = await getEditorialContent('en')
+
+            expect(result.styleOfWeek).toBeNull()
+            expect(result.alesPick).toBeNull()
+            expect(mockFrom).not.toHaveBeenCalled()
         })
     })
 

@@ -253,7 +253,8 @@
             },
             "boutique": {
                 "label": "La Boutique",
-                "subtitle": "Piezas que Ale elige"
+                "subtitle": "Piezas que Ale elige",
+                "soon": "Próximamente"
             },
             "essence": {
                 "label": "Mi Esencia de Estilo",
@@ -271,6 +272,13 @@
             "label": "El Laboratorio",
             "title": "Bienvenida a tu Vault",
             "subtitle": "Tu viaje de estilo personal comienza aquí."
+        },
+        "boutique_soon": {
+            "back": "Volver al Vault",
+            "eyebrow": "Próximamente",
+            "title": "La Boutique",
+            "body": "Ale está seleccionando las piezas que definen su estética. La Boutique abrirá pronto; mientras tanto, tu formación de estilo te espera.",
+            "cta": "Ir a las Clases Magistrales"
         }
     },
     "Studio": {

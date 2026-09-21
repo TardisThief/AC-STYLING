@@ -4,6 +4,7 @@ import WhatsNew from "@/components/vault/WhatsNew";
 import { getDashboardPulse, getMasterclassCompletionStatus, getEditorialContent } from "@/app/actions/dashboard";
 import { getTranslations } from "next-intl/server";
 import { getViewer } from "@/app/lib/vault-user";
+import { isBoutiqueOpen } from "@/app/lib/release";
 
 import { pageMetadata } from '@/app/lib/seo';
 
@@ -28,6 +29,8 @@ export default async function VaultPage({ params }: { params: Promise<{ locale: 
 
     // Fall back to auth metadata if the profile row isn't synced yet.
     const fullName = profile?.full_name || user.user_metadata?.full_name || "Style Icon";
+    // Release 1: boutique surfaces stay hidden for everyone, admins included.
+    const boutiqueOpen = isBoutiqueOpen();
 
     return (
         <div className="flex flex-col gap-4">
@@ -42,12 +45,12 @@ export default async function VaultPage({ params }: { params: Promise<{ locale: 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
                 {/* Main: What's New takes 3 cols - Order 2 on mobile, 1 on desktop */}
                 <div className="lg:col-span-3 order-2 lg:order-1">
-                    <WhatsNew pulse={pulse} editorial={editorial} />
+                    <WhatsNew pulse={pulse} editorial={editorial} boutiqueOpen={boutiqueOpen} />
                 </div>
 
                 {/* Sidebar: Quick Actions - Order 1 on mobile, 2 on desktop */}
                 <div className="lg:col-span-1 order-1 lg:order-2">
-                    <QuickActions isMasterclassComplete={completion.isComplete} isGuest={profile?.is_guest || false} />
+                    <QuickActions isMasterclassComplete={completion.isComplete} isGuest={profile?.is_guest || false} boutiqueOpen={boutiqueOpen} />
                 </div>
             </div>
 

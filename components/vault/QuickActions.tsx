@@ -10,6 +10,7 @@ import { Link } from "@/i18n/routing";
 interface QuickActionsProps {
     isMasterclassComplete?: boolean;
     isGuest?: boolean;
+    boutiqueOpen?: boolean;
 }
 
 // Shared card chrome so every action reads as the same affordance.
@@ -20,14 +21,14 @@ const cardBase =
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold focus-visible:ring-offset-2 focus-visible:ring-offset-ac-sand";
 const cardIdle = "bg-white/50 border-white/40 hover:bg-white/80";
 
-export default function QuickActions({ isGuest = false }: QuickActionsProps) {
+export default function QuickActions({ isGuest = false, boutiqueOpen = false }: QuickActionsProps) {
     const t = useTranslations('Vault');
     const [isAskModalOpen, setIsAskModalOpen] = useState(false);
 
     const links = [
         { label: t('actions.courses.label'), subtitle: t('actions.courses.subtitle'), icon: Archive, href: "/vault/courses" },
         { label: t('actions.studio.label'), subtitle: t('actions.studio.subtitle'), icon: Calendar, href: "/vault/services" },
-        { label: t('actions.boutique.label'), subtitle: t('actions.boutique.subtitle'), icon: Tag, href: "/vault/boutique" },
+        { label: t('actions.boutique.label'), subtitle: boutiqueOpen ? t('actions.boutique.subtitle') : t('actions.boutique.soon'), icon: Tag, href: "/vault/boutique" },
     ];
 
     const iconClass = "text-ac-gold mb-2 lg:mb-0 lg:mr-4 shrink-0 transition-transform duration-200 group-hover:scale-110";

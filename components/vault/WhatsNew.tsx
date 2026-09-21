@@ -13,9 +13,10 @@ import SafeImage from "@/components/ui/SafeImage";
 interface WhatsNewProps {
     pulse?: PulseContent[] | null;
     editorial: EditorialContent;
+    boutiqueOpen?: boolean;
 }
 
-export default function WhatsNew({ pulse = [], editorial }: WhatsNewProps) {
+export default function WhatsNew({ pulse = [], editorial, boutiqueOpen = false }: WhatsNewProps) {
     const t = useTranslations('Vault');
     const reduce = useReducedMotion();
     const items = pulse && pulse.length > 0 ? pulse : [];
@@ -54,7 +55,7 @@ export default function WhatsNew({ pulse = [], editorial }: WhatsNewProps) {
         <section className="flex flex-col gap-4">
 
             {/* 1. Editorial Panel */}
-            <EditorialPanel editorial={editorial} />
+            <EditorialPanel editorial={editorial} showBoutiquePicks={boutiqueOpen} />
 
             {/* 2. The Pulse */}
             <div

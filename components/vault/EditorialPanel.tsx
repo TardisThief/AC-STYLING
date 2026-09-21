@@ -8,6 +8,8 @@ import SafeImage from "@/components/ui/SafeImage";
 
 interface EditorialPanelProps {
     editorial: EditorialContent;
+    /** Style of the Week + Ale's Pick. Off until the boutique opens (app/lib/release.ts). */
+    showBoutiquePicks?: boolean;
 }
 
 // ── Placeholder tile (used when styleOfWeek or alesPick is null) ─────────────
@@ -21,17 +23,17 @@ function Placeholder({ label }: { label: string }) {
 }
 
 // ── New-user welcome fallback (left panel when no progress) ──────────────────
-function WelcomePanel() {
+function WelcomePanel({ span, showBoutique }: { span: string; showBoutique: boolean }) {
     const sections = [
         { label: "Masterclasses", desc: "Your complete style education — start here." },
         { label: "Courses", desc: "Focused lessons on specific style topics." },
         { label: "The Studio", desc: "Book a 1-on-1 session with Ale." },
-        { label: "The Boutique", desc: "Curated pieces Ale hand-picks for you." },
+        ...(showBoutique ? [{ label: "The Boutique", desc: "Curated pieces Ale hand-picks for you." }] : []),
         { label: "Ask Ale", desc: "Send her a direct question, anytime." },
     ];
 
     return (
-        <div className="md:col-span-3 relative rounded-sm overflow-hidden min-h-[380px] md:min-h-0">
+        <div className={`${span} relative rounded-sm overflow-hidden min-h-[380px] md:min-h-0`}>
             <SafeImage
                 src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2070&auto=format&fit=crop"
                 alt=""
@@ -72,8 +74,10 @@ function WelcomePanel() {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function EditorialPanel({ editorial }: EditorialPanelProps) {
+export default function EditorialPanel({ editorial, showBoutiquePicks = false }: EditorialPanelProps) {
     const { continueCourse, styleOfWeek, alesPick } = editorial;
+    // Without the right column the left panel takes the whole row.
+    const leftSpan = showBoutiquePicks ? "md:col-span-3" : "md:col-span-5";
 
     // Height is fixed only from md up, where the panels sit side by side in one row.
     // At grid-cols-1 they stack, so a fixed height would crush them — each panel's
@@ -85,7 +89,7 @@ export default function EditorialPanel({ editorial }: EditorialPanelProps) {
 
             {/* ── LEFT: Learning or Welcome ──────────────────────────────── */}
             {continueCourse ? (
-                <div className="md:col-span-3 relative rounded-sm overflow-hidden group min-h-[300px] md:min-h-0">
+                <div className={`${leftSpan} relative rounded-sm overflow-hidden group min-h-[300px] md:min-h-0`}>
                     <SafeImage
                         src={continueCourse.imageUrl}
                         alt=""
@@ -137,66 +141,68 @@ export default function EditorialPanel({ editorial }: EditorialPanelProps) {
                     </div>
                 </div>
             ) : (
-                <WelcomePanel />
+                <WelcomePanel span={leftSpan} showBoutique={showBoutiquePicks} />
             )}
 
             {/* ── RIGHT: Style of the Week + Ale's Pick ─────────────────── */}
-            <div className="md:col-span-2 flex flex-col gap-3">
+            {showBoutiquePicks && (
+                <div className="md:col-span-2 flex flex-col gap-3">
 
-                {/* Style of the Week */}
-                {styleOfWeek ? (
-                    <Link href={styleOfWeek.href} className="flex-1 relative rounded-sm overflow-hidden group block min-h-[150px] md:min-h-0">
-                        <SafeImage
-                            src={styleOfWeek.coverImageUrl}
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
-                        <div className="absolute bottom-3 left-3 right-3">
-                            <span className="text-[8px] uppercase tracking-widest font-bold text-ac-gold block mb-0.5">
-                                Style of the Week
-                            </span>
-                            <p className="font-serif text-base text-white leading-tight">{styleOfWeek.title}</p>
-                        </div>
-                    </Link>
-                ) : (
-                    <Placeholder label="Style of the Week" />
-                )}
-
-                {/* Ale's Pick */}
-                {alesPick ? (
-                    <Link
-                        href={alesPick.href}
-                        className="flex gap-3 p-3 bg-white/50 backdrop-blur-sm border border-white/40 rounded-sm hover:bg-white/70 transition-all group"
-                    >
-                        <div className="w-14 h-14 flex-shrink-0 relative overflow-hidden rounded-sm">
+                    {/* Style of the Week */}
+                    {styleOfWeek ? (
+                        <Link href={styleOfWeek.href} className="flex-1 relative rounded-sm overflow-hidden group block min-h-[150px] md:min-h-0">
                             <SafeImage
-                                src={alesPick.imageUrl}
+                                src={styleOfWeek.coverImageUrl}
                                 alt=""
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
-                        </div>
-                        <div className="flex flex-col justify-center min-w-0">
-                            <span className="text-[8px] uppercase tracking-widest font-bold text-ac-gold mb-0.5">
-                                Ale&apos;s Pick
-                            </span>
-                            <p className="font-serif text-sm text-ac-taupe leading-tight truncate">{alesPick.itemName}</p>
-                            <span className="text-ac-taupe/50 text-[10px] mt-0.5">{alesPick.brandName}</span>
-                        </div>
-                        <ChevronRight size={14} className="ml-auto self-center flex-shrink-0 text-ac-taupe/30 group-hover:text-ac-gold transition-colors" />
-                    </Link>
-                ) : (
-                    <div className="flex gap-3 p-3 bg-white/30 border border-dashed border-ac-taupe/20 rounded-sm">
-                        <div className="w-14 h-14 flex-shrink-0 rounded-sm bg-ac-taupe/[0.06]" />
-                        <div className="flex flex-col justify-center gap-1.5">
-                            <span className="text-[8px] uppercase tracking-widest font-bold text-ac-taupe/25">Ale&apos;s Pick</span>
-                            <div className="h-2 w-24 bg-ac-taupe/10 rounded-full" />
-                            <div className="h-1.5 w-16 bg-ac-taupe/10 rounded-full" />
-                        </div>
-                    </div>
-                )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+                            <div className="absolute bottom-3 left-3 right-3">
+                                <span className="text-[8px] uppercase tracking-widest font-bold text-ac-gold block mb-0.5">
+                                    Style of the Week
+                                </span>
+                                <p className="font-serif text-base text-white leading-tight">{styleOfWeek.title}</p>
+                            </div>
+                        </Link>
+                    ) : (
+                        <Placeholder label="Style of the Week" />
+                    )}
 
-            </div>
+                    {/* Ale's Pick */}
+                    {alesPick ? (
+                        <Link
+                            href={alesPick.href}
+                            className="flex gap-3 p-3 bg-white/50 backdrop-blur-sm border border-white/40 rounded-sm hover:bg-white/70 transition-all group"
+                        >
+                            <div className="w-14 h-14 flex-shrink-0 relative overflow-hidden rounded-sm">
+                                <SafeImage
+                                    src={alesPick.imageUrl}
+                                    alt=""
+                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                            </div>
+                            <div className="flex flex-col justify-center min-w-0">
+                                <span className="text-[8px] uppercase tracking-widest font-bold text-ac-gold mb-0.5">
+                                    Ale&apos;s Pick
+                                </span>
+                                <p className="font-serif text-sm text-ac-taupe leading-tight truncate">{alesPick.itemName}</p>
+                                <span className="text-ac-taupe/50 text-[10px] mt-0.5">{alesPick.brandName}</span>
+                            </div>
+                            <ChevronRight size={14} className="ml-auto self-center flex-shrink-0 text-ac-taupe/30 group-hover:text-ac-gold transition-colors" />
+                        </Link>
+                    ) : (
+                        <div className="flex gap-3 p-3 bg-white/30 border border-dashed border-ac-taupe/20 rounded-sm">
+                            <div className="w-14 h-14 flex-shrink-0 rounded-sm bg-ac-taupe/[0.06]" />
+                            <div className="flex flex-col justify-center gap-1.5">
+                                <span className="text-[8px] uppercase tracking-widest font-bold text-ac-taupe/25">Ale&apos;s Pick</span>
+                                <div className="h-2 w-24 bg-ac-taupe/10 rounded-full" />
+                                <div className="h-1.5 w-16 bg-ac-taupe/10 rounded-full" />
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            )}
         </div>
     );
 }
