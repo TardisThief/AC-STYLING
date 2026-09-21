@@ -20,6 +20,8 @@ const cardBase =
     "overflow-hidden flex-1 min-h-[60px] lg:w-full text-center lg:text-left " +
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold focus-visible:ring-offset-2 focus-visible:ring-offset-ac-sand";
 const cardIdle = "bg-white/50 border-white/40 hover:bg-white/80";
+// A section that isn't open yet (the boutique in Release 1): same card, greyed out.
+const cardSoon = "bg-ac-taupe/[0.07] border-ac-taupe/10 shadow-none hover:bg-ac-taupe/10";
 
 export default function QuickActions({ isGuest = false, boutiqueOpen = false }: QuickActionsProps) {
     const t = useTranslations('Vault');
@@ -28,18 +30,23 @@ export default function QuickActions({ isGuest = false, boutiqueOpen = false }: 
     const links = [
         { label: t('actions.courses.label'), subtitle: t('actions.courses.subtitle'), icon: Archive, href: "/vault/courses" },
         { label: t('actions.studio.label'), subtitle: t('actions.studio.subtitle'), icon: Calendar, href: "/vault/services" },
-        { label: t('actions.boutique.label'), subtitle: boutiqueOpen ? t('actions.boutique.subtitle') : t('actions.boutique.soon'), icon: Tag, href: "/vault/boutique" },
+        { label: t('actions.boutique.label'), subtitle: boutiqueOpen ? t('actions.boutique.subtitle') : t('actions.boutique.soon'), icon: Tag, href: "/vault/boutique", soon: !boutiqueOpen },
     ];
 
-    const iconClass = "text-ac-gold mb-2 lg:mb-0 lg:mr-4 shrink-0 transition-transform duration-200 group-hover:scale-110";
+    const iconLayout = "mb-2 lg:mb-0 lg:mr-4 shrink-0 transition-transform duration-200 group-hover:scale-110";
+    const iconClass = `text-ac-gold ${iconLayout}`;
     const titleClass = "block font-serif text-lg leading-tight text-ac-taupe";
     const subtitleClass = "block text-[11px] uppercase tracking-widest text-ac-taupe/70 font-bold mt-0.5";
+    const soonText = "text-ac-taupe/60";
 
     return (
-        <section className="h-full">
+        <section className="h-full flex flex-col">
             <h3 className="font-serif text-lg text-ac-taupe mb-4 md:hidden">{t('quick_actions')}</h3>
 
-            <div className="grid grid-cols-2 lg:flex lg:flex-col gap-3 h-full">
+            {/* flex-1, not h-full: h-full made the grid as tall as the whole section,
+                so on mobile the heading above pushed the last row down over the
+                panel below. */}
+            <div className="grid grid-cols-2 lg:flex lg:flex-col gap-3 flex-1">
 
                 {/* Primary action */}
                 <Link
@@ -56,11 +63,11 @@ export default function QuickActions({ isGuest = false, boutiqueOpen = false }: 
                 </Link>
 
                 {links.map((action) => (
-                    <Link key={action.label} href={action.href} className={`${cardBase} ${cardIdle}`}>
-                        <action.icon size={30} className={iconClass} aria-hidden="true" />
+                    <Link key={action.label} href={action.href} className={`${cardBase} ${action.soon ? cardSoon : cardIdle}`}>
+                        <action.icon size={30} className={action.soon ? `text-ac-taupe/35 ${iconLayout}` : iconClass} aria-hidden="true" />
                         <div>
-                            <span className={titleClass}>{action.label}</span>
-                            <span className={subtitleClass}>{action.subtitle}</span>
+                            <span className={action.soon ? `block font-serif text-lg leading-tight ${soonText}` : titleClass}>{action.label}</span>
+                            <span className={action.soon ? `block text-[11px] uppercase tracking-widest font-bold mt-0.5 ${soonText}` : subtitleClass}>{action.subtitle}</span>
                         </div>
                     </Link>
                 ))}
