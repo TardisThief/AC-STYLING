@@ -358,10 +358,8 @@
             "empty": "The first courses are being prepared."
         },
         "flagship": {
-            "title": "Colorimetry, module by module",
-            "lede": "Five modules. This is exactly what you'll watch.",
-            "toggleOpen": "See all five modules",
-            "toggleClose": "Close",
+            "title": "{course}, module by module",
+            "lede": "{count, plural, one {One module} other {# modules}}. This is exactly what you'll watch.",
             "takeawaysLabel": "You'll work on"
         },
         "included": {

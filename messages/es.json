@@ -358,10 +358,8 @@
             "empty": "Estamos preparando los primeros cursos."
         },
         "flagship": {
-            "title": "Colorimetría, módulo por módulo",
-            "lede": "Cinco módulos. Esto es exactamente lo que vas a ver.",
-            "toggleOpen": "Ver los cinco módulos",
-            "toggleClose": "Cerrar",
+            "title": "{course}, módulo por módulo",
+            "lede": "{count, plural, one {Un módulo} other {# módulos}}. Esto es exactamente lo que vas a ver.",
             "takeawaysLabel": "Vas a trabajar"
         },
         "included": {

@@ -25,6 +25,7 @@ import {
     getVaultOffers,
     shouldRevealUpcoming,
     pickLocale,
+    pickFlagship,
 } from "@/app/lib/vault-catalog";
 import { isEnabled } from "@/app/lib/env-flags";
 
@@ -80,11 +81,7 @@ export default async function VaultLandingPage({
     const reveal = shouldRevealUpcoming();
     const entries = reveal ? catalog : catalog.filter((e) => e.is_published);
 
-    // The flagship deep-dive is whichever published course has the most modules
-    // written, so the section follows the catalogue rather than naming a course.
-    const flagship = entries
-        .filter((e) => e.is_published && e.modules.length > 0)
-        .sort((a, b) => b.modules.length - a.modules.length)[0];
+    const flagship = pickFlagship(entries);
 
     const fullAccess = offers["full_access"];
     const singleCourse = entries.find((e) => e.is_published && e.price_display);
@@ -313,10 +310,14 @@ export default async function VaultLandingPage({
                     <section id="flagship" className="scroll-mt-24 px-6 py-20 md:py-28">
                         <div className="mx-auto max-w-3xl">
                             <h2 className="font-serif text-3xl leading-tight md:text-4xl">
-                                {t("flagship.title")}
+                                {t("flagship.title", {
+                                    course:
+                                        pickLocale(locale, flagship.title, flagship.title_es) ??
+                                        flagship.title,
+                                })}
                             </h2>
                             <p className="mt-4 text-lg leading-relaxed text-ac-taupe">
-                                {t("flagship.lede")}
+                                {t("flagship.lede", { count: flagship.modules.length })}
                             </p>
                             <FlagshipCurriculum
                                 entry={flagship}
