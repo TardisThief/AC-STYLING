@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Link } from "@/i18n/routing";
@@ -13,6 +13,88 @@ export default function Navbar() {
     const t = useTranslations('Navbar');
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const toggleRef = useRef<HTMLButtonElement>(null);
+    const panelRef = useRef<HTMLDivElement>(null);
+
+    /**
+     * Keyboard behaviour for the mobile menu.
+     *
+     * The overlay covers the entire viewport, so while it is open it is modal
+     * whether or not it is called a dialog. It previously had none of what
+     * that implies: Escape did nothing, Tab walked off into the page behind
+     * it, and closing the menu dropped focus back to the top of the document.
+     * Someone navigating by keyboard could open it and not get out.
+     *
+     * `components/ui/Modal` already solves this for dialogs, but it renders a
+     * centred panel with its own chrome, which is not what a full-screen nav
+     * overlay is — so the same three behaviours are implemented here rather
+     * than bending that component out of shape.
+     */
+    useEffect(() => {
+        if (!isMobileMenuOpen) return;
+
+        // No visibility filter on purpose. The overlay only renders its own
+        // controls and only while it is open, so there is nothing hidden to
+        // skip — and an `offsetParent` check would depend on layout, which
+        // makes the behaviour untestable outside a real browser for no gain.
+        const focusable = () =>
+            Array.from(
+                panelRef.current?.querySelectorAll<HTMLElement>(
+                    'a[href], button:not([disabled]), select, [tabindex]:not([tabindex="-1"])'
+                ) ?? []
+            );
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setIsMobileMenuOpen(false);
+                return;
+            }
+
+            if (event.key !== 'Tab') return;
+
+            // Keep Tab inside the overlay: wrap at both ends rather than
+            // letting focus escape to the page underneath.
+            const items = focusable();
+            if (items.length === 0) return;
+
+            const first = items[0];
+            const last = items[items.length - 1];
+            const active = document.activeElement;
+
+            if (event.shiftKey && (active === first || !panelRef.current?.contains(active))) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && active === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+
+        document.addEventListener('keydown', onKeyDown);
+        // Move focus in, so the first Tab lands inside rather than behind.
+        focusable()[0]?.focus();
+
+        return () => {
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [isMobileMenuOpen]);
+
+    /**
+     * Send focus back to the toggle after the menu closes.
+     *
+     * Deliberately its own effect rather than the cleanup above: cleanup runs
+     * before React has committed the closed state, so focusing there lands on
+     * an element that is about to re-render and the focus is lost — the menu
+     * closes and focus falls to the top of the document, which is the thing
+     * being fixed.
+     */
+    const wasMenuOpen = useRef(false);
+    useEffect(() => {
+        if (wasMenuOpen.current && !isMobileMenuOpen) {
+            toggleRef.current?.focus();
+        }
+        wasMenuOpen.current = isMobileMenuOpen;
+    }, [isMobileMenuOpen]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -112,6 +194,7 @@ export default function Navbar() {
                     {/* Mobile Menu Button */}
                     <button
                         type="button"
+                        ref={toggleRef}
                         aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
                         aria-expanded={isMobileMenuOpen}
                         className="md:hidden z-50 relative focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
@@ -130,6 +213,10 @@ export default function Navbar() {
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div
+                        ref={panelRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={t('menuLabel')}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

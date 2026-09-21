@@ -142,7 +142,8 @@
     "Navbar": {
         "about": "About",
         "services": "Services",
-        "contact": "Contact"
+        "contact": "Contact",
+        "menuLabel": "Main menu"
     },
     "Hero": {
         "label": "Personal Styling & Editorial",
@@ -468,5 +469,13 @@
         "foundations": "Foundations",
         "masterclass": "Masterclass",
         "essenceLab": "Essence Lab"
+    },
+    "Carousel": {
+        "photoPrevious": "Previous photo",
+        "photoNext": "Next photo",
+        "photoGoTo": "Go to photo {number}",
+        "testimonialPrevious": "Previous testimonial",
+        "testimonialNext": "Next testimonial",
+        "testimonialGoTo": "Go to testimonial {number}"
     }
 }

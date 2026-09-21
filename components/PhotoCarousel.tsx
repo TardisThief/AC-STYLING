@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 const images = [
     "/ac photo 3.jpg",
@@ -14,6 +15,7 @@ const images = [
 ];
 
 export default function PhotoCarousel() {
+    const t = useTranslations("Carousel");
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
@@ -82,12 +84,14 @@ export default function PhotoCarousel() {
             <div className="absolute inset-0 flex justify-between items-center px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                 <button
                     onClick={prevSlide}
+                    aria-label={t("photoPrevious")}
                     className="p-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 text-white hover:bg-white/50 transition-all pointer-events-auto"
                 >
                     <ChevronLeft size={20} />
                 </button>
                 <button
                     onClick={nextSlide}
+                    aria-label={t("photoNext")}
                     className="p-2 rounded-full bg-white/30 backdrop-blur-md border border-white/40 text-white hover:bg-white/50 transition-all pointer-events-auto"
                 >
                     <ChevronRight size={20} />
@@ -103,6 +107,8 @@ export default function PhotoCarousel() {
                             setDirection(idx > currentIndex ? 1 : -1);
                             setCurrentIndex(idx);
                         }}
+                        aria-label={t("photoGoTo", { number: idx + 1 })}
+                        aria-current={idx === currentIndex ? "true" : undefined}
                         className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? "bg-white w-6" : "bg-white/50"
                             }`}
                     />

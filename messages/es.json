@@ -142,7 +142,8 @@
     "Navbar": {
         "about": "Acerca",
         "services": "Servicios",
-        "contact": "Contacto"
+        "contact": "Contacto",
+        "menuLabel": "Menú principal"
     },
     "Hero": {
         "label": "Estilismo Personal y Editorial",
@@ -468,5 +469,13 @@
         "foundations": "Fundamentos",
         "masterclass": "Masterclass",
         "essenceLab": "Essence Lab"
+    },
+    "Carousel": {
+        "photoPrevious": "Foto anterior",
+        "photoNext": "Foto siguiente",
+        "photoGoTo": "Ir a la foto {number}",
+        "testimonialPrevious": "Testimonio anterior",
+        "testimonialNext": "Testimonio siguiente",
+        "testimonialGoTo": "Ir al testimonio {number}"
     }
 }

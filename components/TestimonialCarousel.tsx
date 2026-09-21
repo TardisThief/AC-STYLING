@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 
 interface Testimonial {
@@ -16,6 +17,7 @@ interface TestimonialCarouselProps {
 }
 
 export default function TestimonialCarousel({ items }: TestimonialCarouselProps) {
+    const t = useTranslations("Carousel");
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
@@ -97,14 +99,14 @@ export default function TestimonialCarousel({ items }: TestimonialCarouselProps)
             <button
                 onClick={prevSlide}
                 className="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-ac-taupe/50 hover:text-ac-taupe transition-colors z-10"
-                aria-label="Previous testimonial"
+                aria-label={t("testimonialPrevious")}
             >
                 <ChevronLeft size={32} />
             </button>
             <button
                 onClick={nextSlide}
                 className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-ac-taupe/50 hover:text-ac-taupe transition-colors z-10"
-                aria-label="Next testimonial"
+                aria-label={t("testimonialNext")}
             >
                 <ChevronRight size={32} />
             </button>
@@ -121,7 +123,8 @@ export default function TestimonialCarousel({ items }: TestimonialCarouselProps)
                         }}
                         className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${Math.floor(currentIndex / 2) === idx ? "bg-ac-taupe w-8" : "bg-ac-taupe/30"
                             }`}
-                        aria-label={`Go to slide ${idx + 1}`}
+                        aria-label={t("testimonialGoTo", { number: idx + 1 })}
+                        aria-current={Math.floor(currentIndex / 2) === idx ? "true" : undefined}
                     />
                 ))}
             </div>
