@@ -4,7 +4,8 @@ import { createClient } from '@/utils/supabase/server';
 import { requireAdmin } from '@/app/lib/auth-guards';
 import { parseInput, uuid } from '@/app/lib/validation/parse';
 import { masterclassSchema } from '@/app/lib/validation/masterclasses';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
+import { VAULT_CATALOG_TAG } from '@/app/lib/cache-tags';
 
 // Map the admin form's FormData field names onto DB column names.
 function masterclassInput(formData: FormData) {
@@ -39,6 +40,11 @@ export async function createMasterclass(formData: FormData) {
         return { success: false, error: error.message };
     }
 
+    // The public sales page reads this catalogue through a tagged cache.
+    // Nothing invalidated that tag, so an edit here took up to an hour to
+    // appear on /vault-access despite the comment in vault-catalog.ts
+    // claiming admin writes did this.
+    updateTag(VAULT_CATALOG_TAG);
     revalidatePath('/vault/admin');
     revalidatePath('/vault/foundations');
 
@@ -63,6 +69,11 @@ export async function updateMasterclass(id: string, formData: FormData) {
         return { success: false, error: error.message };
     }
 
+    // The public sales page reads this catalogue through a tagged cache.
+    // Nothing invalidated that tag, so an edit here took up to an hour to
+    // appear on /vault-access despite the comment in vault-catalog.ts
+    // claiming admin writes did this.
+    updateTag(VAULT_CATALOG_TAG);
     revalidatePath('/vault/admin');
     revalidatePath('/vault/foundations');
 
@@ -85,6 +96,11 @@ export async function deleteMasterclass(id: string) {
         return { success: false, error: error.message };
     }
 
+    // The public sales page reads this catalogue through a tagged cache.
+    // Nothing invalidated that tag, so an edit here took up to an hour to
+    // appear on /vault-access despite the comment in vault-catalog.ts
+    // claiming admin writes did this.
+    updateTag(VAULT_CATALOG_TAG);
     revalidatePath('/vault/admin');
     revalidatePath('/vault/foundations');
 

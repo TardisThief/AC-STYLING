@@ -22,7 +22,15 @@ vi.mock('@/utils/supabase/server', () => ({
     })),
 }))
 
-vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
+// `updateTag` is stubbed and captured: the public sales page reads the
+// catalogue through a tagged cache, and until 2026-09-21 nothing invalidated
+// it, so an admin edit took up to an hour to appear. That invalidation is
+// behaviour worth asserting, not just tolerating.
+const mockUpdateTag = vi.fn()
+vi.mock('next/cache', () => ({
+    revalidatePath: vi.fn(),
+    updateTag: (...args: unknown[]) => mockUpdateTag(...args),
+}))
 
 import { createChapter, updateChapter } from '@/app/actions/admin/manage-chapters'
 
@@ -106,6 +114,11 @@ describe('createChapter', () => {
             takeaways: ['a'],
             lab_questions: [],
         }))
+        // The public sales page reads the catalogue through a tagged cache.
+        // Until 2026-09-21 nothing invalidated it, so an admin edit showed in
+        // the console immediately while /vault-access served the old version
+        // for up to an hour.
+        expect(mockUpdateTag).toHaveBeenCalledWith('vault-catalog')
     })
 
     it('keeps the standalone toggle when no masterclass is linked', async () => {

@@ -17,7 +17,8 @@ import { createClient } from '@supabase/supabase-js';
  * marketing page has no business reading them regardless.
  */
 
-export const VAULT_CATALOG_TAG = 'vault-catalog';
+export { VAULT_CATALOG_TAG } from '@/app/lib/cache-tags';
+import { VAULT_CATALOG_TAG } from '@/app/lib/cache-tags';
 
 /** Columns safe to read anonymously. Mirrors migration 09's grant list. */
 const COURSE_COLUMNS =
@@ -159,8 +160,12 @@ export const getVaultCatalog = unstable_cache(
     ['vault-catalog'],
     {
         tags: [VAULT_CATALOG_TAG],
-        // Backstop only. Correctness comes from the tag; admin writes call
-        // updateTag(VAULT_CATALOG_TAG).
+        // Backstop only. Correctness comes from the tag: the admin chapter and
+        // masterclass writes call updateTag(VAULT_CATALOG_TAG). They did not
+        // until 2026-09-21 — this comment described an intention rather than
+        // the code, so an admin edit took up to an hour to reach the sales
+        // page. A direct database import still relies on this backstop, or on
+        // a redeploy.
         revalidate: 3600,
     }
 );

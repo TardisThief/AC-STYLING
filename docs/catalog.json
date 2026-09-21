@@ -1,6 +1,6 @@
 {
   "$schema": "docs/CATALOG-CONTENT-GUIDE.md",
-  "exported_at": "2026-09-21T13:11:25.522Z",
+  "_note": "All rows parked unpublished: video_id is the 'pending_video' placeholder and video_id_es is null (clean fallback to the English video). Prices, Stripe ids and thumbnails are null where they are not yet real - fill them, then flip is_published. 'Closet Curation' is a NEW masterclass title; confirm the name before --apply, because the title is the match key. Jewelry Image Consulting and Perfumery Image Consulting are deliberately absent from this file: the importer never deletes, so those rows stay in the DB, unpublished.",
   "masterclasses": [
     {
       "title": "Colorimetry",
@@ -456,8 +456,8 @@
               "label": "Which part of yourself do you want the eye to reach first?",
               "label_es": "¿A qué parte de ti quieres que llegue primero la mirada?",
               "placeholder": "e.g., My face, my waist...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Mi rostro, mi cintura...",
+              "mapToEssence": true,
               "mappingCategory": "power_features"
             },
             {
@@ -465,32 +465,32 @@
               "label": "Which garments do you feel visually shorten you?",
               "label_es": "¿Qué prendas sientes que te acortan visualmente?",
               "placeholder": "e.g., Mid-calf skirts...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Las faldas a media pantorrilla..."
+              "placeholder_es": "ej. Las faldas a media pantorrilla...",
+              "mapToEssence": false
             },
             {
               "key": "bsh_m1_q3",
               "label": "Do you use more vertical or horizontal lines?",
               "label_es": "¿Usas más líneas verticales u horizontales?",
               "placeholder": "e.g., Almost always vertical...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Casi siempre verticales..."
+              "placeholder_es": "ej. Casi siempre verticales...",
+              "mapToEssence": false
             },
             {
               "key": "bsh_m1_q4",
               "label": "Where do you usually mark your waist, and does it feel right?",
               "label_es": "¿Dónde sueles marcar la cintura y se siente bien?",
               "placeholder": "e.g., Low, and it doesn't work...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Baja, y no me funciona..."
+              "placeholder_es": "ej. Baja, y no me funciona...",
+              "mapToEssence": false
             },
             {
               "key": "bsh_m1_q5",
               "label": "What effect do you want: to lengthen, to balance or to soften?",
               "label_es": "¿Qué efecto quieres lograr: alargar, equilibrar o suavizar?",
               "placeholder": "e.g., Lengthen, above all...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Alargar, sobre todo...",
+              "mapToEssence": true,
               "mappingCategory": "style_words"
             }
           ],
@@ -534,8 +534,8 @@
               "label": "Do you carry more visual volume in your shoulders or in your hips?",
               "label_es": "¿Sientes más volumen visual en los hombros o en la cadera?",
               "placeholder": "e.g., Hips, clearly...",
-              "mapToEssence": true,
               "placeholder_es": "ej. En la cadera, claramente...",
+              "mapToEssence": true,
               "mappingCategory": "style_words"
             },
             {
@@ -543,16 +543,16 @@
               "label": "Which tops flatter you most, and which ones never work?",
               "label_es": "¿Qué prendas superiores te favorecen más y cuáles nunca te funcionan?",
               "placeholder": "e.g., Boat necks work, halters don't...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Los cuellos barco sí, los halter no..."
+              "placeholder_es": "ej. Los cuellos barco sí, los halter no...",
+              "mapToEssence": false
             },
             {
               "key": "bsh_m2_q3",
               "label": "Which trouser or skirt cut sits best on you?",
               "label_es": "¿Qué corte de pantalón o falda te sienta mejor?",
               "placeholder": "e.g., Straight leg, mid rise...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Pierna recta, tiro medio..."
+              "placeholder_es": "ej. Pierna recta, tiro medio...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -595,8 +595,8 @@
               "label": "Is your waist defined, or is it a continuous line?",
               "label_es": "¿Tu cintura está definida o es una línea continua?",
               "placeholder": "e.g., Barely defined...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Apenas definida...",
+              "mapToEssence": true,
               "mappingCategory": "style_words"
             },
             {
@@ -604,16 +604,16 @@
               "label": "Are you comfortable marking your waist?",
               "label_es": "¿Te sientes cómoda marcando la cintura?",
               "placeholder": "e.g., Only with soft belts...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Solo con cinturones suaves..."
+              "placeholder_es": "ej. Solo con cinturones suaves...",
+              "mapToEssence": false
             },
             {
               "key": "bsh_m3_q3",
               "label": "Which silhouettes do you wear today, and which have you never tried?",
               "label_es": "¿Qué siluetas usas hoy y cuáles no has probado nunca?",
               "placeholder": "e.g., Always straight, never wrap...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Siempre recta, nunca cruzada..."
+              "placeholder_es": "ej. Siempre recta, nunca cruzada...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -656,8 +656,8 @@
               "label": "Where do you feel your body concentrates volume?",
               "label_es": "¿Dónde sientes que tu cuerpo concentra el volumen?",
               "placeholder": "e.g., At the middle of the torso...",
-              "mapToEssence": true,
               "placeholder_es": "ej. En el centro del torso...",
+              "mapToEssence": true,
               "mappingCategory": "style_words"
             },
             {
@@ -665,16 +665,16 @@
               "label": "Which necklines make you feel most comfortable?",
               "label_es": "¿Qué escotes te hacen sentir más cómoda?",
               "placeholder": "e.g., V-neck, open...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. En V, abierto..."
+              "placeholder_es": "ej. En V, abierto...",
+              "mapToEssence": false
             },
             {
               "key": "bsh_m4_q3",
               "label": "Which fabrics feel restrictive on you?",
               "label_es": "¿Qué telas sientes restrictivas en ti?",
               "placeholder": "e.g., Stiff cotton...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. El algodón rígido..."
+              "placeholder_es": "ej. El algodón rígido...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -717,8 +717,8 @@
               "label": "Are your shoulders and hips in balance, with a defined waist?",
               "label_es": "¿Tus hombros y cadera están equilibrados, con la cintura definida?",
               "placeholder": "e.g., Yes, and the waist is marked...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Sí, y la cintura se marca...",
+              "mapToEssence": true,
               "mappingCategory": "style_words"
             },
             {
@@ -726,16 +726,16 @@
               "label": "Which garments hide your waist without you meaning them to?",
               "label_es": "¿Qué prendas esconden tu cintura sin que sea tu intención?",
               "placeholder": "e.g., Oversized blazers...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Los blazers oversize..."
+              "placeholder_es": "ej. Los blazers oversize...",
+              "mapToEssence": false
             },
             {
               "key": "bsh_m5_q3",
               "label": "Do you prefer to mark your figure or to soften it?",
               "label_es": "¿Prefieres marcar tu figura o suavizarla?",
               "placeholder": "e.g., Mark it, but without tightness...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Marcarla, pero sin apretar..."
+              "placeholder_es": "ej. Marcarla, pero sin apretar...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -776,16 +776,16 @@
               "label": "Write down your four measurements: shoulders, bust, waist, hips.",
               "label_es": "Anota tus cuatro medidas: hombros, busto, cintura y cadera.",
               "placeholder": "e.g., 96 / 92 / 74 / 100...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. 96 / 92 / 74 / 100..."
+              "placeholder_es": "ej. 96 / 92 / 74 / 100...",
+              "mapToEssence": false
             },
             {
               "key": "bsh_m6_q2",
               "label": "Which body shape do those proportions give you?",
               "label_es": "¿Qué tipo de cuerpo te dan esas proporciones?",
               "placeholder": "e.g., Rectangle with a slight hourglass...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Rectángulo con ligero reloj de arena...",
+              "mapToEssence": true,
               "mappingCategory": "style_words"
             },
             {
@@ -793,24 +793,24 @@
               "label": "Does the result match what you believed about your body?",
               "label_es": "¿El resultado coincide con lo que creías de tu cuerpo?",
               "placeholder": "e.g., No, I thought I was...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. No, yo creía que era..."
+              "placeholder_es": "ej. No, yo creía que era...",
+              "mapToEssence": false
             },
             {
               "key": "bsh_m6_q4",
               "label": "Which three strategies from this course are you going to apply first?",
               "label_es": "¿Qué tres estrategias de este curso vas a aplicar primero?",
               "placeholder": "e.g., Mark the waist, raise the hem...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Marcar cintura, subir el ruedo..."
+              "placeholder_es": "ej. Marcar cintura, subir el ruedo...",
+              "mapToEssence": false
             },
             {
               "key": "bsh_m6_q5",
               "label": "Which garment are you going to stop buying?",
               "label_es": "¿Qué prenda vas a dejar de comprar?",
               "placeholder": "e.g., Drop-shoulder tops...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Tops de hombro caído..."
+              "placeholder_es": "ej. Tops de hombro caído...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -872,24 +872,24 @@
               "label": "What percentage of your closet do you wear in a normal month?",
               "label_es": "¿Qué porcentaje de tu clóset usas en un mes normal?",
               "placeholder": "e.g., Around 30%...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Alrededor del 30%..."
+              "placeholder_es": "ej. Alrededor del 30%...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m1_q2",
               "label": "Which garment do you keep out of guilt and never wear?",
               "label_es": "¿Qué prenda guardas por culpa y no usas?",
               "placeholder": "e.g., An expensive coat...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Un abrigo caro..."
+              "placeholder_es": "ej. Un abrigo caro...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m1_q3",
               "label": "What makes letting go hardest: the price, the memory or the size?",
               "label_es": "¿Qué te cuesta más al soltar: el precio, el recuerdo o la talla?",
               "placeholder": "e.g., The size, I keep waiting...",
-              "mapToEssence": true,
               "placeholder_es": "ej. La talla, sigo esperando...",
+              "mapToEssence": true,
               "mappingCategory": "archetype"
             },
             {
@@ -897,16 +897,16 @@
               "label": "Which criterion are you going to use to decide?",
               "label_es": "¿Qué criterio vas a usar para decidir?",
               "placeholder": "e.g., If I haven't worn it in a year...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Si no la usé en un año..."
+              "placeholder_es": "ej. Si no la usé en un año...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m1_q5",
               "label": "What will you do with what leaves: donate, sell, pass on?",
               "label_es": "¿Qué vas a hacer con lo que sale: donar, vender, regalar?",
               "placeholder": "e.g., Donate most of it...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Donar la mayoría..."
+              "placeholder_es": "ej. Donar la mayoría...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -947,32 +947,32 @@
               "label": "How is your closet organised today?",
               "label_es": "¿Cómo está organizado tu clóset hoy?",
               "placeholder": "e.g., By type, more or less...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Por tipo, más o menos..."
+              "placeholder_es": "ej. Por tipo, más o menos...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m2_q2",
               "label": "What do you not see when you open the doors?",
               "label_es": "¿Qué no ves cuando abres las puertas?",
               "placeholder": "e.g., Everything folded at the back...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Todo lo doblado del fondo..."
+              "placeholder_es": "ej. Todo lo doblado del fondo...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m2_q3",
               "label": "Which category takes up more space than it deserves?",
               "label_es": "¿Qué categoría ocupa más espacio del que merece?",
               "placeholder": "e.g., Event dresses...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Vestidos de evento..."
+              "placeholder_es": "ej. Vestidos de evento...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m2_q4",
               "label": "Which system fits your real routine?",
               "label_es": "¿Qué sistema se ajusta a tu rutina real?",
               "placeholder": "e.g., By use: work, home, going out...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Por uso: trabajo, casa, salir..."
+              "placeholder_es": "ej. Por uso: trabajo, casa, salir...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -1015,32 +1015,32 @@
               "label": "Which garments do you avoid only because of the fit?",
               "label_es": "¿Qué prendas no usas solo por el ajuste?",
               "placeholder": "e.g., Two blazers with long sleeves...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Dos blazers de manga larga..."
+              "placeholder_es": "ej. Dos blazers de manga larga...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m3_q2",
               "label": "Where does sizing usually fail you?",
               "label_es": "¿Dónde suele fallarte la talla?",
               "placeholder": "e.g., Waist on trousers...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. La cintura en los pantalones..."
+              "placeholder_es": "ej. La cintura en los pantalones...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m3_q3",
               "label": "Do you have a tailor you trust?",
               "label_es": "¿Tienes un sastre de confianza?",
               "placeholder": "e.g., Not yet...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Todavía no..."
+              "placeholder_es": "ej. Todavía no...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m3_q4",
               "label": "Which three garments are you taking in to be altered?",
               "label_es": "¿Qué tres prendas vas a llevar a ajustar?",
               "placeholder": "e.g., Black trousers, navy blazer...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Pantalón negro, blazer azul..."
+              "placeholder_es": "ej. Pantalón negro, blazer azul...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -1083,8 +1083,8 @@
               "label": "What do you buy on impulse and what out of real need?",
               "label_es": "¿Qué compras por impulso y qué por necesidad real?",
               "placeholder": "e.g., Accessories on impulse...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Accesorios por impulso...",
+              "mapToEssence": true,
               "mappingCategory": "archetype"
             },
             {
@@ -1092,24 +1092,24 @@
               "label": "What are the real gaps in your closet right now?",
               "label_es": "¿Cuáles son los vacíos reales de tu clóset ahora mismo?",
               "placeholder": "e.g., A coat, a good shoe...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Un abrigo, un buen zapato..."
+              "placeholder_es": "ej. Un abrigo, un buen zapato...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m4_q3",
               "label": "In which category is it worth investing for you?",
               "label_es": "¿En qué categoría vale la pena invertir en tu caso?",
               "placeholder": "e.g., Shoes and outerwear...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Zapatos y abrigos..."
+              "placeholder_es": "ej. Zapatos y abrigos...",
+              "mapToEssence": false
             },
             {
               "key": "clo_m4_q4",
               "label": "What was your best purchase and why?",
               "label_es": "¿Cuál fue tu mejor compra y por qué?",
               "placeholder": "e.g., A coat I've worn for six years...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Un abrigo que uso hace seis años...",
+              "mapToEssence": true,
               "mappingCategory": "power_features"
             },
             {
@@ -1117,8 +1117,8 @@
               "label": "What are you going to stop buying?",
               "label_es": "¿Qué vas a dejar de comprar?",
               "placeholder": "e.g., Cheap basics I replace every season...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Básicos baratos que repongo cada temporada..."
+              "placeholder_es": "ej. Básicos baratos que repongo cada temporada...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -1178,8 +1178,8 @@
               "label": "Which garments did you buy because of a trend, and which because they were truly you?",
               "label_es": "¿Qué prendas compraste por tendencia y cuáles porque de verdad eran tuyas?",
               "placeholder": "e.g., The boots were a trend, the blazer is mine...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Las botas fueron tendencia, el blazer es mío...",
+              "mapToEssence": true,
               "mappingCategory": "style_words"
             },
             {
@@ -1187,16 +1187,16 @@
               "label": "What percentage of your closet still feels current to you after two years?",
               "label_es": "¿Qué porcentaje de tu clóset sigue vigente para ti después de dos años?",
               "placeholder": "e.g., Maybe half...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Quizá la mitad..."
+              "placeholder_es": "ej. Quizá la mitad...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m1_q3",
               "label": "Which current trend attracts you, and which one puts you off? Why?",
               "label_es": "¿Qué tendencia actual te atrae y cuál te genera rechazo? ¿Por qué?",
               "placeholder": "e.g., I love wide tailoring, I avoid...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Me gusta la sastrería amplia, evito...",
+              "mapToEssence": true,
               "mappingCategory": "archetype"
             },
             {
@@ -1204,16 +1204,16 @@
               "label": "When was the last time you bought something you never wore again?",
               "label_es": "¿Cuándo fue la última vez que compraste algo que no volviste a usar?",
               "placeholder": "e.g., A dress for one event...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Un vestido para un solo evento..."
+              "placeholder_es": "ej. Un vestido para un solo evento...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m1_q5",
               "label": "If you stopped looking at social media for six months, what would you still wear?",
               "label_es": "Si dejaras de mirar redes por seis meses, ¿qué seguirías usando?",
               "placeholder": "e.g., Jeans, white shirts...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Jeans, camisas blancas..."
+              "placeholder_es": "ej. Jeans, camisas blancas...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -1254,8 +1254,8 @@
               "label": "Which universal style do you identify with most?",
               "label_es": "¿Con qué estilo universal te identificas más?",
               "placeholder": "e.g., Classic, with something natural...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Clásico, con algo de natural...",
+              "mapToEssence": true,
               "mappingCategory": "style_words"
             },
             {
@@ -1263,8 +1263,8 @@
               "label": "Which one is your secondary style?",
               "label_es": "¿Cuál sientes que es tu estilo secundario?",
               "placeholder": "e.g., Romantic on weekends...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Romántico los fines de semana...",
+              "mapToEssence": true,
               "mappingCategory": "style_words"
             },
             {
@@ -1272,24 +1272,24 @@
               "label": "Which style do you admire on others but feel is not yours?",
               "label_es": "¿Qué estilo admiras en otras personas pero sientes que no es tuyo?",
               "placeholder": "e.g., Dramatic, it feels like too much on me...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Dramático, en mí siento que es demasiado..."
+              "placeholder_es": "ej. Dramático, en mí siento que es demasiado...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m2_q4",
               "label": "Which garments in your closet belong to a style that no longer represents you?",
               "label_es": "¿Qué prendas de tu clóset pertenecen a un estilo que ya no te representa?",
               "placeholder": "e.g., Everything from my first job...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Todo lo de mi primer trabajo..."
+              "placeholder_es": "ej. Todo lo de mi primer trabajo...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m2_q5",
               "label": "What do you wear when you want to be taken seriously?",
               "label_es": "¿Qué usas cuando quieres que te tomen en serio?",
               "placeholder": "e.g., Navy blazer and straight trousers...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Blazer azul y pantalón recto...",
+              "mapToEssence": true,
               "mappingCategory": "archetype"
             }
           ],
@@ -1331,8 +1331,8 @@
               "label": "How would you name your mix in three words?",
               "label_es": "¿Cómo nombrarías tu mezcla en tres palabras?",
               "placeholder": "e.g., Classic, warm, precise...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Clásica, cálida, precisa...",
+              "mapToEssence": true,
               "mappingCategory": "style_words"
             },
             {
@@ -1340,16 +1340,16 @@
               "label": "What proportion feels like you: 70/30, 60/40, an even split?",
               "label_es": "¿Qué proporción sientes tuya: 70/30, 60/40, mitad y mitad?",
               "placeholder": "e.g., 70 classic, 30 creative...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. 70 clásico, 30 creativo..."
+              "placeholder_es": "ej. 70 clásico, 30 creativo...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m3_q3",
               "label": "What detail repeats across your favourite looks?",
               "label_es": "¿Qué detalle se repite en tus looks favoritos?",
               "placeholder": "e.g., Always a strong shoe...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Siempre un zapato con carácter...",
+              "mapToEssence": true,
               "mappingCategory": "power_features"
             },
             {
@@ -1357,16 +1357,16 @@
               "label": "Which combination has worked for you without your knowing why?",
               "label_es": "¿Qué combinación te ha funcionado sin que supieras por qué?",
               "placeholder": "e.g., Denim with something structured...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Denim con algo estructurado..."
+              "placeholder_es": "ej. Denim con algo estructurado...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m3_q5",
               "label": "Which accent would you like to start bringing in?",
               "label_es": "¿Qué acento te gustaría empezar a incorporar?",
               "placeholder": "e.g., More colour in accessories...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Más color en los accesorios..."
+              "placeholder_es": "ej. Más color en los accesorios...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -1407,8 +1407,8 @@
               "label": "How would three people close to you describe you?",
               "label_es": "¿Cómo te describirían tres personas cercanas a ti?",
               "placeholder": "e.g., Calm, decided, warm...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Tranquila, decidida, cálida...",
+              "mapToEssence": true,
               "mappingCategory": "archetype"
             },
             {
@@ -1416,8 +1416,8 @@
               "label": "Are you comfortable drawing attention, or do you prefer to go unnoticed?",
               "label_es": "¿Te sientes cómoda llamando la atención o prefieres pasar desapercibida?",
               "placeholder": "e.g., I prefer to be noticed for the detail...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Prefiero que noten el detalle...",
+              "mapToEssence": true,
               "mappingCategory": "color_energy"
             },
             {
@@ -1425,24 +1425,24 @@
               "label": "What values do you want your image to communicate?",
               "label_es": "¿Qué valores quieres que tu imagen comunique?",
               "placeholder": "e.g., Rigour and closeness...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Rigor y cercanía..."
+              "placeholder_es": "ej. Rigor y cercanía...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m4_q4",
               "label": "Which garment makes you feel like you are in costume?",
               "label_es": "¿Qué prenda te hace sentir disfrazada?",
               "placeholder": "e.g., Very short dresses...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Los vestidos muy cortos..."
+              "placeholder_es": "ej. Los vestidos muy cortos...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m4_q5",
               "label": "In what situation does your clothing not match who you are?",
               "label_es": "¿En qué situación tu ropa no coincide con quien eres?",
               "placeholder": "e.g., At work I dress more severe than I am...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. En el trabajo visto más severa de lo que soy..."
+              "placeholder_es": "ej. En el trabajo visto más severa de lo que soy...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -1483,8 +1483,8 @@
               "label": "At what moment in your life did you feel most yourself in what you were wearing?",
               "label_es": "¿En qué momento de tu vida te sentiste más tú misma con lo que llevabas puesto?",
               "placeholder": "e.g., A trip, a specific dress...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Un viaje, un vestido en particular...",
+              "mapToEssence": true,
               "mappingCategory": "power_features"
             },
             {
@@ -1492,32 +1492,32 @@
               "label": "What would you wear if nobody had an opinion?",
               "label_es": "¿Qué usarías si nadie opinara?",
               "placeholder": "e.g., More colour, more volume...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Más color, más volumen..."
+              "placeholder_es": "ej. Más color, más volumen...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m5_q3",
               "label": "Which dressing \"rule\" did you inherit and never question?",
               "label_es": "¿Qué \"regla\" de vestir heredaste y nunca cuestionaste?",
               "placeholder": "e.g., No mixing black and brown...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. No mezclar negro con café..."
+              "placeholder_es": "ej. No mezclar negro con café...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m5_q4",
               "label": "Which images do you save as reference, and what do they have in common?",
               "label_es": "¿Qué imágenes guardas como referencia y qué tienen en común?",
               "placeholder": "e.g., Neutral palettes, clean lines...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Paletas neutras, líneas limpias..."
+              "placeholder_es": "ej. Paletas neutras, líneas limpias...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m5_q5",
               "label": "Which garment do you keep but never dare to wear?",
               "label_es": "¿Qué prenda tienes guardada y no te atreves a usar?",
               "placeholder": "e.g., A red coat...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Un abrigo rojo..."
+              "placeholder_es": "ej. Un abrigo rojo...",
+              "mapToEssence": false
             }
           ],
           "resource_urls": [],
@@ -1558,40 +1558,40 @@
               "label": "How are your 168 weekly hours actually distributed?",
               "label_es": "¿Cómo se reparten de verdad tus 168 horas semanales?",
               "placeholder": "e.g., 50 work, 20 social, the rest at home...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. 50 trabajo, 20 social, el resto en casa..."
+              "placeholder_es": "ej. 50 trabajo, 20 social, el resto en casa...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m6_q2",
               "label": "For which frequent scenario do you have nothing to wear?",
               "label_es": "¿Para qué escenario frecuente sientes que no tienes qué ponerte?",
               "placeholder": "e.g., Client meetings...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Reuniones con clientes..."
+              "placeholder_es": "ej. Reuniones con clientes...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m6_q3",
               "label": "What percentage of your closet do you actually use?",
               "label_es": "¿Qué porcentaje de tu clóset usas realmente?",
               "placeholder": "e.g., Around 30%...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Alrededor del 30%..."
+              "placeholder_es": "ej. Alrededor del 30%...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m6_q4",
               "label": "What do you buy for a life you do not lead?",
               "label_es": "¿Qué compras para una vida que no llevas?",
               "placeholder": "e.g., Party dresses...",
-              "mapToEssence": false,
-              "placeholder_es": "ej. Vestidos de fiesta..."
+              "placeholder_es": "ej. Vestidos de fiesta...",
+              "mapToEssence": false
             },
             {
               "key": "acm_m6_q5",
               "label": "Which scenario makes you most insecure when getting dressed?",
               "label_es": "¿Qué escenario te genera más inseguridad al vestirte?",
               "placeholder": "e.g., Events where I don't know the dress code...",
-              "mapToEssence": true,
               "placeholder_es": "ej. Eventos donde no sé el código de vestimenta...",
+              "mapToEssence": true,
               "mappingCategory": "archetype"
             }
           ],
@@ -1605,52 +1605,6 @@
     }
   ],
   "standalone_courses": [
-    {
-      "slug": "course-jewelry",
-      "title": "Jewelry Image Consulting",
-      "subtitle": null,
-      "description": "The scale of jewelry and matching metals.",
-      "title_es": "Asesoría de imagen en joyería",
-      "subtitle_es": null,
-      "description_es": "La escala de la joyería y combinación de metales.",
-      "video_id": "pending_video",
-      "video_id_es": "pending_video_es",
-      "thumbnail_url": null,
-      "category": "course",
-      "order_index": 10,
-      "is_standalone": true,
-      "takeaways": [],
-      "takeaways_es": [],
-      "lab_questions": [],
-      "resource_urls": [],
-      "stripe_product_id": null,
-      "price_id": null,
-      "is_published": false,
-      "available_at": null
-    },
-    {
-      "slug": "course-perfumery",
-      "title": "Perfumery Image Consulting",
-      "subtitle": null,
-      "description": "The invisible accessory and fragrance families.",
-      "title_es": "Asesoría de imagen en perfumería",
-      "subtitle_es": null,
-      "description_es": "El accesorio invisible y familias olfativas.",
-      "video_id": "pending_video",
-      "video_id_es": "pending_video_es",
-      "thumbnail_url": null,
-      "category": "course",
-      "order_index": 11,
-      "is_standalone": true,
-      "takeaways": [],
-      "takeaways_es": [],
-      "lab_questions": [],
-      "resource_urls": [],
-      "stripe_product_id": null,
-      "price_id": null,
-      "is_published": false,
-      "available_at": null
-    },
     {
       "slug": "course-dopamine-dressing",
       "title": "Dopamine Dressing",
@@ -1683,8 +1637,8 @@
           "label": "Which garment lifts your mood the moment you put it on?",
           "label_es": "¿Qué prenda te levanta el ánimo apenas te la pones?",
           "placeholder": "e.g., A green jacket...",
-          "mapToEssence": true,
           "placeholder_es": "ej. Una chaqueta verde...",
+          "mapToEssence": true,
           "mappingCategory": "color_energy"
         },
         {
@@ -1692,8 +1646,8 @@
           "label": "Which colours and textures give you energy?",
           "label_es": "¿Qué colores y texturas te dan energía?",
           "placeholder": "e.g., Warm reds, soft knits...",
-          "mapToEssence": true,
           "placeholder_es": "ej. Rojos cálidos, tejidos suaves...",
+          "mapToEssence": true,
           "mappingCategory": "color_energy"
         },
         {
@@ -1701,8 +1655,8 @@
           "label": "What do you put on when the day is already hard?",
           "label_es": "¿Qué te pones cuando el día ya viene difícil?",
           "placeholder": "e.g., Something dark and comfortable...",
-          "mapToEssence": false,
-          "placeholder_es": "ej. Algo oscuro y cómodo..."
+          "placeholder_es": "ej. Algo oscuro y cómodo...",
+          "mapToEssence": false
         }
       ],
       "resource_urls": [],
@@ -1745,8 +1699,8 @@
           "label": "What do you want people to think when you walk into a meeting?",
           "label_es": "¿Qué quieres que piensen de ti cuando entras a una reunión?",
           "placeholder": "e.g., That I know my subject...",
-          "mapToEssence": true,
           "placeholder_es": "ej. Que domino mi tema...",
+          "mapToEssence": true,
           "mappingCategory": "archetype"
         },
         {
@@ -1754,16 +1708,16 @@
           "label": "In which professional situation do you feel least secure about your image?",
           "label_es": "¿En qué situación profesional te sientes menos segura con tu imagen?",
           "placeholder": "e.g., Presenting to executives...",
-          "mapToEssence": false,
-          "placeholder_es": "ej. Presentando ante directivos..."
+          "placeholder_es": "ej. Presentando ante directivos...",
+          "mapToEssence": false
         },
         {
           "key": "exe_q3",
           "label": "Which garment is your work armour?",
           "label_es": "¿Qué prenda es tu armadura de trabajo?",
           "placeholder": "e.g., A structured blazer...",
-          "mapToEssence": true,
           "placeholder_es": "ej. Un blazer estructurado...",
+          "mapToEssence": true,
           "mappingCategory": "power_features"
         }
       ],
@@ -1807,24 +1761,24 @@
           "label": "What do you always pack and never end up wearing?",
           "label_es": "¿Qué empacas siempre y nunca terminas usando?",
           "placeholder": "e.g., An extra pair of heels...",
-          "mapToEssence": false,
-          "placeholder_es": "ej. Un par de tacones de más..."
+          "placeholder_es": "ej. Un par de tacones de más...",
+          "mapToEssence": false
         },
         {
           "key": "trv_q2",
           "label": "What kind of trip do you take most often?",
           "label_es": "¿Qué tipo de viaje haces con más frecuencia?",
           "placeholder": "e.g., Work, three or four days...",
-          "mapToEssence": false,
-          "placeholder_es": "ej. Trabajo, tres o cuatro días..."
+          "placeholder_es": "ej. Trabajo, tres o cuatro días...",
+          "mapToEssence": false
         },
         {
           "key": "trv_q3",
           "label": "Which three garments are never missing from your suitcase?",
           "label_es": "¿Qué tres prendas nunca faltan en tu maleta?",
           "placeholder": "e.g., White shirt, jeans, flat shoe...",
-          "mapToEssence": true,
           "placeholder_es": "ej. Camisa blanca, jeans, zapato plano...",
+          "mapToEssence": true,
           "mappingCategory": "style_words"
         }
       ],
@@ -1868,16 +1822,16 @@
           "label": "Which accessory do you wear every single day?",
           "label_es": "¿Qué accesorio usas todos los días?",
           "placeholder": "e.g., Small gold earrings...",
-          "mapToEssence": false,
-          "placeholder_es": "ej. Aretes pequeños dorados..."
+          "placeholder_es": "ej. Aretes pequeños dorados...",
+          "mapToEssence": false
         },
         {
           "key": "acc_q2",
           "label": "Do warm or cool metals flatter you more?",
           "label_es": "¿Te favorecen más los metales cálidos o los fríos?",
           "placeholder": "e.g., Gold, clearly...",
-          "mapToEssence": true,
           "placeholder_es": "ej. El dorado, claramente...",
+          "mapToEssence": true,
           "mappingCategory": "color_energy"
         },
         {
@@ -1885,8 +1839,8 @@
           "label": "Do you tend to under-accessorise or to overdo it?",
           "label_es": "¿Sueles quedarte corta o excederte con los accesorios?",
           "placeholder": "e.g., I always stay too safe...",
-          "mapToEssence": false,
-          "placeholder_es": "ej. Siempre me quedo corta..."
+          "placeholder_es": "ej. Siempre me quedo corta...",
+          "mapToEssence": false
         }
       ],
       "resource_urls": [],

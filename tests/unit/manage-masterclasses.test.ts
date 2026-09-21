@@ -21,7 +21,15 @@ vi.mock('@/utils/supabase/server', () => ({
     })),
 }))
 
-vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
+// `updateTag` is stubbed and captured: the public sales page reads the
+// catalogue through a tagged cache, and until 2026-09-21 nothing invalidated
+// it, so an admin edit took up to an hour to appear. That invalidation is
+// behaviour worth asserting, not just tolerating.
+const mockUpdateTag = vi.fn()
+vi.mock('next/cache', () => ({
+    revalidatePath: vi.fn(),
+    updateTag: (...args: unknown[]) => mockUpdateTag(...args),
+}))
 
 import { createMasterclass, updateMasterclass, deleteMasterclass } from '@/app/actions/admin/manage-masterclasses'
 
@@ -73,6 +81,9 @@ describe('createMasterclass', () => {
             subtitle: 'Sub',
             order_index: 1,
         }))
+        // See the note on the next/cache mock: the sales page cached this
+        // catalogue behind a tag nothing was invalidating.
+        expect(mockUpdateTag).toHaveBeenCalledWith('vault-catalog')
     })
 })
 

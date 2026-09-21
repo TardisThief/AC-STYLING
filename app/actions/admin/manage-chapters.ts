@@ -4,9 +4,10 @@ import { createClient } from '@/utils/supabase/server';
 import { requireAdmin } from '@/app/lib/auth-guards';
 import { parseInput, uuid } from '@/app/lib/validation/parse';
 import { chapterSchema } from '@/app/lib/validation/chapters';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { CHAPTER_CATALOG_COLUMNS } from '@/app/lib/chapter-columns';
+import { VAULT_CATALOG_TAG } from '@/app/lib/cache-tags';
 
 // Map the admin form's FormData field names onto DB column names; validation
 // and coercion happen in chapterSchema. (Module-private sync helpers are fine
@@ -57,6 +58,11 @@ export async function createChapter(formData: FormData) {
         return { success: false, error: chapterError.message };
     }
 
+    // The public sales page reads this catalogue through a tagged cache.
+    // Nothing invalidated that tag, so an edit here took up to an hour to
+    // appear on /vault-access despite the comment in vault-catalog.ts
+    // claiming admin writes did this.
+    updateTag(VAULT_CATALOG_TAG);
     revalidatePath('/vault/admin');
     revalidatePath('/vault/foundations');
     revalidatePath(`/vault/foundations/${parsed.data.slug}`);
@@ -83,6 +89,11 @@ export async function updateChapter(chapterId: string, formData: FormData) {
         return { success: false, error: chapterError.message };
     }
 
+    // The public sales page reads this catalogue through a tagged cache.
+    // Nothing invalidated that tag, so an edit here took up to an hour to
+    // appear on /vault-access despite the comment in vault-catalog.ts
+    // claiming admin writes did this.
+    updateTag(VAULT_CATALOG_TAG);
     revalidatePath('/vault/admin');
     revalidatePath('/vault/foundations');
     revalidatePath(`/vault/foundations/${parsed.data.slug}`);
@@ -107,6 +118,11 @@ export async function deleteChapter(chapterId: string) {
         return { success: false, error: error.message };
     }
 
+    // The public sales page reads this catalogue through a tagged cache.
+    // Nothing invalidated that tag, so an edit here took up to an hour to
+    // appear on /vault-access despite the comment in vault-catalog.ts
+    // claiming admin writes did this.
+    updateTag(VAULT_CATALOG_TAG);
     revalidatePath('/vault/admin');
     revalidatePath('/vault/foundations');
 
