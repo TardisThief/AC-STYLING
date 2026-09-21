@@ -477,5 +477,14 @@
         "testimonialPrevious": "Testimonio anterior",
         "testimonialNext": "Testimonio siguiente",
         "testimonialGoTo": "Ir al testimonio {number}"
+    },
+    "UpdatePassword": {
+        "title": "Define tu nueva contraseña",
+        "subtitle": "Protege tu cuenta con una contraseña nueva.",
+        "newPassword": "Nueva contraseña",
+        "confirmPassword": "Confirmar contraseña",
+        "submit": "Actualizar contraseña",
+        "mismatch": "Las contraseñas no coinciden",
+        "success": "¡Contraseña actualizada!"
     }
 }

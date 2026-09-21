@@ -5,6 +5,7 @@ import {
     getMagicLinkHtml,
     getPasswordResetHtml,
     getPurchaseWelcomeHtml,
+    getPurchaseWelcomeSubject,
 } from '@/lib/email-templates'
 
 describe('email-templates', () => {
@@ -72,6 +73,43 @@ describe('email-templates', () => {
             // Was hardcoded to ac-styling.com, which this brand does not own.
             expect(html).not.toContain('ac-styling.com')
             expect(html).toContain('theacstyle.com/vault')
+        })
+    })
+
+    describe('language', () => {
+        // A Spanish buyer used to receive an English email at the one moment
+        // she is being asked to set a password.
+        it('sends the purchase welcome in Spanish when the buyer bought in Spanish', () => {
+            const html = getPurchaseWelcomeHtml('https://example.test/set', 'Acceso Completo', 'es')
+
+            expect(html).toContain('Tu acceso está listo')
+            expect(html).toContain('Definir tu contraseña')
+            expect(html).not.toContain('Your access is ready')
+        })
+
+        it('localizes the subject line too', () => {
+            expect(getPurchaseWelcomeSubject('es')).toBe('Tu acceso al Vault de AC Styling')
+            expect(getPurchaseWelcomeSubject('en')).toBe('Your AC Styling Vault access')
+        })
+
+        it('localizes the footer reason, not just the body', () => {
+            const html = getPurchaseWelcomeHtml('https://example.test/set', 'Acceso', 'es')
+            expect(html).toContain('completaste una compra')
+        })
+
+        it('defaults to English, so an unrecorded locale still sends', () => {
+            // Sessions created before the locale was captured have no metadata.
+            const html = getPurchaseWelcomeHtml('https://example.test/set', 'Full Access')
+
+            expect(html).toContain('Your access is ready')
+            expect(getPurchaseWelcomeSubject()).toBe('Your AC Styling Vault access')
+        })
+
+        it('still escapes the product name in either language', () => {
+            const html = getPurchaseWelcomeHtml('https://example.test/set', '<script>x</script>', 'es')
+
+            expect(html).not.toContain('<script>x</script>')
+            expect(html).toContain('&lt;script&gt;')
         })
     })
 })

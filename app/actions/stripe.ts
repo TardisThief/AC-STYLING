@@ -89,7 +89,14 @@ export async function createCheckoutSession(priceId: string, returnUrl: string) 
 export async function createGuestCheckoutSession(
     priceId: string,
     returnUrl: string,
-    welcomePath: string
+    welcomePath: string,
+    /**
+     * The language she is buying in. Recorded on the session because the
+     * webhook — which sends the only email standing between her and the thing
+     * she paid for — has no other way to know it. Without this every buyer
+     * received an English set-password email.
+     */
+    locale: string = 'en'
 ) {
     if (!priceId) {
         return { error: 'Price ID is missing' };
@@ -110,7 +117,7 @@ export async function createGuestCheckoutSession(
             // Stripe requires an email for a guest purchase; this is the identity
             // the account is created against.
             customer_creation: 'always',
-            metadata: { flow: 'guest' },
+            metadata: { flow: 'guest', locale: locale === 'es' ? 'es' : 'en' },
             phone_number_collection: { enabled: true },
         });
 

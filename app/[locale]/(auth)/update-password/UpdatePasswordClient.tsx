@@ -4,7 +4,8 @@ import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { Loader2, Lock, CheckCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { closePurchaseClaims } from "@/app/actions/vault/close-purchase-claims";
 
@@ -12,6 +13,7 @@ export default function UpdatePasswordPage() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const t = useTranslations("UpdatePassword");
     const router = useRouter();
     const supabase = createClient();
 
@@ -19,7 +21,7 @@ export default function UpdatePasswordPage() {
         e.preventDefault();
 
         if (password !== confirmPassword) {
-            toast.error("Passwords do not match");
+            toast.error(t("mismatch"));
             return;
         }
 
@@ -40,7 +42,7 @@ export default function UpdatePasswordPage() {
             // never throws and never blocks the password change itself.
             await closePurchaseClaims();
 
-            toast.success("Password updated successfully!");
+            toast.success(t("success"));
             setTimeout(() => {
                 router.push("/vault");
             }, 1000);
@@ -72,15 +74,15 @@ export default function UpdatePasswordPage() {
                     className="w-full max-w-md space-y-8"
                 >
                     <div className="space-y-2">
-                        <h2 className="font-serif text-3xl text-[#3D3630]">Set New Password</h2>
-                        <p className="text-sm text-[#3D3630]/60">Secure your account with a new password.</p>
+                        <h2 className="font-serif text-3xl text-[#3D3630]">{t("title")}</h2>
+                        <p className="text-sm text-[#3D3630]/60">{t("subtitle")}</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <label htmlFor="password" className="block text-[10px] font-bold uppercase tracking-widest text-[#3D3630]/40">
-                                    New Password
+                                    {t("newPassword")}
                                 </label>
                                 <div className="relative group">
                                     <input
@@ -97,7 +99,7 @@ export default function UpdatePasswordPage() {
 
                             <div className="space-y-2">
                                 <label htmlFor="confirmPassword" className="block text-[10px] font-bold uppercase tracking-widest text-[#3D3630]/40">
-                                    Confirm Password
+                                    {t("confirmPassword")}
                                 </label>
                                 <div className="relative group">
                                     <input
@@ -122,7 +124,7 @@ export default function UpdatePasswordPage() {
                                 <Loader2 className="animate-spin" size={16} />
                             ) : (
                                 <>
-                                    <span>Update Password</span>
+                                    <span>{t("submit")}</span>
                                     <CheckCircle size={16} className="opacity-60" />
                                 </>
                             )}

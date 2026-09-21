@@ -477,5 +477,14 @@
         "testimonialPrevious": "Previous testimonial",
         "testimonialNext": "Next testimonial",
         "testimonialGoTo": "Go to testimonial {number}"
+    },
+    "UpdatePassword": {
+        "title": "Set New Password",
+        "subtitle": "Secure your account with a new password.",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password",
+        "submit": "Update Password",
+        "mismatch": "Passwords do not match",
+        "success": "Password updated successfully!"
     }
 }

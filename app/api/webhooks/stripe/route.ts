@@ -6,7 +6,7 @@ import { resolveOrCreateUserByEmail, generateSetPasswordLink } from '@/app/lib/g
 import { createPurchaseClaim, isClaimOpen } from '@/app/lib/purchase-claims';
 import { claimLineItem, markCompleted, markFailed, markUnfulfillable } from '@/app/lib/fulfillment';
 import { sendEmail } from '@/lib/resend';
-import { getPurchaseWelcomeHtml } from '@/lib/email-templates';
+import { getPurchaseWelcomeHtml, getPurchaseWelcomeSubject, type EmailLocale } from '@/lib/email-templates';
 import Stripe from 'stripe';
 
 export async function POST(req: Request) {
@@ -455,10 +455,16 @@ export async function POST(req: Request) {
                 );
 
                 if (link) {
+                    // The language she bought in, recorded on the session at
+                    // checkout. Falls back to English for anything else,
+                    // including sessions created before this was captured.
+                    const buyerLocale: EmailLocale =
+                        session.metadata?.locale === 'es' ? 'es' : 'en';
+
                     const { success, error: mailError } = await sendEmail({
                         to: customerEmail,
-                        subject: 'Your AC Styling Vault access',
-                        html: getPurchaseWelcomeHtml(link, purchasedTitle),
+                        subject: getPurchaseWelcomeSubject(buyerLocale),
+                        html: getPurchaseWelcomeHtml(link, purchasedTitle, buyerLocale),
                     });
                     await logEvent(
                         success ? 'notification' : 'error',

@@ -51,7 +51,7 @@ export default function VaultCheckoutButton({
         try {
             const result = isSignedIn
                 ? await createCheckoutSession(priceId!, returnUrl)
-                : await createGuestCheckoutSession(priceId!, returnUrl, `/${locale}/welcome`);
+                : await createGuestCheckoutSession(priceId!, returnUrl, `/${locale}/welcome`, locale);
 
             if (result.error) {
                 toast.error(result.error);

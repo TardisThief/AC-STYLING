@@ -166,18 +166,72 @@ export const getAnswerNotificationHtml = (question: string, answer: string) => `
 </html>
 `;
 
+/** The two locales the site ships. Anything else falls back to English. */
+export type EmailLocale = 'en' | 'es';
+
+/**
+ * Copy for the purchase welcome email.
+ *
+ * Kept here rather than in `messages/*.json` because these templates are
+ * plain HTML strings assembled outside React, with no next-intl provider to
+ * read from. The catalogue is small and self-contained; the important thing is
+ * that a Spanish buyer stops receiving an English email at the one moment she
+ * is being asked to set a password.
+ */
+const purchaseWelcomeCopy: Record<EmailLocale, {
+    subject: string;
+    heading: string;
+    confirmed: (product: string) => string;
+    choosePassword: string;
+    cta: string;
+    disclaimer: string;
+    footerReason: string;
+}> = {
+    en: {
+        subject: 'Your AC Styling Vault access',
+        heading: 'Your access is ready',
+        confirmed: (product) =>
+            `Thank you for joining the Vault. Your purchase of <strong>${product}</strong> is confirmed and already attached to your account.`,
+        choosePassword: 'Choose a password to get in. The link works once.',
+        cta: 'Set your password',
+        disclaimer: 'If you did not make this purchase, reply to this email and we will sort it out.',
+        footerReason: 'you completed a purchase at AC Styling',
+    },
+    es: {
+        subject: 'Tu acceso al Vault de AC Styling',
+        heading: 'Tu acceso está listo',
+        confirmed: (product) =>
+            `Gracias por unirte al Vault. Tu compra de <strong>${product}</strong> está confirmada y ya vinculada a tu cuenta.`,
+        choosePassword: 'Elige una contraseña para entrar. El enlace funciona una sola vez.',
+        cta: 'Definir tu contraseña',
+        disclaimer: 'Si no hiciste esta compra, responde a este correo y lo resolvemos.',
+        footerReason: 'completaste una compra en AC Styling',
+    },
+};
+
+/** The subject line for the purchase welcome email, in the buyer's language. */
+export const getPurchaseWelcomeSubject = (locale: EmailLocale = 'en') =>
+    purchaseWelcomeCopy[locale]?.subject ?? purchaseWelcomeCopy.en.subject;
+
 /**
  * Sent to someone who bought from the public sales page before having an
  * account. She has already paid, so this is not a sales email — it is the one
  * step between her and the thing she bought.
  */
-export const getPurchaseWelcomeHtml = (url: string, productTitle: string) => `
+export const getPurchaseWelcomeHtml = (
+    url: string,
+    productTitle: string,
+    locale: EmailLocale = 'en'
+) => {
+    const copy = purchaseWelcomeCopy[locale] ?? purchaseWelcomeCopy.en;
+
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your AC Styling Vault access</title>
+    <title>${copy.subject}</title>
     <style>
         body { font-family: 'Times New Roman', serif; background-color: #E6DED6; margin: 0; padding: 0; color: #3D3630; }
         .container { max-width: 600px; margin: 0 auto; background-color: #E6DED6; padding: 40px 20px; text-align: center; }
@@ -193,14 +247,15 @@ export const getPurchaseWelcomeHtml = (url: string, productTitle: string) => `
     <div class="container">
         <div class="logo">AC STYLING</div>
         <div class="content">
-            <h1>Your access is ready</h1>
-            <p>Thank you for joining the Vault. Your purchase of <strong>${escapeHtml(productTitle)}</strong> is confirmed and already attached to your account.</p>
-            <p>Choose a password to get in. The link works once.</p>
-            <a href="${url}" class="button">Set your password</a>
-            <p class="footer">If you did not make this purchase, reply to this email and we will sort it out.</p>
+            <h1>${copy.heading}</h1>
+            <p>${copy.confirmed(escapeHtml(productTitle))}</p>
+            <p>${copy.choosePassword}</p>
+            <a href="${url}" class="button">${copy.cta}</a>
+            <p class="footer">${copy.disclaimer}</p>
         </div>
-        ${emailFooter('you completed a purchase at AC Styling')}
+        ${emailFooter(copy.footerReason)}
     </div>
 </body>
 </html>
 `;
+};
