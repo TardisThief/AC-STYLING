@@ -617,7 +617,7 @@ no accessible name** — the carousel's two arrows and five dots, exactly as the
 assessment described. Mobile overflow at 360/390px and the mobile menu's
 Escape/focus-trap behaviour were not re-measured here.
 
-## Phase 3.6 — Close-out before content (current)
+## Phase 3.6 — Close-out before content — complete (2026-09-21)
 
 Opened 2026-09-20. The engineering phase is finished in substance: every
 security finding in the assessment is closed and deployed. **Ops polish
@@ -652,24 +652,24 @@ Ordered so the first item unblocks the rest.
   on the 5 published modules** — F09, the content blocker, and nothing else.
   The catalogue is structurally clean and waiting on video.
 
-- **2. Make CI run the build and a typecheck.** It runs `test:run` and `lint`
+- ~~**2. Make CI run the build and a typecheck.**~~ — **done**. Typecheck runs first, build runs last. The build needs configuration at module load (`utils/stripe.ts` throws without `STRIPE_SECRET_KEY`), so CI supplies **dummy** values — verified that the build completes with them, because nothing it prerenders needs a reachable Supabase or Stripe. Real build coverage, no credentials, nothing a fork could leak. It earned its keep immediately: it caught two lint errors in the very test added for item 4. It runs `test:run` and `lint`
   and nothing else. Three failures during this session passed both and still
   broke `npm run build` — the `"use server"` export rule, and two test-typing
   errors. About twenty lines of workflow, and it matters more once content
   edits land from someone who is not watching build output.
 
-- **3. Fix the stale E2E assertions.** Three expect anonymous access to
+- ~~**3. Fix the stale E2E assertions.**~~ — **done**. The three that asserted anonymous access to `/vault/courses`, `/services` and `/boutique` are replaced by one list of gated routes and one of genuinely public ones, so a new route cannot be added to one and forgotten in the other. Running them surfaced a distinction worth pinning: `/vault` sends an anonymous visitor to `/vault-access`, the sales page, **not** to login. 13 pass in chromium. It also exposed a real bug — the sales page called `t()` on two strings carrying `{hours}`/`{date}` placeholders the card substitutes itself, throwing a `FORMATTING_ERROR` on every render and only working because the fallback returns the raw message. Now `t.raw()`. Three expect anonymous access to
   `/courses`, `/services` and `/boutique`; production redirects all three to
   login. A test asserting the opposite of the system makes the whole suite
   untrustworthy. Part of F13.
 
-- **4. Finish the accessibility close-out.** Verified against production
+- ~~**4. Finish the accessibility close-out.**~~ — **done**. All seven unnamed controls were in `PhotoCarousel`; labels are translated rather than hardcoded, and `TestimonialCarousel`'s existing English-only ones moved to the same namespace. Verified in the built output: 11 buttons, 11 labels, zero unnamed, both locales. The mobile menu now announces itself as a dialog, closes on Escape, traps Tab and restores focus to the toggle. **The overflow was not a defect**: the only over-wide element is the marquee track, `body` carries `overflow-x: hidden`, and scrolling to x=9999 leaves `scrollX` at 0 at 360/390/414px — `scrollWidth` reports clipped extent. A regression spec asserts the thing that matters, that the page cannot be dragged sideways. Verified against production
   2026-09-20: the home page serves 11 buttons with no text content and only 4
   `aria-label`s, so **seven controls have no accessible name** — the carousel's
   two arrows and five dots. Plus mobile overflow at 360/390px and the mobile
   menu ignoring Escape with no focus trap. The rest of F14.
 
-- **5. Close the last two Spanish gaps in the customer journey.** The
+- ~~**5. Close the last two Spanish gaps in the customer journey.**~~ — **done**. The update-password form is localized and now redirects through the locale-aware router instead of a locale-less `/vault`. The welcome email is sent in the buyer's language: the locale is recorded on the Stripe session at checkout, since the webhook has no other way to know it. Everything falls back to English, including sessions created before the locale was captured. The
   update-password form is English-only and redirects to a locale-less `/vault`;
   the welcome email is English-only. Both sit in the purchase and recovery
   path, and authoring the catalogue bilingually makes them more visible. Part
@@ -677,6 +677,14 @@ Ordered so the first item unblocks the rest.
 
 **Then the work is content**, and `docs/CATALOG-CONTENT-GUIDE.md` is the entry
 point: the JSON shape, the template, and the export/import scripts.
+
+**Phase 3.6 complete (2026-09-21).** All five items done. The engineering track
+is finished for this phase; what remains is content, plus the deferrals below.
+
+Carried forward, unchanged: the E2E suite is still not part of CI. It needs a
+running server and a browser matrix, and the `mobile` project needs a WebKit
+binary that is not installed locally, so wiring it in is its own piece of work
+rather than a line in the workflow.
 
 ### Why Ops polish and north-star are parked
 
