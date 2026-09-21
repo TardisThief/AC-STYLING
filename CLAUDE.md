@@ -93,3 +93,13 @@ DATABASE_URL                      # direct Postgres, used by scripts/
 - Design system: "Liquid Glass & Taupe" — warm neutrals (`#5A4F44` taupe, `#E6DED6` sand), Inter body, glass-morphism UI. Headings are **Antic Didone**, loaded via `next/font/google` and aliased to the `--font-didot` CSS variable — "Didot" in the codebase means that variable, not the Didot typeface.
 - Brand docs that are not the code (an older Lora/Poppins doc, the deleted `design-system/MASTER.md` specifying Playfair Display) are reference material only. The shipped tokens win — see `PRODUCT.md` § Brand Commitments.
 - `main` is the single working branch (local + remote) after the 2026-07 cleanup.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
