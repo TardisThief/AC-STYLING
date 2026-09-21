@@ -330,6 +330,14 @@
             "description": "Self-paced courses in colour, body shape, style and essence, and closet curation. The method Alejandra Carrillo uses with her clients.",
             "ogAlt": "The AC Styling Vault"
         },
+        "nav": {
+            "menuLabel": "The Vault: sections",
+            "path": "The path",
+            "catalog": "Courses",
+            "alejandra": "Alejandra",
+            "offer": "Access",
+            "faq": "Questions"
+        },
         "hero": {
             "eyebrow": "The Vault",
             "title": "Your style already speaks for you. Learn to direct it.",

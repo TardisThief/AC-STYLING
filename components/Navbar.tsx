@@ -9,7 +9,15 @@ import { useTranslations } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 
-export default function Navbar() {
+export type NavLink = { name: string; href: string };
+
+/**
+ * `links` replaces the landing page's About / Services / Contact with the
+ * sections of the page the navbar sits on. Each href must be an in-page
+ * anchor (`#id`) that exists on that page. Without it, a page that is not the
+ * landing page gets links to sections it doesn't have.
+ */
+export default function Navbar({ links, menuLabel }: { links?: NavLink[]; menuLabel?: string } = {}) {
     const t = useTranslations('Navbar');
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -108,19 +116,23 @@ export default function Navbar() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    const navLinks = [
+    const navLinks = links ?? [
         { name: t('about'), href: "#about" },
         { name: t('services'), href: "#services" },
         { name: t('contact'), href: "#contact" },
     ];
 
+    // Five section links don't fit beside the logo at tablet width (the logo
+    // and labels wrap and the language switch is cut off), so a longer menu
+    // keeps the burger up to `lg`. Full class names, so Tailwind can see them.
+    const wide = navLinks.length > 3;
+
     const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
         e.preventDefault();
-        const element = document.querySelector(href);
-        if (element) {
-            element.scrollIntoView({ behavior: "smooth" });
-            setIsMobileMenuOpen(false);
-        }
+        document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+        // Close either way: a missing target used to leave the full-screen
+        // menu open with nothing happening.
+        setIsMobileMenuOpen(false);
     };
 
     return (
@@ -171,7 +183,7 @@ export default function Navbar() {
                     </div> */}
 
                     {/* Desktop Menu */}
-                    <div className="hidden md:flex space-x-8 items-center">
+                    <div className={cn("hidden space-x-8 items-center", wide ? "lg:flex" : "md:flex")}>
                         {navLinks.map((link) => (
                             <a
                                 key={link.name}
@@ -197,7 +209,7 @@ export default function Navbar() {
                         ref={toggleRef}
                         aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
                         aria-expanded={isMobileMenuOpen}
-                        className="md:hidden z-50 relative focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
+                        className={cn("z-50 relative focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive", wide ? "lg:hidden" : "md:hidden")}
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     >
                         {isMobileMenuOpen ? (
@@ -216,7 +228,7 @@ export default function Navbar() {
                         ref={panelRef}
                         role="dialog"
                         aria-modal="true"
-                        aria-label={t('menuLabel')}
+                        aria-label={menuLabel ?? t('menuLabel')}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

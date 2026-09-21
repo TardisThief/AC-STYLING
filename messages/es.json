@@ -330,6 +330,14 @@
             "description": "Cursos a tu ritmo de color, tipo de cuerpo, estilo y esencia, y curaduría de clóset. El método que Alejandra Carrillo usa con sus clientas.",
             "ogAlt": "El Vault de AC Styling"
         },
+        "nav": {
+            "menuLabel": "El Vault: secciones",
+            "path": "El camino",
+            "catalog": "Cursos",
+            "alejandra": "Alejandra",
+            "offer": "Acceso",
+            "faq": "Preguntas"
+        },
         "hero": {
             "eyebrow": "El Vault",
             "title": "Tu estilo ya habla por ti. Aprende a dirigirlo.",

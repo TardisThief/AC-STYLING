@@ -119,7 +119,18 @@ export default async function VaultLandingPage({
 
     return (
         <>
-            <Navbar />
+            {/* The landing page's About / Services / Contact don't exist here;
+                the menu walks this page's own sections instead. */}
+            <Navbar
+                menuLabel={t("nav.menuLabel")}
+                links={[
+                    { name: t("nav.path"), href: "#path" },
+                    { name: t("nav.catalog"), href: "#catalog" },
+                    { name: t("nav.alejandra"), href: "#alejandra" },
+                    { name: t("nav.offer"), href: "#offer" },
+                    { name: t("nav.faq"), href: "#faq" },
+                ]}
+            />
             <main className="bg-ac-sand text-ac-taupe">
                 {/* ── Hero ─────────────────────────────────────────────── */}
                 <section id="vault-hero" className="relative min-h-[92vh] w-full overflow-hidden bg-black text-white">
@@ -384,7 +395,7 @@ export default async function VaultLandingPage({
                 </section>
 
                 {/* ── Alejandra ────────────────────────────────────────── */}
-                <section className="px-6 py-20 md:py-28">
+                <section id="alejandra" className="scroll-mt-24 px-6 py-20 md:py-28">
                     <div className="mx-auto grid max-w-5xl gap-10 md:grid-cols-[minmax(0,320px)_1fr] md:gap-14">
                         <div className="relative aspect-[3/4] w-full max-w-[320px] overflow-hidden">
                             <Image
@@ -542,7 +553,7 @@ export default async function VaultLandingPage({
                 </section>
 
                 {/* ── FAQ ──────────────────────────────────────────────── */}
-                <section className="bg-ac-beige/30 px-6 py-20 md:py-28">
+                <section id="faq" className="scroll-mt-24 bg-ac-beige/30 px-6 py-20 md:py-28">
                     <div className="mx-auto max-w-3xl">
                         <h2 className="font-serif text-3xl leading-tight md:text-4xl">
                             {t("faq.title")}

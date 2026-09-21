@@ -141,3 +141,48 @@ describe('mobile menu', () => {
         await waitFor(() => expect(document.activeElement).toBe(items[0]))
     })
 })
+
+describe('page-specific links', () => {
+    // /vault-access passes its own sections. It used to get the landing
+    // page's About / Services / Contact, none of which exist there.
+    const vaultLinks = [
+        { name: 'The path', href: '#path' },
+        { name: 'Questions', href: '#faq' },
+    ]
+
+    it('shows the links it is given instead of the landing sections', async () => {
+        render(<Navbar links={vaultLinks} menuLabel="The Vault: sections" />)
+        openMenu()
+
+        const dialog = await screen.findByRole('dialog')
+        expect(dialog).toHaveAccessibleName('The Vault: sections')
+        const names = Array.from(dialog.querySelectorAll('a[href^="#"]')).map((a) => a.textContent)
+        expect(names).toEqual(['The path', 'Questions'])
+        expect(screen.queryByText('Services')).toBeNull()
+    })
+
+    it('scrolls to the section and closes the menu', async () => {
+        const target = document.createElement('section')
+        target.id = 'faq'
+        target.scrollIntoView = vi.fn()
+        document.body.appendChild(target)
+
+        render(<Navbar links={vaultLinks} />)
+        openMenu()
+        const dialog = await screen.findByRole('dialog')
+        fireEvent.click(dialog.querySelector('a[href="#faq"]')!)
+
+        expect(target.scrollIntoView).toHaveBeenCalled()
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+        target.remove()
+    })
+
+    it('still closes when the target section is missing', async () => {
+        render(<Navbar links={vaultLinks} />)
+        openMenu()
+        const dialog = await screen.findByRole('dialog')
+        fireEvent.click(dialog.querySelector('a[href="#path"]')!)
+
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    })
+})
