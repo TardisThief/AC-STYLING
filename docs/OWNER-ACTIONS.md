@@ -88,13 +88,69 @@ button at all, so an unpublished course cannot be purchased by accident. The
 flagship curriculum block and the single-course price both require a published
 row, so both stay hidden until there is one.
 
-**How to set it:** Vercel → Project → Settings → Environment Variables →
-`VAULT_REVEAL_UPCOMING` = `true`, Production and Preview. It is read at build
-time, not per request, so it needs a redeploy to take effect.
+**Status: set by the owner on 2026-09-21, as `TRUE`, All Environments.**
+
+That spelling would not have worked. The code compared `=== 'true'` and
+`'TRUE' !== 'true'`, so the flag was inert and the page would have stayed
+empty with nothing in any log to explain it. Fixed in code rather than by
+retyping the value — `isEnabled()` now accepts any reasonable spelling, and
+the same trap was waiting on `VAULT_INDEXABLE` and
+`NEXT_PUBLIC_VERCEL_ANALYTICS`. **Nothing to change in the dashboard.** The
+flag is read at build time, so it takes effect on the next deploy.
 
 Leave it unset if you would rather the page stay quiet until the videos exist.
 That is a positioning call, not a technical one: the choice is between an
 empty section and eight honest "coming soon" cards.
+
+---
+
+## 2c. Review of the Vercel variables you shared (2026-09-21)
+
+Checked every variable in the screenshot against every `process.env` read in
+the codebase. Two worth acting on, two worth deleting, one worth confirming.
+
+**`NEXT_PUBLIC_SITE_URL` is Production-only.** Preview deployments fall back to
+the hardcoded `https://theacstyle.com` in `app/lib/seo.ts` and
+`lib/email-templates.ts` — note the missing `www`, where production uses
+`https://www.theacstyle.com`. Nothing crashes, but a password-reset or purchase
+email triggered from a preview build sends the recipient to **production**, and
+preview canonicals claim to be the production URL. Add it to Preview with the
+preview host, or accept it knowingly.
+
+**`DATABASE_URL` is in Production — worth removing.** No application code reads
+it. It is used only by `scripts/` (migrations, QA helpers) and by the Postgres
+client on your own machine; the app talks to Supabase over the REST API with
+the anon and service-role keys. So a direct Postgres connection string is
+sitting in the runtime environment of a public web app for no reason. Keep it
+in `.env.local`, drop it from Vercel.
+
+**`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is read by nothing.** Checkout is
+redirect-based via `app/actions/stripe.ts`, so there is no client-side Stripe.js
+to publish a key to. Dead variable; safe to delete.
+
+**`STRIPE_FULL_ACCESS_PRODUCT_ID` is not in the list, and that is fine.** It
+looked alarming — `app/lib/access-logic.ts` reads it to grant the full unlock —
+but step 4 of `grantAccessForProduct` falls back to the `offers` table, and
+both rows are live and correctly populated: `full_access` →
+`prod_Tu058EMscR1XkA`, `course_pass` → `prod_Tu06etw8YLkfVm`, both `active`.
+Verified against the production database. The env var is a redundant second
+path, not the only one. Leave it unset or set it; either works.
+
+**Confirm the pre-production Supabase values point at the live project.** The
+`All Pre-Production Environments` copies of `NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` were updated
+Jul 10, while the Production copies were updated Feb 3 — so they are not the
+same values. The old `pkmyth…` project is dead; if previews still point at it,
+every preview deployment is broken in a way production is not. Worth one look.
+
+**Intentionally absent, no action:** `VAULT_INDEXABLE` (the Vault stays
+noindex until launch — item 1 and the Stripe cutover gate this) and
+`NEXT_PUBLIC_VERCEL_ANALYTICS` (analytics stays off until Web Analytics is
+switched on in the dashboard, otherwise every page load logs a MIME-type
+error).
+
+**Still test-mode:** `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`, as
+expected — see item 1.
 
 ---
 
