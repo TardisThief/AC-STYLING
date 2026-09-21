@@ -69,6 +69,35 @@ Production *and* Preview.
 
 ---
 
+## 2b. Set `VAULT_REVEAL_UPCOMING=true` to show the catalogue before it ships
+
+**This is why `/vault-access` says "The first courses are being prepared."**
+Nothing is broken. The section has two independent switches and both are
+currently off:
+
+1. Every course is `is_published = false` — deliberate, decided at import on
+   2026-09-21, because no module has a Vimeo ID yet.
+2. `VAULT_REVEAL_UPCOMING` is unset, so `app/[locale]/vault-access/page.tsx`
+   filters the catalogue down to published rows only — which is none.
+
+Setting the flag renders all four masterclasses and four standalone courses as
+**"In production" cards**: real titles, subtitles and module lists, no price
+and no way to buy. Verified locally on 2026-09-21 with the live database — all
+eight appear, the empty state disappears, and `CatalogCard` has no checkout
+button at all, so an unpublished course cannot be purchased by accident. The
+flagship curriculum block and the single-course price both require a published
+row, so both stay hidden until there is one.
+
+**How to set it:** Vercel → Project → Settings → Environment Variables →
+`VAULT_REVEAL_UPCOMING` = `true`, Production and Preview. It is read at build
+time, not per request, so it needs a redeploy to take effect.
+
+Leave it unset if you would rather the page stay quiet until the videos exist.
+That is a positioning call, not a technical one: the choice is between an
+empty section and eight honest "coming soon" cards.
+
+---
+
 ## 3. Make `hello@theacstyle.com` deliver somewhere a human reads
 
 Transactional email is sent from `AC Styling <hello@theacstyle.com>` and now
