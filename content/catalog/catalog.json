@@ -1,6 +1,6 @@
 {
   "$schema": "docs/CATALOG-CONTENT-GUIDE.md",
-  "exported_at": "2026-09-20T22:41:21.835Z",
+  "exported_at": "2026-09-21T00:32:42.096Z",
   "masterclasses": [
     {
       "title": "Colorimetry",
@@ -435,7 +435,7 @@
           "thumbnail_url": null,
           "category": "masterclass",
           "order_index": 1,
-          "is_standalone": true,
+          "is_standalone": false,
           "takeaways": [
             "Fashion is consumed; style is cultivated."
           ],
@@ -446,7 +446,7 @@
             {
               "key": "trend_vs_style",
               "type": "textarea",
-              "question": "Tag 3 items you bought for a trend and 3 for your style."
+              "label": "Tag 3 items you bought for a trend and 3 for your style."
             }
           ],
           "resource_urls": [],
@@ -504,7 +504,7 @@
           "thumbnail_url": null,
           "category": "masterclass",
           "order_index": 3,
-          "is_standalone": true,
+          "is_standalone": false,
           "takeaways": [
             "Mix universal styles to create your unique signature."
           ],
@@ -515,7 +515,7 @@
             {
               "key": "substyle_name",
               "type": "text",
-              "question": "Name your personal sub-style."
+              "label": "Name your personal sub-style."
             }
           ],
           "resource_urls": [],
@@ -537,7 +537,7 @@
           "thumbnail_url": null,
           "category": "masterclass",
           "order_index": 4,
-          "is_standalone": true,
+          "is_standalone": false,
           "takeaways": [
             "Your values dictate your fabric and color choices."
           ],
@@ -548,7 +548,7 @@
             {
               "key": "style_personality",
               "type": "textarea",
-              "question": "Complete the Style Personality Profile."
+              "label": "Complete the Style Personality Profile."
             }
           ],
           "resource_urls": [],
@@ -570,7 +570,7 @@
           "thumbnail_url": null,
           "category": "masterclass",
           "order_index": 5,
-          "is_standalone": true,
+          "is_standalone": false,
           "takeaways": [
             "Separate what you actually like from what you should like."
           ],
@@ -581,7 +581,7 @@
             {
               "key": "moodboard_link",
               "type": "url",
-              "question": "Upload your Essence Moodboard link."
+              "label": "Upload your Essence Moodboard link."
             }
           ],
           "resource_urls": [],
@@ -603,7 +603,7 @@
           "thumbnail_url": null,
           "category": "masterclass",
           "order_index": 6,
-          "is_standalone": true,
+          "is_standalone": false,
           "takeaways": [
             "Align your wardrobe with your 168-hour reality."
           ],
@@ -614,7 +614,7 @@
             {
               "key": "lifestyle_grid",
               "type": "grid",
-              "question": "Complete the Lifestyle Grid."
+              "label": "Complete the Lifestyle Grid."
             }
           ],
           "resource_urls": [],
@@ -655,7 +655,7 @@
           "thumbnail_url": null,
           "category": "masterclass",
           "order_index": 1,
-          "is_standalone": true,
+          "is_standalone": false,
           "takeaways": [
             "Use lines and color blocks to direct the gaze."
           ],
@@ -666,7 +666,7 @@
             {
               "key": "focal_point",
               "type": "text",
-              "question": "Define your visual Focal Point."
+              "label": "Define your visual Focal Point."
             }
           ],
           "resource_urls": [],
@@ -807,12 +807,12 @@
             {
               "key": "measurements",
               "type": "text",
-              "question": "Input shoulders, bust, waist, hips."
+              "label": "Input shoulders, bust, waist, hips."
             },
             {
               "key": "body_shape_tag",
               "type": "select",
-              "question": "Select your calculated shape."
+              "label": "Select your calculated shape."
             }
           ],
           "resource_urls": [],

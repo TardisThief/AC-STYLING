@@ -627,7 +627,9 @@ work outright or would quietly rot while attention is elsewhere.
 
 Ordered so the first item unblocks the rest.
 
-- **1. Make the catalog round-trip cleanly — this is the gate.**
+- ~~**1. Make the catalog round-trip cleanly.**~~ — **done (2026-09-20)**, migration 17. Round-trip errors went **24 → 10**, and all 10 remaining are `video_id` placeholders on the 5 published modules: F09, the content blocker, and nothing else. The structural defects are gone. Original text follows for the record.
+
+- **~~1.~~ (detail) Make the catalog round-trip cleanly — this was the gate.**
   `node scripts/export_catalog.mjs` followed by `node scripts/import_catalog.mjs`
   on live data reports **24 errors**, so the tool the content work depends on
   refuses to run against the content it just exported. Both causes are in the
