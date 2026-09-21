@@ -1,7 +1,18 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * E2E Tests for the tokenized wardrobe upload flow and public route access.
+ * E2E Tests for the tokenized wardrobe upload flow and route access.
+ *
+ * The "Public Content Access" block that used to live here asserted that
+ * `/vault/courses`, `/vault/services` and `/vault/boutique` were viewable
+ * without logging in. They are not, and were not: `proxy.ts` protects the
+ * whole of `/vault`. Verified against production on 2026-09-20 — all three
+ * answer 307 to `/en/login?next=…`.
+ *
+ * Those tests could only ever have failed, which is its own finding: the E2E
+ * suite is not part of CI, so nothing noticed. A test asserting the opposite
+ * of the system is worse than no test, because it makes the rest of the suite
+ * untrustworthy.
  */
 
 test.describe('Wardrobe Upload Flow', () => {
@@ -17,45 +28,63 @@ test.describe('Wardrobe Upload Flow', () => {
     })
 })
 
-test.describe('Public Content Access', () => {
-    test('courses page is viewable without login', async ({ page }) => {
-        await page.goto('/en/vault/courses')
+test.describe('Public routes', () => {
+    // What is actually reachable without an account. `/vault-access` is the
+    // public sales page; `/vault` is the members' library and is not.
+    const publicPaths = [
+        '/en/vault-access',
+        '/es/vault-access',
+        '/en/book',
+        '/en/legal/terms',
+    ]
 
-        // Page should load (may show courses or empty state, but not redirect)
-        await expect(page).toHaveURL('/en/vault/courses')
-    })
+    for (const path of publicPaths) {
+        test(`${path} is reachable without logging in`, async ({ page }) => {
+            const response = await page.goto(path)
 
-    test('services page is viewable without login', async ({ page }) => {
-        await page.goto('/en/vault/services')
-
-        await expect(page).toHaveURL('/en/vault/services')
-    })
-
-    test('boutique page is viewable without login', async ({ page }) => {
-        await page.goto('/en/vault/boutique')
-
-        await expect(page).toHaveURL('/en/vault/boutique')
-    })
+            expect(response?.status()).toBe(200)
+            await expect(page).toHaveURL(new RegExp(`${path}$`))
+        })
+    }
 })
 
-test.describe('Protected Routes', () => {
-    test('admin page redirects to login', async ({ page }) => {
-        await page.goto('/en/vault/admin')
+test.describe('Vault routes require authentication', () => {
+    // Every one of these previously had a test, and three of them asserted the
+    // opposite outcome. They are one list now so a new gated route cannot be
+    // added to one group and forgotten in the other.
+    const gatedPaths = [
+        '/en/vault/courses',
+        '/en/vault/services',
+        '/en/vault/boutique',
+        '/en/vault/admin',
+        '/en/vault/studio',
+        '/en/vault/profile',
+    ]
 
-        // Should redirect to login or show unauthorized
-        await expect(page).toHaveURL(/login|unauthorized/)
+    for (const path of gatedPaths) {
+        test(`${path} redirects an anonymous visitor to login`, async ({ page }) => {
+            await page.goto(path)
+
+            await expect(page).toHaveURL(/\/login/)
+        })
+    }
+
+    // `/vault` itself is the one exception, and deliberately so: an anonymous
+    // visitor to the members' library is sent to the public sales page rather
+    // than a login form, because they are far more likely to be a prospect
+    // than a member who lost their session. Pinned because the distinction is
+    // easy to "fix" into a login redirect and lose the conversion path.
+    test('/en/vault sends an anonymous visitor to the sales page, not login', async ({ page }) => {
+        await page.goto('/en/vault')
+
+        await expect(page).toHaveURL(/\/vault-access/)
     })
 
-    test('studio page requires authentication', async ({ page }) => {
-        await page.goto('/en/vault/studio')
+    test('the login redirect remembers where the visitor was going', async ({ page }) => {
+        // The `next` parameter is what returns someone to the page they asked
+        // for after signing in. Losing it silently drops them on the dashboard.
+        await page.goto('/en/vault/courses')
 
-        // Should require login
-        await expect(page).toHaveURL(/login|unauthorized/)
-    })
-
-    test('profile page requires authentication', async ({ page }) => {
-        await page.goto('/en/vault/profile')
-
-        await expect(page).toHaveURL(/login|unauthorized/)
+        await expect(page).toHaveURL(/next=%2Fen%2Fvault%2Fcourses/)
     })
 })

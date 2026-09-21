@@ -8,8 +8,27 @@ on:
 
 jobs:
   test:
-    name: Unit and database authorization tests
+    name: Typecheck, unit and database authorization tests, build
     runs-on: ubuntu-latest
+
+    # The production build imports modules that read configuration at load time
+    # — utils/stripe.ts throws outright if STRIPE_SECRET_KEY is absent — so a
+    # build with no environment fails before it compiles anything.
+    #
+    # These are deliberately fake. Verified locally on 2026-09-20: the build
+    # completes with dummy values, because nothing it prerenders depends on a
+    # reachable Supabase or Stripe. That is the point — CI gets real build
+    # coverage without a single credential, and nothing here is a secret that
+    # could leak from a fork's pull request.
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: dummy-service-key
+      STRIPE_SECRET_KEY: sk_test_dummy
+      STRIPE_WEBHOOK_SECRET: whsec_dummy
+      RESEND_API_KEY: re_dummy
+      NEXT_PUBLIC_SITE_URL: https://www.theacstyle.com
+
     steps:
       - uses: actions/checkout@v4
 
@@ -21,10 +40,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run unit and isolated PostgreSQL tests
-        run: npm run test:run
+      # Runs before the slower steps: it is the fastest way to catch the
+      # largest class of breakage, and it catches things the other two miss.
+      # `npm run lint` and `npm run test:run` both pass on code that does not
+      # compile.
+      - name: Typecheck
+        run: npx tsc --noEmit
 
       # Lint is a blocking gate (P2 backlog cleared 2026-07-14). Errors fail the
       # build; warnings (e.g. no-img-element) remain non-blocking.
       - name: Lint
         run: npm run lint
+
+      - name: Run unit and isolated PostgreSQL tests
+        run: npm run test:run
+
+      # Added 2026-09-20. Three failures in one session passed both lint and
+      # the test suite and still broke `npm run build`: the rule that every
+      # export from a "use server" module must be an async function, and two
+      # test-typing errors. Nothing else in this workflow would have caught
+      # them, and the cost of finding out at deploy time is a broken
+      # production build.
+      - name: Production build
+        run: npm run build

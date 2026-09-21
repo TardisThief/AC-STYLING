@@ -285,11 +285,19 @@ export default async function VaultLandingPage({
                                         locale={locale}
                                         t={{
                                             modulesLabel: t("catalog.modulesLabel"),
-                                            runtimeApprox: t("catalog.runtimeApprox"),
+                                            // `t.raw` on purpose for the two strings the card
+                                            // substitutes itself: they carry `{hours}` and `{date}`
+                                            // placeholders that CatalogCard fills with a locale-formatted
+                                            // value, so calling `t()` here asks next-intl to format a
+                                            // variable it was never given. That threw a FORMATTING_ERROR
+                                            // on every render of this page and only looked fine because
+                                            // the fallback happens to return the raw message — the exact
+                                            // string the card needs. `t.raw` asks for it deliberately.
+                                            runtimeApprox: t.raw("catalog.runtimeApprox"),
                                             includedBadge: t("catalog.includedBadge"),
                                             inProductionBadge: t("catalog.inProductionBadge"),
                                             inProductionNote: t("catalog.inProductionNote"),
-                                            availableOn: t("catalog.availableOn"),
+                                            availableOn: t.raw("catalog.availableOn"),
                                         }}
                                     />
                                 ))}
