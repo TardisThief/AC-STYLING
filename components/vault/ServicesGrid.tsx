@@ -310,7 +310,7 @@ export default function ServicesGrid({ sessionServices, retainerService, recomme
                 </a>
 
                 <p className="text-ac-taupe/40 text-[10px] md:text-xs font-sans tracking-[0.2em] uppercase">
-                    {t('corporate')} <a href="mailto:hello@acstyling.com" className="hover:text-ac-taupe transition-colors">hello@acstyling.com</a>
+                    {t('corporate')} <a href="mailto:hello@theacstyle.com" className="hover:text-ac-taupe transition-colors">hello@theacstyle.com</a>
                 </p>
             </motion.div>
         </div>

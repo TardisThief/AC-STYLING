@@ -15,8 +15,7 @@
  * the one thing every deliverability guide agrees on.
  */
 
-/** Canonical site URL. Read from env so emails cannot drift from the deployment. */
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://theacstyle.com').replace(/\/$/, '');
+import { SITE_URL } from '@/app/lib/site-url';
 
 /** The registered business address, matching the one published in the legal terms. */
 const POSTAL_ADDRESS = 'AC Styling &middot; 1865 S Ocean Dr, Hallandale Beach, FL 33009, United States';
@@ -37,7 +36,7 @@ export const emailFooter = (reason: string) => `
             <p style="margin: 0 0 6px 0; font-size: 10px; color: #8C847B;">You received this email because ${reason}.</p>
             <p style="margin: 0 0 6px 0; font-size: 10px; color: #8C847B;">${POSTAL_ADDRESS}</p>
             <p style="margin: 0; font-size: 10px; color: #8C847B;">
-                Questions? <a href="mailto:fashionstylist.ac@gmail.com" style="color: #8C847B;">fashionstylist.ac@gmail.com</a>
+                Questions? <a href="mailto:hello@theacstyle.com" style="color: #8C847B;">hello@theacstyle.com</a>
                 &nbsp;&middot;&nbsp; &copy; 2026 AC Styling
             </p>
         </div>

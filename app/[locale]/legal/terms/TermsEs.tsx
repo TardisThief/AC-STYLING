@@ -18,7 +18,7 @@ export default function TermsEs() {
     return (
         <article className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:text-ac-taupe prose-p:text-ac-taupe/80 prose-a:text-ac-espresso hover:prose-a:text-ac-taupe">
             <h1 className="font-serif text-4xl mb-4">TÉRMINOS Y CONDICIONES</h1>
-            <p className="text-sm text-gray-500 mb-8">Última actualización: 20 de septiembre de 2026</p>
+            <p className="text-sm text-gray-500 mb-8">Última actualización: 23 de septiembre de 2026</p>
 
             <h2>ACEPTACIÓN DE NUESTROS TÉRMINOS LEGALES</h2>
             <p>Somos AC Styling (&quot;<strong>la Empresa</strong>&quot;, &quot;<strong>nosotros</strong>&quot; o &quot;<strong>nuestro</strong>&quot;), una empresa registrada en Florida, Estados Unidos, con domicilio en 1865 S Ocean Dr, Hallandale Beach, FL 33009.</p>
@@ -29,7 +29,7 @@ export default function TermsEs() {
                 <li><strong>Servicios de asesoría:</strong> asesoría de estilo personalizada, revisión de clóset (&quot;Detox&quot;) y servicios de curaduría, entregados por medios digitales.</li>
                 <li><strong>Aviso:</strong> toda asesoría de estilo es subjetiva y tiene fines informativos y estéticos. La Clienta conserva plena discreción sobre todas sus decisiones de compra.</li>
             </ul>
-            <p>Puedes contactarnos por correo electrónico en <a href="mailto:fashionstylist.ac@gmail.com">fashionstylist.ac@gmail.com</a> o por correo postal a 1865 S Ocean Dr, Hallandale Beach, FL 33009, Estados Unidos.</p>
+            <p>Puedes contactarnos por correo electrónico en <a href="mailto:hello@theacstyle.com">hello@theacstyle.com</a> o por correo postal a 1865 S Ocean Dr, Hallandale Beach, FL 33009, Estados Unidos.</p>
             <p>Estos Términos Legales constituyen un acuerdo legalmente vinculante celebrado entre tú, ya sea a título personal o en representación de una entidad (&quot;tú&quot;), y AC Styling, en relación con tu acceso y uso de los Servicios. Aceptas que, al acceder a los Servicios, has leído, entendido y aceptado quedar obligado por todos estos Términos Legales. SI NO ESTÁS DE ACUERDO CON LA TOTALIDAD DE ESTOS TÉRMINOS LEGALES, QUEDAS EXPRESAMENTE PROHIBIDO DE USAR LOS SERVICIOS Y DEBES INTERRUMPIR SU USO DE INMEDIATO.</p>
             <p>Los términos, condiciones o documentos complementarios que se publiquen en los Servicios de tiempo en tiempo quedan expresamente incorporados aquí por referencia. Nos reservamos el derecho, a nuestra entera discreción, de realizar cambios o modificaciones a estos Términos Legales en cualquier momento. Te avisaremos de cualquier cambio actualizando la fecha de &quot;Última actualización&quot; de estos Términos Legales, y renuncias a cualquier derecho a recibir notificación específica de cada cambio. Es tu responsabilidad revisar periódicamente estos Términos Legales para mantenerte informada de las actualizaciones. Quedarás sujeta a —y se considerará que has conocido y aceptado— los cambios de cualquier versión revisada de los Términos Legales por el hecho de continuar usando los Servicios después de la fecha en que dicha versión se publique.</p>
 
@@ -214,7 +214,7 @@ export default function TermsEs() {
                 1865 S Ocean Dr<br />
                 Hallandale Beach, FL 33009<br />
                 Estados Unidos<br />
-                <a href="mailto:fashionstylist.ac@gmail.com">fashionstylist.ac@gmail.com</a>
+                <a href="mailto:hello@theacstyle.com">hello@theacstyle.com</a>
             </p>
         </article>
     );

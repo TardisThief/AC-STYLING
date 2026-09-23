@@ -24,7 +24,7 @@ export function organizationJsonLd(locale: string, description: string) {
         logo: `${SITE_URL}/logo.png`,
         image: `${SITE_URL}/logo.png`,
         description,
-        email: 'fashionstylist.ac@gmail.com',
+        email: 'hello@theacstyle.com',
         founder: {
             '@type': 'Person',
             name: 'Alejandra Carrillo',

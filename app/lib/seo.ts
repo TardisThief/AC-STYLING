@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { routing } from '@/i18n/routing';
+import { SITE_URL } from './site-url';
 
 /**
  * Shared metadata construction: canonical URL, hreflang alternates, OG and
@@ -11,9 +12,10 @@ import { routing } from '@/i18n/routing';
  * unrelated duplicates.
  */
 
-export const SITE_URL = (
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://theacstyle.com'
-).replace(/\/$/, '');
+// Defined in its own module so non-React consumers (the email templates) can
+// read it without pulling next-intl in through this file; re-exported here
+// because this is where the rest of the app already imports it from.
+export { SITE_URL };
 
 /** Absolute URL for a locale-prefixed path. `path` is locale-less, e.g. "/vault". */
 export function localeUrl(locale: string, path = ''): string {

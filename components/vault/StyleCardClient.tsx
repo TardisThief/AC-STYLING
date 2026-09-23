@@ -126,7 +126,7 @@ export default function StyleCardClient({ profile, essence, journey }: StyleCard
                 <div className="border-t border-[#3D3630]/20 pt-6 mt-10 flex justify-between items-end">
                     <div>
                         <p className="text-[9px] uppercase tracking-widest font-sans text-[#3D3630]/40">AC Styling</p>
-                        <p className="text-[9px] font-sans text-[#3D3630]/30">acstyling.com</p>
+                        <p className="text-[9px] font-sans text-[#3D3630]/30">theacstyle.com</p>
                     </div>
                     <p className="text-[9px] font-sans text-[#3D3630]/20">
                         Generated {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}

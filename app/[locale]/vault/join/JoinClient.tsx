@@ -138,7 +138,7 @@ export default function JoinPage() {
                                         name="email"
                                         type="email"
                                         required
-                                        placeholder="client@acstyling.com"
+                                        placeholder="client@example.com"
                                         className="w-full bg-white/50 border border-[#3D3630]/10 rounded-sm px-4 py-4 text-[#3D3630] placeholder:text-[#3D3630]/20 focus:outline-none focus:border-[#D4AF37] focus:bg-white transition-all font-serif"
                                     />
                                 </div>

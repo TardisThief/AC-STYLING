@@ -7,7 +7,7 @@ export default function PrivacyEn() {
         <article className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:text-ac-taupe prose-p:text-ac-taupe/80 prose-a:text-ac-espresso hover:prose-a:text-ac-taupe">
             {/* Content from user */}
             <h1 className="font-serif text-4xl mb-4">PRIVACY NOTICE</h1>
-            <p className="text-sm text-gray-500 mb-8">Last updated September 20, 2026</p>
+            <p className="text-sm text-gray-500 mb-8">Last updated September 23, 2026</p>
 
             <p>
                 This Privacy Notice for AC Styling (&quot;<strong>we</strong>,&quot; &quot;<strong>us</strong>,&quot; or &quot;<strong>our</strong>&quot;), describes how and why we might access, collect, store, use, and/or share (&quot;<strong>process</strong>&quot;) your personal information when you use our services (&quot;<strong>Services</strong>&quot;), including when you:
@@ -27,7 +27,7 @@ export default function PrivacyEn() {
             </ul>
 
             <p>
-                <strong>Questions or concerns?</strong> Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at <a href="mailto:fashionstylist.ac@gmail.com">fashionstylist.ac@gmail.com</a>.
+                <strong>Questions or concerns?</strong> Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at <a href="mailto:hello@theacstyle.com">hello@theacstyle.com</a>.
             </p>
 
             <h2>SUMMARY OF KEY POINTS</h2>
@@ -201,7 +201,7 @@ export default function PrivacyEn() {
 
             <h2 id="infominors">10. DO WE COLLECT INFORMATION FROM MINORS?</h2>
             <p><strong><em>In Short:</em></strong> <em>We do not knowingly collect data from or market to children under 18 years of age.</em></p>
-            <p>We do not knowingly collect, solicit data from, or market to children under 18 years of age, nor do we knowingly sell such personal information. By using the Services, you represent that you are at least 18 or that you are the parent or guardian of such a minor and consent to such minor dependent’s use of the Services. If we learn that personal information from users less than 18 years of age has been collected, we will deactivate the account and take reasonable measures to promptly delete such data from our records. If you become aware of any data we may have collected from children under age 18, please contact us at <a href="mailto:fashionstylist.ac@gmail.com">fashionstylist.ac@gmail.com</a>.</p>
+            <p>We do not knowingly collect, solicit data from, or market to children under 18 years of age, nor do we knowingly sell such personal information. By using the Services, you represent that you are at least 18 or that you are the parent or guardian of such a minor and consent to such minor dependent’s use of the Services. If we learn that personal information from users less than 18 years of age has been collected, we will deactivate the account and take reasonable measures to promptly delete such data from our records. If you become aware of any data we may have collected from children under age 18, please contact us at <a href="mailto:hello@theacstyle.com">hello@theacstyle.com</a>.</p>
 
             <h2 id="privacyrights">11. WHAT ARE YOUR PRIVACY RIGHTS?</h2>
             <p><strong><em>In Short:</em></strong> <em>Depending on your state of residence in the US or in some regions, such as the European Economic Area (EEA), United Kingdom (UK), Switzerland, and Canada, you have rights that allow you greater access to and control over your personal information. You may review, change, or terminate your account at any time.</em></p>
@@ -233,7 +233,7 @@ export default function PrivacyEn() {
             <p>For more detailed information or to exercise your rights, please contact us.</p>
 
             <h2 id="contact">14. HOW CAN YOU CONTACT US ABOUT THIS NOTICE?</h2>
-            <p>If you have questions or comments about this notice, you may email us at <a href="mailto:fashionstylist.ac@gmail.com">fashionstylist.ac@gmail.com</a>.</p>
+            <p>If you have questions or comments about this notice, you may email us at <a href="mailto:hello@theacstyle.com">hello@theacstyle.com</a>.</p>
 
             <h2 id="request">15. HOW CAN YOU REVIEW, UPDATE, OR DELETE THE DATA WE COLLECT FROM YOU?</h2>
             <p>Based on the applicable laws of your country, you may have the right to request access to the personal information we collect from you, change that information, or delete it. To request to review, update, or delete your personal information, please submit a request by contacting us.</p>

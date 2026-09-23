@@ -55,7 +55,7 @@ describe('email-templates', () => {
         })
 
         it.each(ALL)('%s offers a way to reach a human', (_name, html) => {
-            expect(html).toContain('mailto:fashionstylist.ac@gmail.com')
+            expect(html).toContain('mailto:hello@theacstyle.com')
         })
 
         // These are transactional, not commercial. An unsubscribe link on a

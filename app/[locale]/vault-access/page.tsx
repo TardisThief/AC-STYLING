@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
-import { buildMetadata } from "@/app/lib/seo";
+import { buildMetadata, SITE_URL } from "@/app/lib/seo";
 import Navbar from "@/components/Navbar";
 import Spine from "@/components/vault-sales/Spine";
 import CatalogCard from "@/components/vault-sales/CatalogCard";
@@ -116,11 +116,9 @@ export default async function VaultLandingPage({
                     name: pickLocale(locale, e.title, e.title_es),
                     description: pickLocale(locale, e.description, e.description_es),
                     inLanguage: locale,
-                    provider: {
-                        "@type": "Organization",
-                        name: "AC Styling",
-                        url: "https://theacstyle.com",
-                    },
+                    // A reference to the Organization node the home page
+                    // defines, not a second copy of it: same @id, one entity.
+                    provider: { "@id": `${SITE_URL}/#organization` },
                 })),
             {
                 "@type": "FAQPage",
