@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Masterclass } from "@/app/lib/types";
+import type { Masterclass, VaultResource } from "@/app/lib/types";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, Plus, Trash2, Image as ImageIcon } from "lucide-react";
+import { X, Plus, Trash2, Image as ImageIcon } from "lucide-react";
+import ResourceEditor from "./ResourceEditor";
 import Image from "next/image";
 import { createChapter, updateChapter } from "@/app/actions/admin/manage-chapters";
 import { getMasterclasses } from "@/app/actions/admin/manage-masterclasses";
@@ -29,7 +30,7 @@ interface Chapter {
     lab_questions: LabQuestion[];
     takeaways: string[];
     takeaways_es?: string[];
-    resource_urls: ResourceUrl[];
+    resource_urls: VaultResource[];
     stripe_product_id?: string;
     price_id?: string;
 }
@@ -42,11 +43,6 @@ interface LabQuestion {
     placeholder_es?: string;
     mapToEssence?: boolean;
     mappingCategory?: string;
-}
-
-interface ResourceUrl {
-    name: string;
-    url: string;
 }
 
 interface ChapterFormProps {
@@ -94,12 +90,11 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
     const [takeawaysEs, setTakeawaysEs] = useState<string[]>(
         chapter?.takeaways_es || []
     );
-    const [resourceUrls, setResourceUrls] = useState<Array<{ name: string, url: string }>>(
+    const [resourceUrls, setResourceUrls] = useState<VaultResource[]>(
         chapter?.resource_urls || []
     );
 
     const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
-    const [uploadingFile, setUploadingFile] = useState(false);
 
     // Sync state when chapter prop changes
     useEffect(() => {
@@ -138,21 +133,6 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
             const url = await uploadAssetWithToast(acceptedFiles[0], 'Thumbnail uploaded');
             if (url) setFormData({ ...formData, thumbnailUrl: url });
             setUploadingThumbnail(false);
-        }
-    });
-
-    // Resource PDF uploader
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({
-        accept: { 'application/pdf': ['.pdf'] },
-        maxFiles: 1,
-        onDrop: async (acceptedFiles) => {
-            if (acceptedFiles.length === 0) return;
-
-            setUploadingFile(true);
-            const file = acceptedFiles[0];
-            const url = await uploadAssetWithToast(file, 'File uploaded');
-            if (url) setResourceUrls([...resourceUrls, { name: file.name, url }]);
-            setUploadingFile(false);
         }
     });
 
@@ -710,40 +690,12 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
                         </div>
 
                         {/* Resources */}
-                        <div className="space-y-4">
-                            <label className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">
-                                Resources (PDFs)
-                            </label>
-
-                            <div
-                                {...getRootProps()}
-                                className={`border-2 border-dashed rounded-sm p-4 text-center cursor-pointer transition-colors ${isDragActive
-                                    ? 'border-ac-gold bg-ac-gold/5'
-                                    : 'border-ac-taupe/20 hover:border-ac-gold/50'
-                                    }`}
-                            >
-                                <input {...getInputProps()} />
-                                <Upload size={20} className="mx-auto mb-2 text-ac-taupe/40" />
-                                <p className="text-xs text-ac-taupe/60">
-                                    {uploadingFile ? 'Uploading...' : 'Drop PDF'}
-                                </p>
-                            </div>
-
-                            <div className="space-y-2">
-                                {resourceUrls.map((r, i) => (
-                                    <div key={i} className="flex justify-between items-center bg-white/20 p-2 rounded-sm">
-                                        <span className="text-xs text-ac-taupe truncate">{r.name}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setResourceUrls(prev => prev.filter((_, idx) => idx !== i))}
-                                            className="text-red-500 hover:text-red-700"
-                                        >
-                                            <X size={14} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <ResourceEditor
+                            value={resourceUrls}
+                            onChange={setResourceUrls}
+                            label="Module Resources"
+                            hint="Shown on this module only. A masterclass's own resources appear above these automatically."
+                        />
                     </div>
                 </div>
             </div>

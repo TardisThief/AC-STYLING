@@ -107,6 +107,12 @@ export interface Chapter {
     masterclasses?: { title: string } | { title: string }[] | null;
 }
 
+/** One downloadable in a chapter's or masterclass's `resource_urls` column. */
+export interface VaultResource {
+    name: string;
+    url: string;
+}
+
 export interface Masterclass {
     id: string;
     title: string;
@@ -121,6 +127,7 @@ export interface Masterclass {
     subtitle_es: string | null;
     description_es: string | null;
     takeaways_es: unknown;
+    resource_urls: unknown[] | null;
     created_at: string;
     updated_at: string;
 }

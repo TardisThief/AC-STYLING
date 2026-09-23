@@ -67,6 +67,10 @@ export async function createChapter(formData: FormData) {
     revalidatePath('/vault/foundations');
     revalidatePath(`/vault/foundations/${parsed.data.slug}`);
     revalidatePath(`/${formData.get('locale') || 'en'}/vault/foundations/${parsed.data.slug}`);
+    // A standalone course renders at /vault/courses/<slug>, which was never
+    // invalidated here — an edit to one served stale until the route expired.
+    revalidatePath(`/vault/courses/${parsed.data.slug}`);
+    revalidatePath(`/${formData.get('locale') || 'en'}/vault/courses/${parsed.data.slug}`);
 
     return { success: true, chapter };
 }
@@ -98,6 +102,10 @@ export async function updateChapter(chapterId: string, formData: FormData) {
     revalidatePath('/vault/foundations');
     revalidatePath(`/vault/foundations/${parsed.data.slug}`);
     revalidatePath(`/${formData.get('locale') || 'en'}/vault/foundations/${parsed.data.slug}`);
+    // A standalone course renders at /vault/courses/<slug>, which was never
+    // invalidated here — an edit to one served stale until the route expired.
+    revalidatePath(`/vault/courses/${parsed.data.slug}`);
+    revalidatePath(`/${formData.get('locale') || 'en'}/vault/courses/${parsed.data.slug}`);
 
     return { success: true };
 }

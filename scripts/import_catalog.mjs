@@ -29,7 +29,7 @@ const MASTERCLASS_FIELDS = [
     'title', 'subtitle', 'description',
     'title_es', 'subtitle_es', 'description_es',
     'thumbnail_url', 'video_url', 'order_index',
-    'price_display', 'runtime_minutes',
+    'price_display', 'runtime_minutes', 'resource_urls',
     'stripe_product_id', 'price_id',
     'is_published', 'available_at',
 ];
@@ -69,6 +69,17 @@ const seenSlugs = new Map();
 const seenTitles = new Map();
 const seenLabKeys = new Map();
 
+/** Masterclasses and chapters both carry a resource_urls list of { name, url }. */
+function checkResources(where, row) {
+    const resources = row.resource_urls ?? [];
+    if (!Array.isArray(resources)) return err(where, 'resource_urls must be an array');
+    resources.forEach((r, i) => {
+        if (!r || typeof r !== 'object') return err(where, `resource_urls[${i}] must be an object`);
+        if (!r.name?.trim()) err(where, `resource_urls[${i}].name is required`);
+        if (!/^https?:\/\//.test(r.url ?? '')) err(where, `resource_urls[${i}].url must be an http(s) URL`);
+    });
+}
+
 function checkJsonArrays(where, ch) {
     for (const field of ['takeaways', 'takeaways_es']) {
         const list = ch[field] ?? [];
@@ -76,16 +87,7 @@ function checkJsonArrays(where, ch) {
         if (list.some(t => typeof t !== 'string' || !t.trim())) err(where, `${field} must contain non-empty strings`);
     }
 
-    const resources = ch.resource_urls ?? [];
-    if (!Array.isArray(resources)) {
-        err(where, 'resource_urls must be an array');
-    } else {
-        resources.forEach((r, i) => {
-            if (!r || typeof r !== 'object') return err(where, `resource_urls[${i}] must be an object`);
-            if (!r.name?.trim()) err(where, `resource_urls[${i}].name is required`);
-            if (!/^https?:\/\//.test(r.url ?? '')) err(where, `resource_urls[${i}].url must be an http(s) URL`);
-        });
-    }
+    checkResources(where, ch);
 
     const questions = ch.lab_questions ?? [];
     if (!Array.isArray(questions)) return err(where, 'lab_questions must be an array');
@@ -167,6 +169,8 @@ masterclasses.forEach((m, i) => {
         warn(where, 'video_url is not a Vimeo URL — the teaser simply will not render');
     }
     if (m.available_at && Number.isNaN(Date.parse(m.available_at))) err(where, 'available_at must be an ISO timestamp or null');
+
+    checkResources(where, m);
 
     if (m.is_published) {
         if (!m.thumbnail_url) err(where, 'cannot publish without a thumbnail_url — the catalog card needs it');

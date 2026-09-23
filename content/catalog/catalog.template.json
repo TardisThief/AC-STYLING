@@ -21,6 +21,9 @@
       "order_index": 1,
       "price_display": "REQUIRED to publish — the string shown on the card, e.g. \"$50\". Must match the Stripe price; nothing computes it.",
       "runtime_minutes": 60,
+      "resource_urls": [
+        { "name": "Masterclass Workbook (PDF)", "url": "https://.../workbook.pdf" }
+      ],
       "stripe_product_id": "REQUIRED to publish — prod_… from Stripe. This is what the webhook resolves to grant access.",
       "price_id": "REQUIRED to publish — price_… from Stripe. This is what Checkout charges.",
       "is_published": false,

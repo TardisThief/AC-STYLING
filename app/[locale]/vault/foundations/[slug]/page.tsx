@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
-import { FileText, CheckCircle2, Download, Lock } from "lucide-react";
+import { CheckCircle2, Lock } from "lucide-react";
 import { redirect } from "next/navigation";
 import VaultVideoPlayer from "@/components/vault/VaultVideoPlayer";
 import MarkComplete from "@/components/vault/MarkComplete";
@@ -12,6 +12,8 @@ import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
 import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
+import ResourcesCard from "@/components/vault/ResourcesCard";
+import type { VaultResource } from "@/app/lib/types";
 
 export const generateMetadata = pageMetadata({ key: 'vaultFoundation' });
 
@@ -61,13 +63,17 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     // is one unbroken literal that Supabase parses to infer the row shape, so
     // an embedded join cannot be added to it without collapsing that type.
     let masterclassTitle: string | null = null;
+    let masterclassResources: VaultResource[] = [];
     if (chapter.masterclass_id) {
         const { data: mc } = await supabase
             .from('masterclasses')
-            .select('title, title_es')
+            .select('title, title_es, resource_urls')
             .eq('id', chapter.masterclass_id)
             .single();
-        if (mc) masterclassTitle = locale === 'es' && mc.title_es ? mc.title_es : mc.title;
+        if (mc) {
+            masterclassTitle = locale === 'es' && mc.title_es ? mc.title_es : mc.title;
+            masterclassResources = (mc.resource_urls as VaultResource[] | null) ?? [];
+        }
     }
 
     // Localize Content
@@ -84,7 +90,13 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     const takeaways = (locale === 'es' && chapter.takeaways_es && chapter.takeaways_es.length > 0)
         ? chapter.takeaways_es
         : (chapter.takeaways || []);
-    const resourceUrls = chapter.resource_urls || [];
+    // A module inside a masterclass shows the masterclass's resources first,
+    // then its own — the workbook that covers the whole collection belongs on
+    // every module, not duplicated into one of them.
+    const resources: VaultResource[] = [
+        ...masterclassResources,
+        ...((chapter.resource_urls as VaultResource[] | null) ?? []),
+    ];
 
     // Fetch User Data
     const { data: { user } } = await supabase.auth.getUser();
@@ -265,33 +277,8 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
 
 
 
-                    {/* 3. Resources */}
-                    <div className="bg-white/20 backdrop-blur-md border border-white/30 p-6 rounded-sm shadow-sm">
-                        <h3 className="font-serif text-xl text-ac-taupe mb-4 flex items-center gap-2">
-                            <FileText size={20} className="text-ac-taupe" />
-                            Resources
-                        </h3>
-                        {resourceUrls.length > 0 ? (
-                            <div className="space-y-3">
-                                {resourceUrls.map((resource: { name: string, url: string }, i: number) => (
-                                    <a
-                                        key={i}
-                                        href={resource.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-full flex items-center justify-between p-3 bg-white/40 hover:bg-white/60 border border-transparent hover:border-ac-gold/20 transition-all rounded-sm group text-left"
-                                    >
-                                        <span className="text-sm font-bold text-ac-taupe group-hover:text-ac-olive truncate">
-                                            {resource.name}
-                                        </span>
-                                        <Download size={14} className="text-ac-gold ml-2" />
-                                    </a>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-sm text-ac-taupe/40 italic">No resources available for this chapter yet.</p>
-                        )}
-                    </div>
+                    {/* 3. Resources — the masterclass's, then this module's */}
+                    <ResourcesCard resources={resources} hasAccess={hasAccess} />
                 </div>
             </div>
         </section>

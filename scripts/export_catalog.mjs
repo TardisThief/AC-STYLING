@@ -32,7 +32,7 @@ const MASTERCLASS_FIELDS = [
     'title', 'subtitle', 'description',
     'title_es', 'subtitle_es', 'description_es',
     'thumbnail_url', 'video_url', 'order_index',
-    'price_display', 'runtime_minutes',
+    'price_display', 'runtime_minutes', 'resource_urls',
     'stripe_product_id', 'price_id',
     'is_published', 'available_at',
 ];

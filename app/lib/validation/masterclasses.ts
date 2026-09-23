@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { requiredText, optionalText, orderIndex } from './parse';
+import { requiredText, optionalText, orderIndex, resourceList } from './parse';
 
 export const masterclassSchema = z.object({
     title: requiredText('Title'),
@@ -11,6 +11,7 @@ export const masterclassSchema = z.object({
     thumbnail_url: optionalText,
     video_url: optionalText,
     order_index: orderIndex,
+    resource_urls: resourceList('Resources'),
     stripe_product_id: optionalText,
     price_id: optionalText,
 });

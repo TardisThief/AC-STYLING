@@ -14,6 +14,8 @@ import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
 import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
+import MasterclassResourcesButton from "@/components/vault/MasterclassResourcesButton";
+import type { VaultResource } from "@/app/lib/types";
 
 export const generateMetadata = pageMetadata({ key: 'vaultMasterclass' });
 
@@ -84,6 +86,11 @@ export default async function MasterclassPage({ params }: { params: Promise<{ id
     const mcTitle = locale === 'es' && masterclass.title_es ? masterclass.title_es : masterclass.title;
     const mcDescription = locale === 'es' && masterclass.description_es ? masterclass.description_es : masterclass.description;
 
+    // Resources for the collection as a whole. The same list is repeated above
+    // each module's own resources, so a member finds the workbook wherever
+    // they happen to be.
+    const mcResources = (masterclass.resource_urls as VaultResource[] | null) ?? [];
+
     return (
         <section className="min-h-screen">
             <CheckoutSyncHandler />
@@ -150,13 +157,16 @@ export default async function MasterclassPage({ params }: { params: Promise<{ id
                                         />
                                     </div>
 
-                                    <Link
-                                        href={`/vault/foundations/${firstIncompleteSlug}`}
-                                        className="inline-flex items-center gap-2 bg-ac-taupe text-white px-6 py-3 rounded-sm hover:bg-ac-olive transition-colors uppercase tracking-widest text-xs font-bold"
-                                    >
-                                        <PlayCircle size={16} />
-                                        Continue Learning
-                                    </Link>
+                                    <div className="flex flex-wrap gap-3">
+                                        <Link
+                                            href={`/vault/foundations/${firstIncompleteSlug}`}
+                                            className="inline-flex items-center gap-2 bg-ac-taupe text-white px-6 py-3 rounded-sm hover:bg-ac-olive transition-colors uppercase tracking-widest text-xs font-bold"
+                                        >
+                                            <PlayCircle size={16} />
+                                            Continue Learning
+                                        </Link>
+                                        <MasterclassResourcesButton resources={mcResources} />
+                                    </div>
                                 </>
                             ) : (
                                 <>

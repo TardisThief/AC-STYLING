@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Masterclass } from "@/app/lib/types";
+import type { Masterclass, VaultResource } from "@/app/lib/types";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { createMasterclass, updateMasterclass } from "@/app/actions/admin/manage-masterclasses";
 import { uploadAssetWithToast } from "@/app/lib/upload-client";
+import ResourceEditor from "./ResourceEditor";
 import { toast } from "sonner";
 
 interface MasterclassFormProps {
@@ -36,6 +37,10 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
         priceId: masterclass?.price_id || '',
     });
 
+    const [resourceUrls, setResourceUrls] = useState<VaultResource[]>(
+        (masterclass?.resource_urls as VaultResource[] | null) || []
+    );
+
     const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
     useEffect(() => {
@@ -52,6 +57,7 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
             stripeProductId: masterclass?.stripe_product_id || '',
             priceId: masterclass?.price_id || '',
         });
+        setResourceUrls((masterclass?.resource_urls as VaultResource[] | null) || []);
     }, [masterclass]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -82,6 +88,7 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
         fd.append('orderIndex', formData.orderIndex.toString());
         fd.append('stripeProductId', formData.stripeProductId);
         fd.append('priceId', formData.priceId);
+        fd.append('resourceUrls', JSON.stringify(resourceUrls));
 
         const result = masterclass
             ? await updateMasterclass(masterclass.id, fd)
@@ -96,6 +103,7 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
                     titleEs: '', subtitleEs: '', descriptionEs: '',
                     thumbnailUrl: '', videoUrl: '', orderIndex: 0, stripeProductId: '', priceId: ''
                 });
+                setResourceUrls([]);
             }
         } else {
             toast.error(result.error);
@@ -266,6 +274,17 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
                         />
                     </div>
                 </div>
+            </div>
+
+            {/* Resources for the whole masterclass. These render on the
+                masterclass screen and above every module's own resources. */}
+            <div className="p-6 bg-ac-taupe/5 border border-ac-taupe/10 rounded-sm">
+                <ResourceEditor
+                    value={resourceUrls}
+                    onChange={setResourceUrls}
+                    label="Masterclass Resources"
+                    hint="Available from the masterclass screen and listed on every module in this masterclass."
+                />
             </div>
 
             {/* Stripe moved to bottom or kept in grid? Kept separate for safety */}

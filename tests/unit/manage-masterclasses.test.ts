@@ -87,6 +87,57 @@ describe('createMasterclass', () => {
     })
 })
 
+describe('masterclass resources', () => {
+    it('maps the resourceUrls field onto the resource_urls column', async () => {
+        const single = vi.fn().mockResolvedValue({ data: { id: MC_UUID }, error: null })
+        const insert = vi.fn(() => ({ select: vi.fn(() => ({ single })) }))
+        mockWriteFrom.mockReturnValue({ insert })
+
+        const resources = [
+            { name: 'Workbook', url: 'https://cdn.example.com/workbook.pdf' },
+            { name: 'Colour chart', url: 'https://cdn.example.com/colour.pdf' },
+        ]
+        const result = await createMasterclass(
+            masterclassForm({ resourceUrls: JSON.stringify(resources) }),
+        )
+
+        expect(result.success).toBe(true)
+        // Order is editorial — it is the order members read them in, so it
+        // must survive the round trip unchanged.
+        expect(insert).toHaveBeenCalledWith(expect.objectContaining({ resource_urls: resources }))
+    })
+
+    it('defaults to an empty list when the form sends no resources', async () => {
+        const single = vi.fn().mockResolvedValue({ data: { id: MC_UUID }, error: null })
+        const insert = vi.fn(() => ({ select: vi.fn(() => ({ single })) }))
+        mockWriteFrom.mockReturnValue({ insert })
+
+        await createMasterclass(masterclassForm())
+
+        expect(insert).toHaveBeenCalledWith(expect.objectContaining({ resource_urls: [] }))
+    })
+
+    it('refuses a resource whose link is not http(s) and writes nothing', async () => {
+        const result = await createMasterclass(masterclassForm({
+            resourceUrls: JSON.stringify([{ name: 'Sneaky', url: 'javascript:alert(1)' }]),
+        }))
+
+        expect(result.success).toBe(false)
+        expect(result.error).toContain('http://')
+        expect(mockWriteFrom).not.toHaveBeenCalled()
+    })
+
+    it('refuses a nameless resource — the name is what members click', async () => {
+        const result = await createMasterclass(masterclassForm({
+            resourceUrls: JSON.stringify([{ name: '   ', url: 'https://cdn.example.com/x.pdf' }]),
+        }))
+
+        expect(result.success).toBe(false)
+        expect(result.error).toContain('name')
+        expect(mockWriteFrom).not.toHaveBeenCalled()
+    })
+})
+
 describe('updateMasterclass / deleteMasterclass', () => {
     it('updateMasterclass rejects a malformed id', async () => {
         const result = await updateMasterclass('nope', masterclassForm())

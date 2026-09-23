@@ -11,6 +11,7 @@ import {
     optionalUuid,
     upsertId,
     jsonArray,
+    resourceList,
     booleanish,
 } from '@/app/lib/validation/parse'
 
@@ -122,6 +123,29 @@ describe('field primitives', () => {
         expect(j.parse(undefined)).toEqual([])
         expect(() => j.parse('{not json')).toThrow(/Takeaways contains invalid JSON/)
         expect(() => j.parse('"not-an-array"')).toThrow(/Takeaways must be a list/)
+    })
+
+    it('resourceList: accepts a well-formed list from a string or an array', () => {
+        const r = resourceList('Resources')
+        const list = [{ name: 'Workbook', url: 'https://cdn.example.com/w.pdf' }]
+        expect(r.parse(JSON.stringify(list))).toEqual(list)
+        expect(r.parse(list)).toEqual(list)
+        expect(r.parse('')).toEqual([])
+        expect(r.parse(null)).toEqual([])
+    })
+
+    it('resourceList: names and links are both required, and links must be http(s)', () => {
+        const r = resourceList('Resources')
+        expect(() => r.parse([{ name: '  ', url: 'https://cdn.example.com/w.pdf' }]))
+            .toThrow(/each file needs a name/)
+        expect(() => r.parse([{ name: 'Workbook' }]))
+            .toThrow(/each file needs a link/)
+        // A resource link is rendered as an <a href>; javascript: must never
+        // reach the column, whatever the admin form pastes in.
+        expect(() => r.parse([{ name: 'Workbook', url: 'javascript:alert(1)' }]))
+            .toThrow(/must start with http/)
+        expect(() => r.parse('{not json')).toThrow(/Resources contains invalid JSON/)
+        expect(() => r.parse('"not-an-array"')).toThrow(/Resources must be a list/)
     })
 
     it('booleanish: true only for true/"true"', () => {

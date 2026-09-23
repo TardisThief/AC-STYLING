@@ -1,7 +1,7 @@
 
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
-import { FileText, CheckCircle2, Download } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { redirect } from "next/navigation";
 import VaultVideoPlayer from "@/components/vault/VaultVideoPlayer";
 import MarkComplete from "@/components/vault/MarkComplete";
@@ -15,6 +15,8 @@ import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
 import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
+import ResourcesCard from "@/components/vault/ResourcesCard";
+import type { VaultResource } from "@/app/lib/types";
 
 export const generateMetadata = pageMetadata({ key: 'vaultCourse' });
 
@@ -58,7 +60,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
     const takeaways = (locale === 'es' && chapter.takeaways_es && chapter.takeaways_es.length > 0)
         ? chapter.takeaways_es
         : (chapter.takeaways || []);
-    const resourceUrls = chapter.resource_urls || [];
+    const resources = (chapter.resource_urls as VaultResource[] | null) ?? [];
 
     // Fetch User Data
     const { data: { user } } = await supabase.auth.getUser();
@@ -255,61 +257,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
 
 
                     {/* 3. Resources */}
-                    {hasAccess ? (
-                        <div className="bg-white/20 backdrop-blur-md border border-white/30 p-6 rounded-sm shadow-sm">
-                            <h3 className="font-serif text-xl text-ac-taupe mb-4 flex items-center gap-2">
-                                <FileText size={20} className="text-ac-taupe" />
-                                Resources
-                            </h3>
-                            {resourceUrls.length > 0 ? (
-                                <div className="space-y-3">
-                                    {resourceUrls.map((resource: { name: string, url: string }, i: number) => (
-                                        <a
-                                            key={i}
-                                            href={resource.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="w-full flex items-center justify-between p-3 bg-white/40 border border-transparent transition-all rounded-sm group text-left hover:bg-white/60 hover:border-ac-gold/20"
-                                        >
-                                            <span className="text-sm font-bold text-ac-taupe group-hover:text-ac-olive truncate">
-                                                {resource.name}
-                                            </span>
-                                            <Download size={14} className="text-ac-gold ml-2" />
-                                        </a>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-ac-taupe/40 italic">No resources available.</p>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="bg-white/20 backdrop-blur-md border border-white/30 p-6 rounded-sm shadow-sm opacity-50 cursor-not-allowed select-none">
-                            <div className="blur-[2px]">
-                                <h3 className="font-serif text-xl text-ac-taupe mb-4 flex items-center gap-2">
-                                    <FileText size={20} className="text-ac-taupe" />
-                                    Resources
-                                </h3>
-                                <div className="space-y-3">
-                                    {[1, 2].map((_, i) => (
-                                        <div
-                                            key={i}
-                                            className="w-full flex items-center justify-between p-3 bg-white/40 border border-transparent rounded-sm"
-                                        >
-                                            <span className="text-sm font-bold text-transparent bg-ac-taupe/10 rounded-sm">
-                                                Hidden Resource Name
-                                            </span>
-                                            <Download size={14} className="text-ac-gold/20 ml-2" />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="mt-4 text-center">
-                                <p className="text-xs text-ac-taupe/60 italic uppercase tracking-widest">
-                                    Unlock to view
-                                </p>
-                            </div>
-                        </div>
-                    )}
+                    <ResourcesCard resources={resources} hasAccess={hasAccess} />
                 </div>
             </div>
         </section>

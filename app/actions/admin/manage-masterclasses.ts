@@ -19,6 +19,7 @@ function masterclassInput(formData: FormData) {
         thumbnail_url: formData.get('thumbnailUrl'),
         video_url: formData.get('videoUrl'),
         order_index: formData.get('orderIndex'),
+        resource_urls: formData.get('resourceUrls'),
         stripe_product_id: formData.get('stripeProductId'),
         price_id: formData.get('priceId'),
     };
@@ -47,6 +48,9 @@ export async function createMasterclass(formData: FormData) {
     updateTag(VAULT_CATALOG_TAG);
     revalidatePath('/vault/admin');
     revalidatePath('/vault/foundations');
+    // A masterclass's resources render inside every one of its module pages,
+    // so an edit here goes stale there unless the whole route is invalidated.
+    revalidatePath('/vault/foundations/[slug]', 'page');
 
     return { success: true, masterclass: data };
 }
@@ -76,6 +80,9 @@ export async function updateMasterclass(id: string, formData: FormData) {
     updateTag(VAULT_CATALOG_TAG);
     revalidatePath('/vault/admin');
     revalidatePath('/vault/foundations');
+    // A masterclass's resources render inside every one of its module pages,
+    // so an edit here goes stale there unless the whole route is invalidated.
+    revalidatePath('/vault/foundations/[slug]', 'page');
 
     return { success: true };
 }

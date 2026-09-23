@@ -93,22 +93,53 @@ export const upsertId = (label: string) =>
     );
 
 /**
+ * Absent/empty -> [], a JSON string -> its parsed value, anything else through
+ * untouched. Malformed JSON becomes a validation issue instead of a thrown
+ * error. Shared by every jsonb-array field so they all fail the same way.
+ */
+function parseJsonArrayInput(value: unknown, ctx: z.RefinementCtx, label: string) {
+    if (value === '' || value === null || value === undefined) return [];
+    if (typeof value === 'string') {
+        try {
+            return JSON.parse(value);
+        } catch {
+            ctx.addIssue({ code: 'custom', message: `${label} contains invalid JSON` });
+            return z.NEVER;
+        }
+    }
+    return value;
+}
+
+/**
  * A jsonb array column fed either a real array or a JSON string from a form
  * field. Malformed JSON becomes a validation issue instead of a thrown error.
  */
 export const jsonArray = (label: string) =>
-    z.preprocess((value, ctx) => {
-        if (value === '' || value === null || value === undefined) return [];
-        if (typeof value === 'string') {
-            try {
-                return JSON.parse(value);
-            } catch {
-                ctx.addIssue({ code: 'custom', message: `${label} contains invalid JSON` });
-                return z.NEVER;
-            }
-        }
-        return value;
-    }, z.array(z.unknown(), { error: `${label} must be a list` }));
+    z.preprocess(
+        (value, ctx) => parseJsonArrayInput(value, ctx, label),
+        z.array(z.unknown(), { error: `${label} must be a list` }),
+    );
+
+/**
+ * A list of downloadable resources ([{ name, url }]) from a jsonb column or a
+ * JSON string form field. jsonArray would take these as z.unknown(), so the
+ * only place the item shape was ever checked was scripts/import_catalog.mjs —
+ * the admin forms could write a row the importer would later reject.
+ */
+export const resourceList = (label: string) =>
+    z.preprocess(
+        (value, ctx) => parseJsonArrayInput(value, ctx, label),
+        z.array(
+            z.object({
+                name: requiredText(`${label}: each file needs a name`),
+                url: z
+                    .string({ error: `${label}: each file needs a link` })
+                    .trim()
+                    .regex(/^https?:\/\//, `${label}: each link must start with http:// or https://`),
+            }),
+            { error: `${label} must be a list` },
+        ),
+    );
 
 /** Boolean from a form value: true/'true' → true, anything else → false. */
 export const booleanish = z.preprocess(

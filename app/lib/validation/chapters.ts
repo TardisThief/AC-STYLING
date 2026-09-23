@@ -5,6 +5,7 @@ import {
     optionalUuid,
     orderIndex,
     jsonArray,
+    resourceList,
     booleanish,
 } from './parse';
 
@@ -35,7 +36,7 @@ export const chapterSchema = z
         lab_questions: jsonArray('Lab questions'),
         takeaways: jsonArray('Takeaways'),
         takeaways_es: jsonArray('Takeaways (Spanish)'),
-        resource_urls: jsonArray('Resource URLs'),
+        resource_urls: resourceList('Resources'),
         stripe_product_id: optionalText,
         price_id: optionalText,
     })
