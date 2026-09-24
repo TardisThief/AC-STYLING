@@ -44,12 +44,12 @@ reluctant to download is a backup you will never test.
 1. Go to <https://dash.cloudflare.com> and sign up (free; a card is required for
    R2 even on the free allowance).
 2. In the sidebar choose **R2 Object Storage** → **Create bucket**.
-   - Name: `ac-styling-backups`
+   - Name: `ac-syling-backups`
    - Location: **Automatic**
    - Leave everything else at its default. **Do not** enable public access.
 3. Still in R2, click **Manage R2 API Tokens** → **Create API token**.
    - Permission: **Object Read & Write**
-   - Scope: **Apply to specific buckets only** → `ac-styling-backups`
+   - Scope: **Apply to specific buckets only** → `ac-syling-backups`
    - TTL: **Forever**
 4. Cloudflare now shows three values **once**. Copy all three somewhere safe
    immediately — the secret is never shown again:
@@ -58,8 +58,14 @@ reluctant to download is a backup you will never test.
    - The **S3 endpoint**, which looks like
      `https://<account-id>.r2.cloudflarestorage.com`
 
-**Done looks like:** an empty bucket named `ac-styling-backups`, and three values
+**Done looks like:** an empty bucket named `ac-syling-backups`, and three values
 written down.
+
+> The bucket really is spelled `ac-syling-backups` — a typo made when it was
+> created, kept deliberately rather than fixed. Renaming an R2 bucket means
+> creating a new one and re-uploading everything, which is not worth doing to
+> correct a letter. The scripts and docs all use this spelling; if you ever see
+> `ac-styling-backups` spelled correctly somewhere, that reference is the wrong one.
 
 ---
 

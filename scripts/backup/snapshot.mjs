@@ -25,6 +25,11 @@ import path from 'node:path';
 
 dotenv.config({ path: '.env.local', quiet: true });
 
+// Same reason as the `umask 077` in lib.sh: a snapshot holds auth.users rows
+// and customer data, so it should not be group- or world-readable. No-op on
+// Windows, where the process umask is not honoured.
+try { process.umask(0o077); } catch { /* not supported on this platform */ }
+
 const arg = (name, fallback = null) => {
     const i = process.argv.indexOf(`--${name}`);
     return i > -1 ? process.argv[i + 1] : fallback;

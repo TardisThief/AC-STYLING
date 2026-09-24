@@ -71,8 +71,23 @@ outcome this whole exercise exists to prevent.
 
 ```bash
 sudo apt update
-sudo apt install -y postgresql-client curl rclone git coreutils
+sudo apt install -y postgresql-client curl git coreutils
 ```
+
+**Do not install rclone from apt.** Ubuntu 26.04 ships "rclone v1.60.1-DEV",
+which sends an `X-Amz-Checksum-Crc64nvme` header that R2 rejects with
+`501 NotImplemented` on every upload. The object lands but the upload reports
+failure, so every sync fails while the data looks like it arrived — the worst
+of both. Install rclone's own build instead (their official installer; v1.75.1
+is verified working here):
+
+```bash
+curl -fsSL https://rclone.org/install.sh | sudo bash
+rclone version    # must NOT say 1.60.1-DEV
+```
+
+`sudo` needs a real terminal — run these yourself rather than through an
+agent's non-interactive shell, which cannot answer a password prompt.
 
 Then check the Postgres client major version:
 
@@ -85,7 +100,9 @@ scripts check this and refuse to run if it is lower, because an older client can
 produce a dump that restores incompletely — which you would only discover during
 a real recovery. If yours is too old, add the PGDG apt repository
 (<https://www.postgresql.org/download/linux/ubuntu/>) and install the matching
-`postgresql-client-NN`.
+`postgresql-client-NN`. A *newer* client is fine: Ubuntu 26.04's
+`postgresql-client` is v18 and the Supabase server is 17, which is the
+supported direction.
 
 Docker is needed only for the restore drill:
 
@@ -181,13 +198,17 @@ rclone config create r2raw s3 \
   access_key_id=<R2 ACCESS KEY ID> \
   secret_access_key=<R2 SECRET> \
   endpoint=<https://ACCOUNT-ID.r2.cloudflarestorage.com> \
-  acl=private
+  no_check_bucket=true
 
 rclone config create acbackup crypt \
-  remote=r2raw:ac-styling-backups \
+  remote=r2raw:ac-syling-backups \
   password="$(rclone obscure '<RCLONE_CRYPT_PASSWORD>')" \
   password2="$(rclone obscure '<RCLONE_CRYPT_SALT>')"
 ```
+
+R2 has no object ACLs (buckets are private by default), so `acl=` is omitted.
+`no_check_bucket=true` is required because a token scoped to one bucket cannot
+run the bucket-existence check rclone otherwise does first.
 
 Use `rclone config` interactively instead if you prefer — it keeps the passwords
 out of your shell history, which the commands above do not. Either way, clear
@@ -196,7 +217,7 @@ the history afterwards.
 Check it:
 
 ```bash
-rclone lsd r2raw:ac-styling-backups     # should succeed and be empty
+rclone lsd r2raw:ac-syling-backups     # should succeed and be empty
 echo hello | rclone rcat acbackup:smoke-test
 rclone cat acbackup:smoke-test          # must print: hello
 rclone delete acbackup:smoke-test
@@ -264,11 +285,19 @@ crontab -e
 ```cron
 # AC Styling nightly backup — 03:17 local. Logs rotate by day; failures also
 # page via the healthcheck configured in ~/.ac-styling/.env.backup
-17 3 * * * cd "$HOME/ac-styling" && /usr/bin/flock -n /tmp/ac-backup.lock bash scripts/backup/backup.sh >> "$HOME/.ac-styling/backup-$(date +\%Y\%m\%d).log" 2>&1
+17 3 * * * umask 077; mountpoint -q /mnt/backup && cd "$HOME/ac-styling" && /usr/bin/flock -n /tmp/ac-backup.lock bash scripts/backup/backup.sh >> "$HOME/.ac-styling/backup-$(date +\%Y\%m\%d).log" 2>&1
 ```
 
 `flock` stops a slow run from overlapping the next one. The odd minute avoids
 the top-of-hour crowd on shared infrastructure.
+
+`mountpoint -q /mnt/backup` is the important one. The SSD is mounted with
+`nofail`, so if it is missing the machine boots anyway and `$AC_BACKUP_ROOT`
+becomes an ordinary directory on the root disk — backups would quietly fill it
+and none of them would be on the SSD. With the guard the run simply does not
+happen, no healthcheck ping is sent, and the missed ping becomes the alert.
+`umask 077` repeats what lib.sh sets, so the log file cron creates by
+redirection is owner-only too.
 
 Prune old logs:
 
@@ -316,7 +345,9 @@ Two behaviours worth knowing before you debug something:
 | Storage downloads all fail with 401/403 | `SUPABASE_SERVICE_ROLE_KEY` is wrong or has been rotated. |
 | `rclone cat` returns garbage | Wrong crypt password or salt. Everything already uploaded under the wrong key is unreadable; fix it, then delete and re-upload. |
 | healthchecks.io alerts but nothing looks wrong | A *degraded* run (missing auth schema, or storage objects that failed to download) deliberately reports as a failure. Read the newest log. |
-| Backups stop after a reboot | The SSD is not mounted at boot. Add it to `/etc/fstab`. |
+| Backups stop after a reboot | The SSD is not mounted at boot. Add it to `/etc/fstab` with `nofail`, and keep the `mountpoint -q` guard in the cron line. |
+| Every rclone upload fails with `501 NotImplemented` | The apt build of rclone (v1.60.1-DEV) sends a checksum header R2 rejects. Reinstall from <https://rclone.org/install.sh> — see section 1. The objects may appear in the bucket even though the sync reported failure. |
+| `pg_restore: ERROR: schema "public" already exists` | An old checkout of `restore_drill.sh`. The dump carries `CREATE SCHEMA public` because it is taken with `--schema=public`, and a stock postgres image already has one. Fixed by dropping the stock schema in the throwaway container first — `git pull`. |
 | `refusing to sync` or `--max-delete` tripped | A safety guard, not a bug. `rclone sync` mirrors deletions, so an unmounted SSD would otherwise erase the off-site copy. Find out why the local tree shrank before overriding anything. |
 
 ## Boundaries
