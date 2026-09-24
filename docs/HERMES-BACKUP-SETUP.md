@@ -16,22 +16,39 @@ I am making this machine the backup host for a production web platform called
 AC Styling, whose database is on Supabase's free tier and therefore has no
 backups at all today. Your job is to set up and prove a nightly backup.
 
-Do this:
+The instructions live in the repository you are about to clone, but the clone
+needs a deploy key I have to add for you first. So, in this order:
 
-1. Clone the backup scripts (read-only deploy key; I will help you add the
-   public key to GitHub):
-     git clone --filter=blob:none --no-checkout git@github.com:TardisThief/AC-STYLING.git ~/ac-styling
-     cd ~/ac-styling && git sparse-checkout init --cone
+1. Generate an SSH key and show me the PUBLIC half:
+     ssh-keygen -t ed25519 -C "hermes backup runner" -f ~/.ssh/id_ed25519_acstyling -N ""
+     cat ~/.ssh/id_ed25519_acstyling.pub
+
+2. WAIT for me to confirm I have added it to GitHub as a read-only deploy key.
+   The clone fails until I do, and a failure here means nothing is wrong.
+
+3. Then clone just the backup scripts and docs:
+     cat >> ~/.ssh/config <<'EOF'
+     Host github.com-acstyling
+       HostName github.com
+       User git
+       IdentityFile ~/.ssh/id_ed25519_acstyling
+       IdentitiesOnly yes
+     EOF
+     git clone --filter=blob:none --no-checkout \
+       git@github.com-acstyling:TardisThief/AC-STYLING.git ~/ac-styling
+     cd ~/ac-styling
+     git sparse-checkout init --cone
      git sparse-checkout set scripts/backup docs
      git checkout main
 
-2. Read and follow docs/HERMES-BACKUP-SETUP.md exactly. It lists the packages
-   to install, the credentials file to create, the rclone remotes, the cron
-   entry, and the verification you must run.
+4. Read docs/HERMES-BACKUP-SETUP.md and follow it from section 1 onwards
+   (you will have already done section 2). It lists the packages to install,
+   the credentials file to create, the rclone remotes, the cron entry, and the
+   verification you must run.
 
-3. Ask me for the credentials when the document tells you to. Do not guess them
+5. Ask me for the credentials when the document tells you to. Do not guess them
    and do not invent placeholder values — a backup configured against the wrong
-   database looks like it is working.
+   database looks exactly like one that is working.
 
 Hard constraints:
 - NEVER write to, alter, or delete anything in the production database or the
@@ -41,9 +58,11 @@ Hard constraints:
 - Do not push to the git repository. The deploy key is read-only by design.
 - Do not print secrets into your transcript or into any log file.
 
-When you are done, report back: the first backup's manifest.json, the output of
-the verify script, the output of the restore drill, and the SSH public key if I
-have not already added it.
+When you are done, report back: the first backup's manifest.json (it must say
+status ok and auth_mode full), the output of the verify script, and the output
+of the restore drill. If any of the three is not clean, tell me what failed
+rather than working around it — an incomplete backup that looks fine is the
+outcome this whole exercise exists to prevent.
 ```
 
 ---
@@ -77,6 +96,9 @@ sudo apt install -y docker.io && sudo usermod -aG docker "$USER"   # log out and
 ---
 
 ## 2. SSH key and repository checkout
+
+*If you followed the kickstart prompt you have already done this section — skip
+to section 3. It is repeated here so the document stands on its own.*
 
 ```bash
 ssh-keygen -t ed25519 -C "hermes backup runner" -f ~/.ssh/id_ed25519_acstyling -N ""
