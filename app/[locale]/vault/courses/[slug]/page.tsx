@@ -22,6 +22,7 @@ export const generateMetadata = pageMetadata({ key: 'vaultCourse' });
 
 export default async function CourseLessonPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
     const { slug, locale } = await params;
+    const tUnlock = await getTranslations({ locale, namespace: 'Vault.unlock' });
     // Decode likely URL-encoded slugs from legacy data
     const decodedSlug = decodeURIComponent(slug);
 
@@ -143,10 +144,13 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
                     <div className="space-y-6">
                         <InteractiveGate
                             isLocked={!hasAccess}
-                            title="Unlock This Course"
+                            title={tUnlock('gateTitle')}
+                            body={tUnlock('gateBody')}
+                            unlockLabel={tUnlock('cta')}
+                            comingSoonLabel={tUnlock('comingSoon')}
                             type="overlay"
                             priceId={chapter.price_id}
-                            isLoggedIn={!!isAuthenticated}
+                            isSignedIn={!!isAuthenticated}
                         >
                             <VaultVideoPlayer
                                 key={locale}

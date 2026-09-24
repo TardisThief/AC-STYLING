@@ -1,88 +1,88 @@
 'use client';
 
 import { useState } from 'react';
-import { createCheckoutSession } from '@/app/actions/stripe';
+import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { createCheckoutSession, createGuestCheckoutSession } from '@/app/actions/stripe';
 
+/**
+ * Buy a single masterclass or course from inside the Vault.
+ *
+ * Pay first, account afterwards — the same flow `/vault-access` uses. This
+ * used to push anyone without a session to `/vault/join`, and to call
+ * `createCheckoutSession` for everyone else, which meant a guest (an anonymous
+ * Supabase user, so `isAuthenticated` was true) hit a server action that
+ * answers "User must be logged in" and nothing happened at all. Two different
+ * dead ends for the two kinds of visitor most likely to be buying.
+ */
 interface UnlockButtonProps {
     priceId?: string;
-    isLoggedIn: boolean;
+    /**
+     * A real account — NOT merely "has a session". A guest signed in
+     * anonymously must be false here, or checkout refuses her; pass
+     * `isAuthenticated && !user.is_anonymous`.
+     */
+    isSignedIn: boolean;
     returnUrl: string;
-    label?: string;
-    className?: string; // Allow custom styling to match usages
-    variant?: 'primary' | 'card'; // primary = big button, card = small card overlay button? (Not really needed if we pass className, but good for defaults)
+    label: string;
+    comingSoonLabel: string;
+    className?: string;
 }
 
 export default function UnlockButton({
     priceId,
-    isLoggedIn,
+    isSignedIn,
     returnUrl,
-    label = "Unlock Access",
+    label,
+    comingSoonLabel,
     className
 }: UnlockButtonProps) {
-    console.log('[UnlockButton] Rendered. isLoggedIn:', isLoggedIn, 'priceId:', priceId);
     const [loading, setLoading] = useState(false);
-    const router = useRouter();
+    const locale = useLocale();
 
-    // Visual State Calculation
-    const isMember = isLoggedIn;
-    const hasPrice = !!priceId;
-
-    // If member and no price, it's not ready. If guest, we always allow "Join" (unless strictly closed?)
-    // For now, Guest -> Join is always allowed. Member -> Purchase requires Price.
-    const isComingSoon = isMember && !hasPrice;
-
-    const displayLabel = isComingSoon ? "Coming Soon" : label;
+    // Nothing to sell yet. Said plainly rather than failing on click.
+    const isComingSoon = !priceId;
     const isDisabled = loading || isComingSoon;
 
     const handleUnlock = async () => {
-        if (isDisabled) return;
-
-        if (!isLoggedIn) {
-            // Guest -> Redirect to Join (Auth Flow)
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('redirect_to', returnUrl);
-            }
-            router.push('/vault/join');
-            return;
-        }
-
-        if (!priceId) {
-            // Should be caught by isComingSoon, but safety check
-            toast.error("This item is not available for purchase yet.");
-            return;
-        }
-        //...
+        if (isDisabled || !priceId) return;
 
         setLoading(true);
         try {
-            const result = await createCheckoutSession(priceId, returnUrl);
+            const result = isSignedIn
+                ? await createCheckoutSession(priceId, returnUrl)
+                : await createGuestCheckoutSession(priceId, returnUrl, `/${locale}/welcome`, locale);
+
             if (result.error) {
                 toast.error(result.error);
-            } else if (result.url) {
-                window.location.href = result.url;
+                setLoading(false);
+                return;
             }
-        } catch (error) {
-            toast.error("Something went wrong. Please try again.");
-        } finally {
+
+            if (result.url) {
+                // Not resetting `loading`: the tab is navigating away, and a
+                // button that springs back to life invites a second charge.
+                window.location.href = result.url;
+                return;
+            }
+
+            toast.error('Checkout could not be started. Please try again.');
+            setLoading(false);
+        } catch {
+            toast.error('Checkout could not be started. Please try again.');
             setLoading(false);
         }
     };
 
     return (
         <button
+            type="button"
             onClick={handleUnlock}
             disabled={isDisabled}
+            aria-busy={loading}
             className={className || "inline-flex items-center gap-2 bg-ac-gold text-white px-8 py-4 rounded-sm hover:bg-ac-gold/90 transition-all hover:scale-105 shadow-md uppercase tracking-widest text-xs font-bold disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"}
         >
-            {loading ? (
-                <span className="animate-pulse">Processing...</span>
-            ) : (
-                <>
-                    {displayLabel}
-                </>
-            )}
+            {loading ? '…' : isComingSoon ? comingSoonLabel : label}
         </button>
     );
 }

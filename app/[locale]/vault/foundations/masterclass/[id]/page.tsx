@@ -1,5 +1,6 @@
 
 import { Link } from "@/i18n/routing";
+import { getTranslations } from "next-intl/server";
 import { PlayCircle, FolderOpen, Check, Lock, Unlock } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
@@ -23,6 +24,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function MasterclassPage({ params }: { params: Promise<{ id: string, locale: string }> }) {
     const { id, locale } = await params;
+    const tUnlock = await getTranslations({ locale, namespace: 'Vault.unlock' });
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -172,8 +174,10 @@ export default async function MasterclassPage({ params }: { params: Promise<{ id
                                 <>
                                     <UnlockButton
                                         priceId={masterclass.price_id}
-                                        isLoggedIn={!!isAuthenticated}
+                                        isSignedIn={!!isAuthenticated}
                                         returnUrl={`/vault/foundations/masterclass/${id}`}
+                                        label={tUnlock('cta')}
+                                        comingSoonLabel={tUnlock('comingSoon')}
                                     />
                                     <div className="flex justify-center pt-2">
                                         <RestorePurchasesButton />

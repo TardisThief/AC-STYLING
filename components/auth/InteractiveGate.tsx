@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { Lock } from "lucide-react";
 import UnlockButton from "@/components/monetization/UnlockButton";
@@ -10,29 +10,34 @@ interface InteractiveGateProps {
     children: React.ReactNode;
     fallback?: React.ReactNode; // Optional custom locked UI
     type?: "redirect" | "blur" | "overlay"; // How to gate
-    title?: string;
+    title: string;
+    body: string;
+    unlockLabel: string;
+    comingSoonLabel: string;
     priceId?: string;
-    isLoggedIn?: boolean;
+    /** A real account, not merely a session. See UnlockButton. */
+    isSignedIn?: boolean;
 }
 
 export default function InteractiveGate({
     isLocked,
     children,
     type = "overlay",
-    title = "Unlock Access",
+    title,
+    body,
+    unlockLabel,
+    comingSoonLabel,
     priceId,
-    isLoggedIn = false
+    isSignedIn = false
 }: InteractiveGateProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const [isRedirecting, setIsRedirecting] = useState(false);
 
     const handleUnlock = () => {
         // Save current location to return to
         if (typeof window !== "undefined") {
             localStorage.setItem("redirect_to", window.location.pathname);
         }
-        setIsRedirecting(true);
         router.push("/vault/join");
     };
 
@@ -78,14 +83,15 @@ export default function InteractiveGate({
                     {title}
                 </h3>
                 <p className="text-ac-taupe/70 max-w-md mb-8">
-                    Join the Inner Circle to unlock this content and access our full library of styling masterclasses.
+                    {body}
                 </p>
 
                 <UnlockButton
                     priceId={priceId}
-                    isLoggedIn={isLoggedIn}
+                    isSignedIn={isSignedIn}
                     returnUrl={typeof window !== 'undefined' ? window.location.pathname : '/vault'}
-                    label={isRedirecting ? "Redirecting..." : "Unlock Access"}
+                    label={unlockLabel}
+                    comingSoonLabel={comingSoonLabel}
                     className="bg-ac-gold hover:bg-ac-gold/90 text-white px-8 py-3 uppercase tracking-widest text-sm font-bold transition-all hover:scale-105 shadow-md disabled:opacity-70"
                 />
             </div>

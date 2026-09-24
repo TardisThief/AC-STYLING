@@ -238,6 +238,13 @@
         }
     },
     "Vault": {
+        "unlock": {
+            "cta": "Unlock access",
+            "comingSoon": "Coming soon",
+            "processing": "\u2026",
+            "gateTitle": "Unlock this course",
+            "gateBody": "Unlock this content and the full library of styling masterclasses."
+        },
         "welcome": "Welcome back, {name}",
         "quick_actions": "Quick Actions",
         "pulse": "The Pulse",

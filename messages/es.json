@@ -238,6 +238,13 @@
         }
     },
     "Vault": {
+        "unlock": {
+            "cta": "Desbloquear acceso",
+            "comingSoon": "Pr\u00f3ximamente",
+            "processing": "\u2026",
+            "gateTitle": "Desbloquea este curso",
+            "gateBody": "Desbloquea este contenido y la biblioteca completa de masterclasses de estilismo."
+        },
         "welcome": "Bienvenido de nuevo, {name}",
         "quick_actions": "Acciones Rápidas",
         "pulse": "El Pulso",
