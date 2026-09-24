@@ -7,6 +7,13 @@
 
 set -euo pipefail
 
+# Everything these scripts write is private customer data: auth.users rows and
+# the client photographs from the studio-wardrobe bucket. Default umasks on
+# Ubuntu produce 664/775, i.e. world-readable, which is wrong for a backup that
+# sits on a shared host. Set it here rather than in each script so it applies
+# however a script is invoked -- cron, by hand, or from another script.
+umask 077
+
 log()  { printf '%s  %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*" >&2; }
 die()  { log "ERROR: $*"; exit 1; }
 warn() { log "WARNING: $*"; }
@@ -55,7 +62,9 @@ sha256_of() {
     else shasum -a 256 "$1" | cut -d' ' -f1; fi
 }
 
-human_size() { du -h "$1" 2>/dev/null | cut -f1; }
+# -s, not just -h: on a directory `du -h` prints one line per subdirectory,
+# so the storage summary was logging ~40 sizes instead of one total.
+human_size() { du -sh "$1" 2>/dev/null | cut -f1; }
 
 # `pg_dump` refuses to dump a server newer than itself, but an OLDER client
 # against a newer server can also produce a subtly incomplete dump. Check rather

@@ -1,7 +1,10 @@
 # Release: the one-year access term and the thirds ladder
 
 Status: **migration 21 applied and verified in production; application code
-committed and pushed, not yet deployed.**
+deployed.** Vercel builds `main` automatically, so the push released it — the
+ordering constraint below was already satisfied, because the migration had been
+applied some hours earlier. It was satisfied by luck of sequence rather than by
+anything enforcing it; see [Ordering](#ordering).
 See the [roadmap](../ROADMAP.md) and
 [migration 21](../supabase/migrations/20260924_21_access_term.sql).
 
@@ -87,6 +90,11 @@ new columns sit unused.
 migration 21 raises `GrantWriteError` on every fulfilment — the webhook returns
 500, Stripe retries, and the buyer is charged with nothing granted. Deploy only
 against a database that has migration 21.
+
+Nothing in the repository enforces that order. `main` auto-deploys on push,
+while migrations are applied by hand, so a future migration-coupled change is
+one `git push` away from reaching production ahead of its schema. Worth a CI
+check, or at minimum a note on any branch that carries one.
 
 ## Not covered by this record
 
