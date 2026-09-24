@@ -6,16 +6,26 @@ changes (the historical migrations were reset in the 2026-07 cleanup).
 ## Baseline snapshot
 
 `00000000000000_baseline.sql` is a machine-generated `pg_dump --schema-only`
-snapshot of the live `public` schema (2026-07-10), captured **after** the dated
-change-migrations below were applied. It is the version-controlled source of
+snapshot of the live `public` schema, regenerated 2026-09-24 (it had stood at
+its original 2026-07-10 capture until then, stale by every migration from 09 to
+21), captured **after** the dated change-migrations below were applied. It is the version-controlled source of
 truth for the current DB structure (tables, RLS, triggers, functions, grants) —
 for drift detection, schema review, and disaster recovery. It intentionally
 overlaps with the dated migrations, which remain the reviewable changelog of how
 the security posture got here. Regenerate it after future schema changes with **`npm run db:schema`**
 (`scripts/backup/regenerate_baseline.mjs`, which runs that `pg_dump` and
-normalises the header so the diff shows only real drift). `npm run db:schema:check`
-is the same thing as a drift detector: non-zero exit means the live schema is
-not what these files say it should be.
+normalises the two things that change on every run — the version header and
+pg_dump 17's random `estrict` token — so the diff shows only real drift).
+`npm run db:schema:check` is the same thing as a drift detector: non-zero exit
+means the live schema is not what these files say it should be.
+
+**The dump deliberately includes ownership and privileges.** The script passed
+`--no-owner --no-privileges` until 2026-09-24, which meant the first person to
+regenerate would have silently dropped 123 `GRANT`/`REVOKE` statements from the
+file this README calls the source of truth for grants. Review a regenerated
+baseline for *removals*, not just additions: on this project a disappearing
+grant is a security change, and the only ones that should ever vanish are the
+ones a migration deliberately revoked (migration 12 removed twelve).
 
 Note the dump is **schema only**. It is not a backup of the data, and the
 project is on the Supabase free tier, which has none of its own. Data recovery
