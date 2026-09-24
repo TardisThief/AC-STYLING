@@ -183,4 +183,8 @@ Add that to [`OWNER-ACTIONS.md`](OWNER-ACTIONS.md) if hermes ever changes hands.
 - **Before any risky migration:** run `npm run db:snapshot -- --tag pre-migration-NN`
   from your own machine. This needs the PostgreSQL client tools installed on
   Windows (<https://www.postgresql.org/download/windows/>); add the installed
-  `bin` folder to PATH.
+  `bin` folder to PATH. The client's major version must match the server's (17),
+  and the snapshot script refuses to run when it does not — an older `pg_dump`
+  can produce a dump that restores incompletely, which is worse than no dump.
+  On this machine they are at `C:\Users\magom\pgsql17\pgsql\bin` (the official
+  binaries zip, extracted; no server and no service), already on the user PATH.

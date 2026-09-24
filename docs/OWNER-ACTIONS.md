@@ -50,8 +50,47 @@ and match nothing.
 7. The `masterclass_pass` offer (added 2026-09-21, created from admin with the
    Stripe generator) is one of the rows in step 2: regenerate its product and
    price in live mode from the same admin form.
+8. **Clear the test-mode `purchases` rows** — see below. One line of SQL, and
+   it has to happen before the first real sale.
 
 Until then everything works exactly as it does now, in the sandbox.
+
+### The renewal price is calculated from `purchases`, so sandbox rows are not harmless
+
+Added 2026-09-24, with the one-year access term (migration 21). This is new, and
+it is the only part of the cutover that involves customer money going *out*
+rather than in.
+
+A renewal is not a fixed price. It is two thirds — then one third — of what that
+customer actually paid, read at checkout from her most recent row in
+`purchases` where `is_renewal = false`. The table holds **9 rows today, all of
+them test-mode**, created while exercising the sandbox.
+
+Those rows are fake money, and after the cutover they would be indistinguishable
+from real ones. A customer whose test row says she paid $1 would be quoted a
+renewal of 67¢ — and we would honour it, because the code has no way to know the
+difference. The failure is quiet: nothing errors, the charge simply comes out
+wrong, and it stays wrong for every renewal after it.
+
+**Before the first live sale**, delete the sandbox purchase history:
+
+```sql
+-- Check first. Every row should be one you recognise from testing.
+SELECT id, user_id, product_id, amount_paid, currency, created_at
+FROM public.purchases ORDER BY created_at;
+
+DELETE FROM public.purchases WHERE created_at < '<the cutover date>';
+```
+
+The same applies to `fulfillments` if you want the two to agree, though only
+`purchases` feeds the renewal price. Access already granted is unaffected: it
+lives on `profiles` and `user_access_grants`, not here.
+
+**The assumption this is written under**, stated so it can be corrected: the
+Stripe move to live mode and real money happens *before* launch, so no genuine
+customer exists yet and there is nothing of value in these rows. If a real sale
+somehow lands first, do not run the delete — remove only the rows you can
+identify as test purchases.
 
 ---
 

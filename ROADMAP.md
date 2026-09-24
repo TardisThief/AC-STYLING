@@ -18,16 +18,23 @@ Phases 0–3.6 are complete and deployed. In plain terms:
 
 - **The code is launch-ready.** Every code-level blocker from the 2026-09-19
   assessment (F01–F08, F10, F11) is closed. Migrations are applied and verified
-  through 19.
+  through **21**.
 - **The Vault is populated but parked.** 4 masterclasses, 22 modules and 4
   standalone courses, all bilingual, all `is_published = false`. Publishing is
   a flag flip in the admin console, not a re-import.
 - **Launch offer is the Masterclass Pass** (2026-09-21, migration 19): every
-  masterclass, current and future, for one payment, alongside single
-  masterclasses. Full Access and the Course Pass stay in the database but are
-  switched off (`offers.active`) until the first standalone course ships; the
-  sales page and Vault banner follow that switch with no code change.
-- **Gates are green:** `tsc` clean, lint 0 errors, 531 unit tests across 52
+  masterclass, current and future, alongside single masterclasses. Full Access
+  and the Course Pass stay in the database but are switched off
+  (`offers.active`) until the first standalone course ships; the sales page and
+  Vault banner follow that switch with no code change.
+- **Access is a one-year term, not a lifetime** (2026-09-24, migration 21).
+  Renewal steps down in thirds — the price paid, then two thirds, then one third
+  forever — and a lapse of over thirty days resets it to the current price.
+  Everyone who bought before this keeps perpetual access; a null expiry means
+  never, and there was no backfill. `/vault-access` also sells individual
+  masterclasses now, and their price and published flag are editable in admin.
+  Record: [`docs/RELEASE-2026-09-24-ACCESS-TERM.md`](docs/RELEASE-2026-09-24-ACCESS-TERM.md).
+- **Gates are green:** `tsc` clean, lint 0 errors, 571 unit tests across 55
   files, production build passing, CI running all four.
 
 ## What actually holds up launch
@@ -40,6 +47,10 @@ Two things, and neither is code.
 2. **Stripe is in the test sandbox.** The 11 `stripe_product_id` and 9
    `price_id` values in the database are test-mode, and IDs do not carry across
    modes. A real customer would pay and match nothing. This is owner action 1.
+   Since 2026-09-24 the cutover has one more step: renewal prices are computed
+   from `purchases`, so the 9 sandbox rows there must be cleared before the
+   first real sale or they will quote real customers renewals priced off fake
+   money.
 
 Everything owner-only lives in [`docs/OWNER-ACTIONS.md`](docs/OWNER-ACTIONS.md)
 — 12 items, kept there rather than here so that "what Claude does next" and
@@ -79,6 +90,14 @@ open questions worth walking into it with:
   for the first time with something real behind it.
 - **F16 or growth first?** F16 is the responsible answer and F12 is the one
   that bites if launch goes well. Neither matters if nothing ships.
+- **The renewal flow has never run.** It is unit-tested and no Stripe session
+  has ever been created from it. The first person to exercise it should not be
+  a customer.
+- **The baseline snapshot is nine migrations stale**, and `npm run db:schema`
+  cannot safely refresh it: the script passes `--no-privileges`, so regenerating
+  drops all 123 `GRANT`/`REVOKE` lines the committed file records. On a tier with
+  no backups of its own, that file is the schema reference — worth an hour to fix
+  the script and regenerate properly.
 
 ---
 
