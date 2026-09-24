@@ -316,7 +316,8 @@ one place.
   there is real usage to size it against.
 - **F12–F16** remain open: the 2,000-account lookup ceiling in guest
   resolution, test coverage of the highest-consequence boundaries, deployed-vs-
-  source drift, bilingual/performance polish, and backup/observability.
+  source drift, bilingual/performance polish, and observability. **F16's backup
+  half now has tooling** and needs owner setup — see item 13 below.
 
 **With that, every *launch-blocking* code finding in the assessment is closed.** What remains
 between here and launch is on this page, plus **F09**: the five published Vault
@@ -334,3 +335,44 @@ modules still have no usable video, which no amount of code can fix.
   finding: four high-severity issues in the Puppeteer/`extract-zip` chain,
   fixed 2026-09-20 by upgrading `puppeteer` 24.43.1 → 25.11.0. `npm audit` now
   reports 0.
+
+---
+
+## 13. Set up the nightly backup — the database has none today
+
+**Added 2026-09-23. This is the highest-consequence open item on this page.**
+
+The Supabase project is on the **free tier**, which includes no backups of any
+kind: no daily snapshot, no dashboard restore, no point-in-time recovery. This
+was assumed rather than checked until now. In practice it means that if the
+project were deleted, corrupted, or a migration went wrong, the only surviving
+artifacts would be a schema file from July and a JSON export of two tables.
+Every account, purchase, client wardrobe and uploaded photograph would be gone,
+and the private `studio-wardrobe` images are not re-fetchable from anywhere.
+
+The tooling is written and in the repository (`scripts/backup/`). What remains
+is owner-only because it is account signup and key custody:
+
+1. Create a Cloudflare R2 bucket and a scoped API token.
+2. Generate and safely store the backup encryption password and salt. **Losing
+   these makes every off-site backup permanently unreadable.**
+3. Add a read-only GitHub deploy key for the `hermes` host.
+4. Create a healthchecks.io check so a silently-stopped backup raises an alarm.
+5. Hand the kickstart prompt and credentials to the agent on `hermes`.
+
+Step-by-step instructions: [`BACKUP-OWNER-SETUP.md`](BACKUP-OWNER-SETUP.md)
+(about 30 minutes). The agent-facing half is
+[`HERMES-BACKUP-SETUP.md`](HERMES-BACKUP-SETUP.md), and recovery procedures are
+in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md).
+
+**Consequence to accept knowingly:** `hermes` will hold the Supabase
+service-role key, so it can read the entire database and every client
+photograph. If that machine is ever sold, repurposed or has its drive replaced,
+rotate the service-role key and update Vercel, `.env.local` and `hermes`.
+
+**Worth considering separately:** Supabase Pro ($25/month) adds daily
+platform-level backups with 7-day retention, restorable from the dashboard.
+The self-hosted backup above is more capable in one important way — it can
+restore a single table, and it covers the storage buckets, which the platform
+backups do not self-serve — but the two are complements, not substitutes. A
+budget call, not a technical one.

@@ -56,3 +56,7 @@ yarn-error.log*
 next-env.d.ts
 public/catalogs/in-person-services.pdf
 public/catalogs/online-services.pdf
+
+# database snapshots (scripts/backup) -- never commit these:
+# a customer row committed once stays in git history forever
+/backups/

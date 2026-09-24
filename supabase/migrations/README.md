@@ -11,8 +11,16 @@ change-migrations below were applied. It is the version-controlled source of
 truth for the current DB structure (tables, RLS, triggers, functions, grants) —
 for drift detection, schema review, and disaster recovery. It intentionally
 overlaps with the dated migrations, which remain the reviewable changelog of how
-the security posture got here. Regenerate it after future schema changes with
-`pg_dump --schema-only --schema=public "$DATABASE_URL"` (write UTF-8).
+the security posture got here. Regenerate it after future schema changes with **`npm run db:schema`**
+(`scripts/backup/regenerate_baseline.mjs`, which runs that `pg_dump` and
+normalises the header so the diff shows only real drift). `npm run db:schema:check`
+is the same thing as a drift detector: non-zero exit means the live schema is
+not what these files say it should be.
+
+Note the dump is **schema only**. It is not a backup of the data, and the
+project is on the Supabase free tier, which has none of its own. Data recovery
+comes from the nightly snapshots described in
+[`docs/DISASTER-RECOVERY.md`](../../docs/DISASTER-RECOVERY.md).
 
 ## Migration execution policy
 
@@ -29,9 +37,12 @@ auto-applied in filename order. The executing agent must:
 1. Inspect live schema state and dependencies; preserve other agents' work.
 2. Review the SQL and validate affected permissions/behavior in isolation.
 3. Deploy and verify prerequisite application changes before incompatible SQL.
-4. Capture the affected schema/configuration for recovery; use transactions and
-   lock/statement timeouts where supported. Avoid customer-data mutations unless
-   needed for the assigned migration.
+4. Capture the affected schema/configuration for recovery by taking a tagged
+   snapshot first — `npm run db:snapshot -- --tag pre-migration-NN` — rather
+   than hand-written notes; use transactions and lock/statement timeouts where
+   supported. Avoid customer-data mutations unless needed for the assigned
+   migration. See [`docs/DISASTER-RECOVERY.md`](../../docs/DISASTER-RECOVERY.md)
+   for what to do when one of these goes wrong.
 5. Apply only the pending migration, then verify the live result and affected
    workflows. Record the file checksum, application time, deployment revision,
    verification results, and any remaining limitations in the release record

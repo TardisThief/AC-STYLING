@@ -57,7 +57,7 @@ of these is cheaper or safer to do *after* content exists.
 | **F12 — scale limits** | Guest resolution pages through at most 2,000 auth users. Real, invisible at 55 users, and it fires precisely when growth goes well. Belongs before a marketing push. |
 | **F13 — E2E in CI** | The Playwright suite exists and is correct; wiring it into CI needs a test database, which is F16's dependency. |
 | **F15 — ES parity and performance** | Best measured against real content and real copy. |
-| **F16 — recovery and observability** | Staging database, rehearsed restore, alerting on paid-but-unfulfilled purchases. The largest item and the most dependent on hosting and budget decisions. |
+| **F16 — recovery and observability** | **Backup half done 2026-09-23**: nightly encrypted database + storage-bucket backups run on the owner's `hermes` host to Cloudflare R2, with a scripted restore drill (`scripts/backup/`, [`docs/DISASTER-RECOVERY.md`](docs/DISASTER-RECOVERY.md)). This mattered more than its "parked" status implied — the project is on the Supabase free tier, which has **no backups at all**. Still open: a staging database (which F13 also waits on) and alerting on paid-but-unfulfilled purchases. |
 
 ## Next planning session
 
