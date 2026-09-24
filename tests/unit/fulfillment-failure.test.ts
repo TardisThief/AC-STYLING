@@ -32,6 +32,16 @@ const profileUpdate = (error: unknown) => ({
     update: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error }) })),
 })
 
+/**
+ * Setting a profile flag now reads the term she already holds before writing
+ * the new one, so every profile write is preceded by a profile read.
+ */
+const heldTerm = (data: unknown = null) => ({
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockResolvedValue({ data, error: null }),
+})
+
 describe('fulfillment failure handling', () => {
     let from: ReturnType<typeof vi.fn>
     let supabase: { from: ReturnType<typeof vi.fn> }
@@ -58,10 +68,17 @@ describe('fulfillment failure handling', () => {
     it('treats a duplicate masterclass grant as success, not failure', async () => {
         // A replayed Stripe delivery hits the unique index. The end state is
         // correct, so this must not throw and must not ask Stripe to retry.
+        //
+        // The duplicate is no longer a no-op: it is also how a single-item
+        // renewal arrives, so the row's term is read and extended.
         from
             .mockReturnValueOnce(found({ id: 'mc-1', title: 'Colour' }))
             .mockReturnValueOnce({
                 insert: vi.fn().mockResolvedValue({ error: { code: '23505', message: 'duplicate' } }),
+            })
+            .mockReturnValueOnce(heldTerm({ expires_at: null, renewal_count: 0 }))
+            .mockReturnValueOnce({
+                update: vi.fn(() => ({ eq: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) })) })),
             })
 
         await expect(
@@ -86,6 +103,7 @@ describe('fulfillment failure handling', () => {
         from
             .mockReturnValueOnce(emptyMatch()) // masterclass
             .mockReturnValueOnce(emptyMatch()) // chapter
+            .mockReturnValueOnce(heldTerm())
             .mockReturnValueOnce(profileUpdate({ message: 'permission denied' }))
 
         await expect(

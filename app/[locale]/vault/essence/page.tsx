@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/routing";
 
 import { pageMetadata } from '@/app/lib/seo';
+import { canAccessMasterclass } from "@/utils/access-level";
 
 export const generateMetadata = pageMetadata({ key: 'vaultEssence' });
 
@@ -20,12 +21,16 @@ export default async function EssencePage() {
     // Fetch journal data and accessible masterclasses in parallel
     const [journalData, profileRes, grantsRes, allMcRes] = await Promise.all([
         getAllEssenceData(),
-        supabase.from('profiles').select('has_full_unlock, has_masterclass_pass').eq('id', user.id).single(),
-        supabase.from('user_access_grants').select('masterclass_id').eq('user_id', user.id).not('masterclass_id', 'is', null),
+        supabase.from('profiles').select('has_full_unlock, has_masterclass_pass, access_expires_at').eq('id', user.id).single(),
+        // Expired grants are not access. A null expiry is perpetual, from
+        // before the term existed.
+        supabase.from('user_access_grants').select('masterclass_id').eq('user_id', user.id)
+            .not('masterclass_id', 'is', null)
+            .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
         supabase.from('masterclasses').select('id, title').order('order_index', { ascending: true }),
     ]);
 
-    const hasAllMasterclasses = profileRes.data?.has_full_unlock || profileRes.data?.has_masterclass_pass || false;
+    const hasAllMasterclasses = canAccessMasterclass(profileRes.data);
     const allMasterclasses = allMcRes.data || [];
 
     // Build set of accessible masterclass IDs

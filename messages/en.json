@@ -128,7 +128,7 @@
         },
         "vaultJoin": {
             "title": "Join the Vault | AC Styling",
-            "description": "Unlock the full AC Styling Vault and keep every masterclass for good."
+            "description": "Unlock the full AC Styling Vault for a year, and renew for less every year after."
         },
         "vaultAdmin": {
             "title": "Content Manager | AC Styling",
@@ -241,9 +241,20 @@
         "unlock": {
             "cta": "Unlock access",
             "comingSoon": "Coming soon",
-            "processing": "\u2026",
+            "processing": "…",
             "gateTitle": "Unlock this course",
             "gateBody": "Unlock this content and the full library of styling masterclasses."
+        },
+        "renewal": {
+            "soonTitle": "Your access renews on {date}",
+            "soonBody": "Renew now for {price} and the year is added to the time you have left — nothing is lost by renewing early.",
+            "endedTitle": "Your access has ended",
+            "endedBody": "Renew for {price} any time before {graceEnd} and you keep your price.",
+            "resetTitle": "Your renewal price has reset",
+            "resetBody": "More than {days} days have passed, so access is available again at the current price.",
+            "cta": "Renew for {price}",
+            "resetCta": "See the current price",
+            "error": "Renewal could not be started. Please try again."
         },
         "welcome": "Welcome back, {name}",
         "quick_actions": "Quick Actions",
@@ -385,6 +396,7 @@
             "title": "What's inside",
             "modulesLabel": "modules",
             "runtimeApprox": "about {hours} h",
+            "buyCta": "Buy this one",
             "inProductionBadge": "In production",
             "inProductionNote": "In production. It joins your access when it's released, at no extra cost.",
             "availableOn": "Available {date}",
@@ -402,12 +414,13 @@
         },
         "included": {
             "title": "What's included",
-            "lifetime": "Lifetime access. No renewals, no monthly fee.",
+            "term": "One year of access from the day you buy. No monthly fee.",
+            "renewal": "Renewing costs less each year: two thirds of what you paid in year two, one third from year three on. A $150 pass renews at $100, then $50.",
             "order": "Watch the modules in any order, as many times as you like.",
             "devices": "In the browser, on phone, tablet or computer.",
             "languages": "Every course is recorded in both Spanish and English.",
             "support": "If you get stuck, message us on WhatsApp.",
-            "foundingNote": "This first group comes in with lifetime access. If the Vault grows, your access doesn't change."
+            "foundingNote": "This first group comes in at the founding rate, and every renewal is priced from what you paid — so the earlier you join, the less you ever pay."
         },
         "alejandra": {
             "name": "Alejandra Carrillo",
@@ -422,14 +435,17 @@
         },
         "offer": {
             "title": "Access",
-            "singleTitle": "Colorimetry only",
-            "singleBody": "One course, five modules. If you'd rather start with one.",
-            "singleCta": "Buy Colorimetry",
-            "secure": "Secure payment via Stripe. One-time payment.",
+            "renewalNote": "One year of access. Renew at two thirds next year and one third every year after. Let it lapse for more than 30 days and it starts again at the current price.",
+            "secure": "Secure payment via Stripe.",
             "unavailable": "Available soon",
             "guestCta": "Log in as a guest",
             "guestLoading": "Entering the Vault…",
             "guestError": "Guest access isn't available right now. Please try again."
+        },
+        "singles": {
+            "title": "Or one masterclass at a time",
+            "lede": "Each one stands alone. Same one-year term, same renewal terms.",
+            "buy": "Buy {title}"
         },
         "bridge": {
             "title": "If you'd rather we did it together",
@@ -447,7 +463,7 @@
             "q3": "How do I get access?",
             "a3": "You create your account at checkout and go straight into the Vault, in your browser. There's nothing to download.",
             "q4": "How long do I keep it?",
-            "a4": "For life. No renewals, no monthly fee, no expiry date.",
+            "a4": "One year from the day you buy. After that you can renew for two thirds of what you paid, and one third every year after — so it costs less the longer you stay. If you let it lapse you have 30 days to renew at your price; past that, it starts again at whatever the pass costs then.",
             "q5": "What language is it in?",
             "a5": "Every course is recorded in both Spanish and English. You choose inside the platform.",
             "q6": "What can I watch it on?",
@@ -470,7 +486,7 @@
                 "name": "The Full Learning Access",
                 "catalogLede": "Each course stands alone. Full Access gives you all of them, including the ones still to come.",
                 "includedBadge": "Included with Full Access",
-                "body": "Every course available now and everything added later. One payment.",
+                "body": "Every course available now and everything added later, for a year. Renewal costs two thirds, then one third.",
                 "cta": "Get full access",
                 "sticky": "Full Access"
             },
@@ -478,7 +494,7 @@
                 "name": "The Masterclass Pass",
                 "catalogLede": "Each masterclass stands alone. The Masterclass Pass gives you all of them, including the ones still to come.",
                 "includedBadge": "Included with the Masterclass Pass",
-                "body": "Every masterclass available now and every one added later. One payment.",
+                "body": "Every masterclass available now and every one added later, for a year. Renewal costs two thirds, then one third.",
                 "cta": "Get the pass",
                 "sticky": "Masterclass Pass"
             }

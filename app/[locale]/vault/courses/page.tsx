@@ -9,6 +9,7 @@ import CheckoutSyncHandler from "@/components/monetization/CheckoutSyncHandler";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
+import { canAccessCourse } from "@/utils/access-level";
 
 export const generateMetadata = pageMetadata({ key: 'vaultCourses' });
 
@@ -34,15 +35,14 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
         // Parallel Fetch: Profile & Progress
         const [progressRes, profileRes] = await Promise.all([
             supabase.from('user_progress').select('content_id').eq('user_id', user.id),
-            supabase.from('profiles').select('has_full_unlock, has_course_pass').eq('id', user.id).single()
+            supabase.from('profiles').select('has_full_unlock, has_course_pass, access_expires_at').eq('id', user.id).single()
         ]);
 
         const progress = progressRes.data;
         const profile = profileRes.data;
 
-        if (profile) {
-            hasCourseAccess = profile.has_full_unlock || profile.has_course_pass || false;
-        }
+        // The helper applies the one-year term; the raw flags do not.
+        hasCourseAccess = canAccessCourse(profile);
 
         progress?.forEach(p => {
             if (p.content_id.startsWith('foundations/')) {

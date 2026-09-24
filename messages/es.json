@@ -128,7 +128,7 @@
         },
         "vaultJoin": {
             "title": "Únete al Vault | AC Styling",
-            "description": "Desbloquea el Vault completo de AC Styling y quédate con cada masterclass para siempre."
+            "description": "Desbloquea el Vault completo de AC Styling por un año, y renueva por menos cada año siguiente."
         },
         "vaultAdmin": {
             "title": "Gestor de Contenido | AC Styling",
@@ -240,10 +240,21 @@
     "Vault": {
         "unlock": {
             "cta": "Desbloquear acceso",
-            "comingSoon": "Pr\u00f3ximamente",
-            "processing": "\u2026",
+            "comingSoon": "Próximamente",
+            "processing": "…",
             "gateTitle": "Desbloquea este curso",
             "gateBody": "Desbloquea este contenido y la biblioteca completa de masterclasses de estilismo."
+        },
+        "renewal": {
+            "soonTitle": "Tu acceso se renueva el {date}",
+            "soonBody": "Renueva ahora por {price} y el año se suma al tiempo que te queda: no pierdes nada por renovar antes.",
+            "endedTitle": "Tu acceso terminó",
+            "endedBody": "Renueva por {price} antes del {graceEnd} y conservas tu precio.",
+            "resetTitle": "Tu precio de renovación se reinició",
+            "resetBody": "Pasaron más de {days} días, así que el acceso vuelve a estar disponible al precio vigente.",
+            "cta": "Renovar por {price}",
+            "resetCta": "Ver el precio vigente",
+            "error": "No se pudo iniciar la renovación. Inténtalo de nuevo."
         },
         "welcome": "Bienvenido de nuevo, {name}",
         "quick_actions": "Acciones Rápidas",
@@ -385,6 +396,7 @@
             "title": "Lo que hay dentro",
             "modulesLabel": "módulos",
             "runtimeApprox": "alrededor de {hours} h",
+            "buyCta": "Comprar esta",
             "inProductionBadge": "En producción",
             "inProductionNote": "En producción. Se suma a tu acceso cuando salga, sin costo adicional.",
             "availableOn": "Disponible el {date}",
@@ -402,12 +414,13 @@
         },
         "included": {
             "title": "Qué incluye",
-            "lifetime": "Acceso de por vida, sin renovaciones ni mensualidades.",
+            "term": "Un año de acceso desde el día que compras. Sin mensualidades.",
+            "renewal": "Renovar cuesta menos cada año: dos tercios de lo que pagaste en el segundo año y un tercio a partir del tercero. Un pase de $150 se renueva en $100 y después en $50.",
             "order": "Ves los módulos en el orden que quieras, las veces que quieras.",
             "devices": "Desde el navegador, en teléfono, tablet o computadora.",
             "languages": "Cada curso está grabado en español y en inglés.",
             "support": "Si te trabas, nos escribes por WhatsApp.",
-            "foundingNote": "Esta primera generación entra con acceso de por vida. Si el Vault crece, tu acceso no cambia."
+            "foundingNote": "Esta primera generación entra con la tarifa fundadora, y cada renovación se calcula sobre lo que pagaste: mientras antes entres, menos pagas siempre."
         },
         "alejandra": {
             "name": "Alejandra Carrillo",
@@ -422,14 +435,17 @@
         },
         "offer": {
             "title": "El acceso",
-            "singleTitle": "Solo Colorimetría",
-            "singleBody": "Un curso, cinco módulos. Si prefieres empezar por uno.",
-            "singleCta": "Comprar Colorimetría",
-            "secure": "Pago seguro con Stripe. Pago único.",
+            "renewalNote": "Un año de acceso. Renuevas por dos tercios el año siguiente y por un tercio cada año después. Si lo dejas vencer más de 30 días, vuelve a empezar al precio vigente.",
+            "secure": "Pago seguro con Stripe.",
             "unavailable": "Disponible pronto",
             "guestCta": "Entrar como invitada",
             "guestLoading": "Entrando al Vault…",
             "guestError": "El acceso como invitada no está disponible ahora. Inténtalo de nuevo."
+        },
+        "singles": {
+            "title": "O una masterclass a la vez",
+            "lede": "Cada una funciona por sí sola. Mismo año de acceso y mismas condiciones de renovación.",
+            "buy": "Comprar {title}"
         },
         "bridge": {
             "title": "Si prefieres que lo hagamos juntas",
@@ -447,7 +463,7 @@
             "q3": "¿Cómo recibo el acceso?",
             "a3": "Al pagar creas tu cuenta y entras al Vault de inmediato, desde el navegador. No hay que descargar nada.",
             "q4": "¿Por cuánto tiempo lo tengo?",
-            "a4": "De por vida. Sin renovaciones, sin mensualidades y sin fecha de vencimiento.",
+            "a4": "Un año desde el día que compras. Después puedes renovar por dos tercios de lo que pagaste, y por un tercio cada año siguiente: cuesta menos mientras más tiempo te quedes. Si lo dejas vencer tienes 30 días para renovar a tu precio; pasados esos días, vuelve a empezar al precio que tenga el pase en ese momento.",
             "q5": "¿En qué idioma está?",
             "a5": "Cada curso está grabado en español y en inglés. Eliges el idioma dentro de la plataforma.",
             "q6": "¿Desde qué dispositivos puedo verlo?",
@@ -470,7 +486,7 @@
                 "name": "Acceso Completo al Aprendizaje",
                 "catalogLede": "Cada curso es independiente. Con el Acceso Completo los tienes todos, incluidos los que se sumen después.",
                 "includedBadge": "Incluido en el Acceso Completo",
-                "body": "Todos los cursos actuales y los que se sumen después. Un solo pago.",
+                "body": "Todos los cursos actuales y los que se sumen después, durante un año. Renovar cuesta dos tercios y luego un tercio.",
                 "cta": "Obtener acceso completo",
                 "sticky": "Acceso Completo"
             },
@@ -478,7 +494,7 @@
                 "name": "Pase de Masterclasses",
                 "catalogLede": "Cada masterclass es independiente. Con el Pase de Masterclasses las tienes todas, incluidas las que se sumen después.",
                 "includedBadge": "Incluida en el Pase de Masterclasses",
-                "body": "Todas las masterclasses actuales y las que se sumen después. Un solo pago.",
+                "body": "Todas las masterclasses actuales y las que se sumen después, durante un año. Renovar cuesta dos tercios y luego un tercio.",
                 "cta": "Obtener el pase",
                 "sticky": "Pase de Masterclasses"
             }

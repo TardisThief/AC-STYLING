@@ -11,8 +11,26 @@ export interface UserProfile {
     has_full_unlock?: boolean;
     has_course_pass?: boolean;
     has_masterclass_pass?: boolean;
+    /**
+     * When the three pass flags stop meaning anything. Null is perpetual
+     * access, sold before the one-year term existed and honoured for good.
+     */
+    access_expires_at?: string | null;
     is_guest?: boolean;
     active_studio_client?: boolean;
+}
+
+/**
+ * Whether her passes are still inside their term.
+ *
+ * Every read of the three flags goes through this, so the expiry is enforced in
+ * one place rather than at each of the pages that used to read the booleans
+ * directly. The database gate (`check_access`) applies the same rule
+ * independently — this is what keeps the UI honest about it.
+ */
+function passesLive(profile: UserProfile): boolean {
+    if (!profile.access_expires_at) return true;
+    return new Date(profile.access_expires_at).getTime() > Date.now();
 }
 
 /**
@@ -32,14 +50,16 @@ export interface UserProfile {
 export function getAccessLevel(profile: UserProfile | null): AccessLevel {
     if (!profile) return 'restricted';
 
+    const live = passesLive(profile);
+
     // Full unlock takes priority
-    if (profile.has_full_unlock) return 'all_access';
+    if (profile.has_full_unlock && live) return 'all_access';
 
     // Course pass grants course access
-    if (profile.has_course_pass) return 'course_pass';
+    if (profile.has_course_pass && live) return 'course_pass';
 
     // Masterclass pass grants every masterclass
-    if (profile.has_masterclass_pass) return 'masterclass_pass';
+    if (profile.has_masterclass_pass && live) return 'masterclass_pass';
 
     // Guests are restricted (preview only)
     if (profile.is_guest) return 'restricted';
@@ -53,6 +73,7 @@ export function getAccessLevel(profile: UserProfile | null): AccessLevel {
  */
 export function canAccessMasterclass(profile: UserProfile | null): boolean {
     if (!profile) return false;
+    if (!passesLive(profile)) return false;
     return Boolean(profile.has_full_unlock || profile.has_masterclass_pass);
 }
 
@@ -61,6 +82,7 @@ export function canAccessMasterclass(profile: UserProfile | null): boolean {
  */
 export function canAccessCourse(profile: UserProfile | null): boolean {
     if (!profile) return false;
+    if (!passesLive(profile)) return false;
     return Boolean(profile.has_full_unlock || profile.has_course_pass);
 }
 

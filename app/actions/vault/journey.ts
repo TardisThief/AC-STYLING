@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
+import { canAccessMasterclass, getAccessLevel } from '@/utils/access-level';
 
 export interface JourneyStats {
     memberSince: string | null;
@@ -23,13 +24,16 @@ export async function getJourneyStats(targetUserId?: string): Promise<JourneySta
     const [profileRes, grantsRes, progressRes, masterclassCountRes] = await Promise.all([
         supabase
             .from('profiles')
-            .select('created_at, has_full_unlock, has_masterclass_pass')
+            .select('created_at, has_full_unlock, has_masterclass_pass, access_expires_at')
             .eq('id', userId)
             .single(),
         supabase
             .from('user_access_grants')
             .select('grant_type')
-            .eq('user_id', userId),
+            .eq('user_id', userId)
+            // Counting a lapsed grant would tell her she still has something
+            // she cannot open.
+            .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
         supabase
             .from('user_progress')
             .select('activity_type')
@@ -50,8 +54,8 @@ export async function getJourneyStats(targetUserId?: string): Promise<JourneySta
 
     return {
         memberSince: profile?.created_at || null,
-        hasFullAccess: profile?.has_full_unlock ?? false,
-        hasAllMasterclasses: (profile?.has_full_unlock || profile?.has_masterclass_pass) ?? false,
+        hasFullAccess: getAccessLevel(profile) === 'all_access',
+        hasAllMasterclasses: canAccessMasterclass(profile),
         masterclassesAccessCount: masterclassGrants.length,
         essenceLabsCompleted: progress.length,
         coursesAccessCount: courseGrants.length,

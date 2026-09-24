@@ -8,6 +8,7 @@ import FullAccessUnlock from "@/components/vault/FullAccessUnlock";
 import MasterclassCard from "@/components/vault/MasterclassCard";
 
 import { pageMetadata } from '@/app/lib/seo';
+import { canAccessMasterclass, getAccessLevel } from "@/utils/access-level";
 
 export const generateMetadata = pageMetadata({ key: 'vaultFoundations' });
 
@@ -40,15 +41,17 @@ export default async function FoundationsPage({ params }: { params: Promise<{ lo
         // Parallel Fetch: Profile & Progress
         const [progressRes, profileRes] = await Promise.all([
             supabase.from('user_progress').select('content_id').eq('user_id', user.id),
-            supabase.from('profiles').select('is_guest, has_full_unlock, has_masterclass_pass').eq('id', user.id).single()
+            supabase.from('profiles').select('is_guest, has_full_unlock, has_masterclass_pass, access_expires_at').eq('id', user.id).single()
         ]);
 
         const progress = progressRes.data;
         const profile = profileRes.data;
 
         isGuest = profile?.is_guest || false;
-        hasFullAccess = profile?.has_full_unlock || false;
-        hasMasterclassPass = profile?.has_masterclass_pass || false;
+        // Through the helper, not off the flags: a pass whose year has run out
+        // is still `true` in the column and must not open anything.
+        hasFullAccess = getAccessLevel(profile) === 'all_access';
+        hasMasterclassPass = canAccessMasterclass(profile) && !hasFullAccess;
 
         progress?.forEach(p => {
             const parts = p.content_id.split('/');

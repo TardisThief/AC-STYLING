@@ -1,5 +1,6 @@
 
 import { SupabaseClient } from '@supabase/supabase-js';
+import { nextExpiry } from '@/app/lib/entitlement-period';
 
 /**
  * Record WHICH offer was bought and WHEN.
@@ -71,30 +72,107 @@ function isDuplicate(error: { code?: string } | null): boolean {
 }
 
 /**
- * Set an entitlement flag on the profile, and refuse to pretend it worked.
+ * Set an entitlement flag on the profile, stamp the term, and refuse to pretend
+ * it worked.
  *
  * The three call sites previously ignored the result of this update entirely,
  * so a failed write left the buyer with no access while the webhook reported
  * success.
+ *
+ * The expiry is always computed from what she already holds, so no purchase can
+ * ever shorten her access — buying a second pass while the first is live adds a
+ * year to the later date rather than resetting to a year from today.
+ *
+ * The rung only moves on a renewal. A full-price purchase resets it to zero,
+ * which is what makes a lapse cost her the discount: after the grace window she
+ * comes back through ordinary checkout, and this is where the ladder restarts.
  */
 async function setProfileFlag(
     supabase: SupabaseClient,
     userId: string,
-    flag: 'has_full_unlock' | 'has_course_pass' | 'has_masterclass_pass'
+    flag: 'has_full_unlock' | 'has_course_pass' | 'has_masterclass_pass',
+    isRenewal: boolean
 ): Promise<void> {
+    const { data: held } = await supabase
+        .from('profiles')
+        .select('access_expires_at, access_renewal_count')
+        .eq('id', userId)
+        .maybeSingle();
+
+    const heldExpiry = (held?.access_expires_at as string | null) ?? null;
+    const heldCount = (held?.access_renewal_count as number | null) ?? 0;
+
     const { error } = await supabase
         .from('profiles')
-        .update({ [flag]: true })
+        .update({
+            [flag]: true,
+            access_expires_at: nextExpiry(heldExpiry),
+            access_renewal_count: isRenewal ? heldCount + 1 : 0,
+        })
         .eq('id', userId);
 
     if (error) throw new GrantWriteError(`${flag} for user ${userId}`, error.message);
 }
 
+/**
+ * Give her a single masterclass or chapter for a year, or extend the one she
+ * already has.
+ *
+ * The duplicate case is not a no-op any more. It used to mean "she already owns
+ * this, nothing to do", which was true while ownership was perpetual; now it is
+ * how a single-item renewal arrives, and treating it as nothing would charge her
+ * for a year she never received.
+ */
+async function grantItemForTerm(
+    supabase: SupabaseClient,
+    userId: string,
+    column: 'masterclass_id' | 'chapter_id',
+    itemId: string,
+    isRenewal: boolean
+): Promise<{ error: { code?: string; message: string } | null }> {
+    const { error } = await supabase.from('user_access_grants').insert({
+        user_id: userId,
+        [column]: itemId,
+        grant_type: 'purchase',
+        expires_at: nextExpiry(null),
+        renewal_count: 0,
+    });
+
+    if (!isDuplicate(error)) return { error };
+
+    const { data: held } = await supabase
+        .from('user_access_grants')
+        .select('expires_at, renewal_count')
+        .eq('user_id', userId)
+        .eq(column, itemId)
+        .maybeSingle();
+
+    const heldExpiry = (held?.expires_at as string | null) ?? null;
+    const heldCount = (held?.renewal_count as number | null) ?? 0;
+
+    const { error: updateError } = await supabase
+        .from('user_access_grants')
+        .update({
+            expires_at: nextExpiry(heldExpiry),
+            renewal_count: isRenewal ? heldCount + 1 : 0,
+        })
+        .eq('user_id', userId)
+        .eq(column, itemId);
+
+    return { error: updateError };
+}
+
+/**
+ * `isRenewal` is last and optional so every existing caller keeps working: a
+ * first purchase is the default and the only thing that sets it is the webhook,
+ * reading the marker that `createRenewalCheckoutSession` put on the session.
+ */
 export async function grantAccessForProduct(
     supabase: SupabaseClient,
     userId: string,
     productId: string,
-    logFn?: (status: string, msg: string) => Promise<void>
+    logFn?: (status: string, msg: string) => Promise<void>,
+    isRenewal: boolean = false
 ): Promise<boolean> {
     // 1. Masterclass (Specific Check)
     const { data: masterclass, error: mcError } = await supabase
@@ -106,12 +184,14 @@ export async function grantAccessForProduct(
     if (logFn) await logFn('info', `Checking Masterclass for ${productId}: Found=${!!masterclass}`);
 
     if (masterclass) {
-        const { error: grantError } = await supabase.from('user_access_grants').insert({
-            user_id: userId,
-            masterclass_id: masterclass.id,
-            grant_type: 'purchase'
-        });
-        if (grantError && !isDuplicate(grantError)) {
+        const { error: grantError } = await grantItemForTerm(
+            supabase,
+            userId,
+            'masterclass_id',
+            masterclass.id,
+            isRenewal
+        );
+        if (grantError) {
             // Previously this logged and returned true, so the webhook answered
             // 200 and Stripe never retried: paid, not granted, no second chance.
             if (logFn) await logFn('error', `Masterclass Grant Failed: ${grantError.message}`);
@@ -129,12 +209,14 @@ export async function grantAccessForProduct(
         .maybeSingle();
 
     if (chapter) {
-        const { error: grantError } = await supabase.from('user_access_grants').insert({
-            user_id: userId,
-            chapter_id: chapter.id,
-            grant_type: 'purchase'
-        });
-        if (grantError && !isDuplicate(grantError)) {
+        const { error: grantError } = await grantItemForTerm(
+            supabase,
+            userId,
+            'chapter_id',
+            chapter.id,
+            isRenewal
+        );
+        if (grantError) {
             if (logFn) await logFn('error', `Chapter Grant Failed: ${grantError.message}`);
             throw new GrantWriteError(`chapter grant for ${chapter.title}`, grantError.message);
         }
@@ -154,7 +236,7 @@ export async function grantAccessForProduct(
     // callers guard against that before calling, but the comparison should not
     // depend on them continuing to.
     if (FULL_UNLOCK_PRODUCT_ID && productId === FULL_UNLOCK_PRODUCT_ID) {
-        await setProfileFlag(supabase, userId, 'has_full_unlock');
+        await setProfileFlag(supabase, userId, 'has_full_unlock', isRenewal);
         await recordOfferGrant(supabase, userId, 'full_access', logFn);
         if (logFn) await logFn('success', 'Granted Full Access (Env Match)');
         return true;
@@ -172,17 +254,17 @@ export async function grantAccessForProduct(
 
     if (offer) {
         if (offer.slug === 'full_access') {
-            await setProfileFlag(supabase, userId, 'has_full_unlock');
+            await setProfileFlag(supabase, userId, 'has_full_unlock', isRenewal);
             await recordOfferGrant(supabase, userId, offer.slug, logFn);
             if (logFn) await logFn('success', 'Granted Full Access (Offer)');
             return true;
         } else if (offer.slug === 'masterclass_pass') {
-            await setProfileFlag(supabase, userId, 'has_masterclass_pass');
+            await setProfileFlag(supabase, userId, 'has_masterclass_pass', isRenewal);
             await recordOfferGrant(supabase, userId, offer.slug, logFn);
             if (logFn) await logFn('success', 'Granted Masterclass Pass (Offer)');
             return true;
         } else if (offer.slug === 'course_pass') {
-            await setProfileFlag(supabase, userId, 'has_course_pass');
+            await setProfileFlag(supabase, userId, 'has_course_pass', isRenewal);
             await recordOfferGrant(supabase, userId, offer.slug, logFn);
             if (logFn) await logFn('success', 'Granted Course Pass (Offer)');
             return true;

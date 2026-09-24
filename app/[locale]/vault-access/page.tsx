@@ -100,7 +100,11 @@ export default async function VaultLandingPage({
     );
 
     const flagship = pickFlagship(entries);
-    const singleCourse = entries.find((e) => e.is_published && e.price_display);
+
+    // Everything that can be bought on its own: published, priced, and with a
+    // Stripe price to send her to. All three are required -- a card offering to
+    // sell something we cannot charge for is worse than no card.
+    const singles = entries.filter((e) => e.is_published && e.price_display && e.price_id);
 
     // Course + FAQPage structured data, generated from exactly what renders so
     // the two cannot drift. Correct markup on a noindex page: nothing has to
@@ -347,6 +351,21 @@ export default async function VaultLandingPage({
                                         key={entry.id}
                                         entry={entry}
                                         locale={locale}
+                                        // Checkout is passed in rather than built by the card:
+                                        // the card stays a server component that knows only
+                                        // what the database told it.
+                                        action={
+                                            entry.is_published && entry.price_id ? (
+                                                <VaultCheckoutButton
+                                                    priceId={entry.price_id}
+                                                    isSignedIn={false}
+                                                    section="catalog_buy"
+                                                    label={t("catalog.buyCta")}
+                                                    unavailableLabel={t("offer.unavailable")}
+                                                    className="inline-block border border-ac-taupe/40 px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-ac-taupe transition-colors hover:border-ac-taupe hover:bg-ac-taupe hover:text-ac-sand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
+                                                />
+                                            ) : null
+                                        }
                                         t={{
                                             modulesLabel: t("catalog.modulesLabel"),
                                             // `t.raw` on purpose for the two strings the card
@@ -479,7 +498,7 @@ export default async function VaultLandingPage({
                             {t("offer.title")}
                         </h2>
 
-                        <div className="mt-10 grid gap-px bg-ac-sand/20 md:grid-cols-2">
+                        <div className="mt-10 border border-ac-sand/20">
                             <div className="flex flex-col bg-ac-espresso p-7">
                                 <h3 className="font-serif text-2xl text-ac-sand">
                                     {pass
@@ -520,30 +539,56 @@ export default async function VaultLandingPage({
                                 </div>
                             </div>
 
-                            {singleCourse && (
-                                <div className="flex flex-col bg-ac-espresso p-7">
-                                    <h3 className="font-serif text-2xl text-ac-sand/90">
-                                        {t("offer.singleTitle")}
-                                    </h3>
-                                    <p className="mt-3 font-serif text-4xl text-ac-sand/90">
-                                        {singleCourse.price_display}
-                                    </p>
-                                    <p className="mt-4 leading-relaxed text-ac-sand/75">
-                                        {t("offer.singleBody")}
-                                    </p>
-                                    <div className="mt-7 pt-1">
-                                        <VaultCheckoutButton
-                                            priceId={singleCourse.price_id}
-                                            isSignedIn={false}
-                                            section="offer_single"
-                                            label={t("offer.singleCta")}
-                                            unavailableLabel={t("offer.unavailable")}
-                                            className="inline-block border border-ac-sand/50 px-7 py-4 text-xs font-bold uppercase tracking-widest text-ac-sand transition-colors hover:border-ac-sand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
-                                        />
-                                    </div>
-                                </div>
-                            )}
                         </div>
+
+                        {/* The term and the ladder, said once in plain words. The
+                            full rule lives in the terms; this is the version she
+                            reads before paying. */}
+                        <p className="mt-6 max-w-2xl leading-relaxed text-ac-sand/75">
+                            {t("offer.renewalNote")}
+                        </p>
+
+                        {/* Buying one masterclass on its own. Driven entirely by
+                            what is priced in the database -- the section that used
+                            to live here named Colorimetry in fixed copy and could
+                            never have sold anything else. */}
+                        {singles.length > 0 && (
+                            <div className="mt-14 border-t border-ac-sand/20 pt-10">
+                                <h3 className="font-serif text-2xl text-ac-sand">
+                                    {t("singles.title")}
+                                </h3>
+                                <p className="mt-3 max-w-2xl leading-relaxed text-ac-sand/75">
+                                    {t("singles.lede")}
+                                </p>
+                                <ul className="mt-8 border-t border-ac-sand/15">
+                                    {singles.map((entry) => {
+                                        const title =
+                                            pickLocale(locale, entry.title, entry.title_es) ?? entry.title;
+                                        return (
+                                            <li
+                                                key={entry.id}
+                                                className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 border-b border-ac-sand/15 py-5"
+                                            >
+                                                <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+                                                    <span className="font-serif text-xl text-ac-sand">{title}</span>
+                                                    <span className="font-serif text-xl text-ac-sand/75">
+                                                        {entry.price_display}
+                                                    </span>
+                                                </div>
+                                                <VaultCheckoutButton
+                                                    priceId={entry.price_id}
+                                                    isSignedIn={false}
+                                                    section="offer_single_masterclass"
+                                                    label={t("singles.buy", { title })}
+                                                    unavailableLabel={t("offer.unavailable")}
+                                                    className="inline-block border border-ac-sand/50 px-6 py-3 text-xs font-bold uppercase tracking-widest text-ac-sand transition-colors hover:border-ac-sand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
+                                                />
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+                        )}
 
                         <p className="mt-8 text-xs uppercase tracking-widest text-ac-sand/75">
                             {t("offer.secure")}

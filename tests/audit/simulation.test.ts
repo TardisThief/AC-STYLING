@@ -250,11 +250,16 @@ describe('End-to-End Platform Audit Simulation', () => {
                 error: null
             });
 
+            // The term she already holds, read before the flag is written.
+            mocks.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+
             const result = await grantAccessForProduct({ from: mocks.from } as any, userId, stripeProductId);
 
             expect(result).toBe(true);
             expect(mocks.from).toHaveBeenCalledWith('profiles');
-            expect(mocks.update).toHaveBeenCalledWith({ has_full_unlock: true });
+            expect(mocks.update).toHaveBeenCalledWith(
+                expect.objectContaining({ has_full_unlock: true, access_renewal_count: 0 })
+            );
         });
     });
 

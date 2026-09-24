@@ -13,6 +13,12 @@ import { pickLocale, type CatalogEntry } from "@/app/lib/vault-catalog";
 interface Props {
     entry: CatalogEntry;
     locale: string;
+    /**
+     * The buy control, built by the caller. Checkout is a client concern and
+     * this is a server component; taking the button as a node keeps it that
+     * way, and keeps the card ignorant of prices, Stripe and sessions.
+     */
+    action?: React.ReactNode;
     t: {
         modulesLabel: string;
         runtimeApprox: string;
@@ -23,7 +29,7 @@ interface Props {
     };
 }
 
-export default function CatalogCard({ entry, locale, t }: Props) {
+export default function CatalogCard({ entry, locale, action, t }: Props) {
     const title = pickLocale(locale, entry.title, entry.title_es);
     const subtitle = pickLocale(locale, entry.subtitle, entry.subtitle_es);
     const description = pickLocale(locale, entry.description, entry.description_es);
@@ -104,10 +110,21 @@ export default function CatalogCard({ entry, locale, t }: Props) {
                 )}
 
                 <div className="mt-auto pt-2">
-                    {upcoming && (
+                    {upcoming ? (
                         <p className="text-sm text-ac-taupe">
                             {availableLabel ?? t.inProductionNote}
                         </p>
+                    ) : (
+                        action && (
+                            <div className="flex flex-wrap items-center gap-4">
+                                {entry.price_display && (
+                                    <span className="font-serif text-xl text-ac-taupe">
+                                        {entry.price_display}
+                                    </span>
+                                )}
+                                {action}
+                            </div>
+                        )
                     )}
                 </div>
             </div>

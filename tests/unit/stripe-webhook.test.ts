@@ -164,6 +164,78 @@ describe('Stripe Webhook Handler', () => {
             expect(grantAccessForProduct).toHaveBeenCalled()
         })
 
+        // A renewal is an ordinary paid session carrying one marker. The
+        // handler must pass that marker on in two directions: to the purchases
+        // row, so the discount is never compounded off another discount, and to
+        // grantAccessForProduct, so the term is extended rather than restarted.
+        it('marks a renewal purchase and tells the grant it is one', async () => {
+            mockConstructEvent.mockReturnValue({
+                type: 'checkout.session.completed',
+                data: {
+                    object: { ...mockSession, metadata: { userId: 'user-123', kind: 'renewal' } },
+                },
+            })
+
+            mockListLineItems.mockResolvedValue({
+                data: [{
+                    id: 'li_renewal_1',
+                    price: { product: 'prod_masterclass_pass' },
+                    amount_total: 10000,
+                    currency: 'usd',
+                }],
+            })
+
+            const purchaseInsert = vi.fn().mockResolvedValue({ error: null })
+            mockFrom.mockImplementation((table: string) =>
+                table === 'purchases'
+                    ? { insert: purchaseInsert }
+                    : createChainableMock({ data: null, error: null })
+            )
+
+            const { POST } = await import('@/app/api/webhooks/stripe/route')
+            const response = await POST(new Request('http://localhost:3000/api/webhooks/stripe', {
+                method: 'POST',
+                body: JSON.stringify({}),
+            }))
+
+            expect(response.status).toBe(200)
+            expect(purchaseInsert).toHaveBeenCalledWith(
+                expect.objectContaining({ is_renewal: true, amount_paid: 100 })
+            )
+            expect((grantAccessForProduct as unknown as { mock: { calls: unknown[][] } })
+                .mock.calls[0][4]).toBe(true)
+        })
+
+        it('marks an ordinary purchase as not a renewal', async () => {
+            mockListLineItems.mockResolvedValue({
+                data: [{
+                    id: 'li_first_1',
+                    price: { product: 'prod_masterclass_pass' },
+                    amount_total: 15000,
+                    currency: 'usd',
+                }],
+            })
+
+            const purchaseInsert = vi.fn().mockResolvedValue({ error: null })
+            mockFrom.mockImplementation((table: string) =>
+                table === 'purchases'
+                    ? { insert: purchaseInsert }
+                    : createChainableMock({ data: null, error: null })
+            )
+
+            const { POST } = await import('@/app/api/webhooks/stripe/route')
+            await POST(new Request('http://localhost:3000/api/webhooks/stripe', {
+                method: 'POST',
+                body: JSON.stringify({}),
+            }))
+
+            expect(purchaseInsert).toHaveBeenCalledWith(
+                expect.objectContaining({ is_renewal: false })
+            )
+            expect((grantAccessForProduct as unknown as { mock: { calls: unknown[][] } })
+                .mock.calls[0][4]).toBe(false)
+        })
+
         // A guest checkout arrives with no user id by design. The old handler
         // logged it and returned 200, so Stripe considered the delivery done
         // and the purchase vanished. These pin the replacement behaviour.

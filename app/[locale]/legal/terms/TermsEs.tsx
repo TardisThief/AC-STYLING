@@ -109,6 +109,11 @@ export default function TermsEs() {
             <p>Aceptas proporcionar información de compra y de cuenta vigente, completa y exacta para todas las compras realizadas a través de los Servicios. Todos los pagos se efectuarán en dólares estadounidenses.</p>
             <p>Nos reservamos el derecho de rechazar cualquier pedido realizado a través de los Servicios. Podemos, a nuestra entera discreción, limitar o cancelar las cantidades adquiridas por persona, por hogar o por pedido.</p>
 
+            <p><strong>Vigencia del acceso al Vault.</strong> Salvo que se indique otra cosa en el momento de la compra, el acceso al Vault —ya sea un pase o una masterclass individual— se otorga por un plazo de un (1) año contado desde la fecha de compra. El acceso termina automáticamente al concluir ese plazo. No se trata de una suscripción: no se te cobra nada de forma automática y no se realiza ningún cargo salvo que decidas renovar.</p>
+            <p><strong>Precio de renovación.</strong> Si renuevas, el precio se calcula sobre el importe que pagaste en tu compra más reciente del mismo producto que no haya sido una renovación: dos tercios (2/3) de ese importe en tu primera renovación y un tercio (1/3) en cada renovación posterior. Renovar antes de que termine tu plazo añade un año más a tu fecha de vencimiento vigente, de modo que no pierdes el tiempo que te quede por renovar antes.</p>
+            <p><strong>Vencimiento sin renovación.</strong> La renovación al precio descrito arriba sigue disponible durante treinta (30) días después de que termine tu plazo. Ese periodo conserva únicamente el precio de renovación; el acceso termina en la fecha de vencimiento. Si no has renovado al concluir esos treinta días, el precio de renovación deja de aplicarse y cualquier compra posterior se realiza al precio vigente en ese momento y se considera una nueva compra de primer año a efectos del cálculo descrito arriba.</p>
+            <p>El acceso otorgado antes de la introducción de este plazo, y cualquier acceso que te concedamos sin costo, no está sujeto a él.</p>
+
             <h2 id="refunds">7. POLÍTICA DE REEMBOLSOS</h2>
             <p>Todas las ventas son definitivas y no se emitirá ningún reembolso.</p>
 

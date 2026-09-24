@@ -13,6 +13,17 @@ const createMockSupabase = () => {
 // Import after setting up mocks
 import { grantAccessForProduct } from '@/app/lib/access-logic'
 
+/**
+ * The profile read that now precedes every profile write: setting a flag also
+ * stamps the one-year term, and the new expiry is computed from the one she
+ * already holds so that no purchase can ever shorten her access.
+ */
+const heldTerm = (data: unknown = null) => ({
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockResolvedValue({ data, error: null }),
+})
+
 describe('Access Logic - grantAccessForProduct', () => {
     let mockSupabase: ReturnType<typeof createMockSupabase>
     let mockLog: ReturnType<typeof vi.fn>
@@ -56,6 +67,7 @@ describe('Access Logic - grantAccessForProduct', () => {
             mockSupabase._mockFrom
                 .mockReturnValueOnce(emptyQuery) // Masterclass
                 .mockReturnValueOnce(emptyQuery) // Chapter
+                .mockReturnValueOnce(heldTerm()) // Profile read (existing term)
                 .mockReturnValueOnce({ // Profile update
                     update: vi.fn(() => ({
                         eq: vi.fn().mockResolvedValue({ error: null }),
@@ -109,6 +121,7 @@ describe('Access Logic - grantAccessForProduct', () => {
                 .mockReturnValueOnce(emptyQuery) // Masterclass
                 .mockReturnValueOnce(emptyQuery) // Chapter
                 .mockReturnValueOnce(offerQuery)
+                .mockReturnValueOnce(heldTerm())
                 .mockReturnValueOnce(profileUpdate)
                 .mockReturnValueOnce(grantInsert)
 
@@ -153,6 +166,7 @@ describe('Access Logic - grantAccessForProduct', () => {
                 .mockReturnValueOnce(emptyQuery) // Masterclass
                 .mockReturnValueOnce(emptyQuery) // Chapter
                 .mockReturnValueOnce(offerQuery)
+                .mockReturnValueOnce(heldTerm())
                 .mockReturnValueOnce(profileUpdate)
                 .mockReturnValueOnce(grantInsert)
 
@@ -191,6 +205,7 @@ describe('Access Logic - grantAccessForProduct', () => {
                 .mockReturnValueOnce(emptyQuery) // Masterclass
                 .mockReturnValueOnce(emptyQuery) // Chapter
                 .mockReturnValueOnce(offerQuery)
+                .mockReturnValueOnce(heldTerm())
                 .mockReturnValueOnce(profileUpdate)
                 .mockReturnValueOnce(grantInsert)
 
@@ -203,7 +218,12 @@ describe('Access Logic - grantAccessForProduct', () => {
 
             expect(result).toBe(true)
             // Not has_full_unlock: the pass must never open standalone courses.
-            expect(profileUpdate.update).toHaveBeenCalledWith({ has_masterclass_pass: true })
+            expect(profileUpdate.update).toHaveBeenCalledWith(
+                expect.objectContaining({ has_masterclass_pass: true, access_renewal_count: 0 })
+            )
+            expect(profileUpdate.update).not.toHaveBeenCalledWith(
+                expect.objectContaining({ has_full_unlock: true })
+            )
             expect(updateEq).toHaveBeenCalledWith('id', 'user-123')
             expect(mockLog).toHaveBeenCalledWith('success', 'Granted Masterclass Pass (Offer)')
             expect(grantInsert.insert).toHaveBeenCalledWith({

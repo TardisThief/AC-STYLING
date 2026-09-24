@@ -35,6 +35,9 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
         orderIndex: masterclass?.order_index || 0,
         stripeProductId: masterclass?.stripe_product_id || '',
         priceId: masterclass?.price_id || '',
+        isPublished: masterclass?.is_published || false,
+        priceDisplay: masterclass?.price_display || '',
+        runtimeMinutes: masterclass?.runtime_minutes ?? '',
     });
 
     const [resourceUrls, setResourceUrls] = useState<VaultResource[]>(
@@ -56,6 +59,9 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
             orderIndex: masterclass?.order_index || 0,
             stripeProductId: masterclass?.stripe_product_id || '',
             priceId: masterclass?.price_id || '',
+            isPublished: masterclass?.is_published || false,
+            priceDisplay: masterclass?.price_display || '',
+            runtimeMinutes: masterclass?.runtime_minutes ?? '',
         });
         setResourceUrls((masterclass?.resource_urls as VaultResource[] | null) || []);
     }, [masterclass]);
@@ -88,6 +94,9 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
         fd.append('orderIndex', formData.orderIndex.toString());
         fd.append('stripeProductId', formData.stripeProductId);
         fd.append('priceId', formData.priceId);
+        fd.append('isPublished', String(formData.isPublished));
+        fd.append('priceDisplay', formData.priceDisplay);
+        fd.append('runtimeMinutes', String(formData.runtimeMinutes));
         fd.append('resourceUrls', JSON.stringify(resourceUrls));
 
         const result = masterclass
@@ -101,7 +110,8 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
                 setFormData({
                     title: '', subtitle: '', description: '',
                     titleEs: '', subtitleEs: '', descriptionEs: '',
-                    thumbnailUrl: '', videoUrl: '', orderIndex: 0, stripeProductId: '', priceId: ''
+                    thumbnailUrl: '', videoUrl: '', orderIndex: 0, stripeProductId: '', priceId: '',
+                    isPublished: false, priceDisplay: '', runtimeMinutes: ''
                 });
                 setResourceUrls([]);
             }
@@ -358,6 +368,45 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
                             className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:border-ac-gold focus:ring-1 focus:ring-ac-gold font-mono text-xs"
                             placeholder="price_..."
                         />
+                    </div>
+                </div>
+
+                {/* What the public sales page reads. Without a displayed price
+                    a masterclass cannot be sold on its own there, however many
+                    Stripe ids it has, and without Published it does not appear
+                    at all. */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-ac-taupe/10">
+                    <div>
+                        <label className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mb-2">Displayed price</label>
+                        <input
+                            type="text"
+                            value={formData.priceDisplay}
+                            onChange={(e) => setFormData({ ...formData, priceDisplay: e.target.value })}
+                            className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:border-ac-gold focus:ring-1 focus:ring-ac-gold"
+                            placeholder="$50"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mb-2">Runtime (minutes)</label>
+                        <input
+                            type="number"
+                            min={1}
+                            value={formData.runtimeMinutes}
+                            onChange={(e) => setFormData({ ...formData, runtimeMinutes: e.target.value })}
+                            className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:border-ac-gold focus:ring-1 focus:ring-ac-gold"
+                            placeholder="60"
+                        />
+                    </div>
+                    <div className="flex items-end">
+                        <label className="flex items-center gap-3 pb-3 text-xs font-bold text-ac-taupe/80 uppercase tracking-widest">
+                            <input
+                                type="checkbox"
+                                checked={formData.isPublished}
+                                onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
+                                className="h-4 w-4 accent-ac-gold"
+                            />
+                            Published
+                        </label>
                     </div>
                 </div>
             </div>

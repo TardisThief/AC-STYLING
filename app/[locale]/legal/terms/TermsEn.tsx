@@ -110,6 +110,11 @@ export default function TermsEn() {
             <p>You agree to provide current, complete, and accurate purchase and account information for all purchases made via the Services. All payments shall be in US dollars.</p>
             <p>We reserve the right to refuse any order placed through the Services. We may, in our sole discretion, limit or cancel quantities purchased per person, per household, or per order.</p>
 
+            <p><strong>Vault access term.</strong> Unless stated otherwise at the point of sale, access to the Vault — whether a pass or an individual masterclass — is granted for a term of one (1) year beginning on the date of purchase. Access ends automatically at the end of that term. This is not a subscription: nothing is charged to you automatically, and no payment is taken unless you choose to renew.</p>
+            <p><strong>Renewal pricing.</strong> If you renew, the price is calculated from the amount you paid for your most recent non-renewal purchase of the same product: two thirds (2/3) of that amount for your first renewal, and one third (1/3) of it for every renewal after that. Renewing before your term ends adds a further year to your existing end date, so no remaining time is lost by renewing early.</p>
+            <p><strong>Lapse.</strong> Renewal at the price described above remains available for thirty (30) days after your term ends. That period preserves the renewal price only; access itself ends on the expiry date. If you have not renewed by the end of those thirty days, renewal pricing no longer applies, and any subsequent purchase is made at the price then in effect and is treated as a new first-year purchase for the purposes of the pricing described above.</p>
+            <p>Access granted before the introduction of this term, and any access we grant to you without charge, is not subject to it.</p>
+
             <h2 id="refunds">7. REFUNDS POLICY</h2>
             <p>All sales are final and no refund will be issued.</p>
 

@@ -22,6 +22,9 @@ function masterclassInput(formData: FormData) {
         resource_urls: formData.get('resourceUrls'),
         stripe_product_id: formData.get('stripeProductId'),
         price_id: formData.get('priceId'),
+        is_published: formData.get('isPublished'),
+        price_display: formData.get('priceDisplay'),
+        runtime_minutes: formData.get('runtimeMinutes'),
     };
 }
 

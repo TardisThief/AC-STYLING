@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { requiredText, optionalText, orderIndex, resourceList } from './parse';
+import {
+    requiredText,
+    optionalText,
+    optionalNumber,
+    orderIndex,
+    resourceList,
+    booleanish,
+} from './parse';
 
 export const masterclassSchema = z.object({
     title: requiredText('Title'),
@@ -14,4 +21,11 @@ export const masterclassSchema = z.object({
     resource_urls: resourceList('Resources'),
     stripe_product_id: optionalText,
     price_id: optionalText,
+    // The three columns that decide whether a masterclass can appear on the
+    // public sales page and be bought on its own. They were added by migration
+    // 10 but never reached this schema, so they could only be set by editing
+    // the database directly — which meant only Colorimetry ever had a price.
+    is_published: booleanish,
+    price_display: optionalText,
+    runtime_minutes: optionalNumber('Runtime'),
 });

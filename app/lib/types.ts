@@ -128,6 +128,12 @@ export interface Masterclass {
     description_es: string | null;
     takeaways_es: unknown;
     resource_urls: unknown[] | null;
+    // Added by migration 10; what the public catalogue reads to decide whether
+    // this can be shown and sold on its own.
+    is_published: boolean;
+    available_at: string | null;
+    price_display: string | null;
+    runtime_minutes: number | null;
     created_at: string;
     updated_at: string;
 }

@@ -217,6 +217,11 @@ export async function POST(req: Request) {
         // Remembered for the welcome email below, which names what was bought.
         let purchasedTitle = 'your Vault access';
 
+        // A renewal extends the term she already holds and climbs the price
+        // ladder; a first purchase starts both. Only the renewal action sets
+        // this marker, so anything else is a first purchase by construction.
+        const isRenewal = session.metadata?.kind === 'renewal';
+
         try {
             const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
 
@@ -270,7 +275,11 @@ export async function POST(req: Request) {
                         stripe_line_item_id: item.id,
                         amount_paid: item.amount_total ? item.amount_total / 100 : 0,
                         currency: item.currency?.toUpperCase() || 'USD',
-                        status: 'completed'
+                        status: 'completed',
+                        // What prices her next renewal is the most recent row
+                        // where this is false. Marking it here is what stops a
+                        // renewal being priced off another renewal.
+                        is_renewal: isRenewal
                     });
 
                     if (purchaseError && purchaseError.code !== '23505') {
@@ -286,7 +295,8 @@ export async function POST(req: Request) {
                         supabase,
                         resolvedUserId,
                         stripeProductId,
-                        logEvent
+                        logEvent,
+                        isRenewal
                     );
 
                     if (granted) {

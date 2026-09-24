@@ -121,6 +121,36 @@ describe('Access Level Business Logic', () => {
         })
     })
 
+    describe('the one-year term', () => {
+        const DAY = 24 * 60 * 60 * 1000
+        const future = new Date(Date.now() + 90 * DAY).toISOString()
+        const past = new Date(Date.now() - DAY).toISOString()
+
+        it('honours a pass that is still inside its year', () => {
+            expect(getAccessLevel({ has_full_unlock: true, access_expires_at: future })).toBe('all_access')
+            expect(canAccessMasterclass({ has_masterclass_pass: true, access_expires_at: future })).toBe(true)
+            expect(canAccessCourse({ has_course_pass: true, access_expires_at: future })).toBe(true)
+        })
+
+        it('ignores the flags once the year has run out', () => {
+            // The columns still say true -- nothing clears them. The expiry is
+            // the only thing standing between a lapsed member and the library.
+            expect(getAccessLevel({ has_full_unlock: true, access_expires_at: past })).toBe('basic')
+            expect(canAccessMasterclass({ has_masterclass_pass: true, access_expires_at: past })).toBe(false)
+            expect(canAccessCourse({ has_course_pass: true, access_expires_at: past })).toBe(false)
+        })
+
+        it('treats a null expiry as perpetual, for everyone who bought before the term', () => {
+            expect(getAccessLevel({ has_full_unlock: true, access_expires_at: null })).toBe('all_access')
+            expect(canAccessMasterclass({ has_masterclass_pass: true })).toBe(true)
+        })
+
+        it('still reports a lapsed guest as restricted rather than basic', () => {
+            expect(getAccessLevel({ has_full_unlock: true, is_guest: true, access_expires_at: past }))
+                .toBe('restricted')
+        })
+    })
+
     describe('hasStudioAccess', () => {
         it('returns true for active studio clients', () => {
             expect(hasStudioAccess({ active_studio_client: true })).toBe(true)
