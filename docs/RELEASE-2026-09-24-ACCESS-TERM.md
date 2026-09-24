@@ -81,9 +81,8 @@ prerendered.
 
 ## Ordering
 
-The migration is applied and the code is not deployed. That gap is in the safe
-direction: production still grants perpetual access, exactly as before, and the
-new columns sit unused.
+The migration was applied hours before the code was pushed, and pushing
+deployed it. That is the safe order.
 
 **The reverse would break every purchase.** `setProfileFlag` writes
 `access_expires_at`, so application code deployed against a database without
@@ -102,10 +101,10 @@ check, or at minimum a note on any branch that carries one.
   `RenewAccessBanner` are unit-tested; no Stripe session has ever been created
   from them, and the banner has never rendered in a browser. It involves money
   and it is untested end to end.
-- **The baseline snapshot is not updated.**
-  `supabase/migrations/00000000000000_baseline.sql` still describes the schema as
-  of 2026-07-10 and predates migrations 09–21. It was already stale before this
-  work; see the roadmap.
+- The baseline snapshot **was** refreshed afterwards, in `15f098a`, along with
+  the two bugs that made refreshing it unsafe and `db:schema:check` useless.
+  That commit is not part of this release; it is recorded in
+  `supabase/migrations/README.md`.
 - The thirty-day grace is enforced in application code
   (`app/lib/entitlement-period.ts`), not in `check_access()`. A direct database
   client sees only the expiry, which is correct — grace was never about access.
