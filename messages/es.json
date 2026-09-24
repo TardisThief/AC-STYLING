@@ -356,12 +356,14 @@
             "ctaSecondary": "Ver qué hay dentro"
         },
         "mirror": {
-            "title": "Si algo de esto te suena",
-            "body": "Compras algo que te encantó en la tienda y en casa no te lo pones. Te dijeron que eres «de tono cálido» y nunca supiste qué hacer con esa información. Tienes ropa que te gusta y ropa que usas, y casi nada en la intersección.",
+            "title": "Si algo de esto te suena:",
+            "item1": "Compras algo que te encantó en la tienda y en casa no te lo pones.",
+            "item2": "Te dijeron que eres «de tono cálido» y nunca supiste qué hacer con esa información.",
+            "item3": "Tienes ropa que te gusta y ropa que usas, y casi nada en la intersección.",
             "close": "No es falta de ropa. Es falta de criterio, y el criterio se aprende."
         },
         "method": {
-            "title": "Por qué pasa",
+            "title": "¿Por qué pasa?",
             "cognition": "La ropa no solo cambia cómo te leen. Cambia cómo piensas. En un estudio de Adam y Galinsky en Northwestern, dos grupos usaron la misma bata blanca: al grupo al que le dijeron que era de médico le mejoró la atención sostenida. Misma prenda, distinta historia, distinto desempeño.",
             "thesis": "Por eso no enseño tendencias. Enseño a decidir: qué colores te sostienen, qué siluetas te representan y qué quieres comunicar antes de abrir el clóset."
         },

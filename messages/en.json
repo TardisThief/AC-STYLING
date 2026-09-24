@@ -356,12 +356,14 @@
             "ctaSecondary": "See what's inside"
         },
         "mirror": {
-            "title": "If any of this sounds familiar",
-            "body": "You buy something you loved in the shop and never wear it at home. Someone told you you're \"warm-toned\" and you never worked out what to do with that. You have clothes you like and clothes you wear, and almost nothing in the overlap.",
+            "title": "If any of this sounds familiar:",
+            "item1": "You buy something you loved in the shop and never wear it at home.",
+            "item2": "Someone told you you're \"warm-toned\" and you never worked out what to do with that.",
+            "item3": "You have clothes you like and clothes you wear, and almost nothing in the overlap.",
             "close": "It isn't a shortage of clothes. It's a shortage of criteria, and criteria can be taught."
         },
         "method": {
-            "title": "Why it happens",
+            "title": "Why does it happen?",
             "cognition": "Clothes don't only change how you're read. They change how you think. In a study by Adam and Galinsky at Northwestern, two groups wore the same white coat: the group told it was a doctor's coat showed better sustained attention. Same garment, different story, different performance.",
             "thesis": "So I don't teach trends. I teach you to decide: which colours hold you up, which silhouettes represent you, and what you want to communicate before you open the closet."
         },

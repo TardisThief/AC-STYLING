@@ -221,9 +221,17 @@ export default async function VaultLandingPage({
                         <h2 className="font-serif text-3xl leading-tight md:text-4xl">
                             {t("mirror.title")}
                         </h2>
-                        <p className="mt-6 text-lg leading-relaxed text-ac-taupe">
-                            {t("mirror.body")}
-                        </p>
+                        {/* Three separate recognitions, so each one gets its own
+                            beat to land. As a single paragraph they read as one
+                            undifferentiated complaint. */}
+                        <ul className="mt-6 list-none space-y-4">
+                            {(["item1", "item2", "item3"] as const).map((k) => (
+                                <li key={k} className="flex gap-4 text-lg leading-relaxed text-ac-taupe">
+                                    <span aria-hidden="true" className="mt-3 h-px w-5 shrink-0 bg-ac-taupe/40" />
+                                    <span>{t(`mirror.${k}`)}</span>
+                                </li>
+                            ))}
+                        </ul>
                         <p className="mt-6 font-serif text-2xl leading-snug text-ac-taupe md:text-[1.7rem]">
                             {t("mirror.close")}
                         </p>
@@ -666,7 +674,10 @@ export default async function VaultLandingPage({
 function PathStepTitle({ n, children }: { n: string; children: React.ReactNode }) {
     return (
         <h3 className="flex items-baseline gap-4 font-serif text-2xl text-ac-taupe">
-            <span aria-hidden="true" className="font-sans text-xs tracking-[0.3em] text-ac-taupe/60">
+            {/* Sized to be read, not decoded: at text-xs/60% these were
+                invisible on a phone. The wide tracking went with them — it was
+                compensating for the small size. */}
+            <span aria-hidden="true" className="font-serif text-2xl tabular-nums text-ac-taupe/80 md:text-3xl">
                 {n}
             </span>
             <span>{children}</span>
