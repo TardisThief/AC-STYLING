@@ -75,61 +75,115 @@ if pg_restore -d "$URL" --no-owner --no-privileges --exit-on-error \
        "$SNAP/database.dump" 2>"$SNAP/restore_drill.log"; then rc=0; else rc=$?; fi
 check "$rc" "whole-database restore completed without errors"
 
-# --- row counts against what was dumped -----------------------------------
-# Snapshots from before rowcounts became exact carry pg_stat_user_tables
-# estimates, which drift after deletes -- a stale "1" against a correctly
-# empty table is what made this check fail on a good backup. Those snapshots
-# still deserve a drill, so fall back to checking the tables exist rather than
-# failing on numbers that were never trustworthy.
+# --- row counts, in two separate questions --------------------------------
+# These used to be one check, which made it both too strict and too loose:
+# it compared the RESTORED rows against rowcounts.tsv with a max(5, 1%)
+# tolerance, so on a small table (purchases has 9 rows) a restore that came
+# back 5 rows short would still have passed. The two questions are different
+# and deserve different answers:
+#
+#   1. Did the restore bring back everything the archive holds? The ground
+#      truth is the archive itself, which is exact by construction, so this
+#      gets NO tolerance. It also needs nothing from rowcounts.tsv, which is
+#      why it runs for legacy snapshots too.
+#   2. Was the archive complete relative to production at backup time? That
+#      compares rowcounts.tsv to the archive, and it is the ONLY place drift
+#      can legitimately occur -- the counting query runs seconds after
+#      pg_dump takes its snapshot, and a write in between is real. Tolerance
+#      belongs here and nowhere else.
+
+# Count the data rows the archive actually carries, per table. One pass over
+# the whole data section rather than one pg_restore per table. In COPY text
+# format a literal backslash-dot in data is escaped, so a bare `\.` on its own
+# line is unambiguously the terminator. --quote-all-identifiers means the
+# header reads COPY "public"."profiles" (...), hence stripping the quotes.
+DUMPED_COUNTS="$(mktemp)"
+trap 'rm -f "$DUMPED_COUNTS"; cleanup' EXIT
+if pg_restore -a -n public -f - "$SNAP/database.dump" 2>/dev/null \
+     | awk '
+         /^COPY /            { t = $2; gsub(/"/, "", t); sub(/^public\./, "", t)
+                               incopy = 1; n = 0; next }
+         incopy && $0 == "\\." { print t "\t" n; incopy = 0; next }
+         incopy              { n++ }
+       ' > "$DUMPED_COUNTS"; then rc=0; else rc=$?; fi
+check "$rc" "read the archive's data section to count its rows"
+
+dumped_of() { awk -F'\t' -v k="$1" '$1 == k { print $2; exit }' "$DUMPED_COUNTS"; }
+
+# --- check 1: restored rows == rows in the archive (strict) ---------------
+mismatched=0
+while IFS=$'\t' read -r t dumped; do
+    [ -n "$t" ] || continue
+    if restored="$(psql "$URL" -X -q -t -A -c "SELECT count(*) FROM public.\"$t\"" 2>/dev/null)"; then :; else restored=""; fi
+    restored="$(printf '%s' "$restored" | tr -dc '0-9')"
+    if [ -z "$restored" ]; then
+        log "        table $t: in the archive, missing after restore"
+        mismatched=$((mismatched+1)); continue
+    fi
+    if [ "$restored" != "$dumped" ]; then
+        log "        table $t: archive $dumped row(s), restored $restored"
+        mismatched=$((mismatched+1))
+    fi
+done < "$DUMPED_COUNTS"
+if [ "$mismatched" -eq 0 ]; then rc=0; else rc=1; fi
+check "$rc" "restored row counts equal the rows in the dump ($mismatched mismatched)"
+
+# --- every table listed at backup time came back --------------------------
+# rowcounts.tsv lists every public table, including any the archive carries no
+# TABLE DATA entry for, so this catches a table that vanished entirely rather
+# than merely losing rows.
+missing=0
+while IFS=$'\t' read -r t _; do
+    [ -n "$t" ] || continue
+    if psql "$URL" -X -q -t -A -c "SELECT 1 FROM public.\"$t\" LIMIT 1" >/dev/null 2>&1; then :; else
+        log "        table $t is missing after restore"
+        missing=$((missing+1))
+    fi
+done < "$SNAP/rowcounts.tsv"
+if [ "$missing" -eq 0 ]; then rc=0; else rc=1; fi
+check "$rc" "every dumped public table exists after restore"
+
+# --- check 2: archive vs production at backup time (tolerant) -------------
+# Only meaningful when rowcounts.tsv holds exact counts. Snapshots from before
+# that change carry pg_stat_user_tables estimates, which drift after deletes;
+# a stale "1" against a correctly empty table is the false failure this whole
+# area exists to avoid, so those snapshots skip this check entirely.
+#
 # `|| true` is load-bearing: under `set -e` with `pipefail`, an assignment
 # whose command substitution fails aborts the script, so a snapshot that
 # simply lacks this key would kill the drill rather than fall back.
 ROWCOUNTS_MODE="$(grep -E '^rowcounts=' "$SNAP/database.meta" 2>/dev/null | cut -d= -f2 || true)"
-[ "$ROWCOUNTS_MODE" = "exact" ] \
-    || log "  WARN  rowcounts.tsv predates exact counting -- checking table existence only"
-
-missing=0; emptied=0; drifted=0
-while IFS=$'\t' read -r t expected; do
-    [ -n "$t" ] || continue
-    if actual="$(psql "$URL" -X -q -t -A -c "SELECT count(*) FROM public.\"$t\"" 2>/dev/null)"; then :; else actual=""; fi
-    actual="$(printf '%s' "$actual" | tr -dc '0-9')"
-    if [ -z "$actual" ]; then
-        log "        table $t is missing after restore"
-        missing=$((missing+1)); continue
-    fi
-    case "${expected:-}" in ''|*[!0-9]*) continue ;; esac
-
-    # Everything below compares numbers, which is only meaningful when the
-    # numbers are exact. A legacy snapshot gets existence-checked and nothing
-    # more -- a stale n_live_tup of 1 against a correctly empty table is the
-    # false failure this whole change exists to remove.
-    [ "$ROWCOUNTS_MODE" = "exact" ] || continue
-
-    # A table recorded with rows that restores empty is data loss, not drift,
-    # so this one never gets a tolerance.
-    if [ "$expected" -gt 0 ] && [ "$actual" -eq 0 ]; then
-        log "        table $t: recorded $expected row(s), restored 0"
-        emptied=$((emptied+1)); continue
-    fi
-
-    # Exact does not mean simultaneous: pg_dump takes its snapshot before the
-    # counting queries run, so a live write in between is legitimate drift,
-    # not a broken restore. Allow the larger of 5 rows or 1%.
-    tol=$(( expected / 100 )); [ "$tol" -ge 5 ] || tol=5
-    delta=$(( actual - expected )); [ "$delta" -ge 0 ] || delta=$(( -delta ))
-    if [ "$delta" -gt "$tol" ]; then
-        log "        table $t: recorded $expected row(s), restored $actual (tolerance $tol)"
-        drifted=$((drifted+1))
-    fi
-done < "$SNAP/rowcounts.tsv"
-
-if [ "$missing" -eq 0 ]; then rc=0; else rc=1; fi
-check "$rc" "every dumped public table exists after restore"
 if [ "$ROWCOUNTS_MODE" = "exact" ]; then
+    emptied=0; drifted=0
+    while IFS=$'\t' read -r t expected; do
+        [ -n "$t" ] || continue
+        case "${expected:-}" in ''|*[!0-9]*) continue ;; esac
+        dumped="$(dumped_of "$t")"
+        [ -n "$dumped" ] || continue
+
+        # A table recorded with rows whose archive holds none is data loss at
+        # dump time, not drift, so this one never gets a tolerance.
+        if [ "$expected" -gt 0 ] && [ "$dumped" -eq 0 ]; then
+            log "        table $t: recorded $expected row(s), archive holds 0"
+            emptied=$((emptied+1)); continue
+        fi
+
+        # Allow the larger of 5 rows or 1% for writes landing between
+        # pg_dump's snapshot and the counting query.
+        tol=$(( expected / 100 )); [ "$tol" -ge 5 ] || tol=5
+        delta=$(( dumped - expected )); [ "$delta" -ge 0 ] || delta=$(( -delta ))
+        if [ "$delta" -gt "$tol" ]; then
+            log "        table $t: recorded $expected row(s), archive holds $dumped (tolerance $tol)"
+            drifted=$((drifted+1))
+        fi
+    done < "$SNAP/rowcounts.tsv"
+
     if [ "$emptied" -eq 0 ]; then rc=0; else rc=1; fi
-    check "$rc" "no table that had rows restored empty ($emptied affected)"
+    check "$rc" "no table recorded with rows was dumped empty ($emptied affected)"
     if [ "$drifted" -eq 0 ]; then rc=0; else rc=1; fi
-    check "$rc" "restored row counts match the snapshot ($drifted outside tolerance)"
+    check "$rc" "dump matches production at backup time ($drifted outside tolerance)"
+else
+    log "  WARN  rowcounts.tsv predates exact counting -- skipping the dump-vs-production check"
 fi
 
 # --- the things that make this database work ------------------------------
