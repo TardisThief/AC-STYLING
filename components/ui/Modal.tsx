@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -32,6 +33,15 @@ const FOCUSABLE =
  * close, and the page behind is inert to screen readers via aria-hidden on the
  * backdrop's siblings — approximated here by aria-modal, which is enough given
  * the modal renders at the top of the stacking context.
+ *
+ * It renders through a portal into <body>, and must. `position: fixed` is only
+ * viewport-relative while no ancestor creates a stacking context or a
+ * containing block, and any `opacity`, `transform`, `filter` or `contain` in
+ * the tree above silently breaks that. It did: the sales-page catalogue marks
+ * in-production cards `opacity-90`, so a dialog opened from one of those cards
+ * was trapped in the card's stacking context and the next card along painted
+ * over the top of it. Nothing about the dialog was wrong; it was where it was
+ * rendered. A portal makes that unable to happen again to any caller.
  */
 export default function Modal({
     isOpen,
@@ -102,7 +112,13 @@ export default function Modal({
 
     const titleId = `modal-title-${title.replace(/\W+/g, "-").toLowerCase()}`;
 
-    return (
+    // There is no document to portal into while rendering on the server. A
+    // portal contributes nothing where the component sits either way, so
+    // returning null there and portalling on the client leaves hydration with
+    // the same empty slot on both sides.
+    if (typeof document === "undefined") return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <motion.div
@@ -111,7 +127,7 @@ export default function Modal({
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.18 }}
                     onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-                    className="fixed inset-0 z-modal bg-ac-taupe/70 backdrop-blur-md flex items-center justify-center p-6"
+                    className="fixed inset-0 z-modal bg-ac-taupe/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
                 >
                     <motion.div
                         ref={panelRef}
@@ -134,11 +150,11 @@ export default function Modal({
                             <X size={20} aria-hidden="true" />
                         </button>
 
-                        <h2 id={titleId} className={hideTitle ? "sr-only" : "font-serif text-2xl text-ac-taupe px-8 pt-8"}>
+                        <h2 id={titleId} className={hideTitle ? "sr-only" : "font-serif text-xl sm:text-2xl text-ac-taupe px-5 pt-6 pr-14 sm:px-8 sm:pt-8 sm:pr-14"}>
                             {title}
                         </h2>
                         {subtitle && !hideTitle && (
-                            <p className="text-[10px] uppercase tracking-widest font-bold text-ac-taupe/40 px-8 pt-1">
+                            <p className="text-[10px] uppercase tracking-widest font-bold text-ac-taupe/40 px-5 pr-14 pt-1 sm:px-8 sm:pr-14">
                                 {subtitle}
                             </p>
                         )}
@@ -147,6 +163,7 @@ export default function Modal({
                     </motion.div>
                 </motion.div>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

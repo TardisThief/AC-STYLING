@@ -103,6 +103,26 @@ describe('CatalogRail', () => {
         expect(track.scrollTo).toHaveBeenCalledWith({ left: 300, behavior: 'smooth' })
     })
 
+    it('holds still while a dialog is open over the page', () => {
+        // Each card can open its module list in a dialog. That dialog portals
+        // into <body>, so focus leaving for it is not focus within this rail --
+        // which is how this pause was lost once already, silently, the moment
+        // the portal was added. Scrolling the row while she is reading means
+        // the card she opened has moved by the time she closes it.
+        const track = renderOverflowing()
+
+        const dialog = document.createElement('div')
+        dialog.setAttribute('role', 'dialog')
+        document.body.appendChild(dialog)
+
+        act(() => { vi.advanceTimersByTime(20000) })
+        expect(track.scrollTo).not.toHaveBeenCalled()
+
+        dialog.remove()
+        act(() => { vi.advanceTimersByTime(5000) })
+        expect(track.scrollTo).toHaveBeenCalledWith({ left: 300, behavior: 'smooth' })
+    })
+
     it('wraps back to the first card from the end', () => {
         const track = renderOverflowing()
         track.scrollLeft = 400 // the end: 900 - 500

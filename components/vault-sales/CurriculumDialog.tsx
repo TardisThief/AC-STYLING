@@ -58,9 +58,9 @@ export default function CurriculumDialog({ label, openLabel, title, children }: 
                 // The panel is capped and the scroll lives on the body below, so
                 // the heading and the close button stay put while a seven-module
                 // curriculum scrolls past them.
-                panelClassName="max-h-[85vh] flex flex-col"
+                panelClassName="max-h-[85dvh] flex flex-col"
             >
-                <div className="overflow-y-auto px-8 pb-8">{children}</div>
+                <div className="overflow-y-auto px-5 pb-6 pt-3 sm:px-8 sm:pb-8">{children}</div>
             </Modal>
         </>
     );

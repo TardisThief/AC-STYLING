@@ -37,16 +37,35 @@ describe('Modal', () => {
 
     it('closes when the backdrop is clicked but not when the panel is', async () => {
         const onClose = vi.fn()
-        const { container } = render(
+        render(
             <Modal isOpen onClose={onClose} title="Archive Manager"><p>panel body</p></Modal>
         )
 
         fireEvent.click(screen.getByText('panel body'))
         expect(onClose).not.toHaveBeenCalled()
 
-        // The backdrop is the outermost element the modal renders.
-        fireEvent.click(container.firstElementChild as Element)
+        // The backdrop is the dialog's parent, reached from the dialog rather
+        // than from the render container: the modal portals into <body>, so
+        // nothing it renders is under the container any more.
+        const backdrop = (await screen.findByRole('dialog')).parentElement as Element
+        fireEvent.click(backdrop)
         expect(onClose).toHaveBeenCalledTimes(1)
+    })
+
+    it('renders into <body>, not where it was written', async () => {
+        // The reason this matters: `position: fixed` stops being
+        // viewport-relative under any ancestor with opacity, a transform or a
+        // filter. A catalogue card carrying `opacity-90` trapped a dialog in
+        // its own stacking context and the next card painted over it.
+        const { container } = render(
+            <div style={{ opacity: 0.9 }}>
+                <Modal isOpen onClose={() => { }} title="Colorimetry"><p>body</p></Modal>
+            </div>
+        )
+
+        const dialog = await screen.findByRole('dialog')
+        expect(container.contains(dialog)).toBe(false)
+        expect(document.body.contains(dialog)).toBe(true)
     })
 
     it('moves focus into the dialog when opened', async () => {

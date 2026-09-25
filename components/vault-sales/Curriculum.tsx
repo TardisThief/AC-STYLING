@@ -34,7 +34,7 @@ function takeawaysFor(locale: string, en: unknown, es: unknown): string[] {
 
 export default function Curriculum({ entry, locale, takeawaysLabel }: Props) {
     return (
-        <ol className="mt-10 border-t border-ac-taupe/15">
+        <ol className="mt-6 border-t border-ac-taupe/15 sm:mt-8">
             {entry.modules.map((m, i) => {
                 const title = pickLocale(locale, m.title, m.title_es);
                 const description = pickLocale(locale, m.description, m.description_es);
@@ -43,7 +43,7 @@ export default function Curriculum({ entry, locale, takeawaysLabel }: Props) {
                 return (
                     <li key={m.id} className="border-b border-ac-taupe/15">
                         <details className="group">
-                            <summary className="flex cursor-pointer list-none items-baseline gap-5 py-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac-olive">
+                            <summary className="flex cursor-pointer list-none items-baseline gap-3 py-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac-olive sm:gap-5 sm:py-5">
                                 {/* The module number is information, not decoration:
                                     it is the sequence the reader is being asked to
                                     follow. At /35 it measured 1.68 against sand, so
@@ -54,7 +54,7 @@ export default function Curriculum({ entry, locale, takeawaysLabel }: Props) {
                                 >
                                     {String(i + 1).padStart(2, "0")}
                                 </span>
-                                <span className="flex-1 font-serif text-xl text-ac-taupe md:text-2xl">
+                                <span className="flex-1 font-serif text-lg text-ac-taupe sm:text-xl md:text-2xl">
                                     {title}
                                 </span>
                                 {/* Rotates on open — motion answering an action, which is
@@ -67,7 +67,7 @@ export default function Curriculum({ entry, locale, takeawaysLabel }: Props) {
                                 </span>
                             </summary>
 
-                            <div className="pb-7 pl-[2.6rem] pr-2">
+                            <div className="pb-6 pr-1 sm:pb-7 sm:pl-[2.6rem] sm:pr-2">
                                 {description && (
                                     <p className="max-w-2xl leading-relaxed text-ac-taupe">
                                         {description}

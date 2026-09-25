@@ -142,7 +142,15 @@ export default function Navbar({ links, menuLabel }: { links?: NavLink[]; menuLa
                 animate={{ y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 className={cn(
-                    "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+                    // z-nav (30), not a hardcoded z-50. globals.css defines the
+                    // scale -- dropdown 10, sticky 20, nav 30, modal 40, toast
+                    // 50 -- and the bar was sitting above all of it, so a dialog
+                    // opened anywhere on the site had its heading and its close
+                    // button painted over by the navbar on a short screen. The
+                    // z-50 and z-40 below are scoped to this element's own
+                    // stacking context, so the menu overlay and its toggle keep
+                    // their order relative to each other.
+                    "fixed top-0 left-0 right-0 z-nav transition-all duration-300",
                     isScrolled
                         ? "bg-white/95 backdrop-blur-md py-4 shadow-sm text-ac-taupe"
                         : "bg-transparent py-6 text-white"

@@ -364,7 +364,7 @@ export default async function VaultLandingPage({
                                                     openLabel={t("curriculum.open", { course: entryTitle })}
                                                     title={t("curriculum.title", { course: entryTitle })}
                                                 >
-                                                    <p className="text-lg leading-relaxed text-ac-taupe">
+                                                    <p className="leading-relaxed text-ac-taupe sm:text-lg">
                                                         {t("curriculum.lede", { count: entry.modules.length })}
                                                     </p>
                                                     <Curriculum
