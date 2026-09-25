@@ -356,8 +356,8 @@ one place.
 - **F12–F16** remain open: the 2,000-account lookup ceiling in guest
   resolution, test coverage of the highest-consequence boundaries, deployed-vs-
   source drift, bilingual/performance polish, and observability. **F16's backup
-  half is done and proven** (item 13), and the credential rotation it left
-  behind is closed (13b).
+  half is done and proven** (item 13); the credential rotation it left behind
+  is partly done — R2 yes, database and service-role key need checking (13b).
 
 **With that, every *launch-blocking* code finding in the assessment is closed.** What remains
 between here and launch is on this page, plus **F09**: the five published Vault
@@ -380,9 +380,9 @@ modules still have no usable video, which no amount of code can fix.
 
 ## 13. Nightly backup — DONE 2026-09-25
 
-**Added 2026-09-23. Set up, proven by a restore drill, and the credentials it
-exposed have been rotated (13b).** Nothing here is blocking; the two small
-confirmations below are worth doing when convenient.
+**Added 2026-09-23. Set up and proven by a restore drill.** The backup itself
+needs nothing further; the credentials its setup exposed are still being
+rotated — see 13b.
 
 The Supabase project is on the **free tier**, which includes no backups of any
 kind: no daily snapshot, no dashboard restore, no point-in-time recovery. This
@@ -415,12 +415,45 @@ has actually gone wrong.
 
 ---
 
-## 13b. ~~Rotate the backup credentials~~ — DONE 2026-09-25
+## 13b. Rotate the backup credentials — R2 done, the other two need checking
 
 During the `hermes` setup the database password, the Supabase service-role key
 and the R2 API keys all passed through an agent session log, which is not a
-secure store. **All three have been rotated and every consumer updated.** No
-action remains; this section stays only so nobody re-opens it.
+secure store.
+
+**Status as of 2026-09-25, from evidence on `hermes` rather than assumption:**
+
+| Secret | State | How we know |
+|---|---|---|
+| R2 API keys | **Rotated** | `rclone.conf` was modified 03:46 and R2 access still works |
+| Database password | **Probably not rotated** | `~/.ac-styling/.env.backup` is unchanged and the connection string in it still authenticates. Resetting a Supabase database password invalidates the old one immediately, so an old string that still works is a password that was not reset. |
+| Supabase service-role key | **Unknown, probably not** | The old key still authorizes storage calls. This proves less than it looks — see below. |
+
+**Why the service-role key can look rotated when it is not.** On projects using
+the legacy JWT keys, `service_role` is a JWT signed by the project's JWT secret.
+It does not have its own independent revoke; it stops working only when the JWT
+secret is rotated, or when the project moves to the new publishable/secret API
+keys. So a key can be "replaced" in a dashboard and the old one keep working
+indefinitely. The check that settles it is whether the OLD key still authorizes
+a request — and right now it does.
+
+**To finish:**
+
+1. **Supabase → Project Settings → Database → Reset database password.**
+2. **Supabase → Project Settings → API →** rotate the JWT secret, or migrate to
+   the new API keys and revoke the legacy ones. Replacing the displayed key
+   without doing one of those does not invalidate the old one.
+3. Update every consumer: **Vercel** environment variables, local
+   **`.env.local`**, and **`~/.ac-styling/.env.backup`** on `hermes`.
+4. Confirm the old values are actually dead — the point of the exercise:
+   ```
+   psql "<OLD connection string>" -c 'SELECT 1'          # must now FAIL
+   curl -so /dev/null -w '%{http_code}\n' \
+     -H "Authorization: Bearer <OLD service role key>" \
+     "$NEXT_PUBLIC_SUPABASE_URL/storage/v1/bucket"       # must now be 401
+   ```
+5. Then one manual run to confirm the new values work before 03:17:
+   `cd ~/ac-styling && bash scripts/backup/backup.sh --no-pull`
 
 **Do not rotate the rclone crypt password or salt.** They were never exposed the
 same way, and changing them makes every archive already in R2 permanently
