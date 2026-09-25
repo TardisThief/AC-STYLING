@@ -141,22 +141,27 @@ export async function claimLineItem(
  */
 export async function markCompleted(
     admin: SupabaseClient,
-    lineItemId: string
+    lineItemId: string,
+    { attempts = 3, backoffMs = 200 }: { attempts?: number; backoffMs?: number } = {}
 ): Promise<void> {
-    const now = new Date().toISOString();
-    const { error } = await admin
-        .from('fulfillments')
-        .update({ status: 'completed', completed_at: now, updated_at: now, last_error: null })
-        .eq('stripe_line_item_id', lineItemId);
-
-    // Worth being loud about: the buyer has access but the record says
-    // otherwise. The row stays `processing`, so once it is older than
-    // STALE_CLAIM_MS a retry can re-claim it and grant again — and a grant is
-    // a year, not a no-op. Rare (a write failing straight after one
-    // succeeded), but not harmless.
-    if (error) {
-        console.error('[fulfillment] markCompleted failed:', error);
+    // Retried, because failing here is not harmless: the grant has landed, the
+    // row stays `processing`, and once it is older than STALE_CLAIM_MS a retry
+    // re-claims it and grants the year again. Throwing would be worse — the
+    // caller would mark it failed, which is re-claimable at once. What is left
+    // after the retries (the database refusing several writes in a row, right
+    // after accepting the grant) is logged loudly for a human.
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt < attempts; attempt++) {
+        if (attempt > 0) await new Promise(resolve => setTimeout(resolve, backoffMs * attempt));
+        const now = new Date().toISOString();
+        const { error } = await admin
+            .from('fulfillments')
+            .update({ status: 'completed', completed_at: now, updated_at: now, last_error: null })
+            .eq('stripe_line_item_id', lineItemId);
+        if (!error) return;
+        lastError = error;
     }
+    console.error(`[fulfillment] markCompleted failed ${attempts} times; line item ${lineItemId} is granted but still 'processing':`, lastError);
 }
 
 /** Record why a line item failed, so a retry has context and support has an answer. */

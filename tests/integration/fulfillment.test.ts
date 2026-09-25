@@ -412,7 +412,7 @@ describe('Paid means granted', () => {
 
     // The grant landed but recording it did not. Left 'processing', the row is
     // re-claimed once stale and the purchase is granted a second time.
-    it.fails('records completion even if the first attempt to record it fails', async () => {
+    it('records completion even if the first attempt to record it fails', async () => {
         const buyer = await newBuyer();
         const li = item(PRODUCT.masterclass);
         failingUpdates.add('fulfillments');
