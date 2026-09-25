@@ -46,6 +46,17 @@ rclone ls acbackup:db | sort            # pick one
 rclone copy acbackup:db/<name> ./restore/<name> -P
 ```
 
+For the storage mirror, the equivalent is offline and needs nothing but the
+disk:
+
+```bash
+bash ~/ac-styling/scripts/backup/verify_storage.sh "$AC_BACKUP_ROOT/storage-mirror"
+```
+
+It re-hashes every mirrored object against the eTag recorded in `index.tsv`, so
+it catches rot that happened *since* the last sync. Run it before relying on the
+mirror to rebuild a bucket.
+
 Always run `verify.sh` before trusting a snapshot. It catches a truncated dump,
 a checksum mismatch, and a dump that is missing the `auth` schema — all of which
 open cleanly and fail later.
@@ -162,7 +173,19 @@ held outside the database does not come back.
 
 The mirror is a plain directory tree of `<bucket>/<path>`, so re-uploading is
 straightforward. Files deleted upstream are in
-`storage-mirror/quarantined/<date>/` rather than gone.
+`storage-mirror/quarantined/<date>/` rather than gone — and so are files that
+were found damaged locally and re-fetched, so that directory holds both "deleted
+upstream" and "rotted here". The dated subdirectory and the run log tell them
+apart.
+
+**Check the mirror before you upload from it:**
+
+```bash
+bash scripts/backup/verify_storage.sh "$AC_BACKUP_ROOT/storage-mirror"
+```
+
+Re-uploading a corrupted image over a good one would turn a recoverable
+situation into a permanent loss.
 
 ```bash
 . ~/.ac-styling/.env.backup
@@ -212,7 +235,9 @@ this.
 A backup nobody has restored is a guess. `docs/ASSESSMENT-2026-09-19.md` recorded
 that restoration had never been verified; this table is what makes that false.
 Run `restore_drill.sh` quarterly and after any change to the backup scripts, and
-add a row.
+add a row. Run `verify_storage.sh` on the same schedule — it is offline, takes
+about a second, and answers a question the drill does not: whether the mirrored
+files are still the files that were mirrored.
 
 | Date | Snapshot | Result | Run by | Notes |
 |---|---|---|---|---|

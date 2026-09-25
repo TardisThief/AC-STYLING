@@ -247,7 +247,11 @@ bash scripts/backup/verify.sh "$SNAP"
 cat "$SNAP/manifest.json"
 ```
 
-`manifest.json` must show `"status": "ok"` and `"auth_mode": "full"`. If
+`manifest.json` must show `"status": "ok"` and `"auth_mode": "full"`, and its
+storage block should show `verified` equal to the object count with `repaired`
+at 0. A non-zero `repaired` is not a failed backup — the file was re-fetched
+and checked — but it means a file on this disk had rotted since it was
+written, so look at the drive. If
 `auth_mode` is `fallback` or `missing`, the dump does not contain the login
 tables, and a restore would not recreate any user's ability to sign in. Report
 that to the owner rather than accepting it — the `pg_dump.log` in the snapshot
@@ -318,9 +322,18 @@ recent ping, and a new dated directory should exist under `$AC_BACKUP_ROOT/db/`.
 | `dump_database.sh` | `pg_dump -Fc` of `public` + `auth` + `storage`, plus a plain-text schema and row counts. |
 | `dump_storage.sh` | Incremental mirror of every storage bucket, by eTag and size. |
 | `verify.sh` | Checks a snapshot is complete and loadable, without restoring it. |
+| `verify_storage.sh` | Checks the storage mirror on disk against its own index. Entirely offline — no network, no database. Run it when you suspect the disk. |
 | `restore_drill.sh` | Restores into a disposable container and checks the result. |
 
-Two behaviours worth knowing before you debug something:
+Three behaviours worth knowing before you debug something:
+
+- **Every mirrored file is checked against its bytes, not just its metadata.**
+  A file is only accepted — on download and on skip — when its size matches the
+  object's metadata and, where the eTag is a plain MD5, its content hashes to
+  it. This exists because the earlier version compared upstream metadata to the
+  previous index and never looked at the local file, so a corrupted or
+  truncated image stayed broken for ever while every run reported success.
+  `verified` and `repaired` in the manifest are how you see it working.
 
 - **Vanished storage objects are quarantined, not deleted.** If files disappear
   upstream, the mirror moves its copies to `storage-mirror/quarantined/<date>/`
@@ -346,6 +359,8 @@ Two behaviours worth knowing before you debug something:
 | `rclone cat` returns garbage | Wrong crypt password or salt. Everything already uploaded under the wrong key is unreadable; fix it, then delete and re-upload. |
 | healthchecks.io alerts but nothing looks wrong | A *degraded* run (missing auth schema, or storage objects that failed to download) deliberately reports as a failure. Read the newest log. |
 | Backups stop after a reboot | The SSD is not mounted at boot. Add it to `/etc/fstab` with `nofail`, and keep the `mountpoint -q` guard in the cron line. |
+| `download failed verification` | The body did not match the object's size or MD5. curl exiting 0 is not proof of a complete download. The file is rejected rather than saved, the index does not advance, and the next run retries it. Persistent failures on one object mean the upstream object itself changed mid-run, or the network is mangling it. |
+| `local copy damaged, re-downloading` | A mirrored file no longer matches its eTag — bit rot, a failing disk, or an interrupted copy. The original is kept in `quarantined/<date>/` as evidence. One is worth noting; a pattern means replace the drive. |
 | Every rclone upload fails with `501 NotImplemented` | The apt build of rclone (v1.60.1-DEV) sends a checksum header R2 rejects. Reinstall from <https://rclone.org/install.sh> — see section 1. The objects may appear in the bucket even though the sync reported failure. |
 | `pg_restore: ERROR: schema "public" already exists` | An old checkout of `restore_drill.sh`. The dump carries `CREATE SCHEMA public` because it is taken with `--schema=public`, and a stock postgres image already has one. Fixed by dropping the stock schema in the throwaway container first — `git pull`. |
 | `refusing to sync` or `--max-delete` tripped | A safety guard, not a bug. `rclone sync` mirrors deletions, so an unmounted SSD would otherwise erase the off-site copy. Find out why the local tree shrank before overriding anything. |

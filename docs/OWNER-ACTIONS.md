@@ -398,13 +398,18 @@ The first restore drill passed 10/10 on snapshot `2026-09-25T001744Z`: restored
 whole, restored a single table on its own, `auth.users` included. The record is
 in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md).
 
-Two small things still to confirm, neither urgent:
+Both follow-ups are **confirmed done 2026-09-25**: the healthcheck is receiving
+its nightly ping and is set to daily with grace, and the quarterly drill is in
+the calendar. Nothing on this item is outstanding.
 
-1. **Check tonight's healthcheck ping arrives**, then set the check to daily with
-   a few hours of grace so a missed night actually alerts you.
-2. **Put a quarterly reminder in your calendar** to run the restore drill — the
-   scripts do not schedule it:
-   `bash scripts/backup/restore_drill.sh $(ls -d /mnt/backup/ac-styling/db/*/ | tail -1)`
+The quarterly routine, for whoever picks it up:
+
+```bash
+bash scripts/backup/restore_drill.sh   $(ls -d /mnt/backup/ac-styling/db/*/ | tail -1)
+bash scripts/backup/verify_storage.sh  /mnt/backup/ac-styling/storage-mirror
+```
+
+Add the result to the drill table in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md).
 
 Reference, now that it is running: [`BACKUP-OWNER-SETUP.md`](BACKUP-OWNER-SETUP.md)
 is how it was set up, [`HERMES-BACKUP-SETUP.md`](HERMES-BACKUP-SETUP.md) is the

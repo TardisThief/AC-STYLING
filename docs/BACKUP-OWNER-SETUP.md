@@ -181,9 +181,10 @@ Add that to [`OWNER-ACTIONS.md`](OWNER-ACTIONS.md) if hermes ever changes hands.
 ## Recurring, after setup
 
 - **Quarterly:** ask an agent to run the restore drill
-  (`bash scripts/backup/restore_drill.sh <latest-snapshot>`) and record the result
-  in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md). A backup that has not been
-  restored in a year is a guess.
+  (`bash scripts/backup/restore_drill.sh <latest-snapshot>`) and the mirror check
+  (`bash scripts/backup/verify_storage.sh /mnt/backup/ac-styling/storage-mirror`),
+  and record the result in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md). A
+  backup that has not been restored in a year is a guess.
 - **If healthchecks.io emails you:** something broke that same night. See the
   troubleshooting section of [`HERMES-BACKUP-SETUP.md`](HERMES-BACKUP-SETUP.md).
 - **Before any risky migration:** run `npm run db:snapshot -- --tag pre-migration-NN`
