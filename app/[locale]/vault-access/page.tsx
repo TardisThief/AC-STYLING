@@ -7,7 +7,8 @@ import Navbar from "@/components/Navbar";
 import Spine from "@/components/vault-sales/Spine";
 import CatalogCard from "@/components/vault-sales/CatalogCard";
 import CatalogRail from "@/components/vault-sales/CatalogRail";
-import FlagshipCurriculum from "@/components/vault-sales/FlagshipCurriculum";
+import Curriculum from "@/components/vault-sales/Curriculum";
+import CurriculumDialog from "@/components/vault-sales/CurriculumDialog";
 import TrackedCta from "@/components/vault-sales/TrackedCta";
 import VaultCheckoutButton from "@/components/vault-sales/VaultCheckoutButton";
 import GuestAccessLink from "@/components/vault-sales/GuestAccessLink";
@@ -27,7 +28,6 @@ import {
     getVaultOffers,
     shouldRevealUpcoming,
     pickLocale,
-    pickFlagship,
     pickHeadlinePass,
 } from "@/app/lib/vault-catalog";
 import { isEnabled } from "@/app/lib/env-flags";
@@ -98,8 +98,6 @@ export default async function VaultLandingPage({
             (reveal || e.is_published) &&
             (passSlug !== "masterclass_pass" || e.kind === "masterclass")
     );
-
-    const flagship = pickFlagship(entries);
 
     // Everything that can be bought on its own: published, priced, and with a
     // Stripe price to send her to. All three are required -- a card offering to
@@ -346,11 +344,37 @@ export default async function VaultLandingPage({
                                     play: t("catalog.play"),
                                 }}
                             >
-                                {entries.map((entry) => (
+                                {entries.map((entry) => {
+                                    const entryTitle =
+                                        pickLocale(locale, entry.title, entry.title_es) ?? entry.title;
+
+                                    return (
                                     <CatalogCard
                                         key={entry.id}
                                         entry={entry}
                                         locale={locale}
+                                        // In production as well as published: Body Shape's six
+                                        // modules are written and real, and what is coming is
+                                        // half of what the pass is for. The card already says
+                                        // "In production", so nothing is misrepresented.
+                                        curriculum={
+                                            entry.modules.length > 0 ? (
+                                                <CurriculumDialog
+                                                    label={`${entry.modules.length} ${t("catalog.modulesLabel")}`}
+                                                    openLabel={t("curriculum.open", { course: entryTitle })}
+                                                    title={t("curriculum.title", { course: entryTitle })}
+                                                >
+                                                    <p className="text-lg leading-relaxed text-ac-taupe">
+                                                        {t("curriculum.lede", { count: entry.modules.length })}
+                                                    </p>
+                                                    <Curriculum
+                                                        entry={entry}
+                                                        locale={locale}
+                                                        takeawaysLabel={t("curriculum.takeawaysLabel")}
+                                                    />
+                                                </CurriculumDialog>
+                                            ) : null
+                                        }
                                         // Checkout is passed in rather than built by the card:
                                         // the card stays a server component that knows only
                                         // what the database told it.
@@ -383,35 +407,13 @@ export default async function VaultLandingPage({
                                             availableOn: t.raw("catalog.availableOn"),
                                         }}
                                     />
-                                ))}
+                                    );
+                                })}
                             </CatalogRail>
                         )}
                     </div>
                 </section>
                 <Spine level={4} />
-
-                {/* ── Flagship curriculum ──────────────────────────────── */}
-                {flagship && (
-                    <section id="flagship" className="scroll-mt-24 px-6 py-20 md:py-28">
-                        <div className="mx-auto max-w-3xl">
-                            <h2 className="font-serif text-3xl leading-tight md:text-4xl">
-                                {t("flagship.title", {
-                                    course:
-                                        pickLocale(locale, flagship.title, flagship.title_es) ??
-                                        flagship.title,
-                                })}
-                            </h2>
-                            <p className="mt-4 text-lg leading-relaxed text-ac-taupe">
-                                {t("flagship.lede", { count: flagship.modules.length })}
-                            </p>
-                            <FlagshipCurriculum
-                                entry={flagship}
-                                locale={locale}
-                                takeawaysLabel={t("flagship.takeawaysLabel")}
-                            />
-                        </div>
-                    </section>
-                )}
 
                 {/* ── What's included ──────────────────────────────────── */}
                 <section className="bg-ac-beige/30 px-6 py-20 md:py-28">

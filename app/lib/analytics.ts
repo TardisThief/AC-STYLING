@@ -28,7 +28,6 @@ declare global {
 export type CtaSection =
     | 'hero'
     | 'catalog'
-    | 'flagship'
     | 'offer_full'
     | 'offer_masterclass_pass'
     | 'offer_single_masterclass'

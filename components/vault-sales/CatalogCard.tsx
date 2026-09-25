@@ -19,6 +19,16 @@ interface Props {
      * way, and keeps the card ignorant of prices, Stripe and sessions.
      */
     action?: React.ReactNode;
+    /**
+     * The control that opens this masterclass's module list. Supplied the same
+     * way as `action`, and for the same reason: it is a client component, and
+     * the card should not have to become one to hold it.
+     *
+     * When present it replaces the module count in the meta line below -- the
+     * thing that tells you there are five modules becomes the thing that shows
+     * you them, rather than the card growing a third control.
+     */
+    curriculum?: React.ReactNode;
     t: {
         modulesLabel: string;
         runtimeApprox: string;
@@ -29,7 +39,7 @@ interface Props {
     };
 }
 
-export default function CatalogCard({ entry, locale, action, t }: Props) {
+export default function CatalogCard({ entry, locale, action, curriculum, t }: Props) {
     const title = pickLocale(locale, entry.title, entry.title_es);
     const subtitle = pickLocale(locale, entry.subtitle, entry.subtitle_es);
     const description = pickLocale(locale, entry.description, entry.description_es);
@@ -52,10 +62,14 @@ export default function CatalogCard({ entry, locale, action, t }: Props) {
         ? t.runtimeApprox.replace("{hours}", String(Math.round(entry.runtime_minutes / 60)))
         : null;
 
-    const meta = [
-        entry.modules.length > 0 ? `${entry.modules.length} ${t.modulesLabel}` : null,
-        runtimeLabel,
-    ].filter(Boolean);
+    const moduleCount =
+        entry.modules.length > 0 ? `${entry.modules.length} ${t.modulesLabel}` : null;
+
+    // Built as nodes rather than a joined string: the module count may be a
+    // button, and only the separator between the surviving parts is text.
+    const meta = [moduleCount ? (curriculum ?? moduleCount) : null, runtimeLabel].filter(
+        Boolean
+    );
 
     return (
         <article
@@ -105,7 +119,12 @@ export default function CatalogCard({ entry, locale, action, t }: Props) {
 
                 {meta.length > 0 && (
                     <p className="text-xs uppercase tracking-widest text-ac-taupe">
-                        {meta.join(" · ")}
+                        {meta.map((part, i) => (
+                            <span key={i}>
+                                {i > 0 && " · "}
+                                {part}
+                            </span>
+                        ))}
                     </p>
                 )}
 

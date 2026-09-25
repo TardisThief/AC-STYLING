@@ -172,34 +172,6 @@ export const getVaultCatalog = unstable_cache(
 );
 
 /**
- * The course whose curriculum the sales page lays out module by module.
- *
- * Whichever published course has the most modules written, so the section
- * follows the catalogue instead of naming a course. Ties go to the lowest
- * `order_index`, compared explicitly: `getVaultCatalog` already returns rows
- * in that order and `sort` is stable, so leaning on the input order would look
- * correct and pass — until some other caller passed an unsorted array, at
- * which point the featured course would change with no code change. A rule
- * this visible should not depend on its caller.
- *
- * Returns undefined when nothing is published, which is the current state and
- * why the section is guarded at the call site.
- *
- * The heading is interpolated from the entry this returns. It used to read
- * "Colorimetry, module by module" as fixed copy, which was true only while
- * Colorimetry was the sole published course — Body Shape (six modules) and
- * Style & Essence (seven) both outnumber Colorimetry's five, so the first
- * publish in a different order would have captioned the wrong course.
- */
-export function pickFlagship(entries: CatalogEntry[]): CatalogEntry | undefined {
-    return entries
-        .filter((e) => e.is_published && e.modules.length > 0)
-        .sort((a, b) =>
-            b.modules.length - a.modules.length || a.order_index - b.order_index
-        )[0];
-}
-
-/**
  * Whether courses still in production are shown as "in production" cards.
  *
  * Deploy-time, not per-request: the page is statically prerendered, so this is

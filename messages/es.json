@@ -407,10 +407,11 @@
             "pause": "Pausar el desplazamiento automático",
             "play": "Reanudar el desplazamiento automático"
         },
-        "flagship": {
+        "curriculum": {
             "title": "{course}, módulo por módulo",
             "lede": "{count, plural, one {Un módulo} other {# módulos}}. Esto es exactamente lo que vas a ver.",
-            "takeawaysLabel": "Vas a trabajar"
+            "takeawaysLabel": "Vas a trabajar",
+            "open": "Ver los módulos de {course}"
         },
         "included": {
             "title": "Qué incluye",

@@ -407,10 +407,11 @@
             "pause": "Pause auto-scroll",
             "play": "Resume auto-scroll"
         },
-        "flagship": {
+        "curriculum": {
             "title": "{course}, module by module",
             "lede": "{count, plural, one {One module} other {# modules}}. This is exactly what you'll watch.",
-            "takeawaysLabel": "You'll work on"
+            "takeawaysLabel": "You'll work on",
+            "open": "See the modules in {course}"
         },
         "included": {
             "title": "What's included",

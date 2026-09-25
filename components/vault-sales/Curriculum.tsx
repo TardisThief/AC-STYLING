@@ -1,11 +1,16 @@
 import { pickLocale, type CatalogEntry } from "@/app/lib/vault-catalog";
 
 /**
- * Module-by-module curriculum for the lead course.
+ * One masterclass, module by module.
  *
  * This is the strongest trust block on the page: it proves there is substance
  * behind the price by showing exactly what gets watched. Every title, paragraph
  * and takeaway comes from the database.
+ *
+ * It used to be rendered once, full width, for whichever published course had
+ * the most modules -- which made a page-width deep dive into one course sit
+ * under a catalogue presenting four of them as equals, and left no way at all
+ * to read the others. It is now what a catalogue card opens.
  *
  * Built on native <details>/<summary> so it opens with no JavaScript, is
  * keyboard-operable for free, and its content stays in the DOM for search and
@@ -27,7 +32,7 @@ function takeawaysFor(locale: string, en: unknown, es: unknown): string[] {
     return Array.isArray(pick) ? pick.filter((x): x is string => typeof x === "string") : [];
 }
 
-export default function FlagshipCurriculum({ entry, locale, takeawaysLabel }: Props) {
+export default function Curriculum({ entry, locale, takeawaysLabel }: Props) {
     return (
         <ol className="mt-10 border-t border-ac-taupe/15">
             {entry.modules.map((m, i) => {
