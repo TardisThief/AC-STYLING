@@ -73,6 +73,20 @@ export class GrantWriteError extends Error {
  */
 const TERM_WRITE_ATTEMPTS = 5;
 
+/**
+ * Thrown when we could not find out what a product is.
+ *
+ * Returning `false` means "this product is not content we grant" and settles
+ * the line item for good. A lookup that failed has not established that, so
+ * it must fail the delivery instead and let Stripe retry.
+ */
+export class GrantLookupError extends Error {
+    constructor(what: string, cause: string) {
+        super(`Could not look up ${what}: ${cause}`);
+        this.name = 'GrantLookupError';
+    }
+}
+
 /** 23505 = unique_violation: the grant is already recorded, which is success. */
 function isDuplicate(error: { code?: string } | null): boolean {
     return error?.code === '23505';
@@ -228,6 +242,7 @@ export async function grantAccessForProduct(
         .eq('stripe_product_id', productId)
         .maybeSingle();
 
+    if (mcError) throw new GrantLookupError(`masterclass for ${productId}`, mcError.message);
     if (logFn) await logFn('info', `Checking Masterclass for ${productId}: Found=${!!masterclass}`);
 
     if (masterclass) {
@@ -254,6 +269,8 @@ export async function grantAccessForProduct(
         .select('id, title')
         .eq('stripe_product_id', productId)
         .maybeSingle();
+
+    if (chError) throw new GrantLookupError(`chapter for ${productId}`, chError.message);
 
     if (chapter) {
         const { error: grantError } = await grantItemForTerm(
@@ -290,7 +307,7 @@ export async function grantAccessForProduct(
     }
 
     // 4. Offers (Full Access / Masterclass Pass / Course Pass)
-    const { data: offer } = await supabase
+    const { data: offer, error: offerError } = await supabase
         .from('offers')
         .select('slug')
         .eq('stripe_product_id', productId)
@@ -298,6 +315,7 @@ export async function grantAccessForProduct(
         // already taken for an offer switched off since is still owed.
         .maybeSingle();
 
+    if (offerError) throw new GrantLookupError(`offer for ${productId}`, offerError.message);
     if (logFn) await logFn('info', `Checking Offer for ${productId}: Found=${!!offer}, Slug=${offer?.slug}`);
 
     if (offer) {

@@ -377,7 +377,7 @@ describe('Paid means granted', () => {
     // A lookup that FAILED is not a lookup that found nothing. Treated as
     // "no such product", the paid line item was settled as unfulfillable —
     // terminal, never retried.
-    it.fails.each([
+    it.each([
         ['masterclasses', PRODUCT.masterclass],
         ['chapters', PRODUCT.chapter],
         ['offers', PRODUCT.masterclassPass],
