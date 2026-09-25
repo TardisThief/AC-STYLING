@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { requiredText, optionalText, optionalNumber, optionalUuid, orderIndex } from './parse';
+import { requiredText, optionalText, optionalNumber, optionalUuid, orderIndex, optionalHttpUrl } from './parse';
 
 export const brandSchema = z.object({
     name: requiredText('Name'),
@@ -27,8 +27,9 @@ export const boutiqueItemSchema = z.object({
     brand_id: optionalUuid('Brand'),
     image_url: requiredText('Image URL'),
     curator_note: optionalText,
-    affiliate_url_usa: optionalText,
-    affiliate_url_es: optionalText,
+    // Redirect targets for /api/boutique/track: http(s) only.
+    affiliate_url_usa: optionalHttpUrl('US affiliate link'),
+    affiliate_url_es: optionalHttpUrl('Spanish affiliate link'),
     category: optionalText,
     active: z.boolean().optional().default(true),
 });

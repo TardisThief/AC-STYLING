@@ -171,6 +171,16 @@ describe('parseInput at the edges', () => {
         expect(parseInput(offerSchema, { id: 'not-a-uuid', slug: 's', title: 't' }).ok).toBe(false)
     })
 
+    it('refuses an affiliate link the click redirect would send a browser to unsafely', () => {
+        const item = { name: 'x', image_url: 'https://img.invalid/a.jpg' }
+        for (const url of ['javascript:alert(1)', 'data:text/html,x', '//evil.invalid', 'shop.invalid/x', ' JAVASCRIPT:alert(1)']) {
+            expect(parseInput(boutiqueItemSchema, { ...item, affiliate_url_usa: url }).ok, url).toBe(false)
+            expect(parseInput(boutiqueItemSchema, { ...item, affiliate_url_es: url }).ok, url).toBe(false)
+        }
+        expect(parseInput(boutiqueItemSchema, { ...item, affiliate_url_usa: ' https://shop.invalid/a ' })).toMatchObject({ ok: true, data: { affiliate_url_usa: 'https://shop.invalid/a' } })
+        expect(parseInput(boutiqueItemSchema, { ...item, affiliate_url_usa: '' })).toMatchObject({ ok: true, data: { affiliate_url_usa: null } })
+    })
+
     it('refuses a non-http resource link, which would render as a clickable href', () => {
         const schema = zod.object({ resource_urls: resourceList('Resources') })
         for (const url of ['javascript:alert(1)', ' javascript:alert(1)', 'data:text/html,x', '//evil.invalid', 'JAVASCRIPT:alert(1)']) {

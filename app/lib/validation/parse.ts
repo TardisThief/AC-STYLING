@@ -62,6 +62,27 @@ export const optionalText = z
  */
 export const optionalTextPreserve = optionalText.optional();
 
+/** True for an absolute http(s) URL — the only kind we link or redirect to. */
+export function isHttpUrl(value: unknown): value is string {
+    if (typeof value !== 'string') return false;
+    try {
+        const url = new URL(value);
+        return url.protocol === 'https:' || url.protocol === 'http:';
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Optional absolute http(s) URL, for anything rendered as a link or used as a
+ * redirect target. Trims; absent/null/empty become null, like optionalText.
+ * javascript:, data:, protocol-relative and relative values are refused.
+ */
+export const optionalHttpUrl = (label: string) =>
+    optionalText.refine(value => value === null || isHttpUrl(value), {
+        message: `${label} must be a full http:// or https:// link`,
+    });
+
 /** Optional number: coerces numeric strings; ''/null/undefined → null; NaN → error. */
 export const optionalNumber = (label: string) =>
     z.preprocess(

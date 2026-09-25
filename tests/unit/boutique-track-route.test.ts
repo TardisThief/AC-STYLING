@@ -46,7 +46,7 @@ describe('boutique click redirect', () => {
         expect(h.clicks).toEqual([{ item_id: ITEM, user_id: null, locale: 'es' }])
     })
 
-    it.fails.each(['javascript:alert(document.cookie)', 'data:text/html,<script>x</script>', 'vbscript:x', '//evil.invalid/x'])(
+    it.each(['javascript:alert(document.cookie)', 'data:text/html,<script>x</script>', 'vbscript:x', '//evil.invalid/x'])(
         'never redirects to a non-http(s) target: %s',
         async target => {
             h.item = { affiliate_url_usa: target, affiliate_url_es: null }
@@ -56,7 +56,7 @@ describe('boutique click redirect', () => {
         }
     )
 
-    it.fails('does not store an arbitrary locale string in analytics', async () => {
+    it('does not store an arbitrary locale string in analytics', async () => {
         await call(`item_id=${ITEM}&locale=${'x'.repeat(10_000)}`)
         await call(`item_id=${ITEM}&locale=%3Cscript%3E`)
         for (const click of h.clicks) expect(['en', 'es']).toContain(click.locale)

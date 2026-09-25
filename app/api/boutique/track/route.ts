@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { isHttpUrl } from "@/app/lib/validation/parse";
 
 export async function GET(req: NextRequest) {
     const { searchParams } = req.nextUrl;
     const itemId = searchParams.get("item_id");
-    const locale = searchParams.get("locale") || "en";
+    // Stored in boutique_clicks, so only a locale we actually have.
+    const locale = searchParams.get("locale") === "es" ? "es" : "en";
 
     if (!itemId) {
         return NextResponse.json({ error: "Missing item_id" }, { status: 400 });
@@ -28,7 +30,10 @@ export async function GET(req: NextRequest) {
             ? item.affiliate_url_es || item.affiliate_url_usa
             : item.affiliate_url_usa || item.affiliate_url_es;
 
-    if (!targetUrl) {
+    // The schema refuses anything else on write; this also covers rows
+    // written before it did. Never 302 a browser to javascript:, data: or a
+    // relative URL (which NextResponse.redirect would throw on).
+    if (!isHttpUrl(targetUrl)) {
         return NextResponse.json({ error: "No affiliate URL configured" }, { status: 404 });
     }
 
