@@ -71,17 +71,26 @@ export async function POST(req: Request) {
             charge: 'id' in charge ? charge.id : null,
         });
 
-        try {
-            await supabase.from('admin_notifications').insert({
-                type: 'payment_review',
-                title: event.type === 'charge.refunded' ? 'Refund issued' : 'Payment disputed',
-                message: `Stripe reported ${event.type}. Review whether access should be revoked.`,
-                reference_id: 'id' in charge ? charge.id : null,
-            });
-        } catch (notifyErr) {
-            // Never fail the delivery over a notification; Stripe would retry
-            // an event that has already been recorded.
-            console.error('[Stripe Webhook] Refund notification failed:', notifyErr);
+        // Keyed on the Stripe EVENT, not the charge: admin_notifications.
+        // reference_id is unique, and one charge can be refunded more than once
+        // (partial refunds) or refunded and then disputed. Keyed on the charge,
+        // every notice after the first was refused. A redelivery of the same
+        // event still collides, which is the idempotency we want.
+        //
+        // Never fail the delivery over a notification; Stripe would retry an
+        // event that has already been recorded. supabase-js returns errors
+        // rather than throwing, so they are read, not caught.
+        const chargeId = 'id' in charge ? charge.id : null;
+        const { error: notifyError } = await supabase.from('admin_notifications').insert({
+            type: 'payment_review',
+            title: event.type === 'charge.refunded' ? 'Refund issued' : 'Payment disputed',
+            message: `Stripe reported ${event.type} for ${chargeId ?? 'an unknown charge'}. Review whether access should be revoked.`,
+            reference_id: event.id,
+            metadata: { charge_id: chargeId, event_type: event.type },
+        });
+        if (notifyError && notifyError.code !== '23505') {
+            console.error('[Stripe Webhook] Refund notification failed:', notifyError);
+            await logEvent('error', `Payment review notification failed: ${notifyError.message}`);
         }
 
         return new Response('Recorded', { status: 200 });
@@ -140,21 +149,6 @@ export async function POST(req: Request) {
             }
         } catch (gateErr) {
             console.warn('[Stripe Webhook] Could not record event id, proceeding:', gateErr);
-        }
-
-        // Secondary guard: skip re-inserting the admin notification if one for
-        // this session already exists (belt-and-suspenders alongside the gate).
-        const { data: existingNotif } = await supabase
-            .from('admin_notifications')
-            .select('id')
-            .eq('reference_id', session.id)
-            .maybeSingle();
-
-        if (existingNotif) {
-            console.log(`[Stripe Webhook] Duplicate Session ${session.id} - Notification already exists.`);
-            // We continue to log specific line items just in case, or we implicitly return?
-            // If we return, we might skip purchases if they failed but notification succeeded? (Unlikely order)
-            // Use caution: only skip the notification insert if it exists.
         }
 
         await logEvent('processing', `Started for User ${finalUserId || 'UNKNOWN'}`, {
@@ -337,14 +331,18 @@ export async function POST(req: Request) {
                         const notificationUserId = profileExists ? resolvedUserId : null;
                         const fallbackMessage = !profileExists ? ` (Profile Missing: ${resolvedUserId})` : "";
 
-                        // Prevent duplicates
-                        if (!existingNotif) {
+                        // One per line item. reference_id is unique across the
+                        // table, so it is keyed on the item, not the session:
+                        // keyed on the session, every item after the first was
+                        // refused. The constraint is also what keeps a replay
+                        // from notifying twice.
+                        {
                             const { error: notificationError } = await supabase.from('admin_notifications').insert({
                                 type: notificationType,
                                 title: `New Sale: ${productTitle}`,
                                 message: `${customerName} purchased ${productTitle}.${fallbackMessage}`,
                                 user_id: notificationUserId,
-                                reference_id: session.id,
+                                reference_id: `${session.id}:${item.id}`,
                                 status: 'unread',
                                 metadata: {
                                     original_user_id: resolvedUserId,
@@ -354,18 +352,20 @@ export async function POST(req: Request) {
                                     amount: item.amount_total ? (item.amount_total / 100).toFixed(2) : '0.00',
                                     currency: item.currency?.toUpperCase() || 'USD',
                                     serviceTitle: productTitle,
-                                    serviceImage: productImage
+                                    serviceImage: productImage,
+                                    session_id: session.id,
+                                    line_item_id: item.id,
                                 }
                             });
 
-                            if (notificationError) {
+                            if (notificationError?.code === '23505') {
+                                await logEvent('info', `Admin notification already sent for ${item.id}`);
+                            } else if (notificationError) {
                                 console.error('[Stripe Webhook] Notification Insert Error:', notificationError);
                                 await logEvent('error', `Admin Notification Failed: ${notificationError.message}`);
                             } else {
                                 await logEvent('notification', `Admin notification sent for ${productTitle}`);
                             }
-                        } else {
-                            console.log(`[Stripe Webhook] Skipping duplicate notification for session ${session.id}`);
                         }
                     }
                 } catch (notifyErr) {

@@ -221,19 +221,21 @@ describe('A purchase is granted once, however many times it is fulfilled', () =>
     // admin_notifications.reference_id is UNIQUE, and every item of a session
     // used the session id: the second item's "New Sale" hit the constraint and
     // was only logged. A booking bought alongside a masterclass went unseen.
-    it.fails('notifies the stylist once per item, however often the session is delivered', async () => {
+    it('notifies the stylist once per item, however often the session is delivered', async () => {
         const buyer = await newBuyer();
         const s = session(buyer, [item(PRODUCT.masterclass), item(PRODUCT.chapter)]);
         await deliver(s);
         await deliver(s);
         await deliver(s, `evt_other_${s.id}`);
-        const { rows } = await db.query('SELECT 1 FROM admin_notifications WHERE reference_id = $1', [s.id]);
+        // Prefix, not equality: counts this session's notices whether keyed by
+        // the session (as they were) or by session:item (as they are).
+        const { rows } = await db.query("SELECT 1 FROM admin_notifications WHERE reference_id LIKE $1 || '%'", [s.id]);
         expect(rows).toHaveLength(2);
     });
 
     // Same constraint, keyed on the charge id: a second partial refund of one
     // charge was never surfaced for review.
-    it.fails('surfaces every refund of a charge for review, once each', async () => {
+    it('surfaces every refund of a charge for review, once each', async () => {
         const charge = `ch_${++seq}`;
         const reviews = async () => Number((await db.query<{ n: number }>("SELECT count(*)::int AS n FROM admin_notifications WHERE type = 'payment_review'")).rows[0].n);
         const before = await reviews();
