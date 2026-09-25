@@ -98,7 +98,8 @@ check "$rc" "whole-database restore completed without errors"
 # line is unambiguously the terminator. --quote-all-identifiers means the
 # header reads COPY "public"."profiles" (...), hence stripping the quotes.
 DUMPED_COUNTS="$(mktemp)"
-trap 'rm -f "$DUMPED_COUNTS"; cleanup' EXIT
+ALL_TABLES="$(mktemp)"
+trap 'rm -f "$DUMPED_COUNTS" "$ALL_TABLES"; cleanup' EXIT
 if pg_restore -a -n public -f - "$SNAP/database.dump" 2>/dev/null \
      | awk '
          /^COPY /            { t = $2; gsub(/"/, "", t); sub(/^public\./, "", t)
@@ -108,12 +109,26 @@ if pg_restore -a -n public -f - "$SNAP/database.dump" 2>/dev/null \
        ' > "$DUMPED_COUNTS"; then rc=0; else rc=$?; fi
 check "$rc" "read the archive's data section to count its rows"
 
+# An archive carrying no COPY sections at all used to pass every row-count
+# check below, because each of them iterates over what the archive contains.
+if [ -s "$DUMPED_COUNTS" ]; then rc=0; else rc=1; fi
+check "$rc" "the archive has a data section at all"
+
 dumped_of() { awk -F'\t' -v k="$1" '$1 == k { print $2; exit }' "$DUMPED_COUNTS"; }
+
+# Check 1 walks the UNION of what the record lists and what the archive holds.
+# Iterating the archive alone meant a table whose data was excluded from the
+# dump was never looked at -- it simply did not come up.
+{ cut -f1 "$SNAP/rowcounts.tsv" 2>/dev/null || true; cut -f1 "$DUMPED_COUNTS"; } \
+    | grep -v '^[[:space:]]*$' | sort -u > "$ALL_TABLES"
 
 # --- check 1: restored rows == rows in the archive (strict) ---------------
 mismatched=0
-while IFS=$'\t' read -r t dumped; do
+while IFS= read -r t; do
     [ -n "$t" ] || continue
+    # No COPY section means the archive holds no rows for this table -- zero,
+    # not "skip me".
+    dumped="$(dumped_of "$t")"; dumped="${dumped:-0}"
     if restored="$(psql "$URL" -X -q -t -A -c "SELECT count(*) FROM public.\"$t\"" 2>/dev/null)"; then :; else restored=""; fi
     restored="$(printf '%s' "$restored" | tr -dc '0-9')"
     if [ -z "$restored" ]; then
@@ -124,7 +139,7 @@ while IFS=$'\t' read -r t dumped; do
         log "        table $t: archive $dumped row(s), restored $restored"
         mismatched=$((mismatched+1))
     fi
-done < "$DUMPED_COUNTS"
+done < "$ALL_TABLES"
 if [ "$mismatched" -eq 0 ]; then rc=0; else rc=1; fi
 check "$rc" "restored row counts equal the rows in the dump ($mismatched mismatched)"
 
@@ -158,8 +173,11 @@ if [ "$ROWCOUNTS_MODE" = "exact" ]; then
     while IFS=$'\t' read -r t expected; do
         [ -n "$t" ] || continue
         case "${expected:-}" in ''|*[!0-9]*) continue ;; esac
-        dumped="$(dumped_of "$t")"
-        [ -n "$dumped" ] || continue
+        # `${dumped:-0}` rather than `continue`: a table with no COPY section
+        # holds zero rows in the archive, which is precisely the case the
+        # next test exists to catch. Skipping it let a dump that excluded a
+        # table's data pass the whole drill.
+        dumped="$(dumped_of "$t")"; dumped="${dumped:-0}"
 
         # A table recorded with rows whose archive holds none is data loss at
         # dump time, not drift, so this one never gets a tolerance.
@@ -184,6 +202,20 @@ if [ "$ROWCOUNTS_MODE" = "exact" ]; then
     check "$rc" "dump matches production at backup time ($drifted outside tolerance)"
 else
     log "  WARN  rowcounts.tsv predates exact counting -- skipping the dump-vs-production check"
+
+    # The tolerant check is gone for legacy snapshots, but "a table that should
+    # hold rows has no data section at all" is worth saying even when the
+    # counts behind it are estimates. A stale n_live_tup of 1 against a
+    # genuinely empty table is a false alarm, so this warns rather than fails.
+    dataless=""
+    while IFS=$'\t' read -r t n; do
+        [ -n "$t" ] || continue
+        case "${n:-0}" in ''|*[!0-9]*) continue ;; esac
+        [ "$n" -gt 0 ] || continue
+        [ -n "$(dumped_of "$t")" ] || dataless="$dataless $t"
+    done < "$SNAP/rowcounts.tsv"
+    [ -z "$dataless" ] \
+        || log "  WARN  no data section for:$dataless (estimates, not proof)"
 fi
 
 # --- the things that make this database work ------------------------------
