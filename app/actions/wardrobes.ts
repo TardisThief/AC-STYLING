@@ -9,6 +9,7 @@ import { deriveStoragePath, signWardrobeItems } from "@/lib/wardrobe-images";
 import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 import { parseInput, uuid } from "@/app/lib/validation/parse";
 import { adminWardrobeItemUpdateSchema, bulkStatusSchema } from "@/app/lib/validation/wardrobe-items";
+import { wardrobeUpdateSchema } from "@/app/lib/validation/wardrobes";
 import type { WardrobeItem } from "@/app/lib/types";
 import { MAX_ITEMS_PER_WARDROBE, uploadTokenExpiry } from '@/app/lib/wardrobe-tokens';
 
@@ -112,12 +113,20 @@ export async function updateWardrobe(
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
 
+    const parsedId = parseInput(uuid('Wardrobe id'), wardrobeId);
+    if (!parsedId.ok) return { success: false, error: parsedId.error };
+
+    // The type above is not checked at runtime; a caller can send any object.
+    const parsed = parseInput(wardrobeUpdateSchema, updates);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+    if (Object.keys(parsed.data).length === 0) return { success: false, error: 'Nothing to update' };
+
     const adminSupabase = createAdminClient();
 
     const { error } = await adminSupabase
         .from('wardrobes')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', wardrobeId);
+        .update({ ...parsed.data, updated_at: new Date().toISOString() })
+        .eq('id', parsedId.data);
 
     if (error) {
         console.error('Error updating wardrobe:', error);

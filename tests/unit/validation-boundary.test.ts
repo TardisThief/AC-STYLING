@@ -57,6 +57,7 @@ import { brandSchema, boutiqueItemSchema, collectionSchema, trustedByLogoSchema,
 import { offerSchema } from '@/app/lib/validation/offers'
 import { serviceSchema } from '@/app/lib/validation/services'
 import { adminWardrobeItemUpdateSchema } from '@/app/lib/validation/wardrobe-items'
+import { wardrobeUpdateSchema } from '@/app/lib/validation/wardrobes'
 import { parseInput, resourceList } from '@/app/lib/validation/parse'
 import { z as zod } from 'zod'
 
@@ -100,8 +101,6 @@ const service = { title: 'Session' }
 beforeEach(() => { writes.length = 0 })
 
 describe('Admin writes carry only schema columns', () => {
-    // updateWardrobe has no schema yet; these are the columns its callers send.
-    const wardrobeColumns = zod.object({ title: zod.string(), owner_id: zod.string(), status: zod.string() })
     const cases: [string, () => Promise<unknown>, z.ZodType, string[]][] = [
         ['createBrand', () => createBrand(hostile(brand)), brandSchema, []],
         ['updateBrand', () => updateBrand(UUID, hostile(brand)), brandSchema, ['updated_at']],
@@ -128,11 +127,11 @@ describe('Admin writes carry only schema columns', () => {
     it.each(cases)('%s writes nothing the schema does not define', (_name, call, schema, extra) =>
         onlySchemaKeys(call, schema, extra))
 
-    // Both write a raw client object, with no parseInput at all.
-    it.fails('updateWardrobe writes nothing the schema does not define', () =>
-        onlySchemaKeys(() => updateWardrobe(UUID, hostile({ status: 'archived' }) as never), wardrobeColumns, ['updated_at']))
+    // Both used to write a raw client object, with no parseInput at all.
+    it('updateWardrobe writes nothing the schema does not define', () =>
+        onlySchemaKeys(() => updateWardrobe(UUID, hostile({ status: 'archived' }) as never), wardrobeUpdateSchema, ['updated_at']))
 
-    it.fails('createBoutiqueItemsBatch writes nothing the schema does not define', () =>
+    it('createBoutiqueItemsBatch writes nothing the schema does not define', () =>
         onlySchemaKeys(() => createBoutiqueItemsBatch([hostile(item)] as never), boutiqueItemSchema, []))
 })
 

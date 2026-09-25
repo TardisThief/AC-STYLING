@@ -3,6 +3,8 @@
 import { requireAdmin } from "@/app/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import { getErrorMessage } from "@/app/lib/errors";
+import { parseInput } from "@/app/lib/validation/parse";
+import { boutiqueItemBatchSchema } from "@/app/lib/validation/boutique";
 
 // =============================================================================
 // Boutique Bulk Upload Actions
@@ -74,10 +76,15 @@ export async function createBoutiqueItemsBatch(
     if (!auth.ok) return { success: false, error: auth.error };
     const supabase = auth.supabase;
 
+    // The type above is not checked at runtime; each row goes through the same
+    // schema as a single item, and only its output is written.
+    const parsed = parseInput(boutiqueItemBatchSchema, items);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
     try {
         const { error, count } = await supabase
             .from('boutique_items')
-            .insert(items)
+            .insert(parsed.data)
             .select('id');
 
         if (error) throw error;

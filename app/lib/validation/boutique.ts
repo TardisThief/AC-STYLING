@@ -33,6 +33,11 @@ export const boutiqueItemSchema = z.object({
     active: z.boolean().optional().default(true),
 });
 
+/** createBoutiqueItemsBatch: the uploader's rows, each held to the single-item schema. */
+export const boutiqueItemBatchSchema = z
+    .array(boutiqueItemSchema, { error: 'Items must be a list' })
+    .min(1, { error: 'Add at least one item' });
+
 export const collectionSchema = z.object({
     title: requiredText('Title'),
     title_es: optionalText,
