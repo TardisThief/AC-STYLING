@@ -62,7 +62,7 @@ describe('getMyWardrobe', () => {
 
     // Members cannot insert wardrobes under RLS (only the admin policy
     // allows it), so the create-on-first-visit branch always failed.
-    it.fails('creates a Studio client’s wardrobe on her first visit', async () => {
+    it('creates a Studio client’s wardrobe on her first visit', async () => {
         h.userId = CLIENT;
         const result = await getMyWardrobe();
         expect(result.success).toBe(true);

@@ -440,9 +440,22 @@ export async function getMyWardrobe(): Promise<{
         .eq('status', 'active')
         .single();
 
-    // If no wardrobe exists, create one
+    // First visit: create it. Only for a Studio client — this action is
+    // callable by any signed-in member — and through the service role, because
+    // RLS lets only the admin insert wardrobes. Through the member's own client
+    // this always failed, and /vault/my-studio sent her back to /vault.
     if (!wardrobe) {
-        const { data: newWardrobe, error: createError } = await supabase
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('active_studio_client')
+            .eq('id', user.id)
+            .single();
+
+        if (!profile?.active_studio_client) {
+            return { success: false, error: "Studio access is required for a wardrobe." };
+        }
+
+        const { data: newWardrobe, error: createError } = await createAdminClient()
             .from('wardrobes')
             .insert({ owner_id: user.id, title: 'My Wardrobe' })
             .select()
