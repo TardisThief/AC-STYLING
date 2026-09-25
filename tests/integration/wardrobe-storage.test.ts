@@ -11,6 +11,9 @@
  * The folder convention is where confusion lives: `<ownerId>/…` for owned
  * content, `wardrobe/<id>/…` for intake — where <id> may be a USER id (invite
  * profile) or a WARDROBE id (token intake). One path segment, two namespaces.
+ *
+ * One hole was found here (b1ba0d3) and closed by migration 24; beforeAll
+ * proves it reproduces on the live schema before applying the migration.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
@@ -55,6 +58,13 @@ beforeAll(async () => {
     for (const name of [`${A}/a.jpg`, `${B}/b.jpg`, `wardrobe/${WA}/a.jpg`, `wardrobe/${WB}/b.jpg`, `wardrobe/${WG}/g.jpg`, `wardrobe/${B}/invite.jpg`]) {
         await db.query(`INSERT INTO storage.objects (bucket_id, name) VALUES ('studio-wardrobe', $1)`, [name]);
     }
+
+    // Before migration 24: a member can plant an item in another client's wardrobe.
+    const planted = await asRole(db, 'authenticated', A,
+        `INSERT INTO wardrobe_items (wardrobe_id, user_id, image_url) VALUES ($1, $2, 'https://attacker.invalid/x.jpg') RETURNING id`, [WB, A]);
+    expect(planted.rows).toHaveLength(1);
+
+    await db.exec(readMigration('20260925_24_wardrobe_item_insert_scope.sql'));
 }, 120_000);
 
 afterAll(async () => { await db?.close(); });
@@ -142,12 +152,32 @@ describe('Wardrobe rows', () => {
         expect((await asRole(db, 'authenticated', A, 'SELECT id FROM wardrobe_items WHERE wardrobe_id = $1', [WB])).rows).toEqual([]);
     });
 
-    // "Users can insert own wardrobe items during intake" checks user_id and
-    // nothing else, and the victim's own SELECT policy shows her every item
-    // whose wardrobe_id is one of hers.
-    it.fails('denies a member planting an item in another client’s wardrobe', async () => {
+    // "Users can insert own wardrobe items during intake" used to check
+    // user_id and nothing else, and the victim's own SELECT policy shows her
+    // every item whose wardrobe_id is one of hers.
+    it('denies a member planting an item in another client’s wardrobe', async () => {
         await expect(asRole(db, 'authenticated', A,
             `INSERT INTO wardrobe_items (wardrobe_id, user_id, image_url, client_note) VALUES ($1, $2, 'https://attacker.invalid/x.jpg', 'planted') RETURNING id`,
             [WB, A])).rejects.toMatchObject({ code: '42501' });
+    });
+    // Her own wardrobe, someone else's user_id: B's SELECT policy shows B every
+    // item carrying her user_id, wherever it lives.
+    it('denies a member planting an item under another client’s name, even in her own wardrobe', async () => {
+        await expect(asRole(db, 'authenticated', A,
+            `INSERT INTO wardrobe_items (wardrobe_id, user_id, image_url) VALUES ($1, $2, 'x') RETURNING id`, [WA, B]))
+            .rejects.toMatchObject({ code: '42501' });
+    });
+    it('still lets a client add to her own wardrobe, as GatedWardrobe does (control)', async () => {
+        const own = await asRole(db, 'authenticated', A,
+            `INSERT INTO wardrobe_items (wardrobe_id, user_id, image_url, status) VALUES ($1, $2, 'x', 'Keep') RETURNING id`, [WA, A]);
+        expect(own.rows).toHaveLength(1);
+        const legacy = await asRole(db, 'authenticated', A,
+            `INSERT INTO wardrobe_items (wardrobe_id, user_id, image_url) VALUES (NULL, $1, 'x') RETURNING id`, [A]);
+        expect(legacy.rows).toHaveLength(1);
+    });
+    it('still lets the stylist add to any client’s wardrobe (control)', async () => {
+        const added = await asRole(db, 'authenticated', ADMIN,
+            `INSERT INTO wardrobe_items (wardrobe_id, user_id, image_url) VALUES ($1, $2, 'x') RETURNING id`, [WB, B]);
+        expect(added.rows).toHaveLength(1);
     });
 });

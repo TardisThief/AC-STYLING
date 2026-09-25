@@ -37,6 +37,14 @@ import {
     MAX_ITEMS_PER_WARDROBE,
 } from '@/app/lib/wardrobe-tokens'
 
+// createWardrobeItem counts the wardrobe's items right before it inserts
+// (the item cap), so every insert slot in a mockReturnValueOnce queue is
+// preceded by one of these.
+const emptyItemCount = () => ({
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockResolvedValue({ count: 0, error: null }),
+})
+
 describe('Wardrobes Server Actions', () => {
     beforeEach(() => {
         vi.clearAllMocks()
@@ -125,6 +133,7 @@ describe('Wardrobes Server Actions', () => {
                 }),
             })
 
+            mockFrom.mockReturnValueOnce(emptyItemCount())
             // Mock insert
             mockFrom.mockReturnValueOnce({
                 insert: vi.fn().mockResolvedValue({ error: null }),
@@ -164,6 +173,7 @@ describe('Wardrobes Server Actions', () => {
 
             const insertSpy = () => {
                 const insert = vi.fn().mockResolvedValue({ error: null })
+                mockFrom.mockReturnValueOnce(emptyItemCount())
                 mockFrom.mockReturnValueOnce({ insert })
                 return insert
             }

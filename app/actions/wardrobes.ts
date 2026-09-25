@@ -325,8 +325,15 @@ export async function createWardrobeItem(
         return { success: false, error: "Invalid upload path" };
     }
 
+    // 3. The cap applies to items, not only to upload URLs. Checking it only
+    // when a URL was minted let one uploaded object be replayed through here
+    // into any number of rows.
+    if (await isWardrobeFull(supabase, wardrobe.id)) {
+        return { success: false, error: "This wardrobe has reached its upload limit." };
+    }
+
     try {
-        // 3. The object must exist. Without this an item row can be created
+        // 4. The object must exist. Without this an item row can be created
         // pointing at nothing, which shows up later as a broken image with no
         // obvious cause.
         const folder = filePath.slice(0, filePath.lastIndexOf('/'));
@@ -340,12 +347,12 @@ export async function createWardrobeItem(
             return { success: false, error: "Upload not found. Please try again." };
         }
 
-        // 4. Get public URL for the uploaded file
+        // 5. Get public URL for the uploaded file
         const { data: { publicUrl } } = supabase.storage
             .from('studio-wardrobe')
             .getPublicUrl(filePath);
 
-        // 5. Insert into database
+        // 6. Insert into database
         const { error: dbError } = await supabase
             .from('wardrobe_items')
             .insert({
@@ -364,64 +371,6 @@ export async function createWardrobeItem(
     } catch (error) {
         console.error("Create Item Error:", error);
         return { success: false, error: getErrorMessage(error) || "Failed to save item" };
-    }
-}
-
-// Legacy function - kept for backward compatibility but now uses direct upload internally
-export async function uploadToWardrobe(
-    formData: FormData,
-    token: string
-): Promise<{ success: boolean; error?: string }> {
-    // Use service role for guest uploads
-    const supabase = createAdminClient();
-
-    // 1. Validate token (existence, active status and expiry)
-    const resolved = await resolveWardrobeByToken(supabase, token);
-    if (!resolved.ok) return { success: false, error: resolved.error };
-    const wardrobe = resolved.wardrobe!;
-
-    try {
-        const file = formData.get('file') as File;
-        const clientNote = formData.get('note') as string;
-        const category = formData.get('category') as string;
-
-        if (!file) throw new Error("No file provided");
-
-        // 2. Upload to storage
-        const fileExt = file.name.split('.').pop() || 'jpg';
-        const fileName = `${wardrobe.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `wardrobe/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-            .from('studio-wardrobe')
-            .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        // 3. Get public URL
-        const { data: { publicUrl } } = supabase.storage
-            .from('studio-wardrobe')
-            .getPublicUrl(filePath);
-
-        // 4. Insert into database (linked to wardrobe)
-        const { error: dbError } = await supabase
-            .from('wardrobe_items')
-            .insert({
-                wardrobe_id: wardrobe.id,
-                user_id: wardrobe.owner_id, // Keep for backward compat
-                image_url: publicUrl,
-                client_note: clientNote || "",
-                category: category || null,
-                status: 'inbox'
-            });
-
-        if (dbError) throw dbError;
-
-        return { success: true };
-
-    } catch (error) {
-        console.error("Wardrobe Upload Error:", error);
-        return { success: false, error: getErrorMessage(error) || "Upload failed" };
     }
 }
 

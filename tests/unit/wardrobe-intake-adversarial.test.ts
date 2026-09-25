@@ -84,9 +84,10 @@ describe('The item cap', () => {
         expect((await getSignedUploadUrl('tok', 'x.jpg')).success).toBe(false)
     })
 
-    // The cap is checked when a URL is minted, never when an item is created.
-    // One uploaded object and a replayed createWardrobeItem is all it takes.
-    it.fails('refuses to create items past the cap by replaying one upload', async () => {
+    // The cap used to be checked only when a URL was minted, never when an
+    // item was created: one uploaded object and a replayed createWardrobeItem
+    // was all it took.
+    it('refuses to create items past the cap by replaying one upload', async () => {
         const w = guestWardrobe()
         fill(w.id, MAX_ITEMS_PER_WARDROBE - 1)
         const path = `wardrobe/${w.id}/one.jpg`
