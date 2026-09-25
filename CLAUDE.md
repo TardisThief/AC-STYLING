@@ -86,7 +86,19 @@ DATABASE_URL                      # direct Postgres, used by scripts/
 
 - **Unit** (`tests/unit/`, Vitest + Testing Library): access-control, access-logic, stripe-webhook, commerce, studio, wardrobes, dashboard, essence-lab, notifications, boutique, auth, paywall-guard, etc.
 - **E2E** (`tests/e2e/`, Playwright): `smoke.spec.ts`, `intake-flow.spec.ts`.
+- **Integration** (`tests/integration/`, Vitest project `integration`, run serially): real PostgreSQL via PGlite, loaded from the live schema dump by `tests/utils/pglite-db.ts` (`createLiveSchemaDb`, `asRole`). `tests/utils/pglite-supabase.ts` is a strict supabase-js-shaped client over it, so real server code (the Stripe webhook, `syncStripePurchases`, the grant path) runs against real constraints and RLS.
 - Shared setup in `tests/setup.ts`, helpers in `tests/utils/`.
+
+### Adversarial testing
+
+The failures that matter here are rarely "the feature doesn't work". They are "the guard skips the case it exists for, and the tests agree with it". Examples: a `23505` branch waiting on a unique index that did not exist, a gate that turned away the exact retry it was meant to allow, an item cap checked on the wrong step. Happy-path tests cannot find that. So:
+
+- **Attack the guard.** For every check, write the input it exists to stop: the other user's id, the expired term, the replayed or concurrent delivery, the extra key, the step called out of order. A server action is callable directly with any arguments, and its TypeScript types are not checked at runtime.
+- **Who-can-see-what belongs in PGlite, not in mocks.** A mocked Supabase client cannot see RLS, grants, constraints, triggers or `SECURITY DEFINER` bodies; it only confirms the code's intent. Anything about access, entitlement, uniqueness or idempotency goes in `tests/integration/` against the live schema. Mock only what leaves the process (Stripe, email, `next/headers`).
+- **Red before green.** A test that has never failed has not been shown to test anything. When a new test passes first time, break the guard it covers (drop the clause, loosen the policy, restore the raw write), watch it fail, restore. When it fails first time, decide deliberately whether the test or the product is wrong before touching either.
+- **Prove the hole, then the fix.** Commit a confirmed bug as `it.fails` first. The fix commit turns it into a plain `it`. For a migration, have `beforeAll` reproduce the vulnerable state on the live schema before applying the migration file (see `tests/integration/access-control.test.ts`).
+- **Grep after every fix.** The same pattern usually shipped more than once. Look for it before moving on, and say in the commit what the grep found.
+- **Do not trust a comment's description of a protection.** Check that the constraint, index or policy it names actually exists in `supabase/migrations/00000000000000_baseline.sql`.
 
 ## Notes / gotchas
 
