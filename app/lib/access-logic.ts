@@ -83,6 +83,11 @@ function isDuplicate(error: { code?: string } | null): boolean {
  * ever shorten her access — buying a second pass while the first is live adds a
  * year to the later date rather than resetting to a year from today.
  *
+ * Perpetual access is never shortened. A NULL expiry on a profile that already
+ * holds a pass is access sold before the term existed (migration 21); the three
+ * flags share the one column, so stamping a year on it would put an end date on
+ * the access she already owned. She keeps NULL, and the new pass with it.
+ *
  * The rung only moves on a renewal. A full-price purchase resets it to zero,
  * which is what makes a lapse cost her the discount: after the grace window she
  * comes back through ordinary checkout, and this is where the ladder restarts.
@@ -95,18 +100,21 @@ async function setProfileFlag(
 ): Promise<void> {
     const { data: held } = await supabase
         .from('profiles')
-        .select('access_expires_at, access_renewal_count')
+        .select('access_expires_at, access_renewal_count, has_full_unlock, has_course_pass, has_masterclass_pass')
         .eq('id', userId)
         .maybeSingle();
 
     const heldExpiry = (held?.access_expires_at as string | null) ?? null;
     const heldCount = (held?.access_renewal_count as number | null) ?? 0;
+    const holdsPerpetualPass =
+        heldExpiry === null &&
+        Boolean(held?.has_full_unlock || held?.has_course_pass || held?.has_masterclass_pass);
 
     const { error } = await supabase
         .from('profiles')
         .update({
             [flag]: true,
-            access_expires_at: nextExpiry(heldExpiry),
+            access_expires_at: holdsPerpetualPass ? null : nextExpiry(heldExpiry),
             access_renewal_count: isRenewal ? heldCount + 1 : 0,
         })
         .eq('id', userId);
@@ -117,6 +125,10 @@ async function setProfileFlag(
 /**
  * Give her a single masterclass or chapter for a year, or extend the one she
  * already has.
+ *
+ * The duplicate case relies on the unique indexes on (user_id, masterclass_id)
+ * and (user_id, chapter_id) from migration 23. Before them the insert never
+ * conflicted: a renewal added a second row instead of extending the first.
  *
  * The duplicate case is not a no-op any more. It used to mean "she already owns
  * this, nothing to do", which was true while ownership was perpetual; now it is
@@ -149,6 +161,10 @@ async function grantItemForTerm(
 
     const heldExpiry = (held?.expires_at as string | null) ?? null;
     const heldCount = (held?.renewal_count as number | null) ?? 0;
+
+    // A NULL expiry here is perpetual — a pre-term purchase, a bonus or an
+    // admin override. Buying the item again must not give it an end date.
+    if (held && heldExpiry === null) return { error: null };
 
     const { error: updateError } = await supabase
         .from('user_access_grants')
@@ -247,7 +263,8 @@ export async function grantAccessForProduct(
         .from('offers')
         .select('slug')
         .eq('stripe_product_id', productId)
-        .eq('active', true)
+        // Not filtered on `active`: that decides what is SOLD. A payment
+        // already taken for an offer switched off since is still owed.
         .maybeSingle();
 
     if (logFn) await logFn('info', `Checking Offer for ${productId}: Found=${!!offer}, Slug=${offer?.slug}`);

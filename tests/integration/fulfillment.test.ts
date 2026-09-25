@@ -14,10 +14,14 @@
  * something they did not pay for. A year of access is the unit of the second:
  * since migration 21 a purchase is one year, so "granted twice" is no longer
  * harmless — it is a free year.
+ *
+ * Every finding here was first committed as it.fails (6ba7d7a). The two that
+ * live in the schema are reproduced again in beforeAll, against the live
+ * schema, before migration 23 is applied.
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { createLiveSchemaDb, createUser } from '../utils/pglite-db';
+import { createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 type LineItem = { id: string; price: { product: string }; amount_total: number; currency: string };
@@ -60,6 +64,7 @@ vi.mock('@/lib/resend', () => ({ sendEmail: vi.fn(async () => ({ success: true }
 
 import { POST } from '@/app/api/webhooks/stripe/route';
 import { syncStripePurchases } from '@/app/actions/commerce';
+import { claimLineItem } from '@/app/lib/fulfillment';
 
 const DAY = 24 * 60 * 60 * 1000;
 let db: PGlite;
@@ -147,6 +152,21 @@ beforeAll(async () => {
     await db.query(`INSERT INTO chapters (id, slug, title, video_id, is_standalone, stripe_product_id) VALUES ($1, 'course', 'Course', 'v', true, $2)`, [CHAPTER_ID, PRODUCT.chapter]);
     await db.query(`INSERT INTO offers (slug, title, stripe_product_id, active) VALUES ('masterclass_pass', 'Pass', $1, true), ('course_pass', 'Course Pass', $2, false)`, [PRODUCT.masterclassPass, PRODUCT.retiredCoursePass]);
     await db.query(`INSERT INTO services (title, stripe_product_id, price_id, unlocks_studio_access) VALUES ('Studio', $1, 'price_studio_service', true)`, [PRODUCT.studioService]);
+
+    // Before migration 23, on the live schema: a second grant row for the same
+    // masterclass is accepted, and a purchase of the Studio service unlocks
+    // nothing. Rolled back, so the migration's duplicate check has a clean table.
+    const probe = await newBuyer();
+    await db.exec('BEGIN');
+    try {
+        await db.query('INSERT INTO user_access_grants (user_id, masterclass_id) VALUES ($1, $2), ($1, $2)', [probe, MASTERCLASS_ID]);
+        await db.query('INSERT INTO purchases (user_id, product_id) VALUES ($1, $2)', [probe, PRODUCT.studioService]);
+        expect((await profile(probe)).active_studio_client).toBe(false);
+    } finally {
+        await db.exec('ROLLBACK');
+    }
+
+    await db.exec(readMigration('20260925_23_grant_uniqueness_and_studio_unlock.sql'));
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
@@ -176,7 +196,7 @@ describe('A purchase is granted once, however many times it is fulfilled', () =>
     // CheckoutSyncHandler runs syncStripePurchases on every
     // ?checkout_success=true, i.e. on every completed checkout, and it
     // re-grants every paid session in the last 100.
-    it.fails('does not add a second year to a masterclass when the buyer returns from checkout', async () => {
+    it('does not add a second year to a masterclass when the buyer returns from checkout', async () => {
         const buyer = await newBuyer();
         const s = session(buyer, [item(PRODUCT.masterclass)]);
         await deliver(s);
@@ -184,7 +204,7 @@ describe('A purchase is granted once, however many times it is fulfilled', () =>
         expect(yearsLeft((await masterclassGrant(buyer)).expires_at)).toBe(1);
     });
 
-    it.fails('does not add a second year to the Masterclass Pass when the buyer returns from checkout', async () => {
+    it('does not add a second year to the Masterclass Pass when the buyer returns from checkout', async () => {
         const buyer = await newBuyer();
         const s = session(buyer, [item(PRODUCT.masterclassPass)]);
         await deliver(s);
@@ -192,7 +212,7 @@ describe('A purchase is granted once, however many times it is fulfilled', () =>
         expect(yearsLeft((await profile(buyer)).access_expires_at)).toBe(1);
     });
 
-    it.fails('does not add a year each time Restore is pressed', async () => {
+    it('does not add a year each time Restore is pressed', async () => {
         const buyer = await newBuyer();
         const s = session(buyer, [item(PRODUCT.masterclass)]);
         await checkoutReturn(buyer, [s]); // the webhook never arrived: restore is the recovery path
@@ -201,7 +221,7 @@ describe('A purchase is granted once, however many times it is fulfilled', () =>
         expect(yearsLeft((await masterclassGrant(buyer)).expires_at)).toBe(1);
     });
 
-    it.fails('does not reset the renewal ladder when a renewal is restored', async () => {
+    it('does not reset the renewal ladder when a renewal is restored', async () => {
         const buyer = await newBuyer();
         const first = session(buyer, [item(PRODUCT.masterclass)]);
         const renewal = session(buyer, [item(PRODUCT.masterclass)], { kind: 'renewal' });
@@ -215,7 +235,7 @@ describe('A purchase is granted once, however many times it is fulfilled', () =>
         expect(yearsLeft(grant.expires_at)).toBe(2);
     });
 
-    it.fails('grants one year when the webhook and the checkout return race', async () => {
+    it('grants one year when the webhook and the checkout return race', async () => {
         const buyer = await newBuyer();
         const s = session(buyer, [item(PRODUCT.masterclass)]);
         await Promise.all([deliver(s), checkoutReturn(buyer, [s])]);
@@ -223,8 +243,30 @@ describe('A purchase is granted once, however many times it is fulfilled', () =>
     });
 });
 
+describe('Exactly one caller owns a line item', () => {
+    // Both reads land before either write, which is the window a
+    // read-then-write claim loses in.
+    async function simultaneousClaims(existing: 'new' | 'abandoned' | 'failed') {
+        const buyer = await newBuyer();
+        const li = item(PRODUCT.masterclass);
+        const ref = { lineItemId: li.id, sessionId: 'cs_x', eventId: 'evt_x', userId: buyer, productId: PRODUCT.masterclass };
+        if (existing !== 'new') {
+            await db.query(
+                `INSERT INTO fulfillments (stripe_line_item_id, stripe_session_id, stripe_event_id, user_id, stripe_product_id, status, attempts, updated_at)
+                 VALUES ($1, 'cs_x', 'evt_x', $2, $3, $4, 1, now() - interval '1 hour')`,
+                [li.id, buyer, PRODUCT.masterclass, existing === 'abandoned' ? 'processing' : 'failed']);
+        }
+        const outcomes = await Promise.all([claimLineItem(h.admin as never, ref), claimLineItem(h.admin as never, ref)]);
+        return outcomes.map(o => o.state).sort();
+    }
+
+    it.each(['new', 'abandoned', 'failed'] as const)('gives a %s line item to one of two simultaneous claimers', async existing => {
+        expect(await simultaneousClaims(existing)).toEqual(['claimed', 'in_progress']);
+    });
+});
+
 describe('Renewals and existing access', () => {
-    it.fails('extends the term she holds when she renews a single masterclass', async () => {
+    it('extends the term she holds when she renews a single masterclass', async () => {
         const buyer = await newBuyer();
         await deliver(session(buyer, [item(PRODUCT.masterclass)]));
         await deliver(session(buyer, [item(PRODUCT.masterclass)], { kind: 'renewal' }));
@@ -233,9 +275,16 @@ describe('Renewals and existing access', () => {
         expect(yearsLeft(grant.expires_at)).toBe(2);
     });
 
+    it('does not put an end date on a perpetual single-item grant when she buys the item', async () => {
+        const buyer = await newBuyer();
+        await db.query(`INSERT INTO user_access_grants (user_id, masterclass_id, grant_type) VALUES ($1, $2, 'admin_override')`, [buyer, MASTERCLASS_ID]);
+        await deliver(session(buyer, [item(PRODUCT.masterclass)]));
+        expect((await masterclassGrant(buyer)).expires_at).toBeNull();
+    });
+
     // Migration 21: a NULL expiry is perpetual access, sold before the term
     // existed. The three pass flags share that one column.
-    it.fails('does not put an end date on a pre-term full unlock when she buys another pass', async () => {
+    it('does not put an end date on a pre-term full unlock when she buys another pass', async () => {
         const buyer = await newBuyer();
         await db.query('UPDATE profiles SET has_full_unlock = true WHERE id = $1', [buyer]);
         await deliver(session(buyer, [item(PRODUCT.masterclassPass)]));
@@ -250,7 +299,7 @@ describe('Paid means granted', () => {
     // gate, which is only released by the catch block a crash never reaches,
     // so Stripe's redelivery is answered "Already processed" before any
     // line item is looked at.
-    it.fails('fulfils a delivery that died before granting, when Stripe redelivers it', async () => {
+    it('fulfils a delivery that died before granting, when Stripe redelivers it', async () => {
         const buyer = await newBuyer();
         const li = item(PRODUCT.masterclass);
         const s = session(buyer, [li]);
@@ -266,10 +315,24 @@ describe('Paid means granted', () => {
         expect(await masterclassGrant(buyer)).toBeDefined();
     });
 
+    it('grants one year when Stripe and the buyer both take over an abandoned delivery at once', async () => {
+        const buyer = await newBuyer();
+        const li = item(PRODUCT.masterclass);
+        const s = session(buyer, [li]);
+        const eventId = `evt_${s.id}`;
+        await db.query(
+            `INSERT INTO fulfillments (stripe_line_item_id, stripe_session_id, stripe_event_id, user_id, stripe_product_id, status, attempts, updated_at)
+             VALUES ($1, $2, $3, $4, $5, 'processing', 1, now() - interval '1 hour')`,
+            [li.id, s.id, eventId, buyer, PRODUCT.masterclass]);
+
+        await Promise.all([deliver(s, eventId), checkoutReturn(buyer, [s])]);
+        expect(yearsLeft((await masterclassGrant(buyer)).expires_at)).toBe(1);
+    });
+
     // Offers are switched on and off in admin (migration 19: only one is
     // active at a time). `active` decides what is SOLD; a payment already
     // taken for a product that has since been switched off is still owed.
-    it.fails('honours a payment for an offer switched off after checkout', async () => {
+    it('honours a payment for an offer switched off after checkout', async () => {
         const buyer = await newBuyer();
         expect(await deliver(session(buyer, [item(PRODUCT.retiredCoursePass)]))).toBe(200);
         expect((await profile(buyer)).has_course_pass).toBe(true);
@@ -278,7 +341,7 @@ describe('Paid means granted', () => {
     // The only thing that acts on services.unlocks_studio_access is the
     // on_purchase_created trigger, which matches services.price_id against
     // purchases.product_id. The webhook writes the Stripe PRODUCT id there.
-    it.fails('unlocks the Studio for a service sold as unlocking it', async () => {
+    it('unlocks the Studio for a service sold as unlocking it', async () => {
         const buyer = await newBuyer();
         expect(await deliver(session(buyer, [item(PRODUCT.studioService)]))).toBe(200);
         expect((await profile(buyer)).active_studio_client).toBe(true);

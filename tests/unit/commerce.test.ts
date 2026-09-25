@@ -30,15 +30,19 @@ vi.mock('next/cache', () => ({
     revalidatePath: vi.fn(),
 }))
 
-vi.mock('@/app/lib/access-logic', () => ({
-    grantAccessForProduct: vi.fn(() => true),
+// Restore goes through the webhook's per-line-item path, not straight to the
+// grant (a checkout return used to grant every purchase a second time; see
+// tests/integration/fulfillment.test.ts). What is pinned here is who gets as
+// far as the trusted client at all.
+vi.mock('@/app/lib/fulfillment', () => ({
+    fulfillLineItem: vi.fn(async () => 'granted'),
 }))
 
 // Import after mocks
 import { checkPurchase, getUserPurchases, syncStripePurchases } from '@/app/actions/commerce'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { stripe } from '@/utils/stripe'
-import { grantAccessForProduct } from '@/app/lib/access-logic'
+import { fulfillLineItem } from '@/app/lib/fulfillment'
 
 describe('Commerce Server Actions', () => {
     beforeEach(() => {
@@ -142,7 +146,7 @@ describe('Commerce Server Actions', () => {
             mockAuth.getUser.mockResolvedValue({ data: { user: verifiedUser } })
             vi.mocked(stripe.checkout.sessions.list).mockResolvedValue({ data: [session] } as never)
             await syncStripePurchases()
-            expect(grantAccessForProduct).not.toHaveBeenCalled()
+            expect(fulfillLineItem).not.toHaveBeenCalled()
             expect(createAdminClient).not.toHaveBeenCalled()
         })
 
@@ -153,7 +157,11 @@ describe('Commerce Server Actions', () => {
             mockAuth.getUser.mockResolvedValue({ data: { user: verifiedUser } })
             vi.mocked(stripe.checkout.sessions.list).mockResolvedValue({ data: [session] } as never)
             const result = await syncStripePurchases()
-            expect(grantAccessForProduct).toHaveBeenCalledWith(mockAdminClient, verifiedUser.id, 'prod-1')
+            expect(fulfillLineItem).toHaveBeenCalledWith(
+                mockAdminClient,
+                expect.objectContaining({ userId: verifiedUser.id, productId: 'prod-1' }),
+                { isRenewal: false }
+            )
             expect(result).toMatchObject({ success: true })
         })
     })

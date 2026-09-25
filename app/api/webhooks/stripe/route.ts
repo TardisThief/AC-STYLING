@@ -1,10 +1,9 @@
 import { headers } from 'next/headers';
 import { stripe } from '@/utils/stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
-import { grantAccessForProduct } from '@/app/lib/access-logic';
 import { resolveOrCreateUserByEmail, generateSetPasswordLink } from '@/app/lib/guest-purchase';
 import { createPurchaseClaim, isClaimOpen } from '@/app/lib/purchase-claims';
-import { claimLineItem, markCompleted, markFailed, markUnfulfillable } from '@/app/lib/fulfillment';
+import { fulfillLineItem } from '@/app/lib/fulfillment';
 import { sendEmail } from '@/lib/resend';
 import { getPurchaseWelcomeHtml, getPurchaseWelcomeSubject, type EmailLocale } from '@/lib/email-templates';
 import Stripe from 'stripe';
@@ -122,14 +121,14 @@ export async function POST(req: Request) {
 
         console.log(`[Stripe Webhook] Session Info: SessionID=${session.id}, UserID=${finalUserId}`);
 
-        // Idempotency gate: record this Stripe event.id once. Stripe delivers
-        // at-least-once and retries non-2xx deliveries for up to 3 days, so the
-        // same event can arrive multiple times. The upsert-with-ignoreDuplicates
-        // atomically inserts the id; an empty result means the row already
-        // existed (a retry/duplicate) and we skip reprocessing. Marked here at
-        // the start and rolled back on a 500 (see the catch) so a genuine
-        // failure can still be retried. Fails OPEN if the table is absent (e.g.
-        // migration not yet applied) so the code can ship before the migration.
+        // Record that this Stripe event.id was seen. It is a record, NOT a
+        // gate: it used to answer a repeat delivery "Already processed" and
+        // return, but it is written before the work, and a run that dies
+        // mid-way never reaches the catch that removes it — so Stripe's retry
+        // of exactly that delivery was turned away and the purchase was never
+        // fulfilled. Repeats are made safe per line item instead, by
+        // fulfillLineItem: a completed item is skipped, one another delivery
+        // is working on is refused, an abandoned one is taken over.
         try {
             const { data: gateRows, error: gateError } = await supabase
                 .from('stripe_processed_events')
@@ -137,11 +136,10 @@ export async function POST(req: Request) {
                 .select('event_id');
 
             if (!gateError && Array.isArray(gateRows) && gateRows.length === 0) {
-                console.log(`[Stripe Webhook] Duplicate event ${event.id} — already processed, skipping.`);
-                return new Response('Already processed', { status: 200 });
+                console.log(`[Stripe Webhook] Repeat delivery of ${event.id}; re-checking its line items.`);
             }
         } catch (gateErr) {
-            console.warn('[Stripe Webhook] Idempotency gate error, proceeding:', gateErr);
+            console.warn('[Stripe Webhook] Could not record event id, proceeding:', gateErr);
         }
 
         // Secondary guard: skip re-inserting the admin notification if one for
@@ -239,83 +237,35 @@ export async function POST(req: Request) {
                     continue;
                 }
 
-                // 1. Take ownership of this line item, or skip it if a previous
-                // delivery already finished it. Per item rather than per event:
-                // a failure on the third item used to mean redoing the first
-                // two, which duplicated their purchase rows.
-                const claim = await claimLineItem(supabase, {
-                    lineItemId: item.id,
-                    sessionId: session.id,
-                    eventId: event.id,
-                    userId: resolvedUserId,
-                    productId: stripeProductId,
-                    amountTotal: item.amount_total,
-                    currency: item.currency,
-                });
+                // Claim, record the purchase, grant, settle — per item, via the
+                // same path the buyer's checkout return uses. A failure on the
+                // third item no longer redoes the first two, and nothing is
+                // granted twice. Throws (after recording why) so the delivery
+                // fails and Stripe retries; settled items are skipped next time.
+                const outcome = await fulfillLineItem(
+                    supabase,
+                    {
+                        lineItemId: item.id,
+                        sessionId: session.id,
+                        eventId: event.id,
+                        userId: resolvedUserId,
+                        productId: stripeProductId,
+                        amountTotal: item.amount_total,
+                        currency: item.currency,
+                    },
+                    { isRenewal, logFn: logEvent }
+                );
 
-                if (claim.state === 'already_completed' || claim.state === 'already_unfulfillable') {
-                    await logEvent('info', `Line item ${item.id} already settled (${claim.state})`);
+                if (outcome === 'already_settled') {
+                    await logEvent('info', `Line item ${item.id} already settled`);
                     continue;
                 }
 
-                if (claim.state === 'error') {
-                    // The record of what we are about to do could not be
-                    // written, so doing it would be untracked work. Fail the
-                    // delivery and let Stripe retry.
-                    throw new Error(`Could not claim line item ${item.id}: ${claim.message}`);
-                }
-
-                try {
-                    // 2. Record the purchase. Unique on the line item since
-                    // migration 14, so a replay cannot duplicate it; a conflict
-                    // therefore means "already recorded", which is success.
-                    const { error: purchaseError } = await supabase.from('purchases').insert({
-                        user_id: resolvedUserId,
-                        product_id: stripeProductId,
-                        stripe_line_item_id: item.id,
-                        amount_paid: item.amount_total ? item.amount_total / 100 : 0,
-                        currency: item.currency?.toUpperCase() || 'USD',
-                        status: 'completed',
-                        // What prices her next renewal is the most recent row
-                        // where this is false. Marking it here is what stops a
-                        // renewal being priced off another renewal.
-                        is_renewal: isRenewal
-                    });
-
-                    if (purchaseError && purchaseError.code !== '23505') {
-                        // This used to be logged and stepped over, so the money
-                        // was taken with no record of the sale.
-                        throw new Error(`Purchase insert failed: ${purchaseError.message}`);
-                    }
-
-                    // 3. Grant access. Throws on a write that had to happen and
-                    // did not; returns false when the product is simply not
-                    // content we grant.
-                    const granted = await grantAccessForProduct(
-                        supabase,
-                        resolvedUserId,
-                        stripeProductId,
-                        logEvent,
-                        isRenewal
-                    );
-
-                    if (granted) {
-                        // Only now, with the grant committed.
-                        await markCompleted(supabase, item.id);
-                    } else {
-                        // A real payment for something with nothing to unlock —
-                        // a service booking. Terminal on purpose: retrying it
-                        // forever would never succeed.
-                        await logEvent('warning', `No content match for Product ID: ${stripeProductId}`);
-                        await markUnfulfillable(supabase, item.id, `No content matches product ${stripeProductId}`);
-                    }
-                } catch (itemError) {
-                    const message = itemError instanceof Error ? itemError.message : String(itemError);
-                    await markFailed(supabase, item.id, message);
-                    await logEvent('error', `Fulfillment failed for line item ${item.id}: ${message}`);
-                    // Rethrow so the whole delivery fails and Stripe retries.
-                    // Items already marked completed will be skipped next time.
-                    throw itemError;
+                if (outcome === 'in_progress') {
+                    // Someone else — a concurrent delivery, or her own checkout
+                    // return — is granting this right now. Not ours to do; fail
+                    // the delivery so Stripe comes back and finds it settled.
+                    throw new Error(`Line item ${item.id} is being fulfilled elsewhere; retry later`);
                 }
 
                 // 3. Notify Admin via Notifications System

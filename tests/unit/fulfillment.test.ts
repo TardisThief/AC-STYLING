@@ -4,8 +4,11 @@
  * The state these protect, stated plainly:
  *   - a line item already completed is never redone, so a replayed delivery
  *     cannot duplicate a purchase or a grant;
- *   - a line item left `processing` by a crash IS redone, because the
- *     alternative turns a crash into a permanently stuck purchase;
+ *   - a line item left `processing` by a crash IS redone once it is stale,
+ *     because the alternative turns a crash into a permanently stuck
+ *     purchase — but NOT while it is fresh, because then it is someone
+ *     else's work in flight and redoing it grants the purchase twice;
+ *   - only a claim whose conditional write actually changed a row wins;
  *   - "no content matches this product" is terminal, not a failure, so a
  *     service booking is not retried forever;
  *   - completion is only ever recorded after the grant, which is the bug the
@@ -18,6 +21,7 @@ import {
     markCompleted,
     markFailed,
     markUnfulfillable,
+    STALE_CLAIM_MS,
 } from '@/app/lib/fulfillment'
 
 type Outcome = { data: unknown; error: unknown }
@@ -25,13 +29,14 @@ type Outcome = { data: unknown; error: unknown }
 function mockTable() {
     const calls: Record<string, unknown[]> = {}
     let readResult: Outcome = { data: null, error: null }
-    let writeResult: Outcome = { data: null, error: null }
+    // A conditional write that took effect returns the row it wrote.
+    let writeResult: Outcome = { data: [{ stripe_line_item_id: 'li_1' }], error: null }
 
     const chain = {
         select: (...a: unknown[]) => { calls.select = a; return chain },
         eq: (...a: unknown[]) => { calls.eq = a; return chain },
         maybeSingle: () => Promise.resolve(readResult),
-        upsert: (...a: unknown[]) => { calls.upsert = a; return Promise.resolve(writeResult) },
+        upsert: (...a: unknown[]) => { calls.upsert = a; return { select: () => Promise.resolve(writeResult) } },
         update: (...a: unknown[]) => { calls.update = a; return chain },
         then: <T>(resolve: (v: Outcome) => T) => Promise.resolve(writeResult).then(resolve),
     }
@@ -42,6 +47,8 @@ function mockTable() {
         setExisting(row: unknown) { readResult = { data: row, error: null } },
         setReadError(message: string) { readResult = { data: null, error: { message } } },
         setWriteError(message: string) { writeResult = { data: null, error: { message } } },
+        /** The conditional write matched nothing: another caller got there first. */
+        setWriteLost() { writeResult = { data: [], error: null } },
     }
 }
 
@@ -82,13 +89,27 @@ describe('claimLineItem', () => {
         await expect(claimLineItem(clientFor(t), ref)).resolves.toEqual({ state: 'already_unfulfillable' })
     })
 
-    it('re-claims a row left processing by a crashed run', async () => {
+    it('re-claims a row left processing by a crashed run, once it is stale', async () => {
         const t = mockTable()
-        t.setExisting({ status: 'processing', attempts: 1 })
+        const now = Date.now()
+        t.setExisting({ status: 'processing', attempts: 1, updated_at: new Date(now - STALE_CLAIM_MS - 1).toISOString() })
 
         // Treating a stale `processing` row as owned would turn a crash into a
         // permanently stuck purchase — the exact failure this replaces.
-        await expect(claimLineItem(clientFor(t), ref)).resolves.toEqual({ state: 'claimed' })
+        await expect(claimLineItem(clientFor(t), ref, now)).resolves.toEqual({ state: 'claimed' })
+    })
+
+    // Changed deliberately (2026-09-25): a fresh `processing` row used to be
+    // re-claimed too. It is someone else's work in flight — typically the
+    // webhook and the buyer's checkout return seconds apart — and since the
+    // one-year term a second grant is a second year.
+    it('leaves a fresh processing row to whoever is working on it', async () => {
+        const t = mockTable()
+        const now = Date.now()
+        t.setExisting({ status: 'processing', attempts: 1, updated_at: new Date(now - 1000).toISOString() })
+
+        await expect(claimLineItem(clientFor(t), ref, now)).resolves.toEqual({ state: 'in_progress' })
+        expect(t.calls.update).toBeUndefined()
     })
 
     it('re-claims a previously failed row and counts the attempt', async () => {
@@ -96,7 +117,18 @@ describe('claimLineItem', () => {
         t.setExisting({ status: 'failed', attempts: 2 })
 
         await expect(claimLineItem(clientFor(t), ref)).resolves.toEqual({ state: 'claimed' })
-        expect((t.calls.upsert?.[0] as { attempts: number }).attempts).toBe(3)
+        expect((t.calls.update?.[0] as { attempts: number }).attempts).toBe(3)
+    })
+
+    it('does not claim when the conditional write changed nothing', async () => {
+        const fresh = mockTable()
+        fresh.setWriteLost()
+        await expect(claimLineItem(clientFor(fresh), ref)).resolves.toEqual({ state: 'in_progress' })
+
+        const failed = mockTable()
+        failed.setExisting({ status: 'failed', attempts: 2 })
+        failed.setWriteLost()
+        await expect(claimLineItem(clientFor(failed), ref)).resolves.toEqual({ state: 'in_progress' })
     })
 
     it('keys the upsert on the line item id, which is the idempotency boundary', async () => {

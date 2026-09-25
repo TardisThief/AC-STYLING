@@ -30,9 +30,34 @@ vi.mock('@/utils/stripe', () => ({
     },
 }))
 
+// The per-line-item claim (app/lib/fulfillment.ts) needs real answers — an
+// insert-if-absent that reports whether it won — which a blanket chainable
+// mock cannot give. So `fulfillments` gets a small fake of its own: a line
+// item this test has not settled is new and the claim wins; one it has is
+// completed. Races, replays and crashes are exercised against real Postgres
+// in tests/integration/fulfillment.test.ts.
+const settledLineItems = new Set<string>()
+function fulfillmentsFake() {
+    let lineItemId = ''
+    const read = {
+        eq: (_col: string, value: string) => { lineItemId = value; return read },
+        maybeSingle: async () => ({
+            data: settledLineItems.has(lineItemId) ? { status: 'completed', attempts: 1, updated_at: null } : null,
+            error: null,
+        }),
+    }
+    return {
+        select: () => read,
+        upsert: (row: { stripe_line_item_id: string }) => ({
+            select: async () => ({ data: [{ stripe_line_item_id: row.stripe_line_item_id }], error: null }),
+        }),
+        update: () => createChainableMock({ data: null, error: null }),
+    }
+}
+
 vi.mock('@/utils/supabase/admin', () => ({
     createAdminClient: vi.fn(() => ({
-        from: mockFrom,
+        from: (table: string) => (table === 'fulfillments' ? fulfillmentsFake() : mockFrom(table)),
     })),
 }))
 
@@ -88,6 +113,7 @@ describe('Stripe Webhook Handler', () => {
         // implementation set with mockResolvedValue, so a `true` set by one
         // test would otherwise leak into the next.
         mockIsClaimOpen.mockResolvedValue(false)
+        settledLineItems.clear()
     })
 
     describe('Signature Verification', () => {
@@ -398,15 +424,24 @@ describe('Stripe Webhook Handler', () => {
             expect(response.status).toBe(200)
         })
 
-        it('skips a duplicate event (already-processed event.id) without reprocessing', async () => {
+        // Changed deliberately (2026-09-25). A repeat event id used to be
+        // answered "Already processed" without looking at its line items. The
+        // event-id row is written before the work, so a run that died mid-way
+        // left it behind and Stripe's retry of that delivery was turned away
+        // unfulfilled. Now a repeat is re-checked per line item, and what is
+        // settled is not granted again.
+        it('re-checks a repeat delivery per line item and grants nothing already settled', async () => {
             mockConstructEvent.mockReturnValue({
                 id: 'evt_dup_123',
                 type: 'checkout.session.completed',
                 data: { object: mockSession },
             })
+            mockListLineItems.mockResolvedValue({
+                data: [{ id: 'li_settled', price: { product: 'prod_masterclass_123' }, amount_total: 4999, currency: 'usd' }],
+            })
+            settledLineItems.add('li_settled')
 
-            // Idempotency gate upsert returns an empty array => the event_id row
-            // already existed (duplicate delivery / retry).
+            // The event-id upsert returns an empty array: seen before.
             mockFrom.mockReturnValue(createChainableMock({ data: [], error: null }))
 
             const { POST } = await import('@/app/api/webhooks/stripe/route')
@@ -419,8 +454,7 @@ describe('Stripe Webhook Handler', () => {
             const response = await POST(request)
 
             expect(response.status).toBe(200)
-            expect(await response.text()).toBe('Already processed')
-            expect(mockListLineItems).not.toHaveBeenCalled()
+            expect(mockListLineItems).toHaveBeenCalled()
             expect(grantAccessForProduct).not.toHaveBeenCalled()
         })
 

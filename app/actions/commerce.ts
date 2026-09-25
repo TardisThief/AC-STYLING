@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { stripe } from '@/utils/stripe';
 import { getErrorMessage } from '@/app/lib/errors';
-import { grantAccessForProduct } from '@/app/lib/access-logic';
+import { fulfillLineItem } from '@/app/lib/fulfillment';
 
 /**
  * Checks if a user has purchased a specific product.
@@ -86,9 +86,27 @@ export async function syncStripePurchases() {
                     if (stripeProductId) {
                         // Stripe identity/payment are verified above. Browser
                         // clients cannot write entitlement fields after migration 12.
+                        //
+                        // Through the webhook's own per-line-item path, never
+                        // straight to the grant: this runs on every checkout
+                        // return, usually seconds after the webhook, and a
+                        // grant is a year of access. A line item the webhook
+                        // has settled (or is settling) is skipped.
                         const { createAdminClient } = await import('@/utils/supabase/admin');
-                        const granted = await grantAccessForProduct(createAdminClient(), user.id, stripeProductId);
-                        if (granted) restoredCount++;
+                        const outcome = await fulfillLineItem(
+                            createAdminClient(),
+                            {
+                                lineItemId: item.id,
+                                sessionId: session.id,
+                                eventId: `restore:${session.id}`,
+                                userId: user.id,
+                                productId: stripeProductId,
+                                amountTotal: item.amount_total,
+                                currency: item.currency,
+                            },
+                            { isRenewal: session.metadata?.kind === 'renewal' }
+                        );
+                        if (outcome === 'granted') restoredCount++;
                     }
                 }
             }
