@@ -6,8 +6,12 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import UserNotifications from "./UserNotifications";
 
 export default function ConciergeNavbar({ isGuest, isAdmin }: { isGuest?: boolean; isAdmin?: boolean }) {
+    // z-nav (30), per the scale in globals.css: dropdown 10, sticky 20, nav 30,
+    // modal 40, toast 50. At z-50 this bar painted over every dialog beneath it
+    // -- on a short screen it cropped the heading and hid the close button,
+    // leaving no way to dismiss the thing.
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md py-4 shadow-sm text-ac-taupe">
+        <nav className="fixed top-0 left-0 right-0 z-nav bg-white/95 backdrop-blur-md py-4 shadow-sm text-ac-taupe">
             <div className="container mx-auto px-6 md:px-12 flex justify-between items-center relative">
                 {/* Logo */}
                 <Link href="/vault" className="flex items-center gap-4 group">

@@ -7,8 +7,6 @@ import Navbar from "@/components/Navbar";
 import Spine from "@/components/vault-sales/Spine";
 import CatalogCard from "@/components/vault-sales/CatalogCard";
 import CatalogRail from "@/components/vault-sales/CatalogRail";
-import Curriculum from "@/components/vault-sales/Curriculum";
-import CurriculumDialog from "@/components/vault-sales/CurriculumDialog";
 import TrackedCta from "@/components/vault-sales/TrackedCta";
 import VaultCheckoutButton from "@/components/vault-sales/VaultCheckoutButton";
 import GuestAccessLink from "@/components/vault-sales/GuestAccessLink";
@@ -344,37 +342,11 @@ export default async function VaultLandingPage({
                                     play: t("catalog.play"),
                                 }}
                             >
-                                {entries.map((entry) => {
-                                    const entryTitle =
-                                        pickLocale(locale, entry.title, entry.title_es) ?? entry.title;
-
-                                    return (
+                                {entries.map((entry) => (
                                     <CatalogCard
                                         key={entry.id}
                                         entry={entry}
                                         locale={locale}
-                                        // In production as well as published: Body Shape's six
-                                        // modules are written and real, and what is coming is
-                                        // half of what the pass is for. The card already says
-                                        // "In production", so nothing is misrepresented.
-                                        curriculum={
-                                            entry.modules.length > 0 ? (
-                                                <CurriculumDialog
-                                                    label={`${entry.modules.length} ${t("catalog.modulesLabel")}`}
-                                                    openLabel={t("curriculum.open", { course: entryTitle })}
-                                                    title={t("curriculum.title", { course: entryTitle })}
-                                                >
-                                                    <p className="leading-relaxed text-ac-taupe sm:text-lg">
-                                                        {t("curriculum.lede", { count: entry.modules.length })}
-                                                    </p>
-                                                    <Curriculum
-                                                        entry={entry}
-                                                        locale={locale}
-                                                        takeawaysLabel={t("curriculum.takeawaysLabel")}
-                                                    />
-                                                </CurriculumDialog>
-                                            ) : null
-                                        }
                                         // Checkout is passed in rather than built by the card:
                                         // the card stays a server component that knows only
                                         // what the database told it.
@@ -407,8 +379,7 @@ export default async function VaultLandingPage({
                                             availableOn: t.raw("catalog.availableOn"),
                                         }}
                                     />
-                                    );
-                                })}
+                                ))}
                             </CatalogRail>
                         )}
                     </div>

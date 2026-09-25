@@ -108,14 +108,6 @@ export default function CatalogRail({ children, label, t }: Props) {
         const timer = setInterval(() => {
             if (hovering.current || focusedWithin.current || !inView.current) return;
             if (document.hidden) return;
-            // A card can open its module list in a dialog. That dialog is
-            // portalled to <body>, so focus leaving for it does not register as
-            // focus within this rail -- and scrolling the row out from under a
-            // reader means the card she opened has moved by the time she closes
-            // it. Asked of the document rather than wired between the two
-            // components, because any dialog over the page is a reason to hold
-            // still, not just this one.
-            if (document.querySelector('[role="dialog"]')) return;
             if (Date.now() - lastInteraction.current < IDLE_AFTER_INTERACTION_MS) return;
             scrollByCards(1, true);
         }, ADVANCE_MS);
