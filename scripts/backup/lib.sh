@@ -64,6 +64,16 @@ sha256_of() {
 
 # -s, not just -h: on a directory `du -h` prints one line per subdirectory,
 # so the storage summary was logging ~40 sizes instead of one total.
+# Supabase stores an object's MD5 as its eTag, so this doubles as a content
+# check for the storage mirror. Multipart uploads get a "<md5>-<parts>" eTag
+# that is not the file's MD5; callers must skip those (see dump_storage.sh).
+md5_of() {
+    if command -v md5sum >/dev/null 2>&1; then md5sum "$1" | cut -d' ' -f1
+    else md5 -q "$1"; fi
+}
+
+file_size() { wc -c < "$1" | tr -d ' '; }
+
 human_size() { du -sh "$1" 2>/dev/null | cut -f1; }
 
 # `pg_dump` refuses to dump a server newer than itself, but an OLDER client

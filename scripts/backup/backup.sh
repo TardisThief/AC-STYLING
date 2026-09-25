@@ -72,12 +72,21 @@ esac
 if bash "$REPO_ROOT/scripts/backup/dump_storage.sh" "$MIRROR"; then st_rc=0; else st_rc=$?; fi
 case "$st_rc" in
     0) ;;
-    4) note "some storage objects failed to download -- see the log; they retry next run" ;;
+    4) note "some storage objects failed to download or failed verification -- see the log; they retry next run" ;;
     *) fail_and_exit "dump_storage.sh exited $st_rc" ;;
 esac
 
 # --- manifest -------------------------------------------------------------
 kv() { grep -E "^$2=" "$1" 2>/dev/null | cut -d= -f2- | head -1; }
+
+# A repaired file means the copy on this disk had rotted and was re-fetched.
+# The backup is sound, so this is not a degraded run -- but it is the only
+# warning you will get that the hardware is failing.
+REPAIRED="$(kv "$MIRROR/storage.meta" repaired)"
+case "${REPAIRED:-0}" in
+    ''|0) ;;
+    *) warn "$REPAIRED locally damaged file(s) were re-fetched this run -- check this machine's disk" ;;
+esac
 # Built with printf rather than jq: the backup host should need nothing
 # beyond psql, curl and coreutils. Every value here is a number or a
 # machine-generated identifier, so no escaping is required.
@@ -99,6 +108,8 @@ cat > "$SNAP/manifest.json" <<JSON
   },
   "storage": {
     "objects": $(num "$MIRROR/storage.meta" upstream_objects),
+    "verified": $(num "$MIRROR/storage.meta" verified),
+    "repaired": $(num "$MIRROR/storage.meta" repaired),
     "bytes": $(num "$MIRROR/storage.meta" mirror_bytes),
     "quarantined": $(num "$MIRROR/storage.meta" quarantined)
   }
