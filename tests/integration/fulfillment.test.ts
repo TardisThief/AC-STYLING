@@ -65,6 +65,7 @@ vi.mock('@/lib/resend', () => ({ sendEmail: vi.fn(async () => ({ success: true }
 import { POST } from '@/app/api/webhooks/stripe/route';
 import { syncStripePurchases } from '@/app/actions/commerce';
 import { claimLineItem } from '@/app/lib/fulfillment';
+import { grantAccessForProduct } from '@/app/lib/access-logic';
 
 const DAY = 24 * 60 * 60 * 1000;
 let db: PGlite;
@@ -280,6 +281,33 @@ describe('Renewals and existing access', () => {
         await db.query(`INSERT INTO user_access_grants (user_id, masterclass_id, grant_type) VALUES ($1, $2, 'admin_override')`, [buyer, MASTERCLASS_ID]);
         await deliver(session(buyer, [item(PRODUCT.masterclass)]));
         expect((await masterclassGrant(buyer)).expires_at).toBeNull();
+    });
+
+    // Two paid renewals landing together — two line items, or the webhook and
+    // a restore of a different session. Each read-then-write sees the same
+    // held term, so one of the two paid years vanished.
+    it.fails('keeps both years when two renewals of one masterclass land at once', async () => {
+        const buyer = await newBuyer();
+        await deliver(session(buyer, [item(PRODUCT.masterclass)]));
+        await Promise.all([
+            grantAccessForProduct(h.admin as never, buyer, PRODUCT.masterclass, undefined, true),
+            grantAccessForProduct(h.admin as never, buyer, PRODUCT.masterclass, undefined, true),
+        ]);
+        const grant = await masterclassGrant(buyer);
+        expect(yearsLeft(grant.expires_at)).toBe(3);
+        expect(grant.renewal_count).toBe(2);
+    });
+
+    it.fails('keeps both years when two renewals of a pass land at once', async () => {
+        const buyer = await newBuyer();
+        await deliver(session(buyer, [item(PRODUCT.masterclassPass)]));
+        await Promise.all([
+            grantAccessForProduct(h.admin as never, buyer, PRODUCT.masterclassPass, undefined, true),
+            grantAccessForProduct(h.admin as never, buyer, PRODUCT.masterclassPass, undefined, true),
+        ]);
+        const p = await profile(buyer);
+        expect(yearsLeft(p.access_expires_at)).toBe(3);
+        expect(p.access_renewal_count).toBe(2);
     });
 
     // Migration 21: a NULL expiry is perpetual access, sold before the term
