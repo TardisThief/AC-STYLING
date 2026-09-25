@@ -68,6 +68,23 @@ import { claimLineItem } from '@/app/lib/fulfillment';
 import { grantAccessForProduct } from '@/app/lib/access-logic';
 
 const DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Tables whose next lookup fails as a statement timeout would. Wraps the real
+ * client, so every other query still goes to Postgres.
+ */
+const failingLookups = new Set<string>();
+function withLookupFaults(client: ReturnType<typeof pgliteSupabase>) {
+    return {
+        from(table: string) {
+            if (!failingLookups.has(table)) return client.from(table);
+            failingLookups.delete(table);
+            const failed = { data: null, error: { code: '57014', message: 'canceling statement due to statement timeout' } };
+            const q = { select: () => q, eq: () => q, maybeSingle: async () => failed, single: async () => failed };
+            return q;
+        },
+    };
+}
 let db: PGlite;
 let seq = 0;
 
@@ -145,7 +162,7 @@ function yearsLeft(date: Date | null | undefined): number {
 
 beforeAll(async () => {
     db = await createLiveSchemaDb();
-    h.admin = pgliteSupabase(db, 'service_role');
+    h.admin = withLookupFaults(pgliteSupabase(db, 'service_role'));
     process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_only';
     delete process.env.STRIPE_FULL_ACCESS_PRODUCT_ID;
 
@@ -355,6 +372,28 @@ describe('Paid means granted', () => {
 
         await Promise.all([deliver(s, eventId), checkoutReturn(buyer, [s])]);
         expect(yearsLeft((await masterclassGrant(buyer)).expires_at)).toBe(1);
+    });
+
+    // A lookup that FAILED is not a lookup that found nothing. Treated as
+    // "no such product", the paid line item was settled as unfulfillable —
+    // terminal, never retried.
+    it.fails.each([
+        ['masterclasses', PRODUCT.masterclass],
+        ['chapters', PRODUCT.chapter],
+        ['offers', PRODUCT.masterclassPass],
+    ])('retries, rather than writes off, a purchase whose %s lookup failed', async (table, product) => {
+        const buyer = await newBuyer();
+        const li = item(product);
+        const s = session(buyer, [li]);
+
+        failingLookups.add(table);
+        expect(await deliver(s)).toBe(500);
+        const { rows: [f] } = await db.query<{ status: string }>('SELECT status FROM fulfillments WHERE stripe_line_item_id = $1', [li.id]);
+        expect(f.status).toBe('failed');
+
+        expect(await deliver(s)).toBe(200);
+        const { rows: [done] } = await db.query<{ status: string }>('SELECT status FROM fulfillments WHERE stripe_line_item_id = $1', [li.id]);
+        expect(done.status).toBe('completed');
     });
 
     // Offers are switched on and off in admin (migration 19: only one is

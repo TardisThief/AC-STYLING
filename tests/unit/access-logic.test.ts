@@ -23,9 +23,7 @@ import { grantAccessForProduct } from '@/app/lib/access-logic'
  * select), so it resolves on select() with the rows it changed; an empty
  * result means another write got there first.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const casWrite = (result: { data: unknown; error: unknown } = { data: [{ id: 'row' }], error: null }): any => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const chain: any = { eq: vi.fn(() => chain), is: vi.fn(() => chain), select: vi.fn(async () => result) }
     return chain
 }
