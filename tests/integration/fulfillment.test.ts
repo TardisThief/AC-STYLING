@@ -74,9 +74,23 @@ const DAY = 24 * 60 * 60 * 1000;
  * client, so every other query still goes to Postgres.
  */
 const failingLookups = new Set<string>();
+/** Tables whose next update fails once, as a dropped connection would. */
+const failingUpdates = new Set<string>();
 function withLookupFaults(client: ReturnType<typeof pgliteSupabase>) {
     return {
         from(table: string) {
+            if (failingUpdates.has(table)) {
+                const real = client.from(table);
+                return new Proxy(real, {
+                    get(target, prop, receiver) {
+                        if (prop !== 'update') return Reflect.get(target, prop, receiver);
+                        failingUpdates.delete(table);
+                        const failed = { data: null, error: { code: '08006', message: 'connection reset' } };
+                        const q = { eq: () => q, then: (resolve: (v: unknown) => unknown) => resolve(failed) };
+                        return () => q;
+                    },
+                });
+            }
             if (!failingLookups.has(table)) return client.from(table);
             failingLookups.delete(table);
             const failed = { data: null, error: { code: '57014', message: 'canceling statement due to statement timeout' } };
@@ -394,6 +408,17 @@ describe('Paid means granted', () => {
         expect(await deliver(s)).toBe(200);
         const { rows: [done] } = await db.query<{ status: string }>('SELECT status FROM fulfillments WHERE stripe_line_item_id = $1', [li.id]);
         expect(done.status).toBe('completed');
+    });
+
+    // The grant landed but recording it did not. Left 'processing', the row is
+    // re-claimed once stale and the purchase is granted a second time.
+    it.fails('records completion even if the first attempt to record it fails', async () => {
+        const buyer = await newBuyer();
+        const li = item(PRODUCT.masterclass);
+        failingUpdates.add('fulfillments');
+        expect(await deliver(session(buyer, [li]))).toBe(200);
+        const { rows: [f] } = await db.query<{ status: string }>('SELECT status FROM fulfillments WHERE stripe_line_item_id = $1', [li.id]);
+        expect(f.status).toBe('completed');
     });
 
     // Offers are switched on and off in admin (migration 19: only one is
