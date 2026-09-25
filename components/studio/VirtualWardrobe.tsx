@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { uploadRemoteImage } from "@/app/actions/studio";
 import { getWardrobes, cloneWardrobeItem, getAdminWardrobeItems, updateAdminWardrobeItem, bulkSetItemStatus } from "@/app/actions/wardrobes";
+import { updateMyWardrobeItem } from "@/app/actions/client-studio";
 import { CLIENT_ITEM_COLUMNS } from "@/app/lib/wardrobe-columns";
 import { extractUrlMetadata } from "@/app/actions/scraper";
 import { signWardrobeItems } from "@/lib/wardrobe-images";
@@ -131,12 +132,13 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
     }, [wardrobeId, ownerId, supabase, isClientView]);
 
     const handleUpdateItem = async (itemId: string, updates: Partial<WardrobeItem>) => {
-        // Admin edits route through a guarded action: `internal_note` is not
-        // writable from a browser client (migration 08), and this keeps every
-        // admin write validated at the boundary. The client keeps its direct
-        // update — RLS already scopes it to rows it owns.
+        // Both sides go through a guarded action. The client's used to be a
+        // direct browser update, commented "RLS already scopes it to rows it
+        // owns" — but members have no UPDATE policy on wardrobe_items, so it
+        // updated nothing and reported success. Admin edits: `internal_note`
+        // is not writable from a browser client (migration 08).
         const failed = isClientView
-            ? (await supabase.from('wardrobe_items').update(updates).eq('id', itemId)).error != null
+            ? !(await updateMyWardrobeItem(itemId, updates)).success
             : !(await updateAdminWardrobeItem(itemId, updates)).success;
 
         if (failed) {

@@ -114,7 +114,6 @@ export default function ClientStudioDashboard({ wardrobeId, ownerId, initialMeas
 
                                 <div className="h-fit">
                                     <TailorCardUser
-                                        userId={ownerId}
                                         initialMeasurements={initialMeasurements}
                                         isActiveClient={true} // Always true here since route is protected
                                     />

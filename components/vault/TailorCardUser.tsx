@@ -2,13 +2,12 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { Ruler, Loader2, Lock, Check } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
+import { saveMyMeasurements } from '@/app/actions/client-studio';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
 interface TailorCardUserProps {
     initialMeasurements: Record<string, string>;
-    userId: string;
     isActiveClient: boolean;
 }
 
@@ -22,30 +21,25 @@ const MEASUREMENT_FIELDS = [
     { key: 'shoe_size', label: 'Shoe Size', unit: 'US/EU' },
 ];
 
-export default function TailorCardUser({ initialMeasurements, userId, isActiveClient }: TailorCardUserProps) {
+export default function TailorCardUser({ initialMeasurements, isActiveClient }: TailorCardUserProps) {
     const [measurements, setMeasurements] = useState<Record<string, string>>(initialMeasurements || {});
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-    const supabase = createClient();
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const persistMeasurements = useCallback(async (newMeasurements: Record<string, string>) => {
         setSaveStatus('saving');
-        const { error } = await supabase
-            .from('tailor_cards')
-            .upsert({
-                user_id: userId,
-                measurements: newMeasurements,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' });
+        // Through a guarded action: her browser has no write access to
+        // tailor_cards, so the direct upsert this replaces always failed.
+        const { success, error } = await saveMyMeasurements(newMeasurements);
 
-        if (error) {
-            toast.error("Failed to save measurements");
+        if (!success) {
+            toast.error(error || "Failed to save measurements");
             setSaveStatus('idle');
         } else {
             setSaveStatus('saved');
             setTimeout(() => setSaveStatus('idle'), 2000);
         }
-    }, [userId, supabase]);
+    }, []);
 
     const handleUpdate = (key: string, value: string) => {
         const newMeasurements = { ...measurements, [key]: value };
