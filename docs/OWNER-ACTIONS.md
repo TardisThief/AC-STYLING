@@ -356,7 +356,8 @@ one place.
 - **F12–F16** remain open: the 2,000-account lookup ceiling in guest
   resolution, test coverage of the highest-consequence boundaries, deployed-vs-
   source drift, bilingual/performance polish, and observability. **F16's backup
-  half now has tooling** and needs owner setup — see item 13 below.
+  half is done and proven** (item 13); what it left behind is a credential
+  rotation, item 13b.
 
 **With that, every *launch-blocking* code finding in the assessment is closed.** What remains
 between here and launch is on this page, plus **F09**: the five published Vault
@@ -377,9 +378,10 @@ modules still have no usable video, which no amount of code can fix.
 
 ---
 
-## 13. Set up the nightly backup — the database has none today
+## 13. Nightly backup — DONE 2026-09-25, but rotate the secrets
 
-**Added 2026-09-23. This is the highest-consequence open item on this page.**
+**Added 2026-09-23. Set up and proven 2026-09-25.** The remaining action is
+credential rotation, in section 13b below — do that one this week.
 
 The Supabase project is on the **free tier**, which includes no backups of any
 kind: no daily snapshot, no dashboard restore, no point-in-time recovery. This
@@ -389,25 +391,61 @@ artifacts would be a schema file from July and a JSON export of two tables.
 Every account, purchase, client wardrobe and uploaded photograph would be gone,
 and the private `studio-wardrobe` images are not re-fetchable from anywhere.
 
-The tooling is written and in the repository (`scripts/backup/`). What remains
-is owner-only because it is account signup and key custody:
+**That is now fixed.** The `hermes` host runs `scripts/backup/backup.sh` nightly
+at 03:17, dumping the database (`public` + `auth` + `storage`) and mirroring all
+four storage buckets to its SSD, then pushing an encrypted copy to Cloudflare R2.
+The first restore drill passed 10/10 on snapshot `2026-09-25T001744Z`: restored
+whole, restored a single table on its own, `auth.users` included. The record is
+in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md).
 
-1. Create a Cloudflare R2 bucket and a scoped API token.
-2. Generate and safely store the backup encryption password and salt. **Losing
-   these makes every off-site backup permanently unreadable.**
-3. Add a read-only GitHub deploy key for the `hermes` host.
-4. Create a healthchecks.io check so a silently-stopped backup raises an alarm.
-5. Hand the kickstart prompt and credentials to the agent on `hermes`.
+Two small things still to confirm, neither urgent:
+
+1. **Check tonight's healthcheck ping arrives**, then set the check to daily with
+   a few hours of grace so a missed night actually alerts you.
+2. **Put a quarterly reminder in your calendar** to run the restore drill — the
+   scripts do not schedule it:
+   `bash scripts/backup/restore_drill.sh $(ls -d /mnt/backup/ac-styling/db/*/ | tail -1)`
 
 Step-by-step instructions: [`BACKUP-OWNER-SETUP.md`](BACKUP-OWNER-SETUP.md)
 (about 30 minutes). The agent-facing half is
 [`HERMES-BACKUP-SETUP.md`](HERMES-BACKUP-SETUP.md), and recovery procedures are
 in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md).
 
-**Consequence to accept knowingly:** `hermes` will hold the Supabase
-service-role key, so it can read the entire database and every client
-photograph. If that machine is ever sold, repurposed or has its drive replaced,
-rotate the service-role key and update Vercel, `.env.local` and `hermes`.
+---
+
+## 13b. Rotate the backup credentials — do this one this week
+
+During the `hermes` setup the **database password, the Supabase service-role key
+and the R2 API keys all passed through an agent session log**. Session logs are
+not a secure store: they sit on disk, they can be copied, and they outlive the
+work. Treat those three secrets as exposed and rotate them.
+
+The service-role key is the one that matters most — it bypasses every RLS policy
+in the database, so it can read and write every account, purchase and client
+photograph regardless of who is asking.
+
+In order:
+
+1. **Supabase → Project Settings → Database → Reset database password.**
+2. **Supabase → Project Settings → API → `service_role` → Reset.**
+3. **Cloudflare → R2 → Manage R2 API Tokens →** roll the token for
+   `ac-syling-backups`.
+4. Update each place the old values live: **Vercel** environment variables, your
+   local **`.env.local`**, and **`~/.ac-styling/.env.backup`** plus the `r2raw`
+   rclone remote on `hermes`. The agent on that machine can do its own file if
+   you send it the new values — over something private, not a chat log you would
+   not want retained.
+5. Run one backup by hand afterwards to confirm nothing broke:
+   `bash scripts/backup/backup.sh --no-pull`
+
+**Do not rotate the rclone crypt password or salt.** Those are not exposed the
+same way, and changing them makes every archive already in R2 unreadable. They
+belong in your password manager and nowhere else — in particular, not only on
+`hermes`, because the entire point is to be able to restore when `hermes` is gone.
+
+**Standing consequence:** `hermes` holds the service-role key, so it can read the
+entire database and every client photograph. If that machine is ever sold,
+repurposed or has its drive replaced, rotate again and update all three places.
 
 **Worth considering separately:** Supabase Pro ($25/month) adds daily
 platform-level backups with 7-day retention, restorable from the dashboard.

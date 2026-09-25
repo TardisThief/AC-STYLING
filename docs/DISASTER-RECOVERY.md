@@ -216,4 +216,15 @@ add a row.
 
 | Date | Snapshot | Result | Run by | Notes |
 |---|---|---|---|---|
-| _pending_ | — | — | — | First drill runs during hermes setup. |
+| 2026-09-25 | `2026-09-25T001744Z` | **PASSED** (10/10) | hermes | First real drill. Restored into a disposable postgres:17 container; container removed afterwards. Exact-count comparison, 0 tables outside tolerance. `profiles → auth.users` FK intact, `check_access()` present, RLS on all 28 tables, `auth.users` restored with 58 rows, single-table `pg_restore -t purchases` worked. Snapshot: `auth_mode=full`, 28 public tables, 435,911 bytes, sha256 `049d722a…33678`; storage mirror 74 objects / 58.4 MB, 0 quarantined. Script revision `7225858`. |
+
+**What this drill establishes:** the nightly backup is restorable end to end,
+including the login tables, and a single damaged table can be recovered on its
+own without rolling anything else back. `docs/ASSESSMENT-2026-09-19.md:24` said
+backup restoration had never been verified. As of this row, it has.
+
+**What it does not establish:** the drill restores into an empty container, not
+over a live Supabase project. Scenario 2 and Scenario 3 above still involve
+steps no drill exercises — role ownership on the `auth` and `storage` schemas,
+recreating buckets and auth providers, and re-pointing every environment. Read
+them before you need them, not during.
