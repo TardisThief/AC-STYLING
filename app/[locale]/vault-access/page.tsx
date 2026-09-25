@@ -420,7 +420,7 @@ export default async function VaultLandingPage({
                             {t("included.title")}
                         </h2>
                         <dl className="mt-8 border-t border-ac-taupe/15">
-                            {(["lifetime", "order", "devices", "languages", "support"] as const).map(
+                            {(["term", "renewal", "order", "devices", "languages", "support"] as const).map(
                                 (k) => (
                                     <div key={k} className="border-b border-ac-taupe/15 py-4">
                                         <dd className="text-lg leading-relaxed text-ac-taupe">
