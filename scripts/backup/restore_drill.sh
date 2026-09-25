@@ -76,10 +76,19 @@ if pg_restore -d "$URL" --no-owner --no-privileges --exit-on-error \
 check "$rc" "whole-database restore completed without errors"
 
 # --- row counts against what was dumped -----------------------------------
-# rowcounts.tsv comes from pg_stat_user_tables, which is an estimate, so exact
-# equality is not expected. A table that HAD rows and came back empty is not
-# estimation error, though -- that is data that did not survive the round trip.
-missing=0; emptied=0
+# Snapshots from before rowcounts became exact carry pg_stat_user_tables
+# estimates, which drift after deletes -- a stale "1" against a correctly
+# empty table is what made this check fail on a good backup. Those snapshots
+# still deserve a drill, so fall back to checking the tables exist rather than
+# failing on numbers that were never trustworthy.
+# `|| true` is load-bearing: under `set -e` with `pipefail`, an assignment
+# whose command substitution fails aborts the script, so a snapshot that
+# simply lacks this key would kill the drill rather than fall back.
+ROWCOUNTS_MODE="$(grep -E '^rowcounts=' "$SNAP/database.meta" 2>/dev/null | cut -d= -f2 || true)"
+[ "$ROWCOUNTS_MODE" = "exact" ] \
+    || log "  WARN  rowcounts.tsv predates exact counting -- checking table existence only"
+
+missing=0; emptied=0; drifted=0
 while IFS=$'\t' read -r t expected; do
     [ -n "$t" ] || continue
     if actual="$(psql "$URL" -X -q -t -A -c "SELECT count(*) FROM public.\"$t\"" 2>/dev/null)"; then :; else actual=""; fi
@@ -88,16 +97,40 @@ while IFS=$'\t' read -r t expected; do
         log "        table $t is missing after restore"
         missing=$((missing+1)); continue
     fi
-    case "${expected:-0}" in ''|*[!0-9]*) continue ;; esac
+    case "${expected:-}" in ''|*[!0-9]*) continue ;; esac
+
+    # Everything below compares numbers, which is only meaningful when the
+    # numbers are exact. A legacy snapshot gets existence-checked and nothing
+    # more -- a stale n_live_tup of 1 against a correctly empty table is the
+    # false failure this whole change exists to remove.
+    [ "$ROWCOUNTS_MODE" = "exact" ] || continue
+
+    # A table recorded with rows that restores empty is data loss, not drift,
+    # so this one never gets a tolerance.
     if [ "$expected" -gt 0 ] && [ "$actual" -eq 0 ]; then
-        log "        table $t: dumped with ~$expected row(s), restored with 0"
-        emptied=$((emptied+1))
+        log "        table $t: recorded $expected row(s), restored 0"
+        emptied=$((emptied+1)); continue
+    fi
+
+    # Exact does not mean simultaneous: pg_dump takes its snapshot before the
+    # counting queries run, so a live write in between is legitimate drift,
+    # not a broken restore. Allow the larger of 5 rows or 1%.
+    tol=$(( expected / 100 )); [ "$tol" -ge 5 ] || tol=5
+    delta=$(( actual - expected )); [ "$delta" -ge 0 ] || delta=$(( -delta ))
+    if [ "$delta" -gt "$tol" ]; then
+        log "        table $t: recorded $expected row(s), restored $actual (tolerance $tol)"
+        drifted=$((drifted+1))
     fi
 done < "$SNAP/rowcounts.tsv"
+
 if [ "$missing" -eq 0 ]; then rc=0; else rc=1; fi
 check "$rc" "every dumped public table exists after restore"
-if [ "$emptied" -eq 0 ]; then rc=0; else rc=1; fi
-check "$rc" "no table that had rows restored empty ($emptied affected)"
+if [ "$ROWCOUNTS_MODE" = "exact" ]; then
+    if [ "$emptied" -eq 0 ]; then rc=0; else rc=1; fi
+    check "$rc" "no table that had rows restored empty ($emptied affected)"
+    if [ "$drifted" -eq 0 ]; then rc=0; else rc=1; fi
+    check "$rc" "restored row counts match the snapshot ($drifted outside tolerance)"
+fi
 
 # --- the things that make this database work ------------------------------
 has_row() { psql "$URL" -X -q -t -A -c "$1" 2>/dev/null | grep -q 1; }
@@ -118,7 +151,7 @@ check "$rc" "RLS still enabled on the public tables (${rls:-0})"
 # A dump whose auth schema came back empty restores the data but not anyone's
 # ability to sign in, which is the failure most likely to go unnoticed until
 # it matters.
-AUTH_MODE="$(grep -E '^auth_mode=' "$SNAP/database.meta" 2>/dev/null | cut -d= -f2)"
+AUTH_MODE="$(grep -E '^auth_mode=' "$SNAP/database.meta" 2>/dev/null | cut -d= -f2 || true)"
 if [ "$AUTH_MODE" = "full" ]; then
     users="$(psql "$URL" -X -q -t -A -c 'SELECT count(*) FROM auth.users;' 2>/dev/null | tr -dc '0-9')"
     if [ -n "$users" ] && [ "$users" -gt 0 ]; then rc=0; else rc=1; fi

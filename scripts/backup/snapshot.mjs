@@ -121,15 +121,23 @@ if (!res.ok) {
 run([...common, '--schema-only', '--schema=public', '-f', path.join(dir, 'schema.sql')],
     'writing plain-text schema');
 
+// count(*) per table rather than pg_stat_user_tables.n_live_tup, which is a
+// statistics estimate that stays stale after deletes until autovacuum runs --
+// it made the restore drill fail on a table the dump had correctly emptied.
+// Same query as dump_database.sh, so both produce the same file format.
 const { rows: counts } = await client.query(`
-    SELECT relname, n_live_tup
-    FROM pg_stat_user_tables
-    WHERE schemaname = 'public'
-    ORDER BY relname
+    SELECT c.relname AS relname,
+           (xpath('/row/c/text()',
+                  query_to_xml(format('SELECT count(*) AS c FROM public.%I', c.relname),
+                               false, true, '')))[1]::text::bigint AS row_count
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relkind = 'r'
+    ORDER BY c.relname
 `);
 fs.writeFileSync(
     path.join(dir, 'rowcounts.tsv'),
-    counts.map(r => `${r.relname}\t${r.n_live_tup}`).join('\n') + '\n',
+    counts.map(r => `${r.relname}\t${r.row_count}`).join('\n') + '\n',
     'utf8',
 );
 await client.end();
@@ -143,6 +151,21 @@ fs.writeFileSync(path.join(dir, 'manifest.json'), `${JSON.stringify({
     host: process.env.COMPUTERNAME ?? process.env.HOSTNAME ?? 'unknown',
     database: { auth_mode: authMode, public_tables: counts.length, bytes, sha256 },
 }, null, 2)}\n`, 'utf8');
+
+// database.meta in the same key=value format dump_database.sh writes, because
+// restore_drill.sh reads auth_mode and rowcounts from it. Without this file a
+// snapshot taken here looked degraded to the drill through no fault of its own.
+fs.writeFileSync(path.join(dir, 'database.meta'), [
+    `dumped_at=${new Date().toISOString()}`,
+    `auth_mode=${authMode}`,
+    `schemas=${authMode === 'full' ? 'public,auth,storage' : 'public,storage'}`,
+    `public_tables=${counts.length}`,
+    'rowcounts=exact',
+    `dump_bytes=${bytes}`,
+    `dump_sha256=${sha256}`,
+    `pg_dump_version=${which.stdout.trim().split('\n')[0]}`,
+    '',
+].join('\n'), 'utf8');
 
 console.log(`\nSnapshot: ${dir}`);
 console.log(`  ${(bytes / 1024 / 1024).toFixed(1)} MB, ${counts.length} public tables, auth=${authMode}`);

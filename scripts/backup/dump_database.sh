@@ -8,7 +8,7 @@
 #                   at a time with `pg_restore -t`, which is the realistic
 #                   recovery path when a migration damages a single table.
 #   schema.sql      plain-text schema, so the archive stays human-diffable
-#   rowcounts.tsv   row count per public table, to verify a restore against
+#   rowcounts.tsv   EXACT row count per public table, to verify a restore against
 #   database.meta   what was dumped and how (see AUTH SCHEMA below)
 #
 # AUTH SCHEMA: `auth` is not optional. Migration 15 added
@@ -75,14 +75,22 @@ pg_dump "$DATABASE_URL" "${COMMON[@]}" --schema-only --schema=public \
     -f "$OUT/schema.sql" 2>>"$OUT/pg_dump.log" \
     || warn "schema-only dump failed; the binary dump still contains the schema."
 
-# Row counts are the cheapest possible restore check: after a restore you
-# compare these numbers instead of trusting that "it ran without errors".
-log "recording row counts ..."
+log "recording exact row counts ..."
+# count(*) per table, not pg_stat_user_tables.n_live_tup. n_live_tup is a
+# statistics ESTIMATE that stays stale after deletes until autovacuum runs, so
+# it made the restore drill fail on a table the dump had correctly emptied.
+# query_to_xml keeps this to one read-only round trip, and format('%I') quotes
+# each identifier safely. relkind='r' = ordinary tables only: no views, and no
+# partitioned parents that would double-count their children.
 psql_q "
-    SELECT relname, n_live_tup
-    FROM pg_stat_user_tables
-    WHERE schemaname = 'public'
-    ORDER BY relname;
+    SELECT c.relname,
+           (xpath('/row/c/text()',
+                  query_to_xml(format('SELECT count(*) AS c FROM public.%I', c.relname),
+                               false, true, '')))[1]::text::bigint
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relkind = 'r'
+    ORDER BY c.relname;
 " | tr '|' '\t' > "$OUT/rowcounts.tsv"
 
 TABLES=$(wc -l < "$OUT/rowcounts.tsv" | tr -d ' ')
@@ -94,6 +102,7 @@ dumped_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
 auth_mode=$AUTH_MODE
 schemas=$([ "$AUTH_MODE" = full ] && echo "public,auth,storage" || echo "public,storage")
 public_tables=$TABLES
+rowcounts=exact
 dump_bytes=$(wc -c < "$DUMP" | tr -d ' ')
 dump_sha256=$SHA
 pg_dump_version=$(pg_dump --version | head -1)
