@@ -119,6 +119,10 @@ beforeAll(async () => {
         'SELECT public.check_access($1, $2) AS ok', [U.grantee, C.publishedMasterclass])).rows[0].ok).toBe(true);
 
     await db.exec(readMigration('20260925_22_check_access_boundaries.sql'));
+
+    // Before migration 25: get_user_role tells an anonymous caller who the admin is.
+    expect((await asRole<{ role: string }>(db, 'anon', null, 'SELECT public.get_user_role($1) AS role', [U.adminExpired])).rows[0].role).toBe('admin');
+    await db.exec(readMigration('20260925_25_get_user_role_caller_only.sql'));
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
@@ -269,14 +273,18 @@ describe('Other SECURITY DEFINER functions that take someone else’s id', () =>
     });
 });
 
-describe('get_user_role answers only for the caller', () => {
+describe('get_user_role answers only for the caller (migration 25)', () => {
+    it('still answers the server (control)', async () => {
+        const { rows } = await asRole<{ role: string | null }>(db, 'service_role', null, 'SELECT public.get_user_role($1) AS role', [U.adminExpired]);
+        expect(rows[0].role).toBe('admin');
+    });
     // SECURITY DEFINER, EXECUTE-granted to anon, and it takes the user id as
     // an argument: anyone holding a UUID could ask whether it is the admin's.
-    it.fails('does not tell an anonymous caller who is an admin', async () => {
+    it('does not tell an anonymous caller who is an admin', async () => {
         const { rows } = await asRole<{ role: string | null }>(db, 'anon', null, 'SELECT public.get_user_role($1) AS role', [U.adminExpired]);
         expect(rows[0].role).toBeNull();
     });
-    it.fails('does not tell a member who is an admin', async () => {
+    it('does not tell a member who is an admin', async () => {
         const { rows } = await asRole<{ role: string | null }>(db, 'authenticated', U.nobody, 'SELECT public.get_user_role($1) AS role', [U.adminExpired]);
         expect(rows[0].role).toBeNull();
     });
