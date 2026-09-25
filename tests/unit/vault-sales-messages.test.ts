@@ -108,14 +108,19 @@ describe('VaultSales messages', () => {
         })
     }
 
-    it('renders the renewal terms in What\'s included', () => {
-        // Not just "a key exists": the ladder has to actually be on the page.
-        // It was absent from the live site for a day, and the list still read
-        // "Lifetime access" until the term shipped.
+    it('states the term and the renewal price somewhere on the page', () => {
+        // Not just "a key exists": both have to actually be rendered. The
+        // ladder was missing from the live site for a day, and the list still
+        // read "Lifetime access" until the term shipped.
+        //
+        // Deliberately indifferent to where each one sits. `term` is a bullet
+        // in What's included and `renewal` is a footnote under the founding
+        // note, but that is a layout decision and this test should not have an
+        // opinion on it -- only that neither can quietly disappear again.
         const included = constArrayNear('included.${k}')
         expect(included).toContain('term')
-        expect(included).toContain('renewal')
         expect(included).not.toContain('lifetime')
+        expect([...included.map(k => `included.${k}`), ...directKeys]).toContain('included.renewal')
     })
 
     it('keeps the two languages structurally identical', () => {

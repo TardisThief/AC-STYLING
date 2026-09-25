@@ -420,7 +420,7 @@ export default async function VaultLandingPage({
                             {t("included.title")}
                         </h2>
                         <dl className="mt-8 border-t border-ac-taupe/15">
-                            {(["term", "renewal", "order", "devices", "languages", "support"] as const).map(
+                            {(["term", "order", "devices", "languages", "support"] as const).map(
                                 (k) => (
                                     <div key={k} className="border-b border-ac-taupe/15 py-4">
                                         <dd className="text-lg leading-relaxed text-ac-taupe">
@@ -432,6 +432,15 @@ export default async function VaultLandingPage({
                         </dl>
                         <p className="mt-6 max-w-xl text-ac-taupe">
                             {t("included.foundingNote")}
+                        </p>
+                        {/* The renewal arithmetic sits under the founding note
+                            rather than in the list above: the note says her
+                            renewal is priced from what she paid, and this is
+                            the arithmetic for that sentence. In the list it was
+                            a sixth thing to read; here it is the footnote to
+                            the one line it explains. */}
+                        <p className="mt-3 max-w-xl border-l-2 border-ac-taupe/20 pl-4 text-sm leading-relaxed text-ac-taupe/80">
+                            {t("included.renewal")}
                         </p>
                     </div>
                 </section>
