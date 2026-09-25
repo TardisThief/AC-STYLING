@@ -15,7 +15,8 @@ import { PGlite } from '@electric-sql/pglite';
  *
  * Only what Supabase provides OUTSIDE the dump is stubbed here: the three API
  * roles, `auth.uid()`/`auth.role()`/`auth.users`, and the storage schema.
- * `auth.uid()` reads the same `request.jwt.claim.sub` setting PostgREST sets.
+ * `auth.uid()` and `auth.role()` read the same `request.jwt.claim.*` settings
+ * PostgREST sets.
  */
 const SUPABASE_PRELUDE = `
 CREATE ROLE anon NOLOGIN;
@@ -29,7 +30,9 @@ CREATE SCHEMA storage;
 GRANT USAGE ON SCHEMA auth, storage TO anon, authenticated, service_role;
 CREATE TABLE auth.users (id uuid PRIMARY KEY, email text);
 CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-CREATE FUNCTION auth.role() RETURNS text LANGUAGE sql STABLE AS $$ SELECT current_user::text $$;
+-- From the JWT claim, as Supabase does -- NOT current_user, which inside a
+-- SECURITY DEFINER function is the function's owner, not the caller.
+CREATE FUNCTION auth.role() RETURNS text LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.role', true), '')::text $$;
 CREATE TABLE storage.buckets (id text PRIMARY KEY, public boolean, file_size_limit bigint, allowed_mime_types text[]);
 CREATE TABLE storage.objects (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, bucket_id text, name text);
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
@@ -88,6 +91,7 @@ export async function asRole<T = Record<string, unknown>>(
     try {
         await db.exec(`SET LOCAL ROLE ${role}`);
         await db.query("SELECT set_config('request.jwt.claim.sub', $1, true)", [userId ?? '']);
+        await db.query("SELECT set_config('request.jwt.claim.role', $1, true)", [role]);
         return await db.query<T>(sql, params);
     } finally {
         await db.exec('ROLLBACK');

@@ -7,12 +7,17 @@
  * about the caller's own id (utils/access-control.ts, chapter-video.ts) — so
  * RLS, grants and the SECURITY DEFINER body all behave as in production.
  *
+ * Two holes were found here and closed by migration 22. As in
+ * authorization.test.ts, beforeAll proves both reproduce against the live
+ * schema BEFORE applying the migration, so the tests below are known to be
+ * testing the migration and not an accident of the fixture.
+ *
  * Each case names who is asking and what they must NOT get. The happy paths
  * are here only as controls: a deny that also denies the buyer proves nothing.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 
@@ -39,6 +44,8 @@ const C = {
     moduleOfUnpublished: id(203),
     standaloneCourse: id(204),
     orphanChapter: id(205),
+    // A module written without is_standalone, which then defaults to TRUE.
+    misflaggedModule: id(206),
 };
 
 const past = '2020-01-01T00:00:00Z';
@@ -81,6 +88,8 @@ beforeAll(async () => {
     await createUser(db, U.grantee);
     await createUser(db, U.granteeExpired);
     await createUser(db, U.chapterGrantee);
+    const admin = id(401);
+    await createUser(db, admin, { role: 'admin' });
 
     await db.query(
         `INSERT INTO user_access_grants (user_id, masterclass_id, expires_at) VALUES ($1, $3, $4), ($2, $3, $5)`,
@@ -90,6 +99,26 @@ beforeAll(async () => {
         `INSERT INTO user_access_grants (user_id, chapter_id, expires_at) VALUES ($1, $2, $3)`,
         [U.chapterGrantee, C.moduleOfPublished, future]
     );
+
+    // An admin adds a module through RLS the way a script or the SQL editor
+    // would, leaving is_standalone to its default. chapterSchema would have
+    // forced it false; nothing in the database does.
+    await db.exec('BEGIN');
+    await db.exec('SET LOCAL ROLE authenticated');
+    await db.query("SELECT set_config('request.jwt.claim.sub', $1, true)", [admin]);
+    await db.query("SELECT set_config('request.jwt.claim.role', 'authenticated', true)");
+    await db.query(
+        `INSERT INTO chapters (id, slug, title, video_id, masterclass_id) VALUES ($1, 'late-module', 'Late module', 'v', $2)`,
+        [C.misflaggedModule, C.publishedMasterclass]
+    );
+    await db.exec('COMMIT');
+
+    // Both holes reproduce on the live schema before migration 22.
+    expect(await canAccess(U.coursePass, C.misflaggedModule)).toBe(true);
+    expect((await asRole<{ ok: boolean }>(db, 'anon', null,
+        'SELECT public.check_access($1, $2) AS ok', [U.grantee, C.publishedMasterclass])).rows[0].ok).toBe(true);
+
+    await db.exec(readMigration('20260925_22_check_access_boundaries.sql'));
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
@@ -198,46 +227,44 @@ describe('Nobody grants themselves an entitlement', () => {
     });
 });
 
-describe('The module/course distinction is enforced by the database, not only by a form', () => {
-    // chapterSchema forces is_standalone=false when masterclass_id is set, but
-    // the column defaults to TRUE and nothing in the database ties the two
-    // together. Migration 17 found six such rows live. Any write path that
-    // omits is_standalone — here, an admin insert through RLS, as a script or
-    // SQL editor would — produces a module that the Course Pass branch treats
-    // as a standalone course.
-    it.fails('denies a Course Pass holder a masterclass module inserted without is_standalone', async () => {
-        const admin = id(401);
-        const lateModule = id(402);
-        await createUser(db, admin, { role: 'admin' });
-        await db.exec('BEGIN');
-        try {
-            await db.exec('SET LOCAL ROLE authenticated');
-            await db.query("SELECT set_config('request.jwt.claim.sub', $1, true)", [admin]);
-            await db.query(
-                `INSERT INTO chapters (id, slug, title, video_id, masterclass_id) VALUES ($1, 'late-module', 'Late module', 'v', $2)`,
-                [lateModule, C.publishedMasterclass]
-            );
-            await db.exec('RESET ROLE');
-            await db.exec('COMMIT');
-        } catch (e) {
-            await db.exec('ROLLBACK');
-            throw e;
-        }
-        expect(await canAccess(U.coursePass, lateModule)).toBe(false);
+describe('The module/course distinction is enforced by the gate, not only by a form', () => {
+    it('denies a Course Pass holder a masterclass module left flagged standalone', async () => {
+        expect(await canAccess(U.coursePass, C.misflaggedModule)).toBe(false);
+    });
+    it('still opens that module to the Masterclass Pass it belongs to (control)', async () => {
+        expect(await canAccess(U.masterclassPass, C.misflaggedModule)).toBe(true);
     });
 });
 
 describe('The gate answers only for the caller', () => {
-    // check_access is SECURITY DEFINER and EXECUTE-granted to anon, and it
-    // takes the user id as an argument. Every app caller passes the session's
-    // own id, but PostgREST exposes the function directly: anyone holding a
-    // user's UUID (they appear in storage paths) can ask what that user bought.
-    it.fails('does not tell an anonymous caller what another user owns', async () => {
-        expect(await canAccess(U.grantee, C.publishedMasterclass, 'anon')).toBe(false);
+    it('refuses to run for an anonymous caller at all', async () => {
+        await expect(asRole(db, 'anon', null, 'SELECT public.check_access($1, $2) AS ok', [U.grantee, C.publishedMasterclass]))
+            .rejects.toMatchObject({ code: '42501' });
     });
-    it.fails('does not tell one member what another member owns', async () => {
+    it('does not tell one member what another member owns', async () => {
         const result = await asRole<{ ok: boolean }>(db, 'authenticated', U.nobody,
             'SELECT public.check_access($1, $2) AS ok', [U.grantee, C.publishedMasterclass]);
         expect(result.rows[0].ok).toBe(false);
+    });
+    it('does not let a member borrow an admin’s answer', async () => {
+        const result = await asRole<{ ok: boolean }>(db, 'authenticated', U.nobody,
+            'SELECT public.check_access($1, $2) AS ok', [U.adminExpired, C.publishedMasterclass]);
+        expect(result.rows[0].ok).toBe(false);
+    });
+    it('still answers the server, which asks on a user’s behalf (control)', async () => {
+        const result = await asRole<{ ok: boolean }>(db, 'service_role', null,
+            'SELECT public.check_access($1, $2) AS ok', [U.grantee, C.publishedMasterclass]);
+        expect(result.rows[0].ok).toBe(true);
+    });
+});
+
+describe('Other SECURITY DEFINER functions that take someone else’s id', () => {
+    // Same shape as check_access: they run as the owner and take the target
+    // as an argument. clone_* copies any item, internal_note included, into
+    // any profile. authorization.test.ts pins anon; a signed-in member is the
+    // caller that actually has a session to try it with.
+    it.each(['clone_wardrobe_item', 'clone_lookbook'])('denies a signed-in member %s', async fn => {
+        await expect(asRole(db, 'authenticated', U.nobody, `SELECT public.${fn}($1, $2)`, [id(999), U.nobody]))
+            .rejects.toMatchObject({ code: '42501' });
     });
 });
