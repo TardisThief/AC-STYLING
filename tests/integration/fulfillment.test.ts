@@ -218,6 +218,35 @@ describe('A purchase is granted once, however many times it is fulfilled', () =>
         expect(yearsLeft((await masterclassGrant(buyer)).expires_at)).toBe(1);
     });
 
+    // admin_notifications.reference_id is UNIQUE, and every item of a session
+    // used the session id: the second item's "New Sale" hit the constraint and
+    // was only logged. A booking bought alongside a masterclass went unseen.
+    it.fails('notifies the stylist once per item, however often the session is delivered', async () => {
+        const buyer = await newBuyer();
+        const s = session(buyer, [item(PRODUCT.masterclass), item(PRODUCT.chapter)]);
+        await deliver(s);
+        await deliver(s);
+        await deliver(s, `evt_other_${s.id}`);
+        const { rows } = await db.query('SELECT 1 FROM admin_notifications WHERE reference_id = $1', [s.id]);
+        expect(rows).toHaveLength(2);
+    });
+
+    // Same constraint, keyed on the charge id: a second partial refund of one
+    // charge was never surfaced for review.
+    it.fails('surfaces every refund of a charge for review, once each', async () => {
+        const charge = `ch_${++seq}`;
+        const reviews = async () => Number((await db.query<{ n: number }>("SELECT count(*)::int AS n FROM admin_notifications WHERE type = 'payment_review'")).rows[0].n);
+        const before = await reviews();
+        const refund = async (eventId: string) => {
+            const body = JSON.stringify({ id: eventId, type: 'charge.refunded', data: { object: { id: charge, object: 'charge' } } });
+            return (await POST(new Request('http://localhost/api/webhooks/stripe', { method: 'POST', body }))).status;
+        };
+        expect(await refund(`evt_r1_${charge}`)).toBe(200);
+        expect(await refund(`evt_r2_${charge}`)).toBe(200);
+        expect(await refund(`evt_r2_${charge}`)).toBe(200); // Stripe redelivers the second
+        expect(await reviews() - before).toBe(2);
+    });
+
     it('grants one year when the same event is delivered twice at once', async () => {
         const buyer = await newBuyer();
         const s = session(buyer, [item(PRODUCT.masterclass)]);
