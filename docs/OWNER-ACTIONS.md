@@ -356,8 +356,8 @@ one place.
 - **F12–F16** remain open: the 2,000-account lookup ceiling in guest
   resolution, test coverage of the highest-consequence boundaries, deployed-vs-
   source drift, bilingual/performance polish, and observability. **F16's backup
-  half is done and proven** (item 13); what it left behind is a credential
-  rotation, item 13b.
+  half is done and proven** (item 13), and the credential rotation it left
+  behind is closed (13b).
 
 **With that, every *launch-blocking* code finding in the assessment is closed.** What remains
 between here and launch is on this page, plus **F09**: the five published Vault
@@ -378,10 +378,11 @@ modules still have no usable video, which no amount of code can fix.
 
 ---
 
-## 13. Nightly backup — DONE 2026-09-25, but rotate the secrets
+## 13. Nightly backup — DONE 2026-09-25
 
-**Added 2026-09-23. Set up and proven 2026-09-25.** The remaining action is
-credential rotation, in section 13b below — do that one this week.
+**Added 2026-09-23. Set up, proven by a restore drill, and the credentials it
+exposed have been rotated (13b).** Nothing here is blocking; the two small
+confirmations below are worth doing when convenient.
 
 The Supabase project is on the **free tier**, which includes no backups of any
 kind: no daily snapshot, no dashboard restore, no point-in-time recovery. This
@@ -406,46 +407,35 @@ Two small things still to confirm, neither urgent:
    scripts do not schedule it:
    `bash scripts/backup/restore_drill.sh $(ls -d /mnt/backup/ac-styling/db/*/ | tail -1)`
 
-Step-by-step instructions: [`BACKUP-OWNER-SETUP.md`](BACKUP-OWNER-SETUP.md)
-(about 30 minutes). The agent-facing half is
-[`HERMES-BACKUP-SETUP.md`](HERMES-BACKUP-SETUP.md), and recovery procedures are
-in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md).
+Reference, now that it is running: [`BACKUP-OWNER-SETUP.md`](BACKUP-OWNER-SETUP.md)
+is how it was set up, [`HERMES-BACKUP-SETUP.md`](HERMES-BACKUP-SETUP.md) is the
+`hermes` side including troubleshooting, and
+[`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md) is what to read when something
+has actually gone wrong.
 
 ---
 
-## 13b. Rotate the backup credentials — do this one this week
+## 13b. ~~Rotate the backup credentials~~ — DONE 2026-09-25
 
-During the `hermes` setup the **database password, the Supabase service-role key
-and the R2 API keys all passed through an agent session log**. Session logs are
-not a secure store: they sit on disk, they can be copied, and they outlive the
-work. Treat those three secrets as exposed and rotate them.
+During the `hermes` setup the database password, the Supabase service-role key
+and the R2 API keys all passed through an agent session log, which is not a
+secure store. **All three have been rotated and every consumer updated.** No
+action remains; this section stays only so nobody re-opens it.
 
-The service-role key is the one that matters most — it bypasses every RLS policy
-in the database, so it can read and write every account, purchase and client
-photograph regardless of who is asking.
+**Do not rotate the rclone crypt password or salt.** They were never exposed the
+same way, and changing them makes every archive already in R2 permanently
+unreadable. They belong in your password manager — and specifically not only on
+`hermes`, because the point is to be able to restore when `hermes` is gone.
 
-In order:
-
-1. **Supabase → Project Settings → Database → Reset database password.**
-2. **Supabase → Project Settings → API → `service_role` → Reset.**
-3. **Cloudflare → R2 → Manage R2 API Tokens →** roll the token for
-   `ac-syling-backups`.
-4. Update each place the old values live: **Vercel** environment variables, your
-   local **`.env.local`**, and **`~/.ac-styling/.env.backup`** plus the `r2raw`
-   rclone remote on `hermes`. The agent on that machine can do its own file if
-   you send it the new values — over something private, not a chat log you would
-   not want retained.
-5. Run one backup by hand afterwards to confirm nothing broke:
-   `bash scripts/backup/backup.sh --no-pull`
-
-**Do not rotate the rclone crypt password or salt.** Those are not exposed the
-same way, and changing them makes every archive already in R2 unreadable. They
-belong in your password manager and nowhere else — in particular, not only on
-`hermes`, because the entire point is to be able to restore when `hermes` is gone.
+**If a nightly backup fails soon after a rotation,** the usual cause is one
+consumer still holding an old value: `~/.ac-styling/.env.backup` on `hermes`,
+its `r2raw` rclone remote, Vercel's environment variables, or your local
+`.env.local`. The healthcheck is what tells you.
 
 **Standing consequence:** `hermes` holds the service-role key, so it can read the
 entire database and every client photograph. If that machine is ever sold,
-repurposed or has its drive replaced, rotate again and update all three places.
+repurposed or has its drive replaced, rotate again and update all four places
+above.
 
 **Worth considering separately:** Supabase Pro ($25/month) adds daily
 platform-level backups with 7-day retention, restorable from the dashboard.
