@@ -28,8 +28,20 @@ const found = (data: unknown) => ({
     maybeSingle: vi.fn().mockResolvedValue({ data, error: null }),
 })
 
+/**
+ * A profile/grant term write. It is a compare-and-set (update … eq/is … then
+ * select), so it resolves on select() with the rows it changed; an empty
+ * result means another write got there first.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const casWrite = (result: { data: unknown; error: unknown } = { data: [{ id: 'row' }], error: null }): any => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const chain: any = { eq: vi.fn(() => chain), is: vi.fn(() => chain), select: vi.fn(async () => result) }
+    return chain
+}
+
 const profileUpdate = (error: unknown) => ({
-    update: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error }) })),
+    update: vi.fn(() => casWrite({ data: error ? null : [{ id: 'row' }], error })),
 })
 
 /**

@@ -18,6 +18,18 @@ import { grantAccessForProduct } from '@/app/lib/access-logic'
  * stamps the one-year term, and the new expiry is computed from the one she
  * already holds so that no purchase can ever shorten her access.
  */
+/**
+ * A profile/grant term write. It is a compare-and-set (update … eq/is … then
+ * select), so it resolves on select() with the rows it changed; an empty
+ * result means another write got there first.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const casWrite = (result: { data: unknown; error: unknown } = { data: [{ id: 'row' }], error: null }): any => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const chain: any = { eq: vi.fn(() => chain), is: vi.fn(() => chain), select: vi.fn(async () => result) }
+    return chain
+}
+
 const heldTerm = (data: unknown = null) => ({
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
@@ -49,9 +61,7 @@ describe('Access Logic - grantAccessForProduct', () => {
 
             // Chain the calls properly
             mockSupabase._mockFrom.mockReturnValue({
-                update: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({ error: null }),
-                })),
+                update: vi.fn(() => casWrite()),
             })
 
             // Mock Masterclass & Chapter queries (returning null)
@@ -69,9 +79,7 @@ describe('Access Logic - grantAccessForProduct', () => {
                 .mockReturnValueOnce(emptyQuery) // Chapter
                 .mockReturnValueOnce(heldTerm()) // Profile read (existing term)
                 .mockReturnValueOnce({ // Profile update
-                    update: vi.fn(() => ({
-                        eq: vi.fn().mockResolvedValue({ error: null }),
-                    })),
+                    update: vi.fn(() => casWrite()),
                 })
                 .mockReturnValueOnce(grantInsert) // user_access_grants
 
@@ -103,9 +111,7 @@ describe('Access Logic - grantAccessForProduct', () => {
 
             // Mock profile update
             const profileUpdate = {
-                update: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({ error: null }),
-                })),
+                update: vi.fn(() => casWrite()),
             }
 
             // Mock Masterclass & Chapter queries (returning null)
@@ -148,9 +154,7 @@ describe('Access Logic - grantAccessForProduct', () => {
             }
 
             const profileUpdate = {
-                update: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({ error: null }),
-                })),
+                update: vi.fn(() => casWrite()),
             }
 
             // Mock Masterclass & Chapter queries (returning null)
@@ -192,8 +196,9 @@ describe('Access Logic - grantAccessForProduct', () => {
                 eq: vi.fn().mockReturnThis(),
                 maybeSingle: vi.fn().mockResolvedValue({ data: { slug: 'masterclass_pass' }, error: null }),
             }
-            const updateEq = vi.fn().mockResolvedValue({ error: null })
-            const profileUpdate = { update: vi.fn(() => ({ eq: updateEq })) }
+            const write = casWrite()
+            const updateEq = write.eq
+            const profileUpdate = { update: vi.fn(() => write) }
             const emptyQuery = {
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),

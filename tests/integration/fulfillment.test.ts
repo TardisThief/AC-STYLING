@@ -286,7 +286,7 @@ describe('Renewals and existing access', () => {
     // Two paid renewals landing together — two line items, or the webhook and
     // a restore of a different session. Each read-then-write sees the same
     // held term, so one of the two paid years vanished.
-    it.fails('keeps both years when two renewals of one masterclass land at once', async () => {
+    it('keeps both years when two renewals of one masterclass land at once', async () => {
         const buyer = await newBuyer();
         await deliver(session(buyer, [item(PRODUCT.masterclass)]));
         await Promise.all([
@@ -298,7 +298,7 @@ describe('Renewals and existing access', () => {
         expect(grant.renewal_count).toBe(2);
     });
 
-    it.fails('keeps both years when two renewals of a pass land at once', async () => {
+    it('keeps both years when two renewals of a pass land at once', async () => {
         const buyer = await newBuyer();
         await deliver(session(buyer, [item(PRODUCT.masterclassPass)]));
         await Promise.all([

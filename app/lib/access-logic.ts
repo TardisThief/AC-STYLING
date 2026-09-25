@@ -66,6 +66,13 @@ export class GrantWriteError extends Error {
     }
 }
 
+/**
+ * How many times a term extension re-reads and retries when another write
+ * changed the term between its read and its write. Two is enough for two
+ * concurrent renewals; the rest is headroom.
+ */
+const TERM_WRITE_ATTEMPTS = 5;
+
 /** 23505 = unique_violation: the grant is already recorded, which is success. */
 function isDuplicate(error: { code?: string } | null): boolean {
     return error?.code === '23505';
@@ -98,28 +105,39 @@ async function setProfileFlag(
     flag: 'has_full_unlock' | 'has_course_pass' | 'has_masterclass_pass',
     isRenewal: boolean
 ): Promise<void> {
-    const { data: held } = await supabase
-        .from('profiles')
-        .select('access_expires_at, access_renewal_count, has_full_unlock, has_course_pass, has_masterclass_pass')
-        .eq('id', userId)
-        .maybeSingle();
+    // Compare-and-set: the write only lands if the term is still the one it
+    // was computed from. Two paid renewals processed at once used to read the
+    // same term and both write "term + a year", so one paid year vanished.
+    for (let attempt = 0; attempt < TERM_WRITE_ATTEMPTS; attempt++) {
+        const { data: held } = await supabase
+            .from('profiles')
+            .select('access_expires_at, access_renewal_count, has_full_unlock, has_course_pass, has_masterclass_pass')
+            .eq('id', userId)
+            .maybeSingle();
 
-    const heldExpiry = (held?.access_expires_at as string | null) ?? null;
-    const heldCount = (held?.access_renewal_count as number | null) ?? 0;
-    const holdsPerpetualPass =
-        heldExpiry === null &&
-        Boolean(held?.has_full_unlock || held?.has_course_pass || held?.has_masterclass_pass);
+        const heldExpiry = (held?.access_expires_at as string | null) ?? null;
+        const heldCount = (held?.access_renewal_count as number | null) ?? 0;
+        const holdsPerpetualPass =
+            heldExpiry === null &&
+            Boolean(held?.has_full_unlock || held?.has_course_pass || held?.has_masterclass_pass);
 
-    const { error } = await supabase
-        .from('profiles')
-        .update({
-            [flag]: true,
-            access_expires_at: holdsPerpetualPass ? null : nextExpiry(heldExpiry),
-            access_renewal_count: isRenewal ? heldCount + 1 : 0,
-        })
-        .eq('id', userId);
+        let write = supabase
+            .from('profiles')
+            .update({
+                [flag]: true,
+                access_expires_at: holdsPerpetualPass ? null : nextExpiry(heldExpiry),
+                access_renewal_count: isRenewal ? heldCount + 1 : 0,
+            })
+            .eq('id', userId)
+            .eq('access_renewal_count', heldCount);
+        write = heldExpiry === null ? write.is('access_expires_at', null) : write.eq('access_expires_at', heldExpiry);
 
-    if (error) throw new GrantWriteError(`${flag} for user ${userId}`, error.message);
+        const { data: written, error } = await write.select('id');
+        if (error) throw new GrantWriteError(`${flag} for user ${userId}`, error.message);
+        if (written && written.length > 0) return;
+    }
+
+    throw new GrantWriteError(`${flag} for user ${userId}`, 'the term kept changing under the write');
 }
 
 /**
@@ -152,30 +170,43 @@ async function grantItemForTerm(
 
     if (!isDuplicate(error)) return { error };
 
-    const { data: held } = await supabase
-        .from('user_access_grants')
-        .select('expires_at, renewal_count')
-        .eq('user_id', userId)
-        .eq(column, itemId)
-        .maybeSingle();
+    // Compare-and-set, as in setProfileFlag: two paid renewals landing at once
+    // must add two years, not one.
+    for (let attempt = 0; attempt < TERM_WRITE_ATTEMPTS; attempt++) {
+        const { data: held, error: readError } = await supabase
+            .from('user_access_grants')
+            .select('expires_at, renewal_count')
+            .eq('user_id', userId)
+            .eq(column, itemId)
+            .maybeSingle();
 
-    const heldExpiry = (held?.expires_at as string | null) ?? null;
-    const heldCount = (held?.renewal_count as number | null) ?? 0;
+        if (readError) return { error: readError };
+        if (!held) return { error: { message: 'grant vanished between insert and extend' } };
 
-    // A NULL expiry here is perpetual — a pre-term purchase, a bonus or an
-    // admin override. Buying the item again must not give it an end date.
-    if (held && heldExpiry === null) return { error: null };
+        const heldExpiry = (held.expires_at as string | null) ?? null;
+        const heldCount = (held.renewal_count as number | null) ?? 0;
 
-    const { error: updateError } = await supabase
-        .from('user_access_grants')
-        .update({
-            expires_at: nextExpiry(heldExpiry),
-            renewal_count: isRenewal ? heldCount + 1 : 0,
-        })
-        .eq('user_id', userId)
-        .eq(column, itemId);
+        // A NULL expiry here is perpetual — a pre-term purchase, a bonus or an
+        // admin override. Buying the item again must not give it an end date.
+        if (heldExpiry === null) return { error: null };
 
-    return { error: updateError };
+        const { data: written, error: updateError } = await supabase
+            .from('user_access_grants')
+            .update({
+                expires_at: nextExpiry(heldExpiry),
+                renewal_count: isRenewal ? heldCount + 1 : 0,
+            })
+            .eq('user_id', userId)
+            .eq(column, itemId)
+            .eq('expires_at', heldExpiry)
+            .eq('renewal_count', heldCount)
+            .select('id');
+
+        if (updateError) return { error: updateError };
+        if (written && written.length > 0) return { error: null };
+    }
+
+    return { error: { message: 'the term kept changing under the write' } };
 }
 
 /**

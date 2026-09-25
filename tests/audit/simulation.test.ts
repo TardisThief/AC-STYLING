@@ -253,6 +253,10 @@ describe('End-to-End Platform Audit Simulation', () => {
             // The term she already holds, read before the flag is written.
             mocks.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
 
+            // The flag write is a compare-and-set; it reports the row it changed.
+            const write = { eq: vi.fn(() => write), is: vi.fn(() => write), select: vi.fn(async () => ({ data: [{ id: userId }], error: null })) };
+            mocks.update.mockReturnValueOnce(write);
+
             const result = await grantAccessForProduct({ from: mocks.from } as any, userId, stripeProductId);
 
             expect(result).toBe(true);
