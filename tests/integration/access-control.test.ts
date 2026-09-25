@@ -268,3 +268,26 @@ describe('Other SECURITY DEFINER functions that take someone else’s id', () =>
             .rejects.toMatchObject({ code: '42501' });
     });
 });
+
+describe('get_user_role answers only for the caller', () => {
+    // SECURITY DEFINER, EXECUTE-granted to anon, and it takes the user id as
+    // an argument: anyone holding a UUID could ask whether it is the admin's.
+    it.fails('does not tell an anonymous caller who is an admin', async () => {
+        const { rows } = await asRole<{ role: string | null }>(db, 'anon', null, 'SELECT public.get_user_role($1) AS role', [U.adminExpired]);
+        expect(rows[0].role).toBeNull();
+    });
+    it.fails('does not tell a member who is an admin', async () => {
+        const { rows } = await asRole<{ role: string | null }>(db, 'authenticated', U.nobody, 'SELECT public.get_user_role($1) AS role', [U.adminExpired]);
+        expect(rows[0].role).toBeNull();
+    });
+    it('still answers a member about herself (control)', async () => {
+        const { rows } = await asRole<{ role: string | null }>(db, 'authenticated', U.nobody, 'SELECT public.get_user_role($1) AS role', [U.nobody]);
+        expect(rows[0].role).toBe('user');
+    });
+    it('still lets the profiles policy that uses it show an admin every profile (control)', async () => {
+        const { rows } = await asRole(db, 'authenticated', U.adminExpired, 'SELECT id FROM profiles WHERE id = $1', [U.nobody]);
+        expect(rows).toHaveLength(1);
+        const hidden = await asRole(db, 'authenticated', U.nobody, 'SELECT id FROM profiles WHERE id = $1', [U.adminExpired]);
+        expect(hidden.rows).toHaveLength(0);
+    });
+});
