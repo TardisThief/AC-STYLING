@@ -12,6 +12,7 @@ import { adminWardrobeItemUpdateSchema, bulkStatusSchema } from "@/app/lib/valid
 import { wardrobeUpdateSchema } from "@/app/lib/validation/wardrobes";
 import type { WardrobeItem } from "@/app/lib/types";
 import { MAX_ITEMS_PER_WARDROBE, uploadTokenExpiry } from '@/app/lib/wardrobe-tokens';
+import { checkIntakeUploadRate } from '@/app/lib/rate-limit';
 
 // =============================================================================
 // Types
@@ -85,6 +86,9 @@ export async function createWardrobe(
             .insert({
                 title,
                 owner_id: ownerId || null,
+                // The database defaults this too since migration 28; set here
+                // so the TTL in wardrobe-tokens.ts stays the one authority.
+                upload_token_expires_at: uploadTokenExpiry(),
             })
             .select()
             .single();
@@ -182,9 +186,9 @@ interface TokenLookup {
  * previously repeated the same `.eq('upload_token', ...)` lookup, which is
  * exactly the shape where one gets missed when a rule like expiry is added.
  *
- * A null `upload_token_expires_at` is treated as "no expiry" so a row that
- * predates migration 16 fails open rather than locking a client out. Every
- * path that issues a token now sets one.
+ * `upload_token_expires_at` is NOT NULL with a seven-day default since
+ * migration 28, so every token expires however its wardrobe was inserted.
+ * A NULL here would mean the migration is missing; it is refused.
  */
 async function resolveWardrobeByToken(
     supabase: ReturnType<typeof createAdminClient>,
@@ -203,7 +207,7 @@ async function resolveWardrobeByToken(
     if (error || !data) return { ok: false, error: "Invalid or expired upload link" };
 
     const expiresAt = data.upload_token_expires_at as string | null;
-    if (expiresAt && new Date(expiresAt).getTime() <= Date.now()) {
+    if (!expiresAt || new Date(expiresAt).getTime() <= Date.now()) {
         // Said plainly, because unlike a bad token this is recoverable: the
         // stylist can issue a new link.
         return { ok: false, error: "This upload link has expired. Ask for a new one." };
@@ -255,6 +259,13 @@ export async function getSignedUploadUrl(
     // 2. Refuse once the wardrobe is full, before minting an upload URL.
     if (await isWardrobeFull(supabase, wardrobe.id)) {
         return { success: false, error: "This wardrobe has reached its upload limit." };
+    }
+
+    // 2b. And cap how fast one link can mint URLs. The item cap counts only
+    // REGISTERED items, so a leaked link could mint upload URLs, and fill the
+    // bucket with objects never registered, without limit (STUDIO-002).
+    if (!(await checkIntakeUploadRate(wardrobe.id))) {
+        return { success: false, error: "Too many uploads at once. Wait a few minutes and try again." };
     }
 
     try {
@@ -432,13 +443,20 @@ export async function getMyWardrobe(): Promise<{
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Unauthorized" };
 
-    // First check if user has a wardrobe
-    let { data: wardrobe } = await supabase
+    // Her oldest active wardrobe. This used .single(): with two active
+    // wardrobes that is an error, the error read as "none", and a third was
+    // created below (STUDIO-001). A failed read is now an error, not a cue to
+    // create one.
+    const { data: existing, error: readError } = await supabase
         .from('wardrobes')
         .select('*')
         .eq('owner_id', user.id)
         .eq('status', 'active')
-        .single();
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+    if (readError) return { success: false, error: readError.message };
+    let wardrobe = existing;
 
     // First visit: create it. Only for a Studio client — this action is
     // callable by any signed-in member — and through the service role, because
@@ -457,7 +475,7 @@ export async function getMyWardrobe(): Promise<{
 
         const { data: newWardrobe, error: createError } = await createAdminClient()
             .from('wardrobes')
-            .insert({ owner_id: user.id, title: 'My Wardrobe' })
+            .insert({ owner_id: user.id, title: 'My Wardrobe', upload_token_expires_at: uploadTokenExpiry() })
             .select()
             .single();
 
@@ -483,38 +501,17 @@ export async function assignWardrobe(
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
 
-    const adminSupabase = createAdminClient();
+    // Owner, her Studio access and the items' user_id, in one transaction
+    // (migration 28). These were three writes; two failures were only logged,
+    // and a wardrobe that did not exist still answered success (STUDIO-001).
+    const { error } = await createAdminClient().rpc('assign_wardrobe', {
+        p_wardrobe_id: wardrobeId,
+        p_user_id: userId,
+    });
 
-    // 1. Update Wardrobe Owner
-    const { error: wardrobeError } = await adminSupabase
-        .from('wardrobes')
-        .update({ owner_id: userId, updated_at: new Date().toISOString() })
-        .eq('id', wardrobeId);
-
-    if (wardrobeError) {
-        console.error('Error assigning wardrobe:', wardrobeError);
-        return { success: false, error: wardrobeError.message };
-    }
-
-    // 2. Enable Studio Access for User
-    const { error: profileError } = await adminSupabase
-        .from('profiles')
-        .update({ active_studio_client: true })
-        .eq('id', userId);
-
-    if (profileError) {
-        console.error('Error updating profile status:', profileError);
-    }
-
-    // 3. Transfer Items (Fix for "Pieces don't show")
-    // Ensure all items in this wardrobe belong to the new owner
-    const { error: itemsError } = await adminSupabase
-        .from('wardrobe_items')
-        .update({ user_id: userId })
-        .eq('wardrobe_id', wardrobeId);
-
-    if (itemsError) {
-        console.error('Error transferring items:', itemsError);
+    if (error) {
+        console.error('Error assigning wardrobe:', error);
+        return { success: false, error: error.code === 'P0002' ? 'Wardrobe or client not found.' : error.message };
     }
 
     revalidatePath('/vault/studio');

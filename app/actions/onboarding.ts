@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { claimWardrobe } from "@/app/actions/wardrobes";
 import { cookies } from "next/headers";
+import { uploadTokenExpiry } from "@/app/lib/wardrobe-tokens";
 
 export async function processOnboarding() {
     const supabase = await createClient();
@@ -57,7 +58,8 @@ export async function processOnboarding() {
                 const { data: newWardrobe } = await adminSupabase.from('wardrobes').insert({
                     owner_id: user.id,
                     title: `${pendingProfile.full_name || 'My'} Wardrobe`,
-                    status: 'active'
+                    status: 'active',
+                    upload_token_expires_at: uploadTokenExpiry()
                 }).select('id').single();
                 if (newWardrobe) targetWardrobeId = newWardrobe.id;
             }

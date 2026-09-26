@@ -29,6 +29,16 @@ vi.mock('@/utils/supabase/server', () => ({
     })),
 }))
 
+// Throttling is tested against the real limiter in
+// tests/integration/studio-lifecycle.test.ts.
+vi.mock('@/app/lib/rate-limit', () => ({
+    checkIntakeUploadRate: vi.fn().mockResolvedValue(true),
+    checkEmailRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
+}))
+
+// Every token has an expiry since migration 28; a live one is in the future.
+const LIVE = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+
 // Import after mocks
 import { getWardrobeByToken, getSignedUploadUrl, createWardrobeItem } from '@/app/actions/wardrobes'
 import {
@@ -62,6 +72,7 @@ describe('Wardrobes Server Actions', () => {
                 title: 'Test Wardrobe',
                 upload_token: 'valid-token',
                 status: 'active',
+                upload_token_expires_at: LIVE,
             }
 
             mockFrom.mockReturnValue({
@@ -96,7 +107,7 @@ describe('Wardrobes Server Actions', () => {
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
                 single: vi.fn().mockResolvedValue({
-                    data: { id: 'wardrobe-123', owner_id: 'owner-456' },
+                    data: { id: 'wardrobe-123', owner_id: 'owner-456', upload_token_expires_at: LIVE },
                     error: null,
                 }),
             })
@@ -128,7 +139,7 @@ describe('Wardrobes Server Actions', () => {
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
                 single: vi.fn().mockResolvedValue({
-                    data: { id: 'wardrobe-123', owner_id: 'owner-456' },
+                    data: { id: 'wardrobe-123', owner_id: 'owner-456', upload_token_expires_at: LIVE },
                     error: null,
                 }),
             })
@@ -165,7 +176,7 @@ describe('Wardrobes Server Actions', () => {
                     select: vi.fn().mockReturnThis(),
                     eq: vi.fn().mockReturnThis(),
                     single: vi.fn().mockResolvedValue({
-                        data: { id: 'wardrobe-123', owner_id: null },
+                        data: { id: 'wardrobe-123', owner_id: null, upload_token_expires_at: LIVE },
                         error: null,
                     }),
                 })
@@ -200,7 +211,7 @@ describe('Wardrobes Server Actions', () => {
                     select: vi.fn().mockReturnThis(),
                     eq: vi.fn().mockReturnThis(),
                     single: vi.fn().mockResolvedValue({
-                        data: { id: 'wardrobe-123', owner_id: 'owner-456' },
+                        data: { id: 'wardrobe-123', owner_id: 'owner-456', upload_token_expires_at: LIVE },
                         error: null,
                     }),
                 })
@@ -277,15 +288,17 @@ describe('Wardrobes Server Actions', () => {
             expect(result.success).toBe(true)
         })
 
-        it('treats a null expiry as no expiry, so pre-migration rows fail open', async () => {
+        // Migration 28 made the column NOT NULL with a seven-day default, so
+        // a NULL can only mean the schema is not what the code expects. It
+        // used to mean "never expires", which four insert paths relied on by
+        // accident (STUDIO-002).
+        it('refuses a token with no expiry rather than honouring it for ever', async () => {
             mockFrom.mockReturnValueOnce(tokenRow(null))
             mockFrom.mockReturnValueOnce(emptyCount())
 
             const result = await getSignedUploadUrl('legacy-token', 'photo.jpg')
 
-            // Locking a real client out over a backfill gap would be worse
-            // than honouring an old link.
-            expect(result.success).toBe(true)
+            expect(result.success).toBe(false)
         })
 
         it('refuses to create an item with an expired token', async () => {
@@ -305,7 +318,7 @@ describe('Wardrobes Server Actions', () => {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
             single: vi.fn().mockResolvedValue({
-                data: { id: 'wardrobe-123', owner_id: null, status: 'active', upload_token_expires_at: null },
+                data: { id: 'wardrobe-123', owner_id: null, status: 'active', upload_token_expires_at: LIVE },
                 error: null,
             }),
         })

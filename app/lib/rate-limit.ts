@@ -51,3 +51,17 @@ export async function checkEmailRateLimit(email: string, ip: string | null): Pro
         retryAfterSeconds: !emailAllowed ? EMAIL_WINDOW_SECONDS : IP_WINDOW_SECONDS,
     };
 }
+
+/**
+ * Upload URLs one intake link may mint per window. Generous for a client
+ * photographing a wardrobe in one sitting; small enough that a leaked link
+ * cannot fill the bucket with objects that are never registered (STUDIO-002,
+ * tests/integration/studio-lifecycle.test.ts).
+ */
+export const INTAKE_UPLOADS_PER_WINDOW = 60;
+const INTAKE_WINDOW_SECONDS = 10 * 60;
+
+/** Consume one upload URL for this wardrobe. Fails open, like the email limiter. */
+export async function checkIntakeUploadRate(wardrobeId: string): Promise<boolean> {
+    return consume(`intake:${wardrobeId}`, INTAKE_UPLOADS_PER_WINDOW, INTAKE_WINDOW_SECONDS);
+}

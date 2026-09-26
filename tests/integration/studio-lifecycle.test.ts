@@ -17,7 +17,7 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { createLiveSchemaDb, createUser } from '../utils/pglite-db';
+import { createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -57,6 +57,7 @@ const db = () => state.db!;
 
 beforeAll(async () => {
     state.db = await createLiveSchemaDb();
+    await state.db.exec(readMigration('20260926_28_wardrobe_token_expiry_and_assignment.sql'));
     await createUser(db(), CLIENT, { active_studio_client: true });
     await createUser(db(), TWO_WARDROBES, { active_studio_client: true });
     await createUser(db(), NEW_OWNER);
@@ -75,7 +76,7 @@ async function expiryOf(wardrobeId: string) {
 }
 
 describe('intake tokens expire, however the wardrobe was made (STUDIO-002)', () => {
-    it.fails('the database gives a token an expiry when the insert does not', async () => {
+    it('the database gives a token an expiry when the insert does not', async () => {
         const { rows: [w] } = await db().query<{ id: string }>(`INSERT INTO wardrobes (title) VALUES ('Raw insert') RETURNING id`);
 
         const expiry = await expiryOf(w.id);
@@ -84,18 +85,18 @@ describe('intake tokens expire, however the wardrobe was made (STUDIO-002)', () 
         expect(new Date(expiry!).getTime() - Date.now()).toBeLessThanOrEqual(7 * DAY);
     });
 
-    it.fails('refuses an insert that explicitly sets no expiry', async () => {
+    it('refuses an insert that explicitly sets no expiry', async () => {
         await expect(db().query(`INSERT INTO wardrobes (title, upload_token_expires_at) VALUES ('Never', NULL)`)).rejects.toMatchObject({ code: '23502' });
     });
 
-    it.fails('createWardrobe issues an expiring link', async () => {
+    it('createWardrobe issues an expiring link', async () => {
         const result = await createWardrobe('New client');
 
         expect(result.success).toBe(true);
         expect(await expiryOf(result.wardrobe!.id)).not.toBeNull();
     });
 
-    it.fails('stops minting upload URLs for one wardrobe after a burst', async () => {
+    it('stops minting upload URLs for one wardrobe after a burst', async () => {
         const { rows: [w] } = await db().query<{ upload_token: string }>(
             `INSERT INTO wardrobes (title, status, upload_token_expires_at) VALUES ('Leaked', 'active', now() + interval '1 day') RETURNING upload_token`);
 
@@ -108,7 +109,7 @@ describe('intake tokens expire, however the wardrobe was made (STUDIO-002)', () 
 });
 
 describe('getMyWardrobe (STUDIO-001)', () => {
-    it.fails('returns her wardrobe when she has two, instead of making a third', async () => {
+    it('returns her wardrobe when she has two, instead of making a third', async () => {
         state.user = TWO_WARDROBES;
 
         const result = await getMyWardrobe();
@@ -146,7 +147,7 @@ describe('assignWardrobe (STUDIO-001)', () => {
         expect(items).toHaveLength(2);
     });
 
-    it.fails('reports failure for a wardrobe that does not exist', async () => {
+    it('reports failure for a wardrobe that does not exist', async () => {
         const result = await assignWardrobe(id(999), NEW_OWNER);
 
         expect(result.success).toBe(false);

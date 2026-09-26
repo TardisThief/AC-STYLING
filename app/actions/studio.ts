@@ -3,6 +3,7 @@
 import { getErrorMessage } from "@/app/lib/errors";
 import { requireAdmin } from "@/app/lib/auth-guards";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { uploadTokenExpiry } from "@/app/lib/wardrobe-tokens";
 
 // ... extractUrlMetadata MOVED to scraper.ts ...
 
@@ -332,7 +333,8 @@ export async function activateStudioAccess(token: string) {
             .insert({
                 owner_id: user.id,
                 title: 'My Wardrobe',
-                status: 'active'
+                status: 'active',
+                upload_token_expires_at: uploadTokenExpiry()
             })
             .select('id')
             .single();
