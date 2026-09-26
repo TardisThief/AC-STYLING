@@ -31,6 +31,8 @@ type Session = {
     client_reference_id: string | null;
     metadata: Record<string, string>;
     customer_details: { email: string; name: string };
+    /** As Restore lists it, with the charge expanded: how Stripe says it was refunded or disputed. */
+    payment_intent?: { latest_charge?: { refunded?: boolean; amount_refunded?: number; disputed?: boolean } } | null;
     line_items?: { data: LineItem[] };
 };
 
@@ -302,6 +304,63 @@ describe('A purchase is granted once, however many times it is fulfilled', () =>
         const s = session(buyer, [item(PRODUCT.masterclass)]);
         await Promise.all([deliver(s), checkoutReturn(buyer, [s])]);
         expect(yearsLeft((await masterclassGrant(buyer)).expires_at)).toBe(1);
+    });
+});
+
+describe('Restore gives back only what is hers and still paid for', () => {
+    // Found by the owner on 2026-09-26. A guest purchase belongs to its email:
+    // there is no account id on the session. Deleting the account cascaded its
+    // fulfilments and purchases away, so the next person to sign up with that
+    // address and press Restore was handed every old guest purchase for it,
+    // free. The owner decided deletion closes them (2026-09-26).
+    it.fails('does not hand a deleted account\u2019s guest purchase to a new account with the same email', async () => {
+        const first = await newBuyer();
+        const li = item(PRODUCT.masterclass);
+        const guest = session(first, [li]);
+        guest.client_reference_id = null;
+        guest.customer_details.email = 'buyer@example.invalid';
+        await checkoutReturn(first, [guest]);
+        expect(await masterclassGrant(first)).toBeDefined();
+
+        await db.query('DELETE FROM auth.users WHERE id = $1', [first]);
+
+        const second = await newBuyer();
+        await checkoutReturn(second, [guest]);
+
+        const { rows } = await db.query('SELECT 1 FROM user_access_grants WHERE user_id = $1', [second]);
+        expect(rows).toHaveLength(0);
+    });
+
+    // Stripe keeps a refunded or disputed session 'paid'; only the charge says
+    // otherwise. Restore never looked, so any refunded purchase whose
+    // fulfilment record was missing came straight back.
+    it.fails.each([
+        ['refunded', { refunded: true, amount_refunded: 15000 }],
+        ['partly refunded', { refunded: false, amount_refunded: 5000 }],
+        ['disputed', { disputed: true }],
+    ])('does not restore a %s purchase', async (_, charge) => {
+        const buyer = await newBuyer();
+        const guest = session(buyer, [item(PRODUCT.masterclass)]);
+        guest.client_reference_id = null;
+        guest.customer_details.email = 'buyer@example.invalid';
+        guest.payment_intent = { latest_charge: charge };
+
+        await checkoutReturn(buyer, [guest]);
+
+        const { rows } = await db.query('SELECT 1 FROM user_access_grants WHERE user_id = $1', [buyer]);
+        expect(rows).toHaveLength(0);
+    });
+
+    it('still restores a paid guest purchase that is hers', async () => {
+        const buyer = await newBuyer();
+        const guest = session(buyer, [item(PRODUCT.masterclass)]);
+        guest.client_reference_id = null;
+        guest.customer_details.email = 'buyer@example.invalid';
+        guest.payment_intent = { latest_charge: { refunded: false, amount_refunded: 0, disputed: false } };
+
+        await checkoutReturn(buyer, [guest]);
+
+        expect(await masterclassGrant(buyer)).toBeDefined();
     });
 });
 
