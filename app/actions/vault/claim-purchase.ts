@@ -5,6 +5,7 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { checkEmailRateLimit } from '@/app/lib/rate-limit';
 import { getErrorMessage } from '@/app/lib/errors';
 import { consumePurchaseClaim, isClaimOpen } from '@/app/lib/purchase-claims';
+import { findUserByEmail } from '@/app/lib/guest-purchase';
 
 /**
  * Turning a completed guest checkout into a usable login.
@@ -61,16 +62,9 @@ async function loadPaidSession(sessionId: string) {
     return { email };
 }
 
+/** Her account, found directly rather than by paging through everyone (SCALE-001). */
 async function findUser(email: string) {
-    const admin = createAdminClient();
-    for (let page = 1; page <= 10; page++) {
-        const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-        if (error || !data?.users?.length) return null;
-        const hit = data.users.find((u) => u.email?.toLowerCase() === email);
-        if (hit) return hit;
-        if (data.users.length < 200) return null;
-    }
-    return null;
+    return findUserByEmail(createAdminClient(), email);
 }
 
 /** What the welcome page needs to decide what to render. */

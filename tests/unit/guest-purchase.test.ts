@@ -23,6 +23,18 @@ beforeEach(() => {
     vi.clearAllMocks()
     listUsers.mockResolvedValue({ data: { users: [] }, error: null })
     updateUserById.mockResolvedValue({ data: {}, error: null })
+    // The lookup is auth_user_id_by_email + getUserById since migration 31.
+    // By default both answer from the accounts a test lists through listUsers,
+    // so each fixture still says which accounts exist.
+    const listed = async () => ((await listUsers({ page: 1, perPage: 200 }))?.data?.users ?? []) as { id: string; email?: string }[]
+    rpc.mockImplementation(async (_fn: string, { p_email }: { p_email: string }) => {
+        const hit = (await listed()).find(u => u.email?.toLowerCase() === p_email.toLowerCase())
+        return { data: hit?.id ?? null, error: null }
+    })
+    getUserById.mockImplementation(async (id: string) => {
+        const all = listUsers.mock.results.length ? await listUsers.mock.results.at(-1)!.value : { data: { users: [] } }
+        return { data: { user: (all?.data?.users ?? []).find((u: { id: string }) => u.id === id) ?? null }, error: null }
+    })
 })
 
 describe('resolveOrCreateUserByEmail', () => {
@@ -175,7 +187,7 @@ describe('resolveOrCreateUserByEmail', () => {
     // most 10 × 200 accounts. Past the 2,000th, a returning buyer was not
     // found; createUser then failed "already registered", the re-resolve
     // failed the same way, and the webhook answered 500 for ever.
-    it.fails('finds a returning buyer however many accounts there are', async () => {
+    it('finds a returning buyer however many accounts there are', async () => {
         const page = (n: number) => Array.from({ length: 200 }, (_, i) => ({ id: `other-${n}-${i}`, email: `other${n}-${i}@example.invalid` }))
         listUsers.mockImplementation(async ({ page: n }: { page: number }) => ({ data: { users: page(n) }, error: null }))
         rpc.mockResolvedValue({ data: 'buyer-2001', error: null })
@@ -188,6 +200,9 @@ describe('resolveOrCreateUserByEmail', () => {
 
         expect(result).toEqual({ userId: 'buyer-2001', created: false, needsWayIn: false })
         expect(createUser).not.toHaveBeenCalled()
+        expect(rpc).toHaveBeenCalledWith('auth_user_id_by_email', { p_email: 'late@example.invalid' })
+        // Found directly: nobody pages through the whole user table any more.
+        expect(listUsers).not.toHaveBeenCalled()
     })
 
     it('returns null for a missing or malformed email so the caller can fail loudly', async () => {
@@ -229,3 +244,13 @@ describe('generateSetPasswordLink', () => {
         expect(await generateSetPasswordLink(admin, 'a@b.com', 'https://site')).toBeNull()
     })
 })
+
+describe('findUserByEmail', () => {
+    it('throws when the lookup fails, so "could not look" never becomes "create a duplicate"', async () => {
+        rpc.mockResolvedValue({ data: null, error: { message: 'timeout' } })
+
+        await expect(resolveOrCreateUserByEmail(admin, 'any@example.invalid')).rejects.toThrow(/lookup failed/)
+        expect(createUser).not.toHaveBeenCalled()
+    })
+})
+

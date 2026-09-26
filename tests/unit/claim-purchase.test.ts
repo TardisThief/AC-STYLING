@@ -59,6 +59,17 @@ beforeEach(() => {
     isOpen.mockResolvedValue(true)
     admin.auth.admin.updateUserById.mockResolvedValue({ data: {}, error: null })
     signIn.mockResolvedValue({ error: null })
+    // Accounts are listed through listUsers in these fixtures; the lookup
+    // (migration 31) answers from them by default.
+    admin.rpc.mockImplementation(async (_fn: string, { p_email }: { p_email: string }) => {
+        const res = await admin.auth.admin.listUsers({ page: 1, perPage: 200 })
+        const hit = (res?.data?.users ?? []).find((u: { email: string }) => u.email === p_email)
+        return { data: hit?.id ?? null, error: null }
+    })
+    admin.auth.admin.getUserById.mockImplementation(async (id: string) => {
+        const res = await admin.auth.admin.listUsers({ page: 1, perPage: 200 })
+        return { data: { user: (res?.data?.users ?? []).find((u: { id: string }) => u.id === id) ?? null }, error: null }
+    })
 })
 
 describe('claimPurchase', () => {
@@ -111,7 +122,7 @@ describe('getPurchaseSession', () => {
 // SCALE-001: the welcome page found her account by paging through at most
 // 2,000 users. Past that it said "still being set up" for ever.
 describe('finding her account', () => {
-    it.fails('finds it however many accounts there are', async () => {
+    it('finds it however many accounts there are', async () => {
         const page = (n: number) => Array.from({ length: 200 }, (_, i) => ({ id: `other-${n}-${i}`, email: `o${n}-${i}@example.invalid`, last_sign_in_at: null }))
         admin.auth.admin.listUsers.mockImplementation(async ({ page: n }: { page: number }) => ({ data: { users: page(n) }, error: null }))
         admin.rpc.mockResolvedValue({ data: 'buyer-id', error: null })

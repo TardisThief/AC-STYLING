@@ -45,9 +45,7 @@ export async function resolveOrCreateUserByEmail(
     const clean = email?.trim().toLowerCase();
     if (!clean || !clean.includes('@')) return null;
 
-    // listUsers is paginated and has no exact-email filter in this SDK version,
-    // so ask for the one address and compare. A miss here would create a
-    // duplicate account, so it is worth being explicit.
+    // A miss here would create a duplicate account, so it is worth being explicit.
     const existing = await findUserByEmail(admin, clean);
     if (existing) return attachToExisting(admin, existing);
 
@@ -82,23 +80,29 @@ async function attachToExisting(
     return { userId: user.id, created: false, needsWayIn: !user.last_sign_in_at };
 }
 
-async function findUserByEmail(
+/**
+ * The auth user with this email, or null.
+ *
+ * Through auth_user_id_by_email (migration 31, service role only), then the
+ * admin API for the full user. This used to page through listUsers — which
+ * has no email filter in this SDK version — for at most 10 x 200 users, so
+ * past the 2,000th account a returning buyer was simply not found (SCALE-001,
+ * tests/unit/guest-purchase.test.ts). Shared with the /welcome page.
+ *
+ * Throws on a failed lookup: "could not look" is not "no such account", and
+ * treating it as one would create a duplicate.
+ */
+export async function findUserByEmail(
     admin: SupabaseClient,
     email: string
 ): Promise<User | null> {
-    // Scan a bounded number of pages rather than the whole table; the address
-    // is almost always on the first page for a recent signup, and an unbounded
-    // loop in a webhook is its own hazard.
-    for (let page = 1; page <= 10; page++) {
-        const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-        if (error || !data?.users?.length) return null;
+    const { data: id, error } = await admin.rpc('auth_user_id_by_email', { p_email: email });
+    if (error) throw new Error(`account lookup failed: ${error.message}`);
+    if (!id) return null;
 
-        const hit = data.users.find((u) => u.email?.toLowerCase() === email);
-        if (hit) return hit;
-
-        if (data.users.length < 200) return null;
-    }
-    return null;
+    const { data, error: userError } = await admin.auth.admin.getUserById(id as string);
+    if (userError) throw new Error(`account read failed: ${userError.message}`);
+    return data?.user ?? null;
 }
 
 /**

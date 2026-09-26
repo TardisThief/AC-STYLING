@@ -189,11 +189,23 @@ export async function POST(req: Request) {
                 return new Response('No user id and no email', { status: 500 });
             }
 
-            const resolved = await resolveOrCreateUserByEmail(
-                supabase,
-                customerEmail,
-                customerName !== 'No Name' ? customerName : null
-            );
+            // A failed account lookup throws (migration 31): "could not look"
+            // must not become "no account, create one". This runs before the
+            // try below, so it is caught here — an escaped throw would leave
+            // the idempotency mark in place and Stripe's retry would be
+            // answered "already processed", losing the purchase.
+            let resolved: Awaited<ReturnType<typeof resolveOrCreateUserByEmail>>;
+            try {
+                resolved = await resolveOrCreateUserByEmail(
+                    supabase,
+                    customerEmail,
+                    customerName !== 'No Name' ? customerName : null
+                );
+            } catch (lookupErr) {
+                await logEvent('fatal_error', `Account lookup failed for ${customerEmail}: ${(lookupErr as Error).message}`);
+                await releaseIdempotency();
+                return new Response('Account lookup failed', { status: 500 });
+            }
 
             if (!resolved) {
                 await logEvent('fatal_error', `Could not resolve an account for ${customerEmail}`);
