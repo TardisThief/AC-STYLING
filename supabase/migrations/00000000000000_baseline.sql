@@ -31,6 +31,36 @@ ALTER SCHEMA "public" OWNER TO "pg_database_owner";
 COMMENT ON SCHEMA "public" IS 'standard public schema';
 
 --
+-- Name: assign_wardrobe("uuid", "uuid"); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION "public"."assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "uuid") RETURNS "void"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO ''
+    AS $$
+BEGIN
+    UPDATE public.wardrobes SET owner_id = p_user_id, updated_at = now() WHERE id = p_wardrobe_id;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'wardrobe % does not exist', p_wardrobe_id USING ERRCODE = 'P0002';
+    END IF;
+
+    UPDATE public.profiles SET active_studio_client = true WHERE id = p_user_id;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'profile % does not exist', p_user_id USING ERRCODE = 'P0002';
+    END IF;
+
+    UPDATE public.wardrobe_items SET user_id = p_user_id WHERE wardrobe_id = p_wardrobe_id;
+END $$;
+
+ALTER FUNCTION "public"."assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "uuid") OWNER TO "postgres";
+
+--
+-- Name: FUNCTION "assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "uuid"); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION "public"."assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "uuid") IS 'Give a wardrobe, its items and Studio access to one client in a single transaction (migration 28). Service role only.';
+
+--
 -- Name: can_access_wardrobe_object("text"); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1035,7 +1065,7 @@ CREATE TABLE "public"."wardrobes" (
     "status" "text" DEFAULT 'active'::"text",
     "created_at" timestamp with time zone DEFAULT "now"(),
     "updated_at" timestamp with time zone DEFAULT "now"(),
-    "upload_token_expires_at" timestamp with time zone,
+    "upload_token_expires_at" timestamp with time zone DEFAULT ("now"() + '7 days'::interval) NOT NULL,
     CONSTRAINT "wardrobes_status_check" CHECK (("status" = ANY (ARRAY['active'::"text", 'archived'::"text"])))
 );
 
@@ -2489,6 +2519,13 @@ GRANT USAGE ON SCHEMA "public" TO "postgres";
 GRANT USAGE ON SCHEMA "public" TO "anon";
 GRANT USAGE ON SCHEMA "public" TO "authenticated";
 GRANT USAGE ON SCHEMA "public" TO "service_role";
+
+--
+-- Name: FUNCTION "assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "uuid"); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION "public"."assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "uuid") FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "uuid") TO "service_role";
 
 --
 -- Name: FUNCTION "can_access_wardrobe_object"("object_name" "text"); Type: ACL; Schema: public; Owner: postgres

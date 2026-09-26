@@ -17,7 +17,7 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -57,7 +57,8 @@ const db = () => state.db!;
 
 beforeAll(async () => {
     state.db = await createLiveSchemaDb();
-    await state.db.exec(readMigration('20260926_28_wardrobe_token_expiry_and_assignment.sql'));
+    // Closed by migration 28, applied to production 2026-09-26.
+    await expectMigrationApplied(state.db, '20260926_28_wardrobe_token_expiry_and_assignment.sql');
     await createUser(db(), CLIENT, { active_studio_client: true });
     await createUser(db(), TWO_WARDROBES, { active_studio_client: true });
     await createUser(db(), NEW_OWNER);
