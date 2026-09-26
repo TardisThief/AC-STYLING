@@ -12,7 +12,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 const MEMBER = '00000000-0000-4000-8000-00000000e001';
@@ -54,10 +54,13 @@ beforeAll(async () => {
     await db.query(`INSERT INTO masterclasses (id, title, resource_urls, is_published) VALUES ($1, 'Draft', '[{"name":"Workbook","url":"https://files.invalid/workbook.pdf"},{"name":"Private workbook","path":"workbook.pdf"}]', false)`, [MC]);
     await db.query(`INSERT INTO chapters (id, slug, title, video_id, masterclass_id, lab_questions, resource_urls) VALUES ($1, 'm1', 'Module', 'pending_video', $2, '[{"key":"q1","label":"Paid question","placeholder":""},{"key":"q2","label":"Second","placeholder":""}]', '[{"name":"Sheet","path":"sheet.pdf"},{"name":"Gone","path":"missing.pdf"}]')`, [CH, MC]);
 
-    // Before migration 30 a signed-out caller reads the questions.
-    const leak = await asRole(db, 'anon', null, 'SELECT lab_questions FROM chapters');
-    expect(leak.rows).toHaveLength(1);
-    await db.exec(readMigration('20260926_30_paid_content_columns.sql'));
+    // Closed by migration 30, applied to production 2026-09-26. The bucket it
+    // creates lives in storage, outside the dump, so it is inserted here as
+    // the migration does -- before asking, because the migration's guard
+    // recognises itself by that bucket.
+    await db.exec(`INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+        VALUES ('vault-resources', 'vault-resources', false, 15728640, ARRAY['application/pdf','application/zip','application/x-zip-compressed','image/jpeg','image/png','image/webp'])`);
+    await expectMigrationApplied(db, '20260926_30_paid_content_columns.sql');
 }, 60000);
 
 afterAll(async () => { await db?.close(); });

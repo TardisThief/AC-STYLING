@@ -67,6 +67,17 @@ try {
         b.allowed_mime_types.every(t => ['image/jpeg','image/png','image/webp','image/gif','image/avif','image/heic','image/heif',
             ...(b.id === 'vault-assets' ? ['application/pdf','application/zip','application/x-zip-compressed'] : [])].includes(t))));
     check('wardrobe bucket stays private', buckets.find(b => b.id === 'studio-wardrobe')?.public === false);
+    // Migration 30: Lab questions and downloads are paid content.
+    for (const role of ['anon', 'authenticated']) {
+        const { rows: [p] } = await db.query(`SELECT
+            has_column_privilege($1, 'public.chapters', 'lab_questions', 'SELECT') AS q,
+            has_column_privilege($1, 'public.chapters', 'resource_urls', 'SELECT') AS cr,
+            has_column_privilege($1, 'public.masterclasses', 'resource_urls', 'SELECT') AS mr,
+            has_column_privilege($1, 'public.masterclasses', 'title', 'SELECT') AS title`, [role]);
+        check(`${role}: paid content columns closed, catalogue open`, !p.q && !p.cr && !p.mr && p.title);
+    }
+    const { rows: [resources] } = await db.query("SELECT public FROM storage.buckets WHERE id = 'vault-resources'");
+    check('paid downloads bucket exists and is private', resources?.public === false);
     await db.query('ROLLBACK');
     console.log(`${failures} failed structural checks. Also review all permissive policies and run release smoke tests.`);
     process.exitCode = failures ? 1 : 0;

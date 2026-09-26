@@ -28,7 +28,7 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   (MAIL-001); a retried guest delivery sent no welcome (PAY-002); checkout sold
   any Stripe price the browser named (PAY-004). The rest of its findings were
   then worked through the same way (below). Migrations are applied and
-  verified through **31, except 30**, which waits on a deploy (below).
+  verified through **31**; the code is deployed (`afde214`).
 - **The Vault is populated but mostly parked.** 4 masterclasses, **21 modules**
   and 4 standalone courses, all bilingual. **Colorimetry is published and
   priced, so it is on sale, while all 21 modules are unpublished** — checked
@@ -97,16 +97,12 @@ backup contained any privileges, and even with them a straight restore into
 Supabase reopens every locked column. Fixed and drilled on 2026-09-26: see
 "Privileges" in [`docs/DISASTER-RECOVERY.md`](docs/DISASTER-RECOVERY.md).
 
-**Waiting on a deploy — do in this order:**
-
-1. Push `main` (Vercel deploys it). Migrations 27, 28 and 31 are already live
-   and this code needs them; migration 30 must NOT be live before it.
-2. Apply migration 30 (snapshot, dry run with probes, apply, re-probe; see
-   `supabase/migrations/README.md`), then
-   `node scripts/ops/move_public_resources.mjs` and `--apply`, which moves the
-   one live PDF out of the public bucket.
-3. Check a module page as a member with access (resources and Lab load) and
-   as one without (count only).
+**Deployed 2026-09-26:** `main` pushed and live, then migration 30 applied
+and the one live download (Colorimetry's PDF) moved into the private bucket;
+records in `supabase/migrations/README.md`. Not checked by a person yet: a
+module page as a member with access (resources and Lab load) and as one
+without (question count only). That needs a member login, so it is a quick
+check for the owner.
 
 **Still open, and why:**
 

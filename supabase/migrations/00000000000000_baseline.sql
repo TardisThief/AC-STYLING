@@ -2761,25 +2761,11 @@ GRANT SELECT("thumbnail_url") ON TABLE "public"."chapters" TO "anon";
 GRANT SELECT("thumbnail_url") ON TABLE "public"."chapters" TO "authenticated";
 
 --
--- Name: COLUMN "chapters"."lab_questions"; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT("lab_questions") ON TABLE "public"."chapters" TO "anon";
-GRANT SELECT("lab_questions") ON TABLE "public"."chapters" TO "authenticated";
-
---
 -- Name: COLUMN "chapters"."takeaways"; Type: ACL; Schema: public; Owner: postgres
 --
 
 GRANT SELECT("takeaways") ON TABLE "public"."chapters" TO "anon";
 GRANT SELECT("takeaways") ON TABLE "public"."chapters" TO "authenticated";
-
---
--- Name: COLUMN "chapters"."resource_urls"; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT("resource_urls") ON TABLE "public"."chapters" TO "anon";
-GRANT SELECT("resource_urls") ON TABLE "public"."chapters" TO "authenticated";
 
 --
 -- Name: COLUMN "chapters"."masterclass_id"; Type: ACL; Schema: public; Owner: postgres
@@ -2885,9 +2871,142 @@ GRANT ALL ON TABLE "public"."lookbooks" TO "service_role";
 -- Name: TABLE "masterclasses"; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE "public"."masterclasses" TO "anon";
-GRANT ALL ON TABLE "public"."masterclasses" TO "authenticated";
+GRANT INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,MAINTAIN,UPDATE ON TABLE "public"."masterclasses" TO "anon";
+GRANT INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,MAINTAIN,UPDATE ON TABLE "public"."masterclasses" TO "authenticated";
 GRANT ALL ON TABLE "public"."masterclasses" TO "service_role";
+
+--
+-- Name: COLUMN "masterclasses"."id"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("id") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("id") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."title"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("title") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("title") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."subtitle"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("subtitle") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("subtitle") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."description"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("description") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("description") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."thumbnail_url"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("thumbnail_url") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("thumbnail_url") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."order_index"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("order_index") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("order_index") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."created_at"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("created_at") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("created_at") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."updated_at"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("updated_at") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("updated_at") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."stripe_product_id"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("stripe_product_id") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("stripe_product_id") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."price_id"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("price_id") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("price_id") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."title_es"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("title_es") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("title_es") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."subtitle_es"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("subtitle_es") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("subtitle_es") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."description_es"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("description_es") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("description_es") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."takeaways_es"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("takeaways_es") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("takeaways_es") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."video_url"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("video_url") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("video_url") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."is_published"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("is_published") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("is_published") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."available_at"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("available_at") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("available_at") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."price_display"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("price_display") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("price_display") ON TABLE "public"."masterclasses" TO "authenticated";
+
+--
+-- Name: COLUMN "masterclasses"."runtime_minutes"; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT("runtime_minutes") ON TABLE "public"."masterclasses" TO "anon";
+GRANT SELECT("runtime_minutes") ON TABLE "public"."masterclasses" TO "authenticated";
 
 --
 -- Name: TABLE "offers"; Type: ACL; Schema: public; Owner: postgres
