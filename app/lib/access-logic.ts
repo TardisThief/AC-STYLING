@@ -117,7 +117,8 @@ async function setProfileFlag(
     supabase: SupabaseClient,
     userId: string,
     flag: 'has_full_unlock' | 'has_course_pass' | 'has_masterclass_pass',
-    isRenewal: boolean
+    isRenewal: boolean,
+    lineItemId: string | null
 ): Promise<void> {
     // Compare-and-set: the write only lands if the term is still the one it
     // was computed from. Two paid renewals processed at once used to read the
@@ -125,9 +126,14 @@ async function setProfileFlag(
     for (let attempt = 0; attempt < TERM_WRITE_ATTEMPTS; attempt++) {
         const { data: held } = await supabase
             .from('profiles')
-            .select('access_expires_at, access_renewal_count, has_full_unlock, has_course_pass, has_masterclass_pass')
+            .select('access_expires_at, access_renewal_count, access_term_line_item, has_full_unlock, has_course_pass, has_masterclass_pass')
             .eq('id', userId)
             .maybeSingle();
+
+        // This line item already extended the term — a run that died after
+        // granting, re-claimed (PAY-001, migration 27). Doing it again would
+        // be a free year.
+        if (lineItemId && held?.access_term_line_item === lineItemId && held?.[flag]) return;
 
         const heldExpiry = (held?.access_expires_at as string | null) ?? null;
         const heldCount = (held?.access_renewal_count as number | null) ?? 0;
@@ -141,6 +147,9 @@ async function setProfileFlag(
                 [flag]: true,
                 access_expires_at: holdsPerpetualPass ? null : nextExpiry(heldExpiry),
                 access_renewal_count: isRenewal ? heldCount + 1 : 0,
+                // In the same write as the extension, so a crash cannot
+                // separate the year from the record of who paid for it.
+                access_term_line_item: lineItemId,
             })
             .eq('id', userId)
             .eq('access_renewal_count', heldCount);
@@ -172,7 +181,8 @@ async function grantItemForTerm(
     userId: string,
     column: 'masterclass_id' | 'chapter_id',
     itemId: string,
-    isRenewal: boolean
+    isRenewal: boolean,
+    lineItemId: string | null
 ): Promise<{ error: { code?: string; message: string } | null }> {
     const { error } = await supabase.from('user_access_grants').insert({
         user_id: userId,
@@ -180,6 +190,7 @@ async function grantItemForTerm(
         grant_type: 'purchase',
         expires_at: nextExpiry(null),
         renewal_count: 0,
+        term_line_item: lineItemId,
     });
 
     if (!isDuplicate(error)) return { error };
@@ -189,13 +200,16 @@ async function grantItemForTerm(
     for (let attempt = 0; attempt < TERM_WRITE_ATTEMPTS; attempt++) {
         const { data: held, error: readError } = await supabase
             .from('user_access_grants')
-            .select('expires_at, renewal_count')
+            .select('expires_at, renewal_count, term_line_item')
             .eq('user_id', userId)
             .eq(column, itemId)
             .maybeSingle();
 
         if (readError) return { error: readError };
         if (!held) return { error: { message: 'grant vanished between insert and extend' } };
+
+        // Already extended by this line item: see setProfileFlag.
+        if (lineItemId && held.term_line_item === lineItemId) return { error: null };
 
         const heldExpiry = (held.expires_at as string | null) ?? null;
         const heldCount = (held.renewal_count as number | null) ?? 0;
@@ -209,6 +223,7 @@ async function grantItemForTerm(
             .update({
                 expires_at: nextExpiry(heldExpiry),
                 renewal_count: isRenewal ? heldCount + 1 : 0,
+                term_line_item: lineItemId,
             })
             .eq('user_id', userId)
             .eq(column, itemId)
@@ -224,16 +239,22 @@ async function grantItemForTerm(
 }
 
 /**
- * `isRenewal` is last and optional so every existing caller keeps working: a
- * first purchase is the default and the only thing that sets it is the webhook,
+ * `isRenewal` is optional so every existing caller keeps working: a first
+ * purchase is the default and the only thing that sets it is the webhook,
  * reading the marker that `createRenewalCheckoutSession` put on the session.
+ *
+ * `lineItemId` makes a term extension idempotent per paid line item
+ * (migration 27): a re-run of the same line item finds its own id on the term
+ * and adds nothing. Fulfilment always passes it; without it (admin tools,
+ * tests) every call extends.
  */
 export async function grantAccessForProduct(
     supabase: SupabaseClient,
     userId: string,
     productId: string,
     logFn?: (status: string, msg: string) => Promise<void>,
-    isRenewal: boolean = false
+    isRenewal: boolean = false,
+    lineItemId: string | null = null
 ): Promise<boolean> {
     // 1. Masterclass (Specific Check)
     const { data: masterclass, error: mcError } = await supabase
@@ -251,7 +272,8 @@ export async function grantAccessForProduct(
             userId,
             'masterclass_id',
             masterclass.id,
-            isRenewal
+            isRenewal,
+            lineItemId
         );
         if (grantError) {
             // Previously this logged and returned true, so the webhook answered
@@ -278,7 +300,8 @@ export async function grantAccessForProduct(
             userId,
             'chapter_id',
             chapter.id,
-            isRenewal
+            isRenewal,
+            lineItemId
         );
         if (grantError) {
             if (logFn) await logFn('error', `Chapter Grant Failed: ${grantError.message}`);
@@ -300,7 +323,7 @@ export async function grantAccessForProduct(
     // callers guard against that before calling, but the comparison should not
     // depend on them continuing to.
     if (FULL_UNLOCK_PRODUCT_ID && productId === FULL_UNLOCK_PRODUCT_ID) {
-        await setProfileFlag(supabase, userId, 'has_full_unlock', isRenewal);
+        await setProfileFlag(supabase, userId, 'has_full_unlock', isRenewal, lineItemId);
         await recordOfferGrant(supabase, userId, 'full_access', logFn);
         if (logFn) await logFn('success', 'Granted Full Access (Env Match)');
         return true;
@@ -320,17 +343,17 @@ export async function grantAccessForProduct(
 
     if (offer) {
         if (offer.slug === 'full_access') {
-            await setProfileFlag(supabase, userId, 'has_full_unlock', isRenewal);
+            await setProfileFlag(supabase, userId, 'has_full_unlock', isRenewal, lineItemId);
             await recordOfferGrant(supabase, userId, offer.slug, logFn);
             if (logFn) await logFn('success', 'Granted Full Access (Offer)');
             return true;
         } else if (offer.slug === 'masterclass_pass') {
-            await setProfileFlag(supabase, userId, 'has_masterclass_pass', isRenewal);
+            await setProfileFlag(supabase, userId, 'has_masterclass_pass', isRenewal, lineItemId);
             await recordOfferGrant(supabase, userId, offer.slug, logFn);
             if (logFn) await logFn('success', 'Granted Masterclass Pass (Offer)');
             return true;
         } else if (offer.slug === 'course_pass') {
-            await setProfileFlag(supabase, userId, 'has_course_pass', isRenewal);
+            await setProfileFlag(supabase, userId, 'has_course_pass', isRenewal, lineItemId);
             await recordOfferGrant(supabase, userId, offer.slug, logFn);
             if (logFn) await logFn('success', 'Granted Course Pass (Offer)');
             return true;

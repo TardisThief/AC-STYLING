@@ -262,7 +262,7 @@ export async function fulfillLineItem(
 
         // Throws on a write that had to happen and did not; returns false when
         // the product is simply not content we grant.
-        const granted = await grantAccessForProduct(admin, ref.userId, ref.productId, logFn, isRenewal);
+        const granted = await grantAccessForProduct(admin, ref.userId, ref.productId, logFn, isRenewal, ref.lineItemId);
 
         if (granted) {
             // Only now, with the grant committed.

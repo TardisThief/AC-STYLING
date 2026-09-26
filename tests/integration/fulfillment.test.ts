@@ -21,7 +21,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
+import { createLiveSchemaDb, createUser, expectMigrationApplied, readMigration } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 type LineItem = { id: string; price: { product: string }; amount_total: number; currency: string };
@@ -186,6 +186,9 @@ beforeAll(async () => {
     await db.query(`INSERT INTO services (title, stripe_product_id, price_id, unlocks_studio_access) VALUES ('Studio', $1, 'price_studio_service', true)`, [PRODUCT.studioService]);
 
     await expectMigrationApplied(db, '20260925_23_grant_uniqueness_and_studio_unlock.sql');
+    // PAY-001: the tests below reproduce it on the schema without this, then
+    // pass with it.
+    await db.exec(readMigration('20260926_27_term_line_item.sql'));
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
@@ -444,7 +447,7 @@ describe('Paid means granted', () => {
     // record completion all fail — leaves the row 'processing'; after
     // STALE_CLAIM_MS it is re-claimed and granted again, and since migration
     // 21 a grant is a year. The row below is exactly what that run leaves.
-    it.fails.each([
+    it.each([
         ['masterclass', PRODUCT.masterclass],
         ['standalone course', PRODUCT.chapter],
         ['Masterclass Pass', PRODUCT.masterclassPass],
