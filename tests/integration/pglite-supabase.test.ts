@@ -91,4 +91,11 @@ describe('pglite-supabase', () => {
         const member = await pgliteSupabase(db, 'authenticated', user).rpc('check_rate_limit', { p_key: 'x', p_max: 1, p_window: '1 hour' });
         expect(member.error?.code).toBe('42501');
     });
+
+    it('binds an array of objects as jsonb, and still refuses a plain array', async () => {
+        const client = pgliteSupabase(db);
+        const { error } = await client.from('lookbooks').insert({ title: 'Canvas', lookbook_items: [{ image_url: 'a.jpg', x: 1 }] });
+        expect(error).toBeNull();
+        await expect(Promise.resolve(client.from('wardrobe_items').insert({ tags: ['a', 'b'] }))).rejects.toThrow(/array columns/);
+    });
 });

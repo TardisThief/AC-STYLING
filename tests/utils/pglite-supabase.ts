@@ -45,10 +45,12 @@ function columnList(columns: string): string {
 function checkValue(value: unknown): unknown {
     if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) return value;
     // A plain object can only be bound for a jsonb column; Postgres parses the
-    // text against the column type. Arrays are refused: they may be text[].
-    if (typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype) {
-        return JSON.stringify(value);
-    }
+    // text against the column type. An array of plain objects likewise can
+    // only be jsonb (a lookbook canvas). Other arrays are refused: they may
+    // be text[], which JSON text would not bind to.
+    const plain = (v: unknown) => typeof v === 'object' && v !== null && !Array.isArray(v) && Object.getPrototypeOf(v) === Object.prototype;
+    if (plain(value)) return JSON.stringify(value);
+    if (Array.isArray(value) && value.length > 0 && value.every(plain)) return JSON.stringify(value);
     throw new Error(`pglite-supabase: unsupported value ${JSON.stringify(value)} (array columns are not implemented)`);
 }
 

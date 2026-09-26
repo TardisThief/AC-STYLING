@@ -33,6 +33,12 @@ vi.mock('@/utils/supabase/server', () => ({
 vi.mock('@/utils/supabase/admin-client', () => ({
     createSupabaseAdminClient: vi.fn(() => ({
         auth: { admin: { deleteUser: mockDeleteUser } },
+        // No wardrobes: moving wardrobe photos is covered against the live
+        // schema in tests/integration/wardrobe-outlives-client.test.ts.
+        from: () => ({
+            select: () => ({ eq: async () => ({ data: [], error: null }) }),
+            delete: () => ({ eq: () => ({ is: async () => ({ error: null }) }) }),
+        }),
         storage: { from: vi.fn(() => ({ list: mockList, remove: mockRemove })) },
     })),
 }))

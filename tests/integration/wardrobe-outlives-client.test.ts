@@ -16,7 +16,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { createLiveSchemaDb, createUser } from '../utils/pglite-db';
+import { createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -27,10 +27,12 @@ const W = id(101);
 const W2 = id(102);
 const PUBLIC = 'https://project.supabase.co/storage/v1/object/public/studio-wardrobe/';
 
-const { state, buckets, failMoves } = vi.hoisted(() => ({
+const { state, buckets, failMoves, failReads } = vi.hoisted(() => ({
     state: { db: null as PGlite | null, user: null as string | null },
     buckets: {} as Record<string, Set<string>>,
     failMoves: new Set<string>(),
+    /** Tables whose reads fail, as a dropped connection would. */
+    failReads: new Set<string>(),
 }));
 
 function bucket(name: string) {
@@ -59,8 +61,11 @@ function bucket(name: string) {
 
 function admin() {
     const client = pgliteSupabase(state.db!);
+    const failed = { data: null, error: { message: 'connection reset' } };
     return {
-        from: client.from.bind(client),
+        from: (table: string) => failReads.has(table)
+            ? { select: () => ({ eq: async () => failed }) }
+            : client.from(table),
         rpc: client.rpc.bind(client),
         storage: { from: bucket },
         auth: {
@@ -95,6 +100,7 @@ const rows = async (sql: string, params: unknown[] = []) => (await db().query<Re
 
 beforeAll(async () => {
     state.db = await createLiveSchemaDb();
+    await state.db.exec(readMigration('20260926_33_wardrobe_outlives_client.sql'));
 }, 60000);
 
 afterAll(async () => { await state.db?.close(); });
@@ -134,13 +140,13 @@ describe('a client closes her account', () => {
         expect(await rows('SELECT 1 FROM auth.users WHERE id = $1', [CLIENT])).toHaveLength(0);
     });
 
-    it.fails('keeps the wardrobe with its garments and its lookbook', async () => {
+    it('keeps the wardrobe with its garments and its lookbook', async () => {
         expect(await rows('SELECT 1 FROM wardrobes WHERE id = $1', [W])).toHaveLength(1);
         expect((await rows('SELECT id FROM wardrobe_items WHERE wardrobe_id = $1 ORDER BY id', [W])).map(r => r.id)).toEqual([id(201), id(202), id(204)]);
         expect(await rows('SELECT 1 FROM lookbooks WHERE id = $1', [id(301)])).toHaveLength(1);
     });
 
-    it.fails('moves the wardrobe’s photos into its own folder and points everything at them', async () => {
+    it('moves the wardrobe’s photos into its own folder and points everything at them', async () => {
         const objects = buckets['studio-wardrobe'];
         expect([...objects].filter(p => p.startsWith(`wardrobe/${W}/`)).sort())
             .toEqual([`wardrobe/${W}/a.jpg`, `wardrobe/${W}/b.jpg`, `wardrobe/${W}/thumb.jpg`]);
@@ -151,7 +157,7 @@ describe('a client closes her account', () => {
         expect((lb.lookbook_items as { image_url: string }[])[0].image_url).toBe(`wardrobe/${W}/a.jpg`);
     });
 
-    it.fails('never deletes a photo it could not move, and says the cleanup was incomplete', async () => {
+    it('never deletes a photo it could not move, and says the cleanup was incomplete', async () => {
         expect(buckets['studio-wardrobe'].has(`${CLIENT}/fail.jpg`)).toBe(true);
         const [d] = await rows('SELECT image_url FROM wardrobe_items WHERE id = $1', [id(204)]);
         expect(d.image_url).toBe(`${CLIENT}/fail.jpg`);
@@ -170,8 +176,37 @@ describe('a client closes her account', () => {
     });
 });
 
+describe('when moving the photos cannot even start', () => {
+    // The near-miss found while building this: an unexpected failure aborted
+    // the relocation, and the cleanup then deleted her folder anyway,
+    // including photos the surviving wardrobe still pointed at.
+    it('closes the account but leaves her wardrobe folder whole', async () => {
+        const CLIENT2 = id(9);
+        const W9 = id(109);
+        await createUser(db(), CLIENT2);
+        await db().query(`INSERT INTO wardrobes (id, owner_id, title, status) VALUES ($1, $2, 'Hers too', 'active')`, [W9, CLIENT2]);
+        await db().query(`INSERT INTO wardrobe_items (user_id, wardrobe_id, image_url) VALUES ($1, $2, $3)`, [CLIENT2, W9, `${CLIENT2}/p.jpg`]);
+        buckets['studio-wardrobe'] = new Set([`${CLIENT2}/p.jpg`]);
+        buckets['avatars'] = new Set([`${CLIENT2}/avatar.png`]);
+        failMoves.clear();
+        failReads.add('lookbooks');
+        state.user = CLIENT2;
+        try {
+            const result = await deleteAccount();
+
+            expect(result).toMatchObject({ success: true, storageCleanupFailed: true });
+            expect(buckets['studio-wardrobe'].has(`${CLIENT2}/p.jpg`)).toBe(true);
+            expect(buckets['avatars'].size).toBe(0);
+            const [item] = await rows('SELECT image_url FROM wardrobe_items WHERE wardrobe_id = $1', [W9]);
+            expect(item.image_url).toBe(`${CLIENT2}/p.jpg`);
+        } finally {
+            failReads.clear();
+        }
+    });
+});
+
 describe('a wardrobe moves to another client', () => {
-    it.fails('takes its photos with it, into its own folder', async () => {
+    it('takes its photos with it, into its own folder', async () => {
         await createUser(db(), OLD_OWNER);
         await createUser(db(), NEW_OWNER);
         await db().query(`INSERT INTO wardrobes (id, owner_id, title, status) VALUES ($1, $2, 'Moving', 'active')`, [W2, OLD_OWNER]);

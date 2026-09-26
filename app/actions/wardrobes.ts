@@ -13,6 +13,7 @@ import { wardrobeUpdateSchema } from "@/app/lib/validation/wardrobes";
 import type { WardrobeItem } from "@/app/lib/types";
 import { MAX_ITEMS_PER_WARDROBE, uploadTokenExpiry } from '@/app/lib/wardrobe-tokens';
 import { checkIntakeUploadRate } from '@/app/lib/rate-limit';
+import { relocateWardrobePhotos } from '@/app/lib/wardrobe-relocation';
 
 // =============================================================================
 // Types
@@ -497,14 +498,18 @@ export async function getMyWardrobe(): Promise<{
 export async function assignWardrobe(
     wardrobeId: string,
     userId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; /** Photos left in the previous owner's folder (-1: relocation did not run). */ photosNotMoved?: number }> {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
+
+    const admin = createAdminClient();
+    const { data: before } = await admin.from('wardrobes').select('owner_id').eq('id', wardrobeId).maybeSingle();
+    const previousOwner = (before?.owner_id as string | null) ?? null;
 
     // Owner, her Studio access and the items' user_id, in one transaction
     // (migration 28). These were three writes; two failures were only logged,
     // and a wardrobe that did not exist still answered success (STUDIO-001).
-    const { error } = await createAdminClient().rpc('assign_wardrobe', {
+    const { error } = await admin.rpc('assign_wardrobe', {
         p_wardrobe_id: wardrobeId,
         p_user_id: userId,
     });
@@ -512,6 +517,26 @@ export async function assignWardrobe(
     if (error) {
         console.error('Error assigning wardrobe:', error);
         return { success: false, error: error.code === 'P0002' ? 'Wardrobe or client not found.' : error.message };
+    }
+
+    // Photos stored under the previous owner's folder are readable only by
+    // that previous owner. Move them into the wardrobe's own folder, which
+    // follows the wardrobe to whoever owns it now (owner decision 2026-09-26).
+    // Not fatal: the assignment stands, and an admin can still see them.
+    if (previousOwner && previousOwner !== userId) {
+        try {
+            const { failed } = await relocateWardrobePhotos(admin, wardrobeId, previousOwner);
+            const notMoved = Object.keys(failed).length;
+            if (notMoved) {
+                console.error(`[assignWardrobe] ${notMoved} photo(s) of ${wardrobeId} not moved:`, failed);
+                revalidatePath('/vault/studio');
+                return { success: true, photosNotMoved: notMoved };
+            }
+        } catch (e) {
+            console.error('[assignWardrobe] photo relocation failed:', e);
+            revalidatePath('/vault/studio');
+            return { success: true, photosNotMoved: -1 };
+        }
     }
 
     revalidatePath('/vault/studio');
