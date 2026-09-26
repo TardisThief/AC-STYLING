@@ -247,6 +247,31 @@ class Builder implements PromiseLike<Result> {
 export function pgliteSupabase(db: PGlite, role: ApiRole = 'service_role', userId: string | null = null): SupabaseClient {
     const client = {
         from: (table: string) => new Builder(db, role, userId, table),
+        /**
+         * `select public.fn(arg => $1, ...)` as `role`, named arguments only,
+         * returning the scalar as `data` — what supabase-js gives for a
+         * function returning a single value. Set-returning functions are not
+         * implemented.
+         */
+        rpc: async (fn: string, args: Record<string, unknown> = {}): Promise<Result> => {
+            ident(fn);
+            const keys = Object.keys(args);
+            const params = keys.map(k => checkValue(args[k]));
+            const call = `SELECT public.${ident(fn)}(${keys.map((k, i) => `${ident(k)} => $${i + 1}`).join(', ')}) AS result`;
+            try {
+                const rows = await db.transaction(async (tx: Transaction) => {
+                    await tx.exec(`SET LOCAL ROLE ${role}`);
+                    await tx.query("SELECT set_config('request.jwt.claim.sub', $1, true), set_config('request.jwt.claim.role', $2, true)", [userId ?? '', role]);
+                    return (await tx.query<{ result: unknown }>(call, params)).rows;
+                });
+                const value = rows[0]?.result;
+                return { data: value instanceof Date ? value.toISOString() : value ?? null, error: null };
+            } catch (e) {
+                const err = e as { code?: string; message: string };
+                if (!err.code) throw e;
+                return { data: null, error: { code: err.code, message: err.message } };
+            }
+        },
     };
     return new Proxy(client, {
         get(target, prop) {

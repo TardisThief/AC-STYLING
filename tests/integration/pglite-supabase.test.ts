@@ -53,7 +53,7 @@ describe('pglite-supabase', () => {
         const builder = pgliteSupabase(db).from('offers').select('slug') as unknown as Record<string, unknown>;
         expect(builder.ilike).toBeUndefined();
         expect(() => pgliteSupabase(db).from('offers').select('slug, profiles:owner_id (email)')).not.toThrow();
-        expect(() => pgliteSupabase(db).rpc).toThrow(/not implemented/);
+        expect(() => pgliteSupabase(db).storage).toThrow(/not implemented/);
     });
 
     it('refuses options it does not understand instead of ignoring them', () => {
@@ -80,5 +80,15 @@ describe('pglite-supabase', () => {
     it('refuses a not() it does not implement rather than approximating it', () => {
         const client = pgliteSupabase(db);
         expect(() => client.from('offers').select('slug').not('slug', 'eq', 'x' as never)).toThrow(/only not/);
+    });
+
+    it('calls a function with named arguments as the given role, and reports its refusal', async () => {
+        const allowed = await pgliteSupabase(db).rpc('check_rate_limit', { p_key: 'adapter-test', p_max: 1, p_window: '1 hour' });
+        expect(allowed).toEqual({ data: true, error: null });
+        const again = await pgliteSupabase(db).rpc('check_rate_limit', { p_key: 'adapter-test', p_max: 1, p_window: '1 hour' });
+        expect(again.data).toBe(false);
+        // Migration 12 revoked EXECUTE from members.
+        const member = await pgliteSupabase(db, 'authenticated', user).rpc('check_rate_limit', { p_key: 'x', p_max: 1, p_window: '1 hour' });
+        expect(member.error?.code).toBe('42501');
     });
 });
