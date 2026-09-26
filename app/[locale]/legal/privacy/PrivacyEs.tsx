@@ -11,7 +11,7 @@ export default function PrivacyEs() {
     return (
         <article className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:text-ac-taupe prose-p:text-ac-taupe/80 prose-a:text-ac-espresso hover:prose-a:text-ac-taupe">
             <h1 className="font-serif text-4xl mb-4">AVISO DE PRIVACIDAD</h1>
-            <p className="text-sm text-gray-500 mb-8">Última actualización: 23 de septiembre de 2026</p>
+            <p className="text-sm text-gray-500 mb-8">Última actualización: 26 de septiembre de 2026</p>
 
             <p>
                 Este Aviso de Privacidad de AC Styling (&quot;<strong>nosotros</strong>&quot; o &quot;<strong>nuestro</strong>&quot;) describe cómo y por qué podríamos acceder a, recopilar, almacenar, usar y/o compartir (&quot;<strong>procesar</strong>&quot;) tu información personal cuando usas nuestros servicios (los &quot;<strong>Servicios</strong>&quot;), incluyendo cuando:
@@ -90,7 +90,7 @@ export default function PrivacyEs() {
 
             <p><strong>Datos de inicio de sesión con redes sociales.</strong> Ofrecemos la opción de registrarte e iniciar sesión con una cuenta de Google. Si eliges registrarte así, recopilamos la información de perfil descrita en la sección 7 más abajo. Google es el único inicio de sesión social que admitimos.</p>
 
-            <p><strong>Cargas de archivos.</strong> Si usas el Studio, puedes optar por subir fotografías de tus propias prendas. Esas imágenes se almacenan de forma privada y solo son visibles para ti y para tu estilista. Tu navegador puede pedirte permiso para usar la cámara cuando elijas tomar una fotografía; ese permiso se concede y se retira en tu navegador, no a través de nosotros.</p>
+            <p><strong>Cargas de archivos.</strong> Si usas el Studio, puedes optar por subir fotografías de tus propias prendas. Esas imágenes se almacenan de forma privada y solo son visibles para tu estilista y para la clienta a la que pertenece el guardarropa. Forman parte del guardarropa que tu estilista gestiona para ti, junto con los registros de prendas y los lookbooks creados a partir de ellas; la sección 8 explica qué ocurre con ese guardarropa si das de baja tu cuenta. Tu navegador puede pedirte permiso para usar la cámara cuando elijas tomar una fotografía; ese permiso se concede y se retira en tu navegador, no a través de nosotros.</p>
             <p>Toda la información personal que nos proporciones debe ser veraz, completa y exacta, y debes notificarnos cualquier cambio en ella.</p>
 
             <h3>Información recopilada automáticamente</h3>
@@ -196,8 +196,13 @@ export default function PrivacyEs() {
 
             <h2 id="inforetain">8. ¿CUÁNTO TIEMPO CONSERVAMOS TU INFORMACIÓN?</h2>
             <p><strong><em>En resumen:</em></strong> <em>Conservamos tu información durante el tiempo necesario para cumplir los fines descritos en este Aviso de Privacidad, salvo que la ley exija otra cosa.</em></p>
-            <p>Solo conservaremos tu información personal durante el tiempo necesario para los fines establecidos en este Aviso de Privacidad, salvo que la ley exija o permita un periodo de conservación más largo (por ejemplo, por requisitos fiscales, contables u otros requisitos legales). Ningún fin descrito en este aviso requerirá que conservemos tu información personal por más tiempo del periodo en que los usuarios mantengan una cuenta con nosotros.</p>
+            <p>Solo conservaremos tu información personal durante el tiempo necesario para los fines establecidos en este Aviso de Privacidad, salvo que la ley exija o permita un periodo de conservación más largo (por ejemplo, por requisitos fiscales, contables u otros requisitos legales). Salvo lo que se describe más abajo, ningún fin descrito en este aviso requerirá que conservemos tu información personal por más tiempo del periodo en que los usuarios mantengan una cuenta con nosotros.</p>
             <p>Cuando no tengamos una necesidad comercial legítima y vigente de procesar tu información personal, la eliminaremos o anonimizaremos; y si eso no fuera posible (por ejemplo, porque tu información personal se haya almacenado en archivos de respaldo), la guardaremos de forma segura y la aislaremos de cualquier procesamiento posterior hasta que sea posible eliminarla.</p>
+            <p><strong>Cuando das de baja tu cuenta.</strong> Eliminamos tu cuenta y la información que es personal: tu perfil y tu foto de perfil, tus medidas, tus respuestas del Essence Lab, tu progreso en los cursos, tus preguntas, tu acceso al contenido comprado y cualquier prenda o lookbook que no forme parte de un guardarropa gestionado por tu estilista. Se conservan dos cosas:</p>
+            <ul>
+                <li><strong>Tu guardarropa de estilismo.</strong> Un guardarropa que tu estilista gestiona para ti, incluidos sus registros de prendas, las fotografías de las prendas y los lookbooks, forma parte del servicio de estilismo que prestamos y se conserva después de dar de baja tu cuenta. Deja de estar vinculado a tu cuenta y solo tu estilista puede acceder a él. Si quieres que también se elimine, escríbenos a <a href="mailto:hello@theacstyle.com">hello@theacstyle.com</a> y lo eliminaremos.</li>
+                <li><strong>Registros de compra.</strong> Los registros de qué se compró, cuándo y por cuánto se conservan por motivos contables y fiscales. Dejan de estar vinculados a tu cuenta, y las compras de una cuenta dada de baja no pueden restaurarse en una cuenta nueva.</li>
+            </ul>
 
             <h2 id="infosafe">9. ¿CÓMO MANTENEMOS SEGURA TU INFORMACIÓN?</h2>
             <p><strong><em>En resumen:</em></strong> <em>Buscamos proteger tu información personal mediante un sistema de medidas de seguridad organizativas y técnicas.</em></p>
@@ -224,7 +229,7 @@ export default function PrivacyEs() {
             <ul>
                 <li>Iniciar sesión en los ajustes de tu cuenta y actualizarla.</li>
             </ul>
-            <p>Cuando solicites dar de baja tu cuenta, la desactivaremos o eliminaremos, junto con tu información, de nuestras bases de datos activas. Sin embargo, podremos conservar parte de la información en nuestros archivos para prevenir fraude, resolver problemas, colaborar en investigaciones, hacer cumplir nuestros términos legales y/o cumplir con los requisitos legales aplicables.</p>
+            <p>Cuando solicites dar de baja tu cuenta, la desactivaremos o eliminaremos, junto con tu información, de nuestras bases de datos activas, tal como se describe en la sección 8, incluido lo que se conserva: un guardarropa gestionado por tu estilista y tus registros de compra. También podremos conservar parte de la información en nuestros archivos para prevenir fraude, resolver problemas, colaborar en investigaciones, hacer cumplir nuestros términos legales y/o cumplir con los requisitos legales aplicables.</p>
 
             <p><strong><u>Cookies y tecnologías similares:</u></strong> la mayoría de los navegadores web están configurados para aceptar cookies por defecto. Si lo prefieres, normalmente puedes configurar tu navegador para eliminar y rechazar cookies. Si eliges eliminarlas o rechazarlas, esto podría afectar ciertas funciones o servicios de nuestros Servicios.</p>
 

@@ -7,7 +7,7 @@ export default function PrivacyEn() {
         <article className="prose prose-stone max-w-none prose-headings:font-serif prose-headings:text-ac-taupe prose-p:text-ac-taupe/80 prose-a:text-ac-espresso hover:prose-a:text-ac-taupe">
             {/* Content from user */}
             <h1 className="font-serif text-4xl mb-4">PRIVACY NOTICE</h1>
-            <p className="text-sm text-gray-500 mb-8">Last updated September 23, 2026</p>
+            <p className="text-sm text-gray-500 mb-8">Last updated September 26, 2026</p>
 
             <p>
                 This Privacy Notice for AC Styling (&quot;<strong>we</strong>,&quot; &quot;<strong>us</strong>,&quot; or &quot;<strong>our</strong>&quot;), describes how and why we might access, collect, store, use, and/or share (&quot;<strong>process</strong>&quot;) your personal information when you use our services (&quot;<strong>Services</strong>&quot;), including when you:
@@ -86,7 +86,7 @@ export default function PrivacyEn() {
 
             <p><strong>Social Media Login Data.</strong> We offer the option to register and sign in using a Google account. If you choose to register in this way, we collect the profile information described in section 7 below. Google is the only social login we support.</p>
 
-            <p><strong>Uploads.</strong> If you use the Studio, you may choose to upload photographs of your own garments. Those images are stored privately and are visible only to you and to your stylist. Your browser may ask for permission to use your camera when you choose to take a photograph; that permission is granted and withdrawn in your browser, not by us.</p>
+            <p><strong>Uploads.</strong> If you use the Studio, you may choose to upload photographs of your own garments. Those images are stored privately and are visible only to your stylist and to the client the wardrobe belongs to. They form part of the wardrobe your stylist manages for you, together with the garment records and lookbooks made from them; section 8 explains what happens to that wardrobe if you close your account. Your browser may ask for permission to use your camera when you choose to take a photograph; that permission is granted and withdrawn in your browser, not by us.</p>
             <p>All personal information that you provide to us must be true, complete, and accurate, and you must notify us of any changes to such personal information.</p>
 
             <h3>Information automatically collected</h3>
@@ -192,8 +192,13 @@ export default function PrivacyEn() {
 
             <h2 id="inforetain">8. HOW LONG DO WE KEEP YOUR INFORMATION?</h2>
             <p><strong><em>In Short:</em></strong> <em>We keep your information for as long as necessary to fulfill the purposes outlined in this Privacy Notice unless otherwise required by law.</em></p>
-            <p>We will only keep your personal information for as long as it is necessary for the purposes set out in this Privacy Notice, unless a longer retention period is required or permitted by law (such as tax, accounting, or other legal requirements). No purpose in this notice will require us keeping your personal information for longer than the period of time in which users have an account with us.</p>
+            <p>We will only keep your personal information for as long as it is necessary for the purposes set out in this Privacy Notice, unless a longer retention period is required or permitted by law (such as tax, accounting, or other legal requirements). Except as described below, no purpose in this notice will require us keeping your personal information for longer than the period of time in which users have an account with us.</p>
             <p>When we have no ongoing legitimate business need to process your personal information, we will either delete or anonymize such information, or, if this is not possible (for example, because your personal information has been stored in backup archives), then we will securely store your personal information and isolate it from any further processing until deletion is possible.</p>
+            <p><strong>When you close your account.</strong> We delete your account and the information that is personal to you: your profile and profile photo, your measurements, your Essence Lab answers, your course progress, your questions, your access to purchased content, and any garments or lookbooks that are not part of a wardrobe managed by your stylist. Two things are kept:</p>
+            <ul>
+                <li><strong>Your styling wardrobe.</strong> A wardrobe your stylist manages for you, including its garment records, garment photographs and lookbooks, is part of the styling service we provided and is kept after your account is closed. It is no longer linked to your account, and only your stylist can access it. If you would like it deleted as well, contact us at <a href="mailto:hello@theacstyle.com">hello@theacstyle.com</a> and we will delete it.</li>
+                <li><strong>Purchase records.</strong> Records of what was purchased, when, and for how much are kept for accounting and tax purposes. They are no longer linked to your account, and a closed account&apos;s purchases cannot be restored to a new account.</li>
+            </ul>
 
             <h2 id="infosafe">9. HOW DO WE KEEP YOUR INFORMATION SAFE?</h2>
             <p><strong><em>In Short:</em></strong> <em>We aim to protect your personal information through a system of organizational and technical security measures.</em></p>
@@ -220,7 +225,7 @@ export default function PrivacyEn() {
             <ul>
                 <li>Log in to your account settings and update your user account.</li>
             </ul>
-            <p>Upon your request to terminate your account, we will deactivate or delete your account and information from our active databases. However, we may retain some information in our files to prevent fraud, troubleshoot problems, assist with any investigations, enforce our legal terms and/or comply with applicable legal requirements.</p>
+            <p>Upon your request to terminate your account, we will deactivate or delete your account and information from our active databases, as described in section 8, including what is kept: a wardrobe managed by your stylist and your purchase records. We may also retain some information in our files to prevent fraud, troubleshoot problems, assist with any investigations, enforce our legal terms and/or comply with applicable legal requirements.</p>
 
             <p><strong><u>Cookies and similar technologies:</u></strong> Most Web browsers are set to accept cookies by default. If you prefer, you can usually choose to set your browser to remove cookies and to reject cookies. If you choose to remove cookies or reject cookies, this could affect certain features or services of our Services.</p>
 
