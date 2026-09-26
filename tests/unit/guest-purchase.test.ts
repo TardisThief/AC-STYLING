@@ -10,14 +10,16 @@ import { resolveOrCreateUserByEmail, generateSetPasswordLink } from '@/app/lib/g
 const listUsers = vi.fn()
 const createUser = vi.fn()
 const generateLink = vi.fn()
+const updateUserById = vi.fn()
 
 const admin = {
-    auth: { admin: { listUsers, createUser, generateLink } },
+    auth: { admin: { listUsers, createUser, generateLink, updateUserById } },
 } as never
 
 beforeEach(() => {
     vi.clearAllMocks()
     listUsers.mockResolvedValue({ data: { users: [] }, error: null })
+    updateUserById.mockResolvedValue({ data: {}, error: null })
 })
 
 describe('resolveOrCreateUserByEmail', () => {
@@ -98,6 +100,72 @@ describe('resolveOrCreateUserByEmail', () => {
         const result = await resolveOrCreateUserByEmail(admin, 'race@example.com')
 
         expect(result).toEqual({ userId: 'raced-1', created: false })
+    })
+
+    // PAY-002 (2026-09-25 external assessment). Whether she still needs the
+    // welcome email and its claim is a fact about the account — has anyone
+    // ever signed in to it — not about whether this delivery created it. A
+    // retry of a delivery that created the account and then failed sees
+    // `created: false`, and used to send her nothing.
+    it.fails('reports an existing account nobody has signed in to as still needing a way in', async () => {
+        listUsers.mockResolvedValue({
+            data: { users: [{ id: 'made-by-first-try', email: 'guest@example.com', email_confirmed_at: '2026-09-25T00:00:00Z', last_sign_in_at: null }] },
+            error: null,
+        })
+
+        const result = await resolveOrCreateUserByEmail(admin, 'guest@example.com')
+
+        expect(result).toMatchObject({ userId: 'made-by-first-try', created: false, needsWayIn: true })
+    })
+
+    it.fails('reports an account that has signed in as not needing one', async () => {
+        listUsers.mockResolvedValue({
+            data: { users: [{ id: 'regular', email: 'regular@example.com', email_confirmed_at: '2026-01-01T00:00:00Z', last_sign_in_at: '2026-09-01T00:00:00Z' }] },
+            error: null,
+        })
+
+        const result = await resolveOrCreateUserByEmail(admin, 'regular@example.com')
+
+        expect(result).toMatchObject({ userId: 'regular', created: false, needsWayIn: false })
+    })
+
+    // SEC-001's other half. /vault/join lets anyone create an unconfirmed
+    // account with a password for any address. A guest purchase attaches to
+    // the existing account by email, and the welcome link then confirms it —
+    // so whoever registered her address first would hold a password to the
+    // account her purchase is in. Replace it before attaching anything.
+    it.fails('replaces the password on an existing unconfirmed account before attaching a purchase', async () => {
+        listUsers.mockResolvedValue({
+            data: { users: [{ id: 'squatted', email: 'victim@example.com', email_confirmed_at: null, last_sign_in_at: null }] },
+            error: null,
+        })
+
+        const result = await resolveOrCreateUserByEmail(admin, 'victim@example.com')
+
+        expect(result).toMatchObject({ userId: 'squatted', created: false, needsWayIn: true })
+        expect(updateUserById).toHaveBeenCalledWith('squatted', { password: expect.any(String) })
+        expect(updateUserById.mock.calls[0][1].password.length).toBeGreaterThanOrEqual(32)
+    })
+
+    it.fails('fails the delivery when that password cannot be replaced, so Stripe retries', async () => {
+        listUsers.mockResolvedValue({
+            data: { users: [{ id: 'squatted', email: 'victim@example.com', email_confirmed_at: null, last_sign_in_at: null }] },
+            error: null,
+        })
+        updateUserById.mockResolvedValue({ data: null, error: { message: 'down' } })
+
+        expect(await resolveOrCreateUserByEmail(admin, 'victim@example.com')).toBeNull()
+    })
+
+    it('leaves the password on a confirmed account alone', async () => {
+        listUsers.mockResolvedValue({
+            data: { users: [{ id: 'regular', email: 'regular@example.com', email_confirmed_at: '2026-01-01T00:00:00Z', last_sign_in_at: '2026-09-01T00:00:00Z' }] },
+            error: null,
+        })
+
+        await resolveOrCreateUserByEmail(admin, 'regular@example.com')
+
+        expect(updateUserById).not.toHaveBeenCalled()
     })
 
     it('returns null for a missing or malformed email so the caller can fail loudly', async () => {

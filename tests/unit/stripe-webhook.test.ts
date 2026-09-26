@@ -105,7 +105,7 @@ describe('Stripe Webhook Handler', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_secret'
-        mockResolveUser.mockResolvedValue({ userId: 'guest-user-1', created: true })
+        mockResolveUser.mockResolvedValue({ userId: 'guest-user-1', created: true, needsWayIn: true })
         mockSetPasswordLink.mockResolvedValue('https://link/set-password')
         mockSendEmail.mockResolvedValue({ success: true })
         mockCreateClaim.mockResolvedValue(true)
@@ -321,8 +321,65 @@ describe('Stripe Webhook Handler', () => {
             expect(mockSendEmail.mock.calls[0][0].to).toBe('guest@example.com')
         })
 
+        // PAY-002 (2026-09-25 external assessment). The first delivery creates
+        // the account and then fails on a line item; Stripe retries, and this
+        // time the account already exists, so `created` is false. The claim —
+        // the thing the welcome email depends on — used to be minted only when
+        // `created`, so the retry minted none and sent no email: access granted,
+        // and no way to reach it. What decides is whether she has ever signed
+        // in, which resolveOrCreateUserByEmail reports as `needsWayIn`.
+        it.fails('still mints her claim on a retry after the first delivery created the account', async () => {
+            mockResolveUser.mockResolvedValue({ userId: 'guest-user-1', created: false, needsWayIn: true })
+            mockConstructEvent.mockReturnValue({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        ...mockSession,
+                        client_reference_id: null,
+                        metadata: { flow: 'guest' },
+                        customer_details: { email: 'guest@example.com', name: 'Ada L' },
+                    }
+                },
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const { POST } = await import('@/app/api/webhooks/stripe/route')
+            await POST(new Request('http://localhost:3000/api/webhooks/stripe', {
+                method: 'POST', body: JSON.stringify({}),
+            }))
+
+            expect(mockCreateClaim).toHaveBeenCalledTimes(1)
+            expect(mockCreateClaim.mock.calls[0][1]).toMatchObject({
+                userId: 'guest-user-1',
+                stripeSessionId: mockSession.id,
+            })
+        })
+
+        it('mints no claim for a customer who has signed in before', async () => {
+            mockResolveUser.mockResolvedValue({ userId: 'existing-1', created: false, needsWayIn: false })
+            mockConstructEvent.mockReturnValue({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        ...mockSession,
+                        client_reference_id: null,
+                        metadata: { flow: 'guest' },
+                        customer_details: { email: 'repeat@example.com', name: 'Ada L' },
+                    }
+                },
+            })
+            mockFrom.mockReturnValue(createChainableMock({ data: null, error: null }))
+
+            const { POST } = await import('@/app/api/webhooks/stripe/route')
+            await POST(new Request('http://localhost:3000/api/webhooks/stripe', {
+                method: 'POST', body: JSON.stringify({}),
+            }))
+
+            expect(mockCreateClaim).not.toHaveBeenCalled()
+        })
+
         it('does not email an existing customer who bought again', async () => {
-            mockResolveUser.mockResolvedValue({ userId: 'existing-1', created: false })
+            mockResolveUser.mockResolvedValue({ userId: 'existing-1', created: false, needsWayIn: false })
             mockConstructEvent.mockReturnValue({
                 type: 'checkout.session.completed',
                 data: {
