@@ -55,7 +55,7 @@ Always run `npm run lint` and `npm run test:run` before considering a change don
 
 ## Database
 
-RLS is enabled on every table. The 26 tables in the baseline dump: `profiles`, `wardrobes`, `wardrobe_items`, `tailor_cards`, `lookbooks`, `lookbook_items`, `user_questions`, `admin_notifications`, `purchases`, `webhook_events`, `stripe_processed_events`, `rate_limits`, `services`, `masterclasses`, `chapters`, `offers`, `user_access_grants`, `user_progress`, `essence_responses`, `partner_brands`, `boutique_items`, `boutique_collections`, `boutique_collection_items`, `boutique_saves`, `boutique_clicks`, `trusted_by_logos`.
+RLS is enabled on every table. The 28 tables in the baseline dump: `profiles`, `wardrobes`, `wardrobe_items`, `tailor_cards`, `lookbooks`, `lookbook_items`, `user_questions`, `admin_notifications`, `purchases`, `webhook_events`, `stripe_processed_events`, `rate_limits`, `services`, `masterclasses`, `chapters`, `offers`, `user_access_grants`, `user_progress`, `essence_responses`, `partner_brands`, `boutique_items`, `boutique_collections`, `boutique_collection_items`, `boutique_saves`, `boutique_clicks`, `trusted_by_logos`, `purchase_claims`, `fulfillments` (the last two are service-role only: RLS forced, no policies).
 
 Schema is managed directly in Supabase. The historical `supabase/migrations/` SQL was reset for a clean start (2026-07); add new migrations there going forward. `scripts/` holds one-off DB/QA helpers (need `DATABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`).
 

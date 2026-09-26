@@ -94,6 +94,37 @@ identify as test purchases.
 
 ---
 
+## 1b. Allow the new auth-email destinations in Supabase — added 2026-09-26
+
+Every auth email (magic-link login, signup, password reset, `/vault/join`)
+used to send the reader to `/auth/confirm`, a page that does not exist
+(AUTH-001 in the 2026-09-25 assessment). They now go to **`/en/confirm`** and
+**`/es/confirm`** on the site the form was posted from, and the reset link
+continues to `/{locale}/update-password`.
+
+Supabase only redirects to URLs on its allow-list; anything else silently
+falls back to the Site URL, which would land the reader on the homepage with
+her login half-finished.
+
+**How to check:** Supabase → Authentication → URL Configuration → Redirect
+URLs. It needs to cover `https://www.theacstyle.com/en/confirm` and
+`https://www.theacstyle.com/es/confirm` — a `https://www.theacstyle.com/**`
+entry does — and the same for any preview domain you test auth on. Then send
+yourself a magic link from `/es/login` and confirm it opens the Spanish
+confirm page and signs you in.
+
+## 1c. Colorimetry is on sale with nothing playable — decide before the cutover
+
+Checked live 2026-09-26: the **Colorimetry masterclass is published and has a
+price**, so the sales page and checkout sell it, but **all 21 modules are
+unpublished and none has a video**. While Stripe is in test mode no one can
+pay. The moment item 1 is done, a real customer could buy it and find nothing
+to watch.
+
+Either unpublish it in admin until its modules have video (F09), or do the
+cutover only after content lands. Checkout now refuses anything the catalogue
+is *not* selling, so unpublishing is enough to stop sales.
+
 ## 2. Confirm the other Vercel environment variables
 
 `NEXT_PUBLIC_SITE_URL` is missing from `.env.local` but **is set correctly in
@@ -359,9 +390,16 @@ one place.
   half is done and proven** (item 13), and the credential question it raised is
   closed by owner decision (13b).
 
-**With that, every *launch-blocking* code finding in the assessment is closed.** What remains
-between here and launch is on this page, plus **F09**: the five published Vault
-modules still have no usable video, which no amount of code can fix.
+- **2026-09-25 external assessment**
+  ([`docs/archive/ENG_ASSESSMENT.MD`](archive/ENG_ASSESSMENT.MD)): it found
+  six money-path defects the list above did not cover. All six are **fixed
+  2026-09-26** (AUTH-001, SEC-001, SEC-002/migration 26, MAIL-001, PAY-002,
+  PAY-004). The rest of its findings are real but not launch-blocking; they
+  are listed in `ROADMAP.md` under "Still open from the 2026-09-25 assessment".
+
+**With that, every *launch-blocking* code finding in both assessments is closed.** What remains
+between here and launch is on this page, plus **F09**: none of the 25
+modules and courses has a usable video yet (checked 2026-09-26), which no amount of code can fix.
 - ~~**F07** — SSRF validation only checked the first destination~~ — **fixed
   2026-09-20**. Every redirect hop is now re-validated, four address bypasses
   closed (including IPv4-mapped IPv6 loopback), and the remote-image upload

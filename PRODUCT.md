@@ -68,14 +68,19 @@ The standard is "the Vault is sellable", not "a page exists".
   idempotency gate, entitlement resolution (`grantAccessForProduct`, the
   `check_access` RPC), bilingual content columns on every content table, RLS
   permitting anonymous catalogue reads, Resend transactional email.
-- **Business model is hybrid:** per-masterclass purchase, plus two offers —
-  `full_access` ($150) and `course_pass` ($50).
-- **At launch, Full Learning Access at $150 is the headline offer**, with
-  Colorimetría at $50 as the low-risk single purchase.
-- **Access term:** lifetime ("de por vida") for the founding launch,
-  unconditional and unchanging. Price rises as the library grows, but with no
-  mechanism, trigger, date, seat count or timer — in the page or in the code.
-  No future price is ever named.
+- **Business model is hybrid:** per-masterclass purchase, plus pass offers.
+  The **Masterclass Pass** (every masterclass, current and future) is the
+  launch offer, decided 2026-09-21 (migration 19). `full_access` and
+  `course_pass` stay in the database, switched off (`offers.active`), until
+  the first standalone course ships; the sales page follows that switch.
+- **Access term: one year, renewable** — decided 2026-09-24 (migration 21,
+  [`docs/RELEASE-2026-09-24-ACCESS-TERM.md`](docs/RELEASE-2026-09-24-ACCESS-TERM.md)).
+  Renewal steps down in thirds — the price paid, then two thirds, then one
+  third — and a lapse of over thirty days resets it to the current price.
+  Everyone who bought before that date keeps perpetual access (a null expiry).
+  This replaces the earlier "lifetime (de por vida)" founding promise; no
+  page may still make it. Price still rises as the library grows, with no
+  mechanism, trigger, date, seat count or timer, and no future price named.
 - **Pay-before-signup works.** Stripe collects the email, the webhook creates the
   account and sends a set-password link, and the buyer lands on `/welcome` to
   claim it. This replaced a path that returned 200 and silently lost the sale.

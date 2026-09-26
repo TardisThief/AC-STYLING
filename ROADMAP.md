@@ -16,12 +16,24 @@ see [Next planning session](#next-planning-session) at the bottom.
 
 Phases 0–3.6 are complete and deployed. In plain terms:
 
-- **The code is launch-ready.** Every code-level blocker from the 2026-09-19
-  assessment (F01–F08, F10, F11) is closed. Migrations are applied and verified
-  through **25** (22–25 on 2026-09-26, after the user wipe).
-- **The Vault is populated but parked.** 4 masterclasses, 22 modules and 4
-  standalone courses, all bilingual, all `is_published = false`. Publishing is
-  a flag flip in the admin console, not a re-import.
+- **"Launch-ready" was wrong, and was reopened on 2026-09-26.** An external
+  assessment ([`docs/archive/ENG_ASSESSMENT.MD`](docs/archive/ENG_ASSESSMENT.MD),
+  2026-09-25) found real defects on the auth, email and payment path that the
+  2026-09-19 findings (F01–F08, F10, F11, all still closed) did not cover. The
+  six that blocked real money are fixed, each with a test that failed first:
+  every auth email linked to a nonexistent `/auth/confirm` (AUTH-001); public
+  signup marked unproven accounts verified, enabling pre-registration of a
+  victim's address (SEC-001); any signed-in user could rewrite the homepage
+  logos (SEC-002, migration 26); Resend refusals were reported as sent
+  (MAIL-001); a retried guest delivery sent no welcome (PAY-002); checkout sold
+  any Stripe price the browser named (PAY-004). Migrations are applied and
+  verified through **26**. What is still open from it is listed below.
+- **The Vault is populated but mostly parked.** 4 masterclasses, **21 modules**
+  and 4 standalone courses, all bilingual. **Colorimetry is published and
+  priced, so it is on sale, while all 21 modules are unpublished** — checked
+  live 2026-09-26. Harmless while Stripe is in test mode; after the cutover it
+  sells a masterclass with nothing playable (owner action 1c). Publishing is a
+  flag flip in the admin console, not a re-import.
 - **Launch offer is the Masterclass Pass** (2026-09-21, migration 19): every
   masterclass, current and future, alongside single masterclasses. Full Access
   and the Course Pass stay in the database but are switched off
@@ -39,12 +51,14 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   found and fixed payment, access and Studio bugs (commits `4495467`..`9b780eb`;
   stance in CLAUDE.md § Adversarial testing). All users except the two admins
   were wiped on 2026-09-26 (`scripts/wipe_users.mjs`) to start testing clean.
-- **Gates are green:** `tsc` clean, lint 0 errors, 571 unit tests across 55
-  files, production build passing, CI running all four.
+- **Gates are green** as of 2026-09-26: `tsc` clean, lint 0 errors, the full
+  vitest run (unit + PGlite integration) passing, production build passing,
+  CI running all four. Run `npm run test:run` for the current count rather
+  than trusting one written here.
 
 ## What actually holds up launch
 
-Two things, and neither is code.
+Two content/owner things, plus the open assessment items below.
 
 1. **No module video.** Every `video_id` reads `pending_video`. This is F09 —
    content, not engineering. Nothing can be published until real Vimeo IDs
@@ -56,6 +70,24 @@ Two things, and neither is code.
    from `purchases`, so the 9 sandbox rows there must be cleared before the
    first real sale or they will quote real customers renewals priced off fake
    money.
+
+**Still open from the 2026-09-25 assessment** (real, but not blocking the
+first sale; each wants a failing test first, like the six above):
+
+- **PAY-001** — the grant and "line item completed" are separate writes. A
+  crash between them, re-claimed after 15 minutes, extends a term a second
+  year. Narrow window; fix by recording the extending line item on the grant.
+- **SEC-003** — a purchase claim is closed only from the update-password page;
+  set a password any other way and the claim stays usable for its 24 hours.
+- **OPS-001** — nothing alerts on a paid-but-unfulfilled purchase (F16's open
+  half). The data is in `fulfillments`; nobody is told.
+- **Restore scans only the last 100 checkout sessions** (`commerce.ts`), and
+  the "Content Unlocked" toast shows even when nothing was restored.
+- **CI runs Node 20; Puppeteer 25 needs ≥22.12** (owner action 6 for Vercel).
+- Lower: Studio ownership/token/deletion lifecycle, renewal semantics across
+  the three passes, `markAnswerAsRead` silently updating 0 rows under RLS,
+  English-only auth screens and emails (F15), public lab questions/resources
+  (a product decision), recovery rehearsal on a managed Supabase project.
 
 Everything owner-only lives in [`docs/OWNER-ACTIONS.md`](docs/OWNER-ACTIONS.md)
 — 12 items, kept there rather than here so that "what Claude does next" and
