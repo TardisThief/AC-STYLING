@@ -310,7 +310,7 @@ describe('Restore finds her purchase however busy the shop is', () => {
     // and looked for hers among them. Once 100 other checkouts had happened
     // since, her paid session was invisible to it (2026-09-25 external
     // assessment, SCALE-001).
-    it.fails('restores a purchase with a hundred newer checkouts in front of it', async () => {
+    it('restores a purchase with a hundred newer checkouts in front of it', async () => {
         const buyer = await newBuyer();
         const hers = session(buyer, [item(PRODUCT.masterclass)]);
         hers.customer_details.email = 'buyer@example.invalid';

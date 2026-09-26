@@ -549,5 +549,12 @@
         "submit": "Update Password",
         "mismatch": "Passwords do not match",
         "success": "Password updated successfully!"
+    },
+    "CheckoutSync": {
+        "verifying": "Verifying your purchase...",
+        "unlocked": "Purchase verified. Your content is unlocked.",
+        "pending": "Payment received. Your access is being set up. Refresh in a moment.",
+        "notFound": "We could not find this purchase yet. If it does not appear in a few minutes, use Restore purchases.",
+        "failed": "Could not verify your purchase automatically. Please use the Restore button."
     }
 }

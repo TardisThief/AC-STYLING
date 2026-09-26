@@ -13,9 +13,9 @@ export default function RestorePurchasesButton() {
         setLoading(true);
         try {
             const res = await syncStripePurchases();
-            if (res.error) {
+            if ("error" in res && res.error) {
                 toast.error(res.error);
-            } else {
+            } else if ("message" in res) {
                 toast.success(res.message);
             }
         } catch (e) {

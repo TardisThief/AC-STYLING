@@ -549,5 +549,12 @@
         "submit": "Actualizar contraseña",
         "mismatch": "Las contraseñas no coinciden",
         "success": "¡Contraseña actualizada!"
+    },
+    "CheckoutSync": {
+        "verifying": "Verificando tu compra...",
+        "unlocked": "Compra verificada. Tu contenido está desbloqueado.",
+        "pending": "Pago recibido. Estamos activando tu acceso. Actualiza la página en un momento.",
+        "notFound": "Aún no encontramos esta compra. Si no aparece en unos minutos, usa Restaurar compras.",
+        "failed": "No pudimos verificar tu compra automáticamente. Usa el botón Restaurar."
     }
 }
