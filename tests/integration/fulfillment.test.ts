@@ -439,6 +439,44 @@ describe('Paid means granted', () => {
         expect(f.status).toBe('completed');
     });
 
+    // PAY-001 (2026-09-25 external assessment). The grant and "completed" are
+    // two writes. A run that dies between them — or whose three attempts to
+    // record completion all fail — leaves the row 'processing'; after
+    // STALE_CLAIM_MS it is re-claimed and granted again, and since migration
+    // 21 a grant is a year. The row below is exactly what that run leaves.
+    it.fails.each([
+        ['masterclass', PRODUCT.masterclass],
+        ['standalone course', PRODUCT.chapter],
+        ['Masterclass Pass', PRODUCT.masterclassPass],
+    ])('grants one year for a %s whose run died after granting', async (_, product) => {
+        const buyer = await newBuyer();
+        const li = item(product);
+        const s = session(buyer, [li]);
+        expect(await deliver(s)).toBe(200);
+
+        await db.query(
+            `UPDATE fulfillments SET status = 'processing', completed_at = NULL, updated_at = now() - interval '1 hour'
+             WHERE stripe_line_item_id = $1`, [li.id]);
+        expect(await deliver(s)).toBe(200);
+
+        const expiry = product === PRODUCT.masterclassPass
+            ? (await profile(buyer)).access_expires_at
+            : product === PRODUCT.masterclass
+                ? (await masterclassGrant(buyer)).expires_at
+                : (await db.query<{ expires_at: Date }>(
+                    'SELECT expires_at FROM user_access_grants WHERE user_id = $1 AND chapter_id = $2', [buyer, CHAPTER_ID])).rows[0].expires_at;
+        expect(yearsLeft(expiry)).toBe(1);
+        const { rows: [f] } = await db.query<{ status: string }>('SELECT status FROM fulfillments WHERE stripe_line_item_id = $1', [li.id]);
+        expect(f.status).toBe('completed');
+    });
+
+    it('still adds a year for a different line item renewing the same masterclass', async () => {
+        const buyer = await newBuyer();
+        expect(await deliver(session(buyer, [item(PRODUCT.masterclass)]))).toBe(200);
+        expect(await deliver(session(buyer, [item(PRODUCT.masterclass)], { kind: 'renewal' }))).toBe(200);
+        expect(yearsLeft((await masterclassGrant(buyer)).expires_at)).toBe(2);
+    });
+
     // Offers are switched on and off in admin (migration 19: only one is
     // active at a time). `active` decides what is SOLD; a payment already
     // taken for a product that has since been switched off is still owed.
