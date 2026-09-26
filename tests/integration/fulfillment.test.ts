@@ -21,7 +21,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
+import { createLiveSchemaDb, createUser, expectMigrationApplied, readMigration } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 type LineItem = { id: string; price: { product: string }; amount_total: number; currency: string };
@@ -200,6 +200,8 @@ beforeAll(async () => {
     await expectMigrationApplied(db, '20260925_23_grant_uniqueness_and_studio_unlock.sql');
     // PAY-001, closed by migration 27 (applied to production 2026-09-26).
     await expectMigrationApplied(db, '20260926_27_term_line_item.sql');
+    // The deleted-account test below reproduces it on the schema without this.
+    await db.exec(readMigration('20260926_32_keep_sales_after_account_deletion.sql'));
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
@@ -313,7 +315,7 @@ describe('Restore gives back only what is hers and still paid for', () => {
     // fulfilments and purchases away, so the next person to sign up with that
     // address and press Restore was handed every old guest purchase for it,
     // free. The owner decided deletion closes them (2026-09-26).
-    it.fails('does not hand a deleted account\u2019s guest purchase to a new account with the same email', async () => {
+    it('does not hand a deleted account\u2019s guest purchase to a new account with the same email', async () => {
         const first = await newBuyer();
         const li = item(PRODUCT.masterclass);
         const guest = session(first, [li]);
@@ -331,10 +333,30 @@ describe('Restore gives back only what is hers and still paid for', () => {
         expect(rows).toHaveLength(0);
     });
 
+    it('does not let a new account take over a deleted account\u2019s unfinished line item', async () => {
+        const first = await newBuyer();
+        const li = item(PRODUCT.masterclass);
+        const guest = session(first, [li]);
+        guest.client_reference_id = null;
+        guest.customer_details.email = 'buyer@example.invalid';
+        // Paid, never granted: the first account's run failed, then she left.
+        await db.query(
+            `INSERT INTO fulfillments (stripe_line_item_id, stripe_session_id, stripe_event_id, user_id, stripe_product_id, status, attempts, updated_at)
+             VALUES ($1, $2, 'evt', $3, $4, 'failed', 1, now() - interval '1 hour')`,
+            [li.id, guest.id, first, PRODUCT.masterclass]);
+        await db.query('DELETE FROM auth.users WHERE id = $1', [first]);
+
+        const second = await newBuyer();
+        await checkoutReturn(second, [guest]);
+
+        const { rows } = await db.query('SELECT 1 FROM user_access_grants WHERE user_id = $1', [second]);
+        expect(rows).toHaveLength(0);
+    });
+
     // Stripe keeps a refunded or disputed session 'paid'; only the charge says
     // otherwise. Restore never looked, so any refunded purchase whose
     // fulfilment record was missing came straight back.
-    it.fails.each([
+    it.each([
         ['refunded', { refunded: true, amount_refunded: 15000 }],
         ['partly refunded', { refunded: false, amount_refunded: 5000 }],
         ['disputed', { disputed: true }],

@@ -75,7 +75,10 @@ export async function syncStripePurchases() {
             const belongsToUser = session.client_reference_id
                 ? session.client_reference_id === user.id
                 : payerEmail?.toLowerCase() === targetEmail;
-            if (session.payment_status === 'paid' && belongsToUser) {
+            // Stripe keeps a refunded or disputed session 'paid'; only the
+            // charge says otherwise. Restore never looked, so a refunded
+            // purchase could come straight back.
+            if (session.payment_status === 'paid' && belongsToUser && !chargeReversed(session)) {
                 const lineItems = session.line_items?.data || [];
 
                 for (const item of lineItems) {
@@ -151,7 +154,7 @@ async function findHerSessions(email: string): Promise<Stripe.Checkout.Session[]
         const { data, has_more } = await stripe.checkout.sessions.list({
             customer_details: { email },
             limit: 100,
-            expand: ['data.line_items'],
+            expand: ['data.line_items', 'data.payment_intent.latest_charge'],
             ...(startingAfter ? { starting_after: startingAfter } : {}),
         });
         for (const session of data) found.set(session.id, session);
@@ -159,8 +162,26 @@ async function findHerSessions(email: string): Promise<Stripe.Checkout.Session[]
         startingAfter = data[data.length - 1].id;
     }
 
-    const recent = await stripe.checkout.sessions.list({ limit: 100, expand: ['data.line_items'] });
+    const recent = await stripe.checkout.sessions.list({
+        limit: 100,
+        expand: ['data.line_items', 'data.payment_intent.latest_charge'],
+    });
     for (const session of recent.data) found.set(session.id, session);
 
     return [...found.values()];
+}
+
+/**
+ * Whether the money for this session has been handed back, in whole or in
+ * part, or is in dispute. A partial refund counts: Restore cannot tell which
+ * line item it was for, and granting on a refund is the worse mistake. The
+ * webhook records refunds and disputes for a person to review; Restore must
+ * simply not undo that review by granting again.
+ */
+function chargeReversed(session: Stripe.Checkout.Session): boolean {
+    const intent = session.payment_intent;
+    if (!intent || typeof intent === 'string') return false;
+    const charge = intent.latest_charge;
+    if (!charge || typeof charge === 'string') return false;
+    return charge.refunded || (charge.amount_refunded ?? 0) > 0 || charge.disputed;
 }

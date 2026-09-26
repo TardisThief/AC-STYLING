@@ -78,7 +78,7 @@ export async function claimLineItem(
 ): Promise<ClaimOutcome> {
     const { data: existing, error: readError } = await admin
         .from('fulfillments')
-        .select('status, attempts, updated_at')
+        .select('status, attempts, updated_at, user_id')
         .eq('stripe_line_item_id', ref.lineItemId)
         .maybeSingle();
 
@@ -87,6 +87,11 @@ export async function claimLineItem(
     }
 
     if (existing?.status === 'completed') return { state: 'already_completed' };
+    // Detached: the account it belonged to was deleted (migration 32 keeps the
+    // row, user_id NULL). Deleting an account closes its purchases (owner
+    // decision 2026-09-26), so a later account with the same email must not
+    // take over even an unfinished line item.
+    if (existing && existing.user_id === null) return { state: 'already_completed' };
     if (existing?.status === 'unfulfillable') return { state: 'already_unfulfillable' };
 
     const row = {

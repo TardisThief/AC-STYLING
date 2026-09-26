@@ -9,9 +9,12 @@
  * What a wipe removes, and why each step is here rather than left to cascades:
  *
  *   - auth.users for every non-kept user. Deleting the auth row cascades to
- *     profiles, purchases, fulfillments, purchase_claims, grants, progress,
- *     essence responses, questions, saves, tailor cards, lookbooks and the
- *     user's own wardrobe items (baseline FKs, migration 15).
+ *     profiles, purchase_claims, grants, progress, essence responses,
+ *     questions, saves, tailor cards, lookbooks and the user's own wardrobe
+ *     items (baseline FKs, migration 15). purchases and fulfillments are NOT
+ *     removed since migration 32: they are detached (user_id NULL) and kept,
+ *     so a later account with the same email cannot Restore the wiped
+ *     account's guest purchases, and the sales record survives.
  *   - wardrobes owned by those users, explicitly. wardrobes.owner_id is
  *     ON DELETE SET NULL, so a cascade would leave ownerless shells, and the
  *     guest-intake items in them (user_id NULL) would survive.
