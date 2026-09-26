@@ -133,10 +133,13 @@ check for the owner.
   owner side: the privacy notice (EN and ES) must say a stylist-managed
   wardrobe is kept after an account closes — part of owner action 9's legal
   review.
-- **44 intake photos from wiped wardrobes** remain in `studio-wardrobe`
-  (`wardrobe/<id>/…` of wardrobes the 2026-09-26 wipe removed). Nothing
-  references them; `scripts/cleanup_orphaned_wardrobe_files.ts` is the tool
-  to review and remove them.
+- ~~44 intake photos from wiped wardrobes~~ — removed 2026-09-26 with
+  `scripts/cleanup_orphaned_wardrobe_files.ts` (dry run first: all 44 under
+  `wardrobe/<id>/` of wardrobes the wipe removed, none referenced). The
+  `studio-wardrobe` bucket is now empty; a re-run finds 0.
+- **No database migration is planned.** The next one would be 34; none of
+  the open items needs one. When one is planned it is written up in
+  `supabase/migrations/README.md`, like 26–33.
 - **PAY-001's limit:** only the last line item is remembered on a term, so a
   crash followed by a different purchase on the same term inside the
   15-minute window could still double. Recorded in migration 27.
