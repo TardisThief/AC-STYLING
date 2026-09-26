@@ -28,7 +28,7 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   (MAIL-001); a retried guest delivery sent no welcome (PAY-002); checkout sold
   any Stripe price the browser named (PAY-004). The rest of its findings were
   then worked through the same way (below). Migrations are applied and
-  verified through **32**; the code is deployed.
+  verified through **33**; the code is deployed.
 - **The Vault is populated but mostly parked.** 4 masterclasses, **21 modules**
   and 4 standalone courses, all bilingual. **Colorimetry is published and
   priced, so it is on sale, while all 21 modules are unpublished** — checked
@@ -124,35 +124,19 @@ check for the owner.
   carry placeholder copy (content). Not on a member's path to what she paid
   for, so after launch.
 - **A wardrobe outlives the client who leaves, garments and lookbooks
-  included** — owner decisions, 2026-09-26 (owner action 7). Not implemented
-  yet: today only the empty wardrobe survives, so the decision is recorded
-  here with the work it implies:
-  - *What happens now when a client deletes her account:* the wardrobe row
-    survives, ownerless (`wardrobes.owner_id` is `ON DELETE SET NULL`). But
-    its garments and lookbooks do not: `wardrobe_items.user_id` and
-    `lookbooks.user_id` are `ON DELETE CASCADE` to her profile, and
-    `deleteAccount` removes every photo under her own storage folder. Intake
-    uploads (`wardrobe/<id>/…`) are the only photos that remain. So what
-    outlives her is, in practice, an empty wardrobe.
-  - *To make the decision true:* a migration changing
-    `wardrobe_items.user_id` and `lookbooks.user_id` to `ON DELETE SET NULL`,
-    so the garments and lookbooks stay with the wardrobe; and `deleteAccount`
-    moving her wardrobe and lookbook photos (and lookbook thumbnails) to the
-    wardrobe's own folder, `wardrobe/<id>/…`, instead of deleting them —
-    updating the stored image paths to match — while still deleting what is
-    personal to her: avatar, measurements (tailor card), Lab answers,
-    progress, questions and grants. The garments and lookbooks are confirmed
-    as part of the wardrobe (owner, 2026-09-26). Each needs a failing test
-    first, like the rest: a deleted client's wardrobe must come back with its
-    items, lookbooks and viewable photos, and nothing personal to her.
-  - *Reassignment:* when a wardrobe moves to another client, photos already
-    under the first client's folder should move with it, for the same
-    reason. Not done yet.
-  - *Privacy notice:* its deletion section implies everything is deleted.
-    With this decision it must say that a stylist-managed wardrobe — its
-    garments, photos and lookbooks — is kept after the account closes, while
-    personal data (avatar, measurements, Lab answers) is deleted (EN and ES;
-    part of owner action 9's legal review).
+  included** (owner decisions, 2026-09-26) — **built and live** (migration 33,
+  `6ff30f6`). A deleted client's garments and lookbooks stay in the wardrobe,
+  and its photos move to `wardrobe/<id>/`, where the bucket policy lets the
+  wardrobe's current owner and admins read them; the same move happens when a
+  wardrobe is reassigned. What is hers alone still goes: avatar, measurements,
+  Lab answers, progress, and garments or lookbooks in no wardrobe. Still to do,
+  owner side: the privacy notice (EN and ES) must say a stylist-managed
+  wardrobe is kept after an account closes — part of owner action 9's legal
+  review.
+- **44 intake photos from wiped wardrobes** remain in `studio-wardrobe`
+  (`wardrobe/<id>/…` of wardrobes the 2026-09-26 wipe removed). Nothing
+  references them; `scripts/cleanup_orphaned_wardrobe_files.ts` is the tool
+  to review and remove them.
 - **PAY-001's limit:** only the last line item is remembered on a term, so a
   crash followed by a different purchase on the same term inside the
   15-minute window could still double. Recorded in migration 27.

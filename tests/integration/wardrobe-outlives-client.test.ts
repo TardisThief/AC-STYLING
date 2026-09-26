@@ -16,7 +16,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -100,7 +100,8 @@ const rows = async (sql: string, params: unknown[] = []) => (await db().query<Re
 
 beforeAll(async () => {
     state.db = await createLiveSchemaDb();
-    await state.db.exec(readMigration('20260926_33_wardrobe_outlives_client.sql'));
+    // Applied to production 2026-09-26.
+    await expectMigrationApplied(state.db, '20260926_33_wardrobe_outlives_client.sql');
 }, 60000);
 
 afterAll(async () => { await state.db?.close(); });

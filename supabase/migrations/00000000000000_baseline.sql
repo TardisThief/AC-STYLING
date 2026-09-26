@@ -1787,7 +1787,7 @@ ALTER TABLE ONLY "public"."lookbook_items"
 --
 
 ALTER TABLE ONLY "public"."lookbooks"
-    ADD CONSTRAINT "lookbooks_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("id") ON DELETE CASCADE;
+    ADD CONSTRAINT "lookbooks_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("id") ON DELETE SET NULL;
 
 --
 -- Name: lookbooks lookbooks_wardrobe_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
@@ -1884,7 +1884,7 @@ ALTER TABLE ONLY "public"."wardrobe_items"
 --
 
 ALTER TABLE ONLY "public"."wardrobe_items"
-    ADD CONSTRAINT "wardrobe_items_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("id") ON DELETE CASCADE;
+    ADD CONSTRAINT "wardrobe_items_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("id") ON DELETE SET NULL;
 
 --
 -- Name: wardrobe_items wardrobe_items_wardrobe_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres

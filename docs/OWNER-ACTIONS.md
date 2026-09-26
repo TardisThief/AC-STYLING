@@ -331,10 +331,11 @@ setting, set the dashboard to 22.x too so the two agree.
 
 **Decision (2026-09-26):** a wardrobe outlives the client who leaves, and
 so do its garments and lookbooks (confirmed the same day). Her personal data
-— avatar, measurements, Lab answers — is still deleted. Not implemented yet:
-today only the empty wardrobe survives. The work (a migration, photos moved
-rather than deleted, photos moved on reassignment) and the privacy-notice
-change are tracked in `ROADMAP.md` under "Still open".
+— avatar, measurements, Lab answers — is still deleted. **Built and live
+2026-09-26** (migration 33): garments, lookbooks and their photos stay with
+the wardrobe, and photos follow a wardrobe that is reassigned. **Left for
+you:** the privacy notice (EN and ES) should say that a stylist-managed
+wardrobe is kept after an account closes — part of item 9's legal review.
 
 
 When someone deletes their account, migration 15 now removes their profile,
