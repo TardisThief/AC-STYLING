@@ -12,7 +12,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const ADMIN = id(1);
@@ -26,17 +26,22 @@ beforeAll(async () => {
     await createUser(db, ADMIN, { role: 'admin' });
     await createUser(db, MEMBER);
     await db.query(`INSERT INTO admin_notifications (type, title, metadata) VALUES ('sale', 'New Sale', '{"email":"buyer@example.invalid","phone":"+10000000000"}')`);
+
+    // Before migration 29 the hardcoded id reads the inbox.
+    const stale = await asRole(db, 'authenticated', GONE, 'SELECT title FROM admin_notifications');
+    expect(stale.rows).toHaveLength(1);
+    await db.exec(readMigration('20260926_29_admin_notifications_role_policy.sql'));
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
 
 describe('admin_notifications', () => {
-    it.fails('lets an admin read the inbox directly', async () => {
+    it('lets an admin read the inbox directly', async () => {
         const { rows } = await asRole(db, 'authenticated', ADMIN, 'SELECT title FROM admin_notifications');
         expect(rows).toEqual([{ title: 'New Sale' }]);
     });
 
-    it.fails('does not grant anything to the hardcoded id of an account that no longer exists', async () => {
+    it('does not grant anything to the hardcoded id of an account that no longer exists', async () => {
         const { rows } = await asRole(db, 'authenticated', GONE, 'SELECT title FROM admin_notifications');
         expect(rows).toEqual([]);
     });
