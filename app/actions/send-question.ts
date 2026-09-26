@@ -95,13 +95,21 @@ export async function answerQuestion(questionId: string, answer: string) {
 
         // C. Send Email Notification
         if (userEmail) {
-            const { getAnswerNotificationHtml } = await import('@/lib/email-templates');
+            const { emailLocale, getAnswerNotificationHtml, getAnswerNotificationSubject } = await import('@/lib/email-templates');
             const { sendEmail } = await import('@/lib/resend');
+
+            // In her saved language: this was English for everyone (I18N-001).
+            const { data: pref } = await supabaseAdmin
+                .from('profiles')
+                .select('language_preference')
+                .eq('id', userId)
+                .maybeSingle();
+            const locale = emailLocale(pref?.language_preference as string | null);
 
             await sendEmail({
                 to: userEmail,
-                subject: 'Answer to your question - AC Styling',
-                html: getAnswerNotificationHtml(questionData.question, answer)
+                subject: getAnswerNotificationSubject(locale),
+                html: getAnswerNotificationHtml(questionData.question, answer, locale)
             });
         }
 

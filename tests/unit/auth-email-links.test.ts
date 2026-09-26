@@ -142,6 +142,34 @@ describe('auth email links (AUTH-001)', () => {
     })
 })
 
+describe('auth emails in the reader’s language (I18N-001)', () => {
+    it.each([
+        ['signInWithMagicLink', 'Inicia sesión en AC Styling'],
+        ['requestPasswordReset', 'Restablece tu contraseña de AC Styling'],
+        ['signUpSeamless', 'Bienvenida a AC Styling: confirma tu correo'],
+    ])('%s writes to a Spanish reader in Spanish', async (name, subject) => {
+        getLocale.mockResolvedValue('es')
+
+        await actions[name as keyof typeof actions]()
+
+        const sent = vi.mocked(sendEmail).mock.calls[0][0]
+        expect(sent.subject).toBe(subject)
+        expect(sent.html).toContain('<html lang="es">')
+    })
+
+    it('greets a brand-new signup as new, not as a returning member', async () => {
+        admin.auth.admin.generateLink
+            .mockResolvedValueOnce({ data: null, error: { message: 'User not found' } })
+            .mockResolvedValueOnce(linkFor({ id: 'new-id', email_confirmed_at: '2026-09-26T00:00:00Z' }))
+
+        await signUpWithMagicLink('new@example.invalid')
+
+        const sent = vi.mocked(sendEmail).mock.calls[0][0]
+        expect(sent.subject).toMatch(/^Welcome to AC Styling/)
+        expect(sent.html).not.toContain('Welcome back')
+    })
+})
+
 describe('an auth email proves nothing until it is opened (SEC-001)', () => {
     it('signUpWithMagicLink never confirms an existing account itself', async () => {
         admin.auth.admin.generateLink.mockResolvedValue(linkFor(unconfirmed))

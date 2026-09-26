@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { sendEmail } from '@/lib/resend';
-import { getMagicLinkHtml, getPasswordResetHtml } from '@/lib/email-templates';
+import { emailLocale, getAuthEmailSubject, getMagicLinkHtml, getPasswordResetHtml, getSignupConfirmHtml } from '@/lib/email-templates';
 import { headers } from 'next/headers';
 import { checkEmailRateLimit } from '@/app/lib/rate-limit';
 import { getLocale } from 'next-intl/server';
@@ -41,7 +41,8 @@ export async function signInWithMagicLink(email: string, redirectTo?: string) {
 
     // 1. Generate Link
     console.log('Generating Magic Link...');
-    const confirmUrl = authConfirmUrl(siteOrigin(origin), await formLocale(), redirectTo);
+    const locale = await formLocale();
+    const confirmUrl = authConfirmUrl(siteOrigin(origin), locale, redirectTo);
 
     const { data, error } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
@@ -68,8 +69,8 @@ export async function signInWithMagicLink(email: string, redirectTo?: string) {
         console.log('Sending Email to:', email);
         const { success, error: emailError } = await sendEmail({
             to: email,
-            subject: 'Sign in to AC Styling',
-            html: getMagicLinkHtml(properties.action_link),
+            subject: getAuthEmailSubject('signin', emailLocale(locale)),
+            html: getMagicLinkHtml(properties.action_link, emailLocale(locale)),
         });
 
         if (!success) {
@@ -124,8 +125,8 @@ export async function requestPasswordReset(email: string) {
         console.log('Sending Reset Email to:', email);
         const { success, error: emailError } = await sendEmail({
             to: email,
-            subject: 'Reset your AC Styling Password',
-            html: getPasswordResetHtml(properties.action_link),
+            subject: getAuthEmailSubject('reset', emailLocale(locale)),
+            html: getPasswordResetHtml(properties.action_link, emailLocale(locale)),
         });
 
         if (!success) {
@@ -151,7 +152,11 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
 
     // 1. Try to generate Link (works if user exists)
     console.log('Attempting to generate link for existing user...');
-    const confirmUrl = authConfirmUrl(siteOrigin(origin), await formLocale(), redirectTo);
+    const locale = await formLocale();
+    const confirmUrl = authConfirmUrl(siteOrigin(origin), locale, redirectTo);
+    // A brand-new account gets the welcome copy, an existing one the sign-in
+    // copy ("Welcome back" would greet a new member as a returning one).
+    let createdNow = false;
 
     let { data, error } = await adminSupabase.auth.admin.generateLink({
         type: 'magiclink',
@@ -171,6 +176,7 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
     // 2. If User Not Found, Create User First
     if (error && error.message.includes("User not found")) {
         console.log('User not found. Creating new user...');
+        createdNow = true;
         // Confirmed but with NO password: the emailed link is the only way in,
         // so there is nothing here for anyone but the mailbox's owner to use.
         const { error: createError } = await adminSupabase.auth.admin.createUser({
@@ -207,8 +213,10 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
         // NB: never log properties.action_link — it contains a usable auth token.
         const { success, error: emailError } = await sendEmail({
             to: email,
-            subject: 'Welcome to AC Styling',
-            html: getMagicLinkHtml(properties.action_link),
+            subject: getAuthEmailSubject(createdNow ? 'signup' : 'signin', emailLocale(locale)),
+            html: createdNow
+                ? getSignupConfirmHtml(properties.action_link, emailLocale(locale))
+                : getMagicLinkHtml(properties.action_link, emailLocale(locale)),
         });
 
         if (!success) {
@@ -242,6 +250,7 @@ export async function signUpSeamless(formData: FormData, redirectTo: string) {
     if (!rate.allowed) {
         return { error: 'Too many requests. Please try again in a few minutes.' };
     }
+    const locale = await formLocale();
 
     // 1. Create User (Admin)
     // We set email_confirm: false to require verification (standard security)
@@ -263,7 +272,7 @@ export async function signUpSeamless(formData: FormData, redirectTo: string) {
         email,
         password,
         options: {
-            redirectTo: authConfirmUrl(process.env.NEXT_PUBLIC_SITE_URL || siteOrigin(origin), await formLocale(), redirectTo),
+            redirectTo: authConfirmUrl(process.env.NEXT_PUBLIC_SITE_URL || siteOrigin(origin), locale, redirectTo),
             data: { full_name: fullName } // redundant but safe
         },
     });
@@ -278,8 +287,9 @@ export async function signUpSeamless(formData: FormData, redirectTo: string) {
     if (properties?.action_link) {
         const { success, error: emailError } = await sendEmail({
             to: email,
-            subject: 'Welcome to AC Styling - Confirm your account',
-            html: getMagicLinkHtml(properties.action_link), // Reusing magic link template for confirmation
+            // Its own copy: it used to reuse the sign-in email's "Welcome back".
+            subject: getAuthEmailSubject('signup', emailLocale(locale)),
+            html: getSignupConfirmHtml(properties.action_link, emailLocale(locale)),
         });
 
         if (!success) {

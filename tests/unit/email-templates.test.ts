@@ -72,7 +72,10 @@ describe('email-templates', () => {
 
             // Was hardcoded to ac-styling.com, which this brand does not own.
             expect(html).not.toContain('ac-styling.com')
-            expect(html).toContain('theacstyle.com/vault')
+            // In her language, so the button does not bounce a Spanish reader
+            // through a redirect to English.
+            expect(html).toContain('theacstyle.com/en/vault')
+            expect(getAnswerNotificationHtml('q', 'a', 'es')).toContain('theacstyle.com/es/vault')
         })
     })
 
