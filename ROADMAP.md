@@ -116,9 +116,30 @@ Supabase reopens every locked column. Fixed and drilled on 2026-09-26: see
   English; the Calendly embed is not locale-specific; the live service rows
   carry placeholder copy (content). Not on a member's path to what she paid
   for, so after launch.
-- **Objects stay under a previous owner's folder** after a wardrobe is
-  reassigned, and **intake uploads outlive a deleted client**: both wait on
-  the wardrobe-retention decision (owner action 7).
+- **A wardrobe outlives the client who leaves** — owner decision,
+  2026-09-26 (owner action 7). Today only half of that is true, so the
+  decision is recorded here with the work it implies:
+  - *What happens now when a client deletes her account:* the wardrobe row
+    survives, ownerless (`wardrobes.owner_id` is `ON DELETE SET NULL`). But
+    its garments and lookbooks do not: `wardrobe_items.user_id` and
+    `lookbooks.user_id` are `ON DELETE CASCADE` to her profile, and
+    `deleteAccount` removes every photo under her own storage folder. Intake
+    uploads (`wardrobe/<id>/…`) are the only photos that remain. So what
+    outlives her is, in practice, an empty wardrobe.
+  - *To make the decision true:* change those two foreign keys to
+    `SET NULL` (a migration), and have `deleteAccount` move her wardrobe
+    photos to the wardrobe's own folder instead of deleting them — while
+    still deleting what is personal to her (avatar, measurements, Lab
+    answers, progress). Needs the owner to confirm the garments and lookbooks
+    are part of "the wardrobe"; the migration and code are straightforward
+    once she does.
+  - *Reassignment:* when a wardrobe moves to another client, photos already
+    under the first client's folder should move with it, for the same
+    reason. Not done yet.
+  - *Privacy notice:* its deletion section implies everything is deleted.
+    With this decision it must say that a stylist-managed wardrobe is kept
+    after the account closes (EN and ES; part of owner action 9's legal
+    review).
 - **PAY-001's limit:** only the last line item is remembered on a term, so a
   crash followed by a different purchase on the same term inside the
   15-minute window could still double. Recorded in migration 27.
