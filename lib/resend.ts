@@ -40,7 +40,11 @@ export const sendEmail = async ({
     }
 
     try {
-        const data = await resend.emails.send({
+        // The SDK does not throw when Resend refuses a message (bad address,
+        // unverified domain, rate limit, revoked key): it resolves with
+        // `{ data: null, error }`. Only checking for a throw reported every
+        // refusal as sent — see tests/unit/resend-result.test.ts.
+        const { data, error } = await resend.emails.send({
             from: 'AC Styling <hello@theacstyle.com>',
             to,
             subject,
@@ -48,11 +52,16 @@ export const sendEmail = async ({
             // multipart/alternative rather than HTML-only: see htmlToText above.
             text: text ?? htmlToText(html),
         });
-        console.log('[Resend] Success:', data);
+        if (error || !data?.id) {
+            const message = error?.message ?? 'Resend accepted no message';
+            console.error('[Resend] Refused:', error?.name ?? 'unknown', message);
+            return { success: false, error: message };
+        }
+        console.log('[Resend] Accepted:', data.id);
         return { success: true, data };
     } catch (error) {
         console.error('[Resend] Failed to send email:', error);
-        return { success: false, error };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 };
 

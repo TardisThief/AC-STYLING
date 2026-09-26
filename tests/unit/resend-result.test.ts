@@ -31,7 +31,7 @@ describe('sendEmail result', () => {
         process.env.RESEND_API_KEY = 're_test'
     })
 
-    it.fails('reports a refusal Resend resolves with as a failure', async () => {
+    it('reports a refusal Resend resolves with as a failure', async () => {
         send.mockResolvedValue({
             data: null,
             error: { name: 'validation_error', message: 'The to address is invalid.' },
