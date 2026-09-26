@@ -54,6 +54,7 @@ import {
     signUpWithMagicLink,
 } from '@/app/actions/auth'
 import { sendEmail } from '@/lib/resend'
+import { checkEmailRateLimit } from '@/app/lib/rate-limit'
 
 const ORIGIN = 'https://www.theacstyle.com'
 
@@ -155,6 +156,24 @@ describe('auth emails in the reader’s language (I18N-001)', () => {
         const sent = vi.mocked(sendEmail).mock.calls[0][0]
         expect(sent.subject).toBe(subject)
         expect(sent.html).toContain('<html lang="es">')
+    })
+
+    it('refuses a Spanish reader in Spanish when she is rate limited', async () => {
+        getLocale.mockResolvedValue('es')
+        vi.mocked(checkEmailRateLimit).mockResolvedValueOnce({ allowed: false })
+
+        const result = await signInWithMagicLink('someone@example.invalid')
+
+        expect(result).toEqual({ error: 'Demasiados intentos. Inténtalo de nuevo en unos minutos.' })
+    })
+
+    it('says an address is taken in words she can act on, not Supabase’s', async () => {
+        getLocale.mockResolvedValue('es')
+        admin.auth.admin.createUser.mockResolvedValueOnce({ data: null, error: { message: 'A user with this email address has already been registered' } })
+
+        const result = await signUpSeamless(joinForm(), '/vault')
+
+        expect(result).toEqual({ error: 'Ya existe una cuenta con este correo. Inicia sesión.' })
     })
 
     it('greets a brand-new signup as new, not as a returning member', async () => {

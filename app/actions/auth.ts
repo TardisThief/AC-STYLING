@@ -22,6 +22,40 @@ async function formLocale(): Promise<string> {
     }
 }
 
+/**
+ * What these actions say back to the form, in its language. They were English
+ * whatever the page (I18N-001): the login and signup screens are translated,
+ * and these messages are shown on them verbatim.
+ */
+const AUTH_ERRORS = {
+    en: {
+        tooMany: 'Too many requests. Please try again in a few minutes.',
+        loginLink: 'Could not generate login link. Please try again.',
+        resetLink: 'Could not generate reset link. Please try again.',
+        sendFailed: 'Failed to send email. Please try again.',
+        createFailed: 'Failed to create account.',
+        fillAll: 'Please fill in all fields.',
+        verifyLink: 'Failed to generate verification link.',
+        confirmSend: 'Failed to send confirmation email.',
+        alreadyRegistered: 'An account with this email already exists. Sign in instead.',
+    },
+    es: {
+        tooMany: 'Demasiados intentos. Inténtalo de nuevo en unos minutos.',
+        loginLink: 'No pudimos generar tu enlace de acceso. Inténtalo de nuevo.',
+        resetLink: 'No pudimos generar el enlace para restablecer tu contraseña. Inténtalo de nuevo.',
+        sendFailed: 'No pudimos enviar el correo. Inténtalo de nuevo.',
+        createFailed: 'No pudimos crear tu cuenta.',
+        fillAll: 'Completa todos los campos.',
+        verifyLink: 'No pudimos generar el enlace de verificación.',
+        confirmSend: 'No pudimos enviar el correo de confirmación.',
+        alreadyRegistered: 'Ya existe una cuenta con este correo. Inicia sesión.',
+    },
+} as const;
+
+function authErrors(locale: string) {
+    return locale === 'es' ? AUTH_ERRORS.es : AUTH_ERRORS.en;
+}
+
 /** The origin the form was posted from, or the configured site if absent. */
 function siteOrigin(origin: string | null): string {
     return origin || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -29,19 +63,20 @@ function siteOrigin(origin: string | null): string {
 
 export async function signInWithMagicLink(email: string, redirectTo?: string) {
     console.log('--- signInWithMagicLink START ---', email);
+    const locale = await formLocale();
+    const t = authErrors(locale);
     const hdrs = await headers();
     const origin = hdrs.get('origin');
     const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || hdrs.get('x-real-ip') || null;
     const rate = await checkEmailRateLimit(email, ip);
     if (!rate.allowed) {
-        return { error: 'Too many requests. Please try again in a few minutes.' };
+        return { error: t.tooMany };
     }
     const { createAdminClient } = await import("@/utils/supabase/admin");
     const supabase = createAdminClient();
 
     // 1. Generate Link
     console.log('Generating Magic Link...');
-    const locale = await formLocale();
     const confirmUrl = authConfirmUrl(siteOrigin(origin), locale, redirectTo);
 
     const { data, error } = await supabase.auth.admin.generateLink({
@@ -54,12 +89,12 @@ export async function signInWithMagicLink(email: string, redirectTo?: string) {
 
     if (error) {
         console.error('Error generating magic link:', error);
-        return { error: 'Could not generate login link. Please try again.' };
+        return { error: t.loginLink };
     }
 
     // Opening this link confirms the account; see revokeUnprovenPassword.
     if (!(await revokeUnprovenPassword(supabase, data.user))) {
-        return { error: 'Could not generate login link. Please try again.' };
+        return { error: t.loginLink };
     }
 
     const { properties } = data;
@@ -75,10 +110,10 @@ export async function signInWithMagicLink(email: string, redirectTo?: string) {
 
         if (!success) {
             console.error('Error sending magic link email:', emailError);
-            return { error: 'Failed to send email. Please try again.' };
+            return { error: t.sendFailed };
         }
     } else {
-        return { error: 'Failed to generate link (No Action Link)' };
+        return { error: t.loginLink };
     }
 
     return { success: true };
@@ -86,18 +121,19 @@ export async function signInWithMagicLink(email: string, redirectTo?: string) {
 
 export async function requestPasswordReset(email: string) {
     console.log('--- requestPasswordReset START ---', email);
+    const locale = await formLocale();
+    const t = authErrors(locale);
     const hdrs = await headers();
     const origin = hdrs.get('origin');
     const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || hdrs.get('x-real-ip') || null;
     const rate = await checkEmailRateLimit(email, ip);
     if (!rate.allowed) {
-        return { error: 'Too many requests. Please try again in a few minutes.' };
+        return { error: t.tooMany };
     }
     const { createAdminClient } = await import("@/utils/supabase/admin");
     const supabase = createAdminClient();
 
     // 1. Generate Link
-    const locale = await formLocale();
     const confirmUrl = authConfirmUrl(siteOrigin(origin), locale, `/${locale}/update-password`);
 
     const { data, error } = await supabase.auth.admin.generateLink({
@@ -110,12 +146,12 @@ export async function requestPasswordReset(email: string) {
 
     if (error) {
         console.error('Error generating recovery link:', error);
-        return { error: 'Could not generate reset link. Please try again.' };
+        return { error: t.resetLink };
     }
 
     // Opening this link confirms the account; see revokeUnprovenPassword.
     if (!(await revokeUnprovenPassword(supabase, data.user))) {
-        return { error: 'Could not generate reset link. Please try again.' };
+        return { error: t.resetLink };
     }
 
     const { properties } = data;
@@ -131,7 +167,7 @@ export async function requestPasswordReset(email: string) {
 
         if (!success) {
             console.error('Error sending reset email:', emailError);
-            return { error: 'Failed to send email. Please try again.' };
+            return { error: t.sendFailed };
         }
     }
 
@@ -140,19 +176,20 @@ export async function requestPasswordReset(email: string) {
 
 export async function signUpWithMagicLink(email: string, redirectTo?: string) {
     console.log('--- signUpWithMagicLink START ---', email);
+    const locale = await formLocale();
+    const t = authErrors(locale);
     const hdrs = await headers();
     const origin = hdrs.get('origin');
     const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || hdrs.get('x-real-ip') || null;
     const rate = await checkEmailRateLimit(email, ip);
     if (!rate.allowed) {
-        return { error: 'Too many requests. Please try again in a few minutes.' };
+        return { error: t.tooMany };
     }
     const { createAdminClient } = await import("@/utils/supabase/admin");
     const adminSupabase = createAdminClient();
 
     // 1. Try to generate Link (works if user exists)
     console.log('Attempting to generate link for existing user...');
-    const locale = await formLocale();
     const confirmUrl = authConfirmUrl(siteOrigin(origin), locale, redirectTo);
     // A brand-new account gets the welcome copy, an existing one the sign-in
     // copy ("Welcome back" would greet a new member as a returning one).
@@ -170,7 +207,7 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
     // (SEC-001). Opening the link is the proof, and confirms it; until then,
     // make sure no one else holds a password to it.
     if (data?.user && !(await revokeUnprovenPassword(adminSupabase, data.user))) {
-        return { error: 'Could not generate login link. Please try again.' };
+        return { error: t.loginLink };
     }
 
     // 2. If User Not Found, Create User First
@@ -187,7 +224,7 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
 
         if (createError) {
             console.error("Error creating user:", createError);
-            return { error: "Failed to create account." };
+            return { error: t.createFailed };
         }
 
         console.log('User created. Generating link...');
@@ -202,7 +239,7 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
 
     if (error) {
         console.error('Error generating magic link:', error);
-        return { error: 'Could not generate login link. Please try again.' };
+        return { error: t.loginLink };
     }
 
     console.log('Magic Link Generated. Properties:', data.properties ? 'Present' : 'Missing');
@@ -221,7 +258,7 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
 
         if (!success) {
             console.error('Error sending magic link email:', emailError);
-            return { error: 'Failed to send email. Please try again.' };
+            return { error: t.sendFailed };
         }
         console.log('Email sent successfully.');
     } else {
@@ -233,12 +270,14 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
 }
 
 export async function signUpSeamless(formData: FormData, redirectTo: string) {
+    const locale = await formLocale();
+    const t = authErrors(locale);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const fullName = formData.get('fullName') as string;
 
     if (!email || !password || !fullName) {
-        return { error: 'Please fill in all fields.' };
+        return { error: t.fillAll };
     }
 
     const { createAdminClient } = await import("@/utils/supabase/admin");
@@ -248,9 +287,8 @@ export async function signUpSeamless(formData: FormData, redirectTo: string) {
     const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || hdrs.get('x-real-ip') || null;
     const rate = await checkEmailRateLimit(email, ip);
     if (!rate.allowed) {
-        return { error: 'Too many requests. Please try again in a few minutes.' };
+        return { error: t.tooMany };
     }
-    const locale = await formLocale();
 
     // 1. Create User (Admin)
     // We set email_confirm: false to require verification (standard security)
@@ -263,7 +301,9 @@ export async function signUpSeamless(formData: FormData, redirectTo: string) {
 
     if (createError) {
         console.error('Signup Error:', createError);
-        return { error: createError.message };
+        // Supabase's own wording otherwise, which is English and says nothing
+        // she can act on.
+        return { error: /already (been )?registered/i.test(createError.message) ? t.alreadyRegistered : t.createFailed };
     }
 
     // 2. Generate Branded Confirmation Link
@@ -279,7 +319,7 @@ export async function signUpSeamless(formData: FormData, redirectTo: string) {
 
     if (linkError) {
         console.error('Error generating signup link:', linkError);
-        return { error: 'Failed to generate verification link.' };
+        return { error: t.verifyLink };
     }
 
     // 3. Send Email via Resend
@@ -294,10 +334,10 @@ export async function signUpSeamless(formData: FormData, redirectTo: string) {
 
         if (!success) {
             console.error('Error sending confirmation email:', emailError);
-            return { error: 'Failed to send confirmation email.' };
+            return { error: t.confirmSend };
         }
     } else {
-        return { error: 'System error: No confirmation link generated.' };
+        return { error: t.verifyLink };
     }
 
     return { success: true };
