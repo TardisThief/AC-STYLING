@@ -7,6 +7,24 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { graceEnds, renewalAmountCents, withinGrace } from '@/app/lib/entitlement-period';
+import { isSellablePrice } from '@/app/lib/sellable-price';
+import { safeNextPath } from '@/app/lib/safe-redirect';
+
+/**
+ * Refuse anything the catalogue is not selling, and any return path that
+ * would take Stripe's redirect off this site. Both used to be taken from the
+ * browser as given (PAY-004, tests/integration/checkout-price.test.ts).
+ */
+async function checkoutRefusal(priceId: string, paths: string[]): Promise<string | null> {
+    for (const path of paths) {
+        if (safeNextPath(path, '') !== path) return 'Invalid return path';
+    }
+    const { createAdminClient } = await import('@/utils/supabase/admin');
+    if (!(await isSellablePrice(createAdminClient(), priceId))) {
+        return 'This item is not available for purchase.';
+    }
+    return null;
+}
 
 export async function createCheckoutSession(priceId: string, returnUrl: string) {
     const supabase = await createClient();
@@ -19,6 +37,9 @@ export async function createCheckoutSession(priceId: string, returnUrl: string) 
     if (!priceId) {
         return { error: 'Price ID is missing' };
     }
+
+    const refusal = await checkoutRefusal(priceId, [returnUrl]);
+    if (refusal) return { error: refusal };
 
     const headersList = await headers();
     const origin = headersList.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -103,6 +124,9 @@ export async function createGuestCheckoutSession(
     if (!priceId) {
         return { error: 'Price ID is missing' };
     }
+
+    const refusal = await checkoutRefusal(priceId, [returnUrl, welcomePath]);
+    if (refusal) return { error: refusal };
 
     const headersList = await headers();
     const origin =
@@ -328,6 +352,10 @@ export async function getRenewalQuote(): Promise<
  * start, and to keep the row out of the next renewal's pricing lookup.
  */
 export async function createRenewalCheckoutSession(returnUrl: string = '/vault') {
+    // No price to check — it is computed below — but the return path is
+    // appended to the origin like any other checkout's.
+    if (safeNextPath(returnUrl, '') !== returnUrl) return { error: 'Invalid return path' };
+
     const resolved = await resolveRenewal();
     if ('error' in resolved) return { error: resolved.error };
 

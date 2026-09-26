@@ -47,7 +47,7 @@ vi.mock('next/headers', () => ({
 }));
 vi.mock('next/navigation', () => ({ redirect: vi.fn() }));
 
-import { createCheckoutSession, createGuestCheckoutSession } from '@/app/actions/stripe';
+import { createCheckoutSession, createGuestCheckoutSession, createRenewalCheckoutSession } from '@/app/actions/stripe';
 
 const SELLABLE = {
     'an active offer': 'price_offer_active',
@@ -105,14 +105,14 @@ describe.each(Object.keys(buy) as (keyof typeof buy)[])('%s checkout', who => {
         expect(sessionsCreate.mock.calls[0][0].line_items).toEqual([{ price, quantity: 1 }]);
     });
 
-    it.fails.each(Object.entries(NOT_SELLABLE))('refuses %s', async (_, price) => {
+    it.each(Object.entries(NOT_SELLABLE))('refuses %s', async (_, price) => {
         const result = await buy[who](price);
 
         expect(result).toHaveProperty('error');
         expect(sessionsCreate).not.toHaveBeenCalled();
     });
 
-    it.fails.each(['//attacker.invalid/x', '@attacker.invalid/x', 'https://attacker.invalid/x'])(
+    it.each(['//attacker.invalid/x', '@attacker.invalid/x', 'https://attacker.invalid/x'])(
         'refuses a return path that leaves the site: %s',
         async returnUrl => {
             const result = await buy[who]('price_offer_active', returnUrl);
@@ -124,10 +124,21 @@ describe.each(Object.keys(buy) as (keyof typeof buy)[])('%s checkout', who => {
 });
 
 describe('guest checkout', () => {
-    it.fails('refuses a welcome path that leaves the site', async () => {
+    it('refuses a welcome path that leaves the site', async () => {
         const result = await buy.guest('price_offer_active', '/en/vault-access', '@attacker.invalid/steal');
 
         expect(result).toHaveProperty('error');
+        expect(sessionsCreate).not.toHaveBeenCalled();
+    });
+});
+
+describe('renewal checkout', () => {
+    // Priced from her own purchase history, so there is no price to check —
+    // but its return path is appended to the origin exactly like the others.
+    it('refuses a return path that leaves the site', async () => {
+        const result = await createRenewalCheckoutSession('@attacker.invalid/x');
+
+        expect(result).toEqual({ error: 'Invalid return path' });
         expect(sessionsCreate).not.toHaveBeenCalled();
     });
 });

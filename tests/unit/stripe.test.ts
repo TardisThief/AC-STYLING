@@ -31,6 +31,12 @@ vi.mock('next/navigation', () => ({
     redirect: vi.fn(),
 }))
 
+// Which prices the catalogue sells is tested against the live schema in
+// tests/integration/checkout-price.test.ts; here every price is on sale.
+vi.mock('@/app/lib/sellable-price', () => ({
+    isSellablePrice: vi.fn().mockResolvedValue(true),
+}))
+
 // Import after mocks
 import { createCheckoutSession } from '@/app/actions/stripe'
 import { stripe } from '@/utils/stripe'
