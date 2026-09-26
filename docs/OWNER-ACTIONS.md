@@ -343,12 +343,12 @@ setting, set the dashboard to 22.x too so the two agree.
 
 ## 7. ~~Decide whether a wardrobe should outlive the client who left~~ — decided 2026-09-26: **yes**
 
-**Decision (2026-09-26):** a wardrobe outlives the client who leaves. What
-that still requires — keeping its garments, lookbooks and photos rather than
-only the empty container, moving photos on reassignment, and saying so in the
-privacy notice — is tracked in `ROADMAP.md` under "Still open". One question
-back to you there: confirm that the garments and lookbooks count as part of
-the wardrobe.
+**Decision (2026-09-26):** a wardrobe outlives the client who leaves, and
+so do its garments and lookbooks (confirmed the same day). Her personal data
+— avatar, measurements, Lab answers — is still deleted. Not implemented yet:
+today only the empty wardrobe survives. The work (a migration, photos moved
+rather than deleted, photos moved on reassignment) and the privacy-notice
+change are tracked in `ROADMAP.md` under "Still open".
 
 
 When someone deletes their account, migration 15 now removes their profile,

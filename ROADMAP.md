@@ -112,9 +112,10 @@ check for the owner.
   English; the Calendly embed is not locale-specific; the live service rows
   carry placeholder copy (content). Not on a member's path to what she paid
   for, so after launch.
-- **A wardrobe outlives the client who leaves** — owner decision,
-  2026-09-26 (owner action 7). Today only half of that is true, so the
-  decision is recorded here with the work it implies:
+- **A wardrobe outlives the client who leaves, garments and lookbooks
+  included** — owner decisions, 2026-09-26 (owner action 7). Not implemented
+  yet: today only the empty wardrobe survives, so the decision is recorded
+  here with the work it implies:
   - *What happens now when a client deletes her account:* the wardrobe row
     survives, ownerless (`wardrobes.owner_id` is `ON DELETE SET NULL`). But
     its garments and lookbooks do not: `wardrobe_items.user_id` and
@@ -122,20 +123,25 @@ check for the owner.
     `deleteAccount` removes every photo under her own storage folder. Intake
     uploads (`wardrobe/<id>/…`) are the only photos that remain. So what
     outlives her is, in practice, an empty wardrobe.
-  - *To make the decision true:* change those two foreign keys to
-    `SET NULL` (a migration), and have `deleteAccount` move her wardrobe
-    photos to the wardrobe's own folder instead of deleting them — while
-    still deleting what is personal to her (avatar, measurements, Lab
-    answers, progress). Needs the owner to confirm the garments and lookbooks
-    are part of "the wardrobe"; the migration and code are straightforward
-    once she does.
+  - *To make the decision true:* a migration changing
+    `wardrobe_items.user_id` and `lookbooks.user_id` to `ON DELETE SET NULL`,
+    so the garments and lookbooks stay with the wardrobe; and `deleteAccount`
+    moving her wardrobe and lookbook photos (and lookbook thumbnails) to the
+    wardrobe's own folder, `wardrobe/<id>/…`, instead of deleting them —
+    updating the stored image paths to match — while still deleting what is
+    personal to her: avatar, measurements (tailor card), Lab answers,
+    progress, questions and grants. The garments and lookbooks are confirmed
+    as part of the wardrobe (owner, 2026-09-26). Each needs a failing test
+    first, like the rest: a deleted client's wardrobe must come back with its
+    items, lookbooks and viewable photos, and nothing personal to her.
   - *Reassignment:* when a wardrobe moves to another client, photos already
     under the first client's folder should move with it, for the same
     reason. Not done yet.
   - *Privacy notice:* its deletion section implies everything is deleted.
-    With this decision it must say that a stylist-managed wardrobe is kept
-    after the account closes (EN and ES; part of owner action 9's legal
-    review).
+    With this decision it must say that a stylist-managed wardrobe — its
+    garments, photos and lookbooks — is kept after the account closes, while
+    personal data (avatar, measurements, Lab answers) is deleted (EN and ES;
+    part of owner action 9's legal review).
 - **PAY-001's limit:** only the last line item is remembered on a term, so a
   crash followed by a different purchase on the same term inside the
   15-minute window could still double. Recorded in migration 27.
