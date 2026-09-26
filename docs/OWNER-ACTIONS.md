@@ -80,7 +80,25 @@ attaches to its buyer as normal.
 
 ---
 
-## 1b. Allow the new auth-email destinations in Supabase — added 2026-09-26
+## 1b. ~~Allow the new auth-email destinations in Supabase~~ — confirmed 2026-09-26
+
+**Checked against the dashboard (owner's screenshot, 2026-09-26):** the
+Redirect URLs already include `https://www.theacstyle.com/**` and
+`https://theacstyle.com/**`, which cover `/en/confirm`, `/es/confirm` and
+`/{locale}/update-password`. No change was needed. Site URL is
+`https://www.theacstyle.com`.
+
+**Recommended on the same screen: remove `https://*.vercel.app/**`.** It
+allows any site on vercel.app, not only ours, and Supabase's public auth
+endpoint accepts a `redirect_to` from any caller as long as it matches the
+list — so anyone could request a genuine login email for a customer that
+sends her token to a vercel.app site they control. Keep
+`https://ac-styling-livid.vercel.app/**`; add a specific preview address
+only while testing on it. (The `localhost` entries only reach the
+recipient's own machine: low risk.)
+
+Original note, for reference:
+
 
 Every auth email (magic-link login, signup, password reset, `/vault/join`)
 used to send the reader to `/auth/confirm`, a page that does not exist
@@ -111,7 +129,7 @@ Either unpublish it in admin until its modules have video (F09), or do the
 cutover only after content lands. Checkout now refuses anything the catalogue
 is *not* selling, so unpublishing is enough to stop sales.
 
-## 1d. Schedule the paid-but-not-granted check on `hermes` — added 2026-09-26
+## 1d. ~~Schedule the paid-but-not-granted check on `hermes`~~ — done 2026-09-26 (owner)
 
 `scripts/ops/check_fulfillments.mjs` finds every paid line item that was not
 granted: rows left `failed` or stuck `processing`, and (with a Stripe key)
@@ -488,7 +506,7 @@ bash scripts/backup/verify_storage.sh  /mnt/backup/ac-styling/storage-mirror
 
 Add the result to the drill table in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md).
 
-**New on 2026-09-26 — drill the next nightly.** Until today no backup
+**Done 2026-09-26 (owner): drill the next nightly.** Until today no backup
 contained the database privileges that make up the app's security model (see
 "Privileges" in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md)). The dump
 scripts now keep them. Once `hermes` has pulled the change, run

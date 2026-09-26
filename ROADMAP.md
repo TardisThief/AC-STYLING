@@ -110,10 +110,9 @@ deleted), so testing starts from no purchases at all.
 
 **Deployed 2026-09-26:** `main` pushed and live, then migration 30 applied
 and the one live download (Colorimetry's PDF) moved into the private bucket;
-records in `supabase/migrations/README.md`. Not checked by a person yet: a
-module page as a member with access (resources and Lab load) and as one
-without (question count only). That needs a member login, so it is a quick
-check for the owner.
+records in `supabase/migrations/README.md`. Checked by the owner the same day: a module page as a member with access
+(resources and Lab load) and as one without (question count only) behave
+as intended.
 
 **Still open, and why:**
 
