@@ -31,7 +31,7 @@ describe('resolveOrCreateUserByEmail', () => {
 
         const result = await resolveOrCreateUserByEmail(admin, 'buyer@example.com')
 
-        expect(result).toEqual({ userId: 'existing-1', created: false })
+        expect(result).toEqual({ userId: 'existing-1', created: false, needsWayIn: true })
         expect(createUser).not.toHaveBeenCalled()
     })
 
@@ -43,7 +43,7 @@ describe('resolveOrCreateUserByEmail', () => {
 
         const result = await resolveOrCreateUserByEmail(admin, '  MIXED@Case.com ')
 
-        expect(result).toEqual({ userId: 'existing-2', created: false })
+        expect(result).toEqual({ userId: 'existing-2', created: false, needsWayIn: true })
         expect(createUser).not.toHaveBeenCalled()
     })
 
@@ -52,7 +52,7 @@ describe('resolveOrCreateUserByEmail', () => {
 
         const result = await resolveOrCreateUserByEmail(admin, 'new@example.com', 'Ada L')
 
-        expect(result).toEqual({ userId: 'new-1', created: true })
+        expect(result).toEqual({ userId: 'new-1', created: true, needsWayIn: true })
         expect(createUser).toHaveBeenCalledWith({
             email: 'new@example.com',
             email_confirm: true,
@@ -99,7 +99,7 @@ describe('resolveOrCreateUserByEmail', () => {
 
         const result = await resolveOrCreateUserByEmail(admin, 'race@example.com')
 
-        expect(result).toEqual({ userId: 'raced-1', created: false })
+        expect(result).toEqual({ userId: 'raced-1', created: false, needsWayIn: true })
     })
 
     // PAY-002 (2026-09-25 external assessment). Whether she still needs the
@@ -107,7 +107,7 @@ describe('resolveOrCreateUserByEmail', () => {
     // ever signed in to it — not about whether this delivery created it. A
     // retry of a delivery that created the account and then failed sees
     // `created: false`, and used to send her nothing.
-    it.fails('reports an existing account nobody has signed in to as still needing a way in', async () => {
+    it('reports an existing account nobody has signed in to as still needing a way in', async () => {
         listUsers.mockResolvedValue({
             data: { users: [{ id: 'made-by-first-try', email: 'guest@example.com', email_confirmed_at: '2026-09-25T00:00:00Z', last_sign_in_at: null }] },
             error: null,
@@ -118,7 +118,7 @@ describe('resolveOrCreateUserByEmail', () => {
         expect(result).toMatchObject({ userId: 'made-by-first-try', created: false, needsWayIn: true })
     })
 
-    it.fails('reports an account that has signed in as not needing one', async () => {
+    it('reports an account that has signed in as not needing one', async () => {
         listUsers.mockResolvedValue({
             data: { users: [{ id: 'regular', email: 'regular@example.com', email_confirmed_at: '2026-01-01T00:00:00Z', last_sign_in_at: '2026-09-01T00:00:00Z' }] },
             error: null,
@@ -134,7 +134,7 @@ describe('resolveOrCreateUserByEmail', () => {
     // the existing account by email, and the welcome link then confirms it —
     // so whoever registered her address first would hold a password to the
     // account her purchase is in. Replace it before attaching anything.
-    it.fails('replaces the password on an existing unconfirmed account before attaching a purchase', async () => {
+    it('replaces the password on an existing unconfirmed account before attaching a purchase', async () => {
         listUsers.mockResolvedValue({
             data: { users: [{ id: 'squatted', email: 'victim@example.com', email_confirmed_at: null, last_sign_in_at: null }] },
             error: null,
@@ -147,7 +147,7 @@ describe('resolveOrCreateUserByEmail', () => {
         expect(updateUserById.mock.calls[0][1].password.length).toBeGreaterThanOrEqual(32)
     })
 
-    it.fails('fails the delivery when that password cannot be replaced, so Stripe retries', async () => {
+    it('fails the delivery when that password cannot be replaced, so Stripe retries', async () => {
         listUsers.mockResolvedValue({
             data: { users: [{ id: 'squatted', email: 'victim@example.com', email_confirmed_at: null, last_sign_in_at: null }] },
             error: null,

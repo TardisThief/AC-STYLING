@@ -328,7 +328,7 @@ describe('Stripe Webhook Handler', () => {
         // `created`, so the retry minted none and sent no email: access granted,
         // and no way to reach it. What decides is whether she has ever signed
         // in, which resolveOrCreateUserByEmail reports as `needsWayIn`.
-        it.fails('still mints her claim on a retry after the first delivery created the account', async () => {
+        it('still mints her claim on a retry after the first delivery created the account', async () => {
             mockResolveUser.mockResolvedValue({ userId: 'guest-user-1', created: false, needsWayIn: true })
             mockConstructEvent.mockReturnValue({
                 type: 'checkout.session.completed',

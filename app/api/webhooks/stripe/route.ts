@@ -171,6 +171,9 @@ export async function POST(req: Request) {
         // silently lost the sale — money taken, nothing granted, no retry.
         let resolvedUserId = finalUserId;
         let isNewAccount = false;
+        // Whether she has ever signed in — not whether this delivery made the
+        // account. See the claim below.
+        let needsWayIn = false;
 
         if (!resolvedUserId) {
             const hasEmail = customerEmail && customerEmail !== 'No Email';
@@ -200,6 +203,7 @@ export async function POST(req: Request) {
 
             resolvedUserId = resolved.userId;
             isNewAccount = resolved.created;
+            needsWayIn = resolved.needsWayIn;
             await logEvent(
                 'info',
                 `Guest purchase attached to ${resolvedUserId} (new account: ${isNewAccount})`
@@ -380,14 +384,16 @@ export async function POST(req: Request) {
             // the account, fails mid-loop, and the retry then sees an account
             // that already exists — `created: false` — so the welcome email
             // would never be sent at all. She would have access and no way to
-            // reach it.
+            // reach it. 612fed7 moved the email onto the open claim below but
+            // left the claim itself behind `isNewAccount`, so the retry still
+            // minted none (PAY-002).
             //
-            // An open claim is the durable signal: it exists because a guest
-            // account was created for this session, and it is consumed the
-            // moment she sets a password by any route. A retry may therefore
-            // send a second welcome email, which is a far better failure than
-            // sending none.
-            if (isNewAccount) {
+            // `needsWayIn` is the durable fact: nobody has ever signed in to
+            // this account. The claim is unique on the session, so minting it
+            // again on a retry is a no-op, and it is consumed the moment she
+            // sets a password by any route. A retry may therefore send a second
+            // welcome email, which is a far better failure than sending none.
+            if (needsWayIn) {
                 // Mint the single-use credential the welcome page's fast lane
                 // spends. Keyed to this checkout session and unique on it, so a
                 // replayed delivery is a no-op rather than a second live
