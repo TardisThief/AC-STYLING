@@ -53,7 +53,17 @@ vi.mock('@/utils/stripe', () => ({
         checkout: {
             sessions: {
                 listLineItems: async (id: string) => ({ data: h.lineItems.get(id) ?? [] }),
-                list: async () => ({ data: h.sessions }),
+                // As Stripe does: newest first, one page of `limit`, and an
+                // exact-match customer_details.email filter when asked.
+                list: async (params: { limit?: number; customer_details?: { email?: string }; starting_after?: string } = {}) => {
+                    const email = params.customer_details?.email;
+                    let all = email
+                        ? (h.sessions as Session[]).filter(x => x.customer_details.email === email)
+                        : (h.sessions as Session[]);
+                    if (params.starting_after) all = all.slice(all.findIndex(x => x.id === params.starting_after) + 1);
+                    const limit = params.limit ?? 10;
+                    return { data: all.slice(0, limit), has_more: all.length > limit };
+                },
             },
         },
     },
@@ -292,6 +302,28 @@ describe('A purchase is granted once, however many times it is fulfilled', () =>
         const s = session(buyer, [item(PRODUCT.masterclass)]);
         await Promise.all([deliver(s), checkoutReturn(buyer, [s])]);
         expect(yearsLeft((await masterclassGrant(buyer)).expires_at)).toBe(1);
+    });
+});
+
+describe('Restore finds her purchase however busy the shop is', () => {
+    // Restore listed the account's last 100 checkout sessions — everyone's —
+    // and looked for hers among them. Once 100 other checkouts had happened
+    // since, her paid session was invisible to it (2026-09-25 external
+    // assessment, SCALE-001).
+    it.fails('restores a purchase with a hundred newer checkouts in front of it', async () => {
+        const buyer = await newBuyer();
+        const hers = session(buyer, [item(PRODUCT.masterclass)]);
+        hers.customer_details.email = 'buyer@example.invalid';
+        const others = Array.from({ length: 100 }, () => {
+            const other = session('00000000-0000-4000-8000-0000000000ff', [item(PRODUCT.chapter)]);
+            other.customer_details.email = 'someone-else@example.invalid';
+            return other;
+        });
+
+        const result = await checkoutReturn(buyer, [...others, hers]);
+
+        expect(result).toMatchObject({ success: true });
+        expect(await masterclassGrant(buyer)).toBeDefined();
     });
 });
 
