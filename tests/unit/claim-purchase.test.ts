@@ -70,7 +70,7 @@ describe('claimPurchase', () => {
         expect(admin.auth.admin.updateUserById).toHaveBeenCalledWith('buyer-id', { password: 'a-good-password' })
     })
 
-    it.fails('refuses once the account has signed in any other way', async () => {
+    it('refuses once the account has signed in any other way', async () => {
         admin.auth.admin.getUserById.mockResolvedValue({ data: { user: account('2026-09-26T01:00:00Z') }, error: null })
 
         const result = await claimPurchase('cs_test_1', 'attacker-password')
@@ -79,7 +79,7 @@ describe('claimPurchase', () => {
         expect(admin.auth.admin.updateUserById).not.toHaveBeenCalled()
     })
 
-    it.fails('refuses when the account cannot be read, rather than assuming it is new', async () => {
+    it('refuses when the account cannot be read, rather than assuming it is new', async () => {
         admin.auth.admin.getUserById.mockResolvedValue({ data: { user: null }, error: { message: 'down' } })
 
         const result = await claimPurchase('cs_test_1', 'a-good-password')
@@ -90,7 +90,7 @@ describe('claimPurchase', () => {
 })
 
 describe('getPurchaseSession', () => {
-    it.fails('does not offer the form for an account that has signed in', async () => {
+    it('does not offer the form for an account that has signed in', async () => {
         admin.auth.admin.listUsers.mockResolvedValue({ data: { users: [account('2026-09-26T01:00:00Z')] }, error: null })
 
         const info = await getPurchaseSession('cs_test_1')

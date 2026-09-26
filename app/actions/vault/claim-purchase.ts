@@ -89,11 +89,14 @@ export async function getPurchaseSession(sessionId: string): Promise<SessionInfo
 
         // Read-only look at the credential. The decision to act on it is made
         // by consuming it in claimPurchase, never by trusting this.
+        //
+        // Not offered once anyone has signed in to the account: she has her
+        // own way in, and claimPurchase would refuse it anyway.
         const admin = createAdminClient();
         return {
             ok: true,
             email: loaded.email,
-            claimable: await isClaimOpen(admin, sessionId),
+            claimable: !user.last_sign_in_at && (await isClaimOpen(admin, sessionId)),
         };
     } catch (err) {
         console.error('[claim-purchase] getPurchaseSession:', err);
@@ -138,6 +141,24 @@ export async function claimPurchase(sessionId: string, password: string) {
                     error: 'Your account is still being set up. Try again in a moment, or use the link in your email.',
                 };
             }
+            return {
+                success: false,
+                error: 'This link has already been used. Sign in, or reset your password from the login page.',
+            };
+        }
+
+        // Claims are minted only for an account nobody has signed in to. If
+        // someone has since — the emailed link, a reset, a password set any
+        // other way — she already has her way in, and this weaker credential
+        // must not be able to replace her password. It used to be closed only
+        // from the reset page (SEC-003); this holds however she got in. The
+        // claim is spent either way. Fails closed if the account is unreadable.
+        const { data: owner, error: ownerError } = await admin.auth.admin.getUserById(claim.userId);
+        if (ownerError || !owner?.user) {
+            console.error('[claim-purchase] getUserById:', ownerError);
+            return { success: false, error: 'We could not set that password. Please try again.' };
+        }
+        if (owner.user.last_sign_in_at) {
             return {
                 success: false,
                 error: 'This link has already been used. Sign in, or reset your password from the login page.',
