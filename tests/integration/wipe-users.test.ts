@@ -11,7 +11,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
 import { createLiveSchemaDb, createUser } from '../utils/pglite-db';
-// @ts-expect-error -- plain .mjs script module, no type declarations
 import { applyWipe, planWipe, tableCounts, wipeStorage } from '../../scripts/wipe/wipe-core.mjs';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;

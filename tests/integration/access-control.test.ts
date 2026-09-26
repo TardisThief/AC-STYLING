@@ -7,17 +7,18 @@
  * about the caller's own id (utils/access-control.ts, chapter-video.ts) — so
  * RLS, grants and the SECURITY DEFINER body all behave as in production.
  *
- * Two holes were found here and closed by migration 22. As in
- * authorization.test.ts, beforeAll proves both reproduce against the live
- * schema BEFORE applying the migration, so the tests below are known to be
- * testing the migration and not an accident of the fixture.
+ * Three holes were found here and closed by migrations 22 and 25, applied to
+ * production on 2026-09-26. Until then beforeAll reproduced each hole on the
+ * live schema and then applied the migration (see git history); now the
+ * baseline carries both, so beforeAll checks that it does, and the tests
+ * below pin the fixed behaviour.
  *
  * Each case names who is asking and what they must NOT get. The happy paths
  * are here only as controls: a deny that also denies the buyer proves nothing.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 
@@ -113,16 +114,8 @@ beforeAll(async () => {
     );
     await db.exec('COMMIT');
 
-    // Both holes reproduce on the live schema before migration 22.
-    expect(await canAccess(U.coursePass, C.misflaggedModule)).toBe(true);
-    expect((await asRole<{ ok: boolean }>(db, 'anon', null,
-        'SELECT public.check_access($1, $2) AS ok', [U.grantee, C.publishedMasterclass])).rows[0].ok).toBe(true);
-
-    await db.exec(readMigration('20260925_22_check_access_boundaries.sql'));
-
-    // Before migration 25: get_user_role tells an anonymous caller who the admin is.
-    expect((await asRole<{ role: string }>(db, 'anon', null, 'SELECT public.get_user_role($1) AS role', [U.adminExpired])).rows[0].role).toBe('admin');
-    await db.exec(readMigration('20260925_25_get_user_role_caller_only.sql'));
+    await expectMigrationApplied(db, '20260925_22_check_access_boundaries.sql');
+    await expectMigrationApplied(db, '20260925_25_get_user_role_caller_only.sql');
 }, 60000);
 
 afterAll(async () => { await db?.close(); });

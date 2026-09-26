@@ -27,7 +27,18 @@
  * checkout emails, so a wipe that is also a privacy reset should clear them.
  */
 
-/** Who goes and who stays. Throws rather than plan a wipe that locks everyone out. */
+/**
+ * @typedef {(sql: string, params?: unknown[]) => Promise<{ rows: any[] }>} Query
+ * @typedef {{ id: string, email: string | null, role: string }} Account
+ * @typedef {{ kept: Account[], wiped: Account[] }} WipePlan
+ */
+
+/**
+ * Who goes and who stays. Throws rather than plan a wipe that locks everyone out.
+ * @param {Query} query
+ * @param {{ keepEmails?: string[] }} [options]
+ * @returns {Promise<WipePlan>}
+ */
 export async function planWipe(query, { keepEmails = [] } = {}) {
     const keep = keepEmails.map(e => e.trim().toLowerCase()).filter(Boolean);
     const { rows } = await query(
@@ -50,7 +61,11 @@ export async function planWipe(query, { keepEmails = [] } = {}) {
     return { kept, wiped };
 }
 
-/** Row counts for every public table, plus auth.users. */
+/**
+ * Row counts for every public table, plus auth.users.
+ * @param {Query} query
+ * @returns {Promise<Record<string, number>>}
+ */
 export async function tableCounts(query) {
     const { rows: tables } = await query(
         `SELECT c.relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -71,6 +86,10 @@ export async function tableCounts(query) {
  *
  * Returns the storage folders that belonged to the wiped users, for
  * wipeStorage, which cannot be part of the transaction.
+ * @param {Query} query
+ * @param {WipePlan} plan
+ * @param {{ clearLogs?: boolean, includeOwnerlessWardrobes?: boolean }} [options]
+ * @returns {Promise<{ storageFolders: Record<string, string[]> }>}
  */
 export async function applyWipe(query, plan, { clearLogs = false, includeOwnerlessWardrobes = false } = {}) {
     const ids = plan.wiped.map(u => u.id);
@@ -153,6 +172,10 @@ async function listRecursive(bucket, folder) {
  * Remove the wiped users' files. Through the Storage API, never by deleting
  * storage.objects rows, which would leave the bytes orphaned in the bucket.
  * Idempotent: re-running after a partial failure removes what is left.
+ * @param {{ from(bucket: string): any }} storage
+ * @param {Record<string, string[]>} folders
+ * @param {{ commit?: boolean }} [options]
+ * @returns {Promise<Record<string, number>>}
  */
 export async function wipeStorage(storage, folders, { commit = false } = {}) {
     const report = {};

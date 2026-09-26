@@ -110,3 +110,27 @@ export async function createUser(
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
     await db.query(`INSERT INTO public.profiles (${columns.join(', ')}) VALUES (${placeholders})`, values);
 }
+
+/**
+ * Assert the live schema already carries a migration, by running the file and
+ * requiring its own drift guard to refuse with "has been applied".
+ *
+ * Once a migration is live, the baseline dump includes it, so a test can no
+ * longer reproduce the hole and then apply the fix. The reproduce-then-fix
+ * proof lives in git history (the it.fails commits) and in the production
+ * probe run recorded in supabase/migrations/README.md; this pins that the fix
+ * is still in the schema the tests load.
+ */
+export async function expectMigrationApplied(db: PGlite, name: string): Promise<void> {
+    let refused: string | null = null;
+    try {
+        await db.exec(readMigration(name));
+    } catch (e) {
+        refused = (e as Error).message;
+    }
+    // The file opens its own transaction; a refused guard leaves it aborted.
+    await db.exec('ROLLBACK');
+    if (!refused || !/has been applied/.test(refused)) {
+        throw new Error(`${name} is not in the live schema: ${refused ?? 'it applied cleanly'}`);
+    }
+}

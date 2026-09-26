@@ -16,12 +16,12 @@
  * harmless — it is a free year.
  *
  * Every finding here was first committed as it.fails (6ba7d7a). The two that
- * live in the schema are reproduced again in beforeAll, against the live
- * schema, before migration 23 is applied.
+ * live in the schema were closed by migration 23, applied to production on
+ * 2026-09-26; beforeAll checks the live schema carries it.
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 type LineItem = { id: string; price: { product: string }; amount_total: number; currency: string };
@@ -185,20 +185,7 @@ beforeAll(async () => {
     await db.query(`INSERT INTO offers (slug, title, stripe_product_id, active) VALUES ('masterclass_pass', 'Pass', $1, true), ('course_pass', 'Course Pass', $2, false)`, [PRODUCT.masterclassPass, PRODUCT.retiredCoursePass]);
     await db.query(`INSERT INTO services (title, stripe_product_id, price_id, unlocks_studio_access) VALUES ('Studio', $1, 'price_studio_service', true)`, [PRODUCT.studioService]);
 
-    // Before migration 23, on the live schema: a second grant row for the same
-    // masterclass is accepted, and a purchase of the Studio service unlocks
-    // nothing. Rolled back, so the migration's duplicate check has a clean table.
-    const probe = await newBuyer();
-    await db.exec('BEGIN');
-    try {
-        await db.query('INSERT INTO user_access_grants (user_id, masterclass_id) VALUES ($1, $2), ($1, $2)', [probe, MASTERCLASS_ID]);
-        await db.query('INSERT INTO purchases (user_id, product_id) VALUES ($1, $2)', [probe, PRODUCT.studioService]);
-        expect((await profile(probe)).active_studio_client).toBe(false);
-    } finally {
-        await db.exec('ROLLBACK');
-    }
-
-    await db.exec(readMigration('20260925_23_grant_uniqueness_and_studio_unlock.sql'));
+    await expectMigrationApplied(db, '20260925_23_grant_uniqueness_and_studio_unlock.sql');
 }, 60000);
 
 afterAll(async () => { await db?.close(); });

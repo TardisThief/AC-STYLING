@@ -12,12 +12,12 @@
  * content, `wardrobe/<id>/…` for intake — where <id> may be a USER id (invite
  * profile) or a WARDROBE id (token intake). One path segment, two namespaces.
  *
- * One hole was found here (b1ba0d3) and closed by migration 24; beforeAll
- * proves it reproduces on the live schema before applying the migration.
+ * One hole was found here (b1ba0d3) and closed by migration 24, applied to
+ * production on 2026-09-26; beforeAll checks the live schema carries it.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, expectMigrationApplied, readMigration } from '../utils/pglite-db';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const A = id(1);          // client with a wardrobe
@@ -59,12 +59,7 @@ beforeAll(async () => {
         await db.query(`INSERT INTO storage.objects (bucket_id, name) VALUES ('studio-wardrobe', $1)`, [name]);
     }
 
-    // Before migration 24: a member can plant an item in another client's wardrobe.
-    const planted = await asRole(db, 'authenticated', A,
-        `INSERT INTO wardrobe_items (wardrobe_id, user_id, image_url) VALUES ($1, $2, 'https://attacker.invalid/x.jpg') RETURNING id`, [WB, A]);
-    expect(planted.rows).toHaveLength(1);
-
-    await db.exec(readMigration('20260925_24_wardrobe_item_insert_scope.sql'));
+    await expectMigrationApplied(db, '20260925_24_wardrobe_item_insert_scope.sql');
 }, 120_000);
 
 afterAll(async () => { await db?.close(); });

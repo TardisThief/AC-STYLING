@@ -18,7 +18,7 @@ Phases 0–3.6 are complete and deployed. In plain terms:
 
 - **The code is launch-ready.** Every code-level blocker from the 2026-09-19
   assessment (F01–F08, F10, F11) is closed. Migrations are applied and verified
-  through **21**.
+  through **25** (22–25 on 2026-09-26, after the user wipe).
 - **The Vault is populated but parked.** 4 masterclasses, 22 modules and 4
   standalone courses, all bilingual, all `is_published = false`. Publishing is
   a flag flip in the admin console, not a re-import.
@@ -34,6 +34,11 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   never, and there was no backfill. `/vault-access` also sells individual
   masterclasses now, and their price and published flag are editable in admin.
   Record: [`docs/RELEASE-2026-09-24-ACCESS-TERM.md`](docs/RELEASE-2026-09-24-ACCESS-TERM.md).
+- **Adversarial test pass (2026-09-25/26).** Tests now try to break the guards,
+  against the live schema in PGlite (`tests/integration/`), not just mocks. It
+  found and fixed payment, access and Studio bugs (commits `4495467`..`9b780eb`;
+  stance in CLAUDE.md § Adversarial testing). All users except the two admins
+  were wiped on 2026-09-26 (`scripts/wipe_users.mjs`) to start testing clean.
 - **Gates are green:** `tsc` clean, lint 0 errors, 571 unit tests across 55
   files, production build passing, CI running all four.
 
@@ -93,11 +98,6 @@ open questions worth walking into it with:
 - **The renewal flow has never run.** It is unit-tested and no Stripe session
   has ever been created from it. The first person to exercise it should not be
   a customer.
-- **The baseline snapshot is nine migrations stale**, and `npm run db:schema`
-  cannot safely refresh it: the script passes `--no-privileges`, so regenerating
-  drops all 123 `GRANT`/`REVOKE` lines the committed file records. On a tier with
-  no backups of its own, that file is the schema reference — worth an hour to fix
-  the script and regenerate properly.
 
 ---
 
