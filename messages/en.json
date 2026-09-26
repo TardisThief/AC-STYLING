@@ -556,5 +556,74 @@
         "pending": "Payment received. Your access is being set up. Refresh in a moment.",
         "notFound": "We could not find this purchase yet. If it does not appear in a few minutes, use Restore purchases.",
         "failed": "Could not verify your purchase automatically. Please use the Restore button."
+    },
+    "Auth": {
+        "common": {
+            "email": "Email Address",
+            "password": "Password",
+            "or": "Or",
+            "continueWithGoogle": "Continue with Google",
+            "tagline": "Learning • Styling • Services",
+            "rights": "© 2026 AC Styling. All Rights Reserved.",
+            "loading": "Loading",
+            "haveAccount": "Already have an account?",
+            "signIn": "Sign In",
+            "error": "Error: {message}"
+        },
+        "login": {
+            "signedIn": "Successfully signed in.",
+            "failedWithDetails": "Login failed: {details}",
+            "failed": "Authentication failed. Please try again.",
+            "checkEmail": "Check your email for the magic link!",
+            "linkSent": "Magic link sent!",
+            "welcomeBack": "Welcome back!",
+            "guestDisabled": "Guest access is currently disabled.",
+            "guestFailed": "Could not sign in as guest.",
+            "guestWelcome": "Welcome, Guest!",
+            "heroTitle": "Elevate your personal style journey.",
+            "eyebrow": "Welcome Back",
+            "title": "Access your Vault",
+            "magicLink": "Magic Link",
+            "forgot": "Forgot?",
+            "sendLink": "Send Login Link",
+            "guest": "Guest",
+            "terms": "By continuing, you agree to our Terms of Service.",
+            "newToVault": "New to the Vault?",
+            "startMembership": "Start your membership"
+        },
+        "signup": {
+            "checkEmail": "Check your email to confirm your account!",
+            "title": "Join the Lab",
+            "subtitle": "Create your styling profile",
+            "invite": "Personalized Invite Active",
+            "create": "Create Account"
+        },
+        "forgot": {
+            "checkEmail": "Check your email for the password reset link.",
+            "sent": "Reset link sent!",
+            "back": "Back to Login",
+            "title": "Reset Password",
+            "subtitle": "Enter your email to receive a password reset link.",
+            "send": "Send Reset Link"
+        },
+        "confirm": {
+            "verifying": "Verifying authentication...",
+            "finalizing": "Finalizing your account...",
+            "welcomeStudio": "Welcome to the Studio!",
+            "connecting": "Connecting to secure vault...",
+            "authenticated": "Authenticated"
+        },
+        "join": {
+            "checkEmail": "Check your email to verify your account.",
+            "heroTitle": "Unlock your potential.",
+            "heroSubtitle": "Join the Vault for exclusive access.",
+            "mobileTitle": "The Vault",
+            "eyebrow": "Membership",
+            "title": "Create your account",
+            "fullName": "Full Name",
+            "namePlaceholder": "Jane Doe",
+            "submit": "Join The Vault",
+            "signInHere": "Sign in here"
+        }
     }
 }

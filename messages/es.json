@@ -556,5 +556,74 @@
         "pending": "Pago recibido. Estamos activando tu acceso. Actualiza la página en un momento.",
         "notFound": "Aún no encontramos esta compra. Si no aparece en unos minutos, usa Restaurar compras.",
         "failed": "No pudimos verificar tu compra automáticamente. Usa el botón Restaurar."
+    },
+    "Auth": {
+        "common": {
+            "email": "Correo electrónico",
+            "password": "Contraseña",
+            "or": "O",
+            "continueWithGoogle": "Continuar con Google",
+            "tagline": "Aprendizaje • Estilo • Servicios",
+            "rights": "© 2026 AC Styling. Todos los derechos reservados.",
+            "loading": "Cargando",
+            "haveAccount": "¿Ya tienes cuenta?",
+            "signIn": "Iniciar sesión",
+            "error": "Error: {message}"
+        },
+        "login": {
+            "signedIn": "Sesión iniciada.",
+            "failedWithDetails": "No se pudo iniciar sesión: {details}",
+            "failed": "No pudimos verificar tu acceso. Inténtalo de nuevo.",
+            "checkEmail": "¡Revisa tu correo: te enviamos tu enlace de acceso!",
+            "linkSent": "¡Enlace enviado!",
+            "welcomeBack": "¡Bienvenida de nuevo!",
+            "guestDisabled": "El acceso como invitada está desactivado por ahora.",
+            "guestFailed": "No se pudo entrar como invitada.",
+            "guestWelcome": "¡Bienvenida, invitada!",
+            "heroTitle": "Eleva tu camino de estilo personal.",
+            "eyebrow": "Bienvenida de nuevo",
+            "title": "Entra a tu Vault",
+            "magicLink": "Enlace de acceso",
+            "forgot": "¿La olvidaste?",
+            "sendLink": "Enviar enlace de acceso",
+            "guest": "Invitada",
+            "terms": "Al continuar, aceptas nuestros Términos del servicio.",
+            "newToVault": "¿Nueva en el Vault?",
+            "startMembership": "Empieza tu membresía"
+        },
+        "signup": {
+            "checkEmail": "¡Revisa tu correo para confirmar tu cuenta!",
+            "title": "Únete al Lab",
+            "subtitle": "Crea tu perfil de estilo",
+            "invite": "Invitación personalizada activa",
+            "create": "Crear cuenta"
+        },
+        "forgot": {
+            "checkEmail": "Revisa tu correo: te enviamos el enlace para restablecer tu contraseña.",
+            "sent": "¡Enlace enviado!",
+            "back": "Volver a iniciar sesión",
+            "title": "Restablecer contraseña",
+            "subtitle": "Escribe tu correo y te enviaremos un enlace para restablecer tu contraseña.",
+            "send": "Enviar enlace"
+        },
+        "confirm": {
+            "verifying": "Verificando tu acceso...",
+            "finalizing": "Terminando de preparar tu cuenta...",
+            "welcomeStudio": "¡Bienvenida al Studio!",
+            "connecting": "Conectando con el Vault...",
+            "authenticated": "Acceso verificado"
+        },
+        "join": {
+            "checkEmail": "Revisa tu correo para verificar tu cuenta.",
+            "heroTitle": "Descubre tu potencial.",
+            "heroSubtitle": "Únete al Vault para acceder a contenido exclusivo.",
+            "mobileTitle": "The Vault",
+            "eyebrow": "Membresía",
+            "title": "Crea tu cuenta",
+            "fullName": "Nombre completo",
+            "namePlaceholder": "María López",
+            "submit": "Únete al Vault",
+            "signInHere": "Inicia sesión aquí"
+        }
     }
 }

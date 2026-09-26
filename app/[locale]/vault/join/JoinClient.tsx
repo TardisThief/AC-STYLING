@@ -7,9 +7,11 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Loader2, Mail, CheckCircle2 } from "lucide-react";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 export default function JoinPage() {
+    const t = useTranslations("Auth");
     const [isPending, startTransition] = useTransition();
     const [redirectTo, setRedirectTo] = useState('/vault');
     const supabase = createClient();
@@ -34,7 +36,7 @@ export default function JoinPage() {
             if (result?.error) {
                 toast.error(result.error);
             } else {
-                toast.success('Check your email to verify your account.');
+                toast.success(t("join.checkEmail"));
             }
         });
     };
@@ -73,15 +75,15 @@ export default function JoinPage() {
 
                     <div className="space-y-6 max-w-md">
                         <h1 className="font-serif text-5xl leading-tight">
-                            Unlock your potential.
+                            {t("join.heroTitle")}
                         </h1>
                         <p className="text-sm uppercase tracking-widest opacity-60">
-                            Join the Vault for exclusive access.
+                            {t("join.heroSubtitle")}
                         </p>
                     </div>
 
                     <div className="text-[10px] uppercase tracking-widest opacity-40">
-                        © 2026 AC Styling. All Rights Reserved.
+                        {t("common.rights")}
                     </div>
                 </div>
             </div>
@@ -103,14 +105,14 @@ export default function JoinPage() {
                     <div className="lg:hidden text-center space-y-4">
                         <h2 className="font-serif text-3xl text-[#3D3630]">AC Styling</h2>
                         <p className="text-[10px] uppercase tracking-widest text-[#3D3630]/60">
-                            The Vault
+                            {t("join.mobileTitle")}
                         </p>
                     </div>
 
                     {/* Intro Text (Desktop) */}
                     <div className="hidden lg:block space-y-2">
-                        <p className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">Membership</p>
-                        <h2 className="font-serif text-3xl text-[#3D3630]">Create your account</h2>
+                        <p className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">{t("join.eyebrow")}</p>
+                        <h2 className="font-serif text-3xl text-[#3D3630]">{t("join.title")}</h2>
                     </div>
 
                     <div className="space-y-6">
@@ -119,20 +121,20 @@ export default function JoinPage() {
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="block text-[10px] font-bold uppercase tracking-widest text-[#3D3630]/40">
-                                        Full Name
+                                        {t("join.fullName")}
                                     </label>
                                     <input
                                         name="fullName"
                                         type="text"
                                         required
-                                        placeholder="Jane Doe"
+                                        placeholder={t("join.namePlaceholder")}
                                         className="w-full bg-white/50 border border-[#3D3630]/10 rounded-sm px-4 py-4 text-[#3D3630] placeholder:text-[#3D3630]/20 focus:outline-none focus:border-[#D4AF37] focus:bg-white transition-all font-serif"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="block text-[10px] font-bold uppercase tracking-widest text-[#3D3630]/40">
-                                        Email Address
+                                        {t("common.email")}
                                     </label>
                                     <input
                                         name="email"
@@ -145,7 +147,7 @@ export default function JoinPage() {
 
                                 <div className="space-y-2">
                                     <label className="block text-[10px] font-bold uppercase tracking-widest text-[#3D3630]/40">
-                                        Password
+                                        {t("common.password")}
                                     </label>
                                     <input
                                         name="password"
@@ -166,7 +168,7 @@ export default function JoinPage() {
                                     <Loader2 className="animate-spin" size={16} />
                                 ) : (
                                     <>
-                                        <span>Join The Vault</span>
+                                        <span>{t("join.submit")}</span>
                                         <CheckCircle2 size={16} className="opacity-60" />
                                     </>
                                 )}
@@ -178,7 +180,7 @@ export default function JoinPage() {
                                 <span className="w-full border-t border-[#3D3630]/10" />
                             </div>
                             <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                                <span className="bg-[#E6DED6] px-4 text-[#3D3630]/40">Or</span>
+                                <span className="bg-[#E6DED6] px-4 text-[#3D3630]/40">{t("common.or")}</span>
                             </div>
                         </div>
 
@@ -195,14 +197,14 @@ export default function JoinPage() {
                                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                                 </svg>
-                                Continue with Google
+                                {t("common.continueWithGoogle")}
                             </button>
                         </div>
                     </div>
 
                     <p className="text-center text-[10px] text-[#3D3630]/40 leading-relaxed max-w-xs mx-auto">
-                        Already have an account? <br />
-                        <Link href="/login" className="text-[#3D3630] border-b border-[#3D3630]/30 hover:border-[#3D3630] transition-colors pb-0.5">Sign in here</Link>
+                        {t("common.haveAccount")} <br />
+                        <Link href="/login" className="text-[#3D3630] border-b border-[#3D3630]/30 hover:border-[#3D3630] transition-colors pb-0.5">{t("join.signInHere")}</Link>
                     </p>
                 </motion.div>
 

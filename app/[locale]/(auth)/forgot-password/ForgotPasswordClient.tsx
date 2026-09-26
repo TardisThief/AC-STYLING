@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { Loader2, Mail, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { requestPasswordReset } from "@/app/actions/auth";
 
 export default function ForgotPasswordPage() {
+    const t = useTranslations("Auth");
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -26,8 +28,8 @@ export default function ForgotPasswordPage() {
             toast.error(result.error);
         } else {
             setIsSuccess(true);
-            setMessage("Check your email for the password reset link.");
-            toast.success("Reset link sent!");
+            setMessage(t("forgot.checkEmail"));
+            toast.success(t("forgot.sent"));
         }
         setIsLoading(false);
     };
@@ -57,16 +59,16 @@ export default function ForgotPasswordPage() {
                 >
                     <div className="space-y-2">
                         <Link href="/login" className="flex items-center text-[10px] uppercase tracking-widest text-[#3D3630]/60 hover:text-[#3D3630] transition-colors mb-4">
-                            <ArrowLeft size={12} className="mr-1" /> Back to Login
+                            <ArrowLeft size={12} className="mr-1" /> {t("forgot.back")}
                         </Link>
-                        <h2 className="font-serif text-3xl text-[#3D3630]">Reset Password</h2>
-                        <p className="text-sm text-[#3D3630]/60">Enter your email to receive a password reset link.</p>
+                        <h2 className="font-serif text-3xl text-[#3D3630]">{t("forgot.title")}</h2>
+                        <p className="text-sm text-[#3D3630]/60">{t("forgot.subtitle")}</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
                             <label htmlFor="email" className="block text-[10px] font-bold uppercase tracking-widest text-[#3D3630]/40">
-                                Email Address
+                                {t("common.email")}
                             </label>
                             <div className="relative group">
                                 <input
@@ -90,7 +92,7 @@ export default function ForgotPasswordPage() {
                                 <Loader2 className="animate-spin" size={16} />
                             ) : (
                                 <>
-                                    <span>Send Reset Link</span>
+                                    <span>{t("forgot.send")}</span>
                                     <Mail size={16} className="opacity-60" />
                                 </>
                             )}

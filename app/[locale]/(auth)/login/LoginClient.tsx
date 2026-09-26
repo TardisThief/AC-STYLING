@@ -8,8 +8,10 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { safeNextPath } from "@/app/lib/safe-redirect";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 function LoginInner() {
+    const t = useTranslations("Auth");
     const [loginMethod, setLoginMethod] = useState<'magic' | 'password'>('magic');
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -44,7 +46,7 @@ function LoginInner() {
                 const target = safeNextPath(nextUrl, '/vault');
                 // Avoid double-toast if we dealt with it in handle functions
                 if (!isLoading) {
-                    toast.success("Successfully signed in.");
+                    toast.success(t("login.signedIn"));
                     router.push(target);
                 }
             }
@@ -65,14 +67,14 @@ function LoginInner() {
         if (errorMsg) {
             const hasHash = typeof window !== 'undefined' && window.location.hash.includes('access_token');
             if (!hasHash) {
-                toast.error(errorDetails ? `Login Failed: ${errorDetails}` : "Authentication failed. Please try again.");
+                toast.error(errorDetails ? t("login.failedWithDetails", { details: errorDetails }) : t("login.failed"));
             }
         }
 
         return () => {
             subscription.unsubscribe();
         };
-    }, [token, wardrobeToken, nextUrl, errorMsg, errorDetails, supabase, router, isLoading]);
+    }, [token, wardrobeToken, nextUrl, errorMsg, errorDetails, supabase, router, isLoading, t]);
 
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,8 +92,8 @@ function LoginInner() {
                 toast.error(result.error);
             } else {
                 setIsSuccess(true);
-                setMessage("Check your email for the magic link!");
-                toast.success("Magic link sent!");
+                setMessage(t("login.checkEmail"));
+                toast.success(t("login.linkSent"));
             }
         } else {
             // Password Login
@@ -104,7 +106,7 @@ function LoginInner() {
                 setMessage(error.message);
                 toast.error(error.message);
             } else {
-                toast.success("Welcome back!");
+                toast.success(t("login.welcomeBack"));
                 router.push(safeNextPath(nextUrl, '/vault'));
             }
         }
@@ -140,12 +142,12 @@ function LoginInner() {
             console.error('Guest login failed:', error);
             // Fallback: If anonymous login is disabled in Supabase, show specific error
             if (error.message.includes('Anonymous sign-ins are disabled')) {
-                toast.error("Guest access is currently disabled.");
+                toast.error(t("login.guestDisabled"));
             } else {
-                toast.error("Could not sign in as guest.");
+                toast.error(t("login.guestFailed"));
             }
         } else {
-            toast.success("Welcome, Guest!");
+            toast.success(t("login.guestWelcome"));
             router.push('/vault');
         }
         setGuestLoading(false);
@@ -169,15 +171,15 @@ function LoginInner() {
 
                     <div className="space-y-6 max-w-md">
                         <h1 className="font-serif text-5xl leading-tight">
-                            Elevate your personal style journey.
+                            {t("login.heroTitle")}
                         </h1>
                         <p className="text-sm uppercase tracking-widest opacity-60">
-                            Learning • Styling • Services
+                            {t("common.tagline")}
                         </p>
                     </div>
 
                     <div className="text-[10px] uppercase tracking-widest opacity-40">
-                        © 2026 AC Styling. All Rights Reserved.
+                        {t("common.rights")}
                     </div>
                 </div>
             </div>
@@ -199,14 +201,14 @@ function LoginInner() {
                     <div className="lg:hidden text-center space-y-4">
                         <h2 className="font-serif text-3xl text-[#3D3630]">AC Styling</h2>
                         <p className="text-[10px] uppercase tracking-widest text-[#3D3630]/60">
-                            Learning • Styling • Services
+                            {t("common.tagline")}
                         </p>
                     </div>
 
                     {/* Intro Text (Desktop) */}
                     <div className="hidden lg:block space-y-2">
-                        <p className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">Welcome Back</p>
-                        <h2 className="font-serif text-3xl text-[#3D3630]">Access your Vault</h2>
+                        <p className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">{t("login.eyebrow")}</p>
+                        <h2 className="font-serif text-3xl text-[#3D3630]">{t("login.title")}</h2>
                     </div>
 
                     <div className="space-y-6">
@@ -218,7 +220,7 @@ function LoginInner() {
                                 className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-sm transition-all ${loginMethod === 'magic' ? 'bg-[#3D3630] text-[#E6DED6] shadow-sm' : 'text-[#3D3630]/60 hover:text-[#3D3630]'
                                     }`}
                             >
-                                Magic Link
+                                {t("login.magicLink")}
                             </button>
                             <button
                                 type="button"
@@ -226,7 +228,7 @@ function LoginInner() {
                                 className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-sm transition-all ${loginMethod === 'password' ? 'bg-[#3D3630] text-[#E6DED6] shadow-sm' : 'text-[#3D3630]/60 hover:text-[#3D3630]'
                                     }`}
                             >
-                                Password
+                                {t("common.password")}
                             </button>
                         </div>
 
@@ -234,7 +236,7 @@ function LoginInner() {
                         <form onSubmit={handleEmailLogin} className="space-y-5">
                             <div className="space-y-2">
                                 <label htmlFor="email" className="block text-[10px] font-bold uppercase tracking-widest text-[#3D3630]/40">
-                                    Email Address
+                                    {t("common.email")}
                                 </label>
                                 <div className="relative group">
                                     <input
@@ -254,10 +256,10 @@ function LoginInner() {
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center">
                                         <label htmlFor="password" className="block text-[10px] font-bold uppercase tracking-widest text-[#3D3630]/40">
-                                            Password
+                                            {t("common.password")}
                                         </label>
                                         <Link href="/forgot-password" className="text-[10px] text-[#3D3630]/60 hover:text-[#3D3630] underline uppercase tracking-widest">
-                                            Forgot?
+                                            {t("login.forgot")}
                                         </Link>
                                     </div>
                                     <div className="relative group">
@@ -283,7 +285,7 @@ function LoginInner() {
                                     <Loader2 className="animate-spin" size={16} />
                                 ) : (
                                     <>
-                                        <span>{loginMethod === 'magic' ? 'Send Login Link' : 'Sign In'}</span>
+                                        <span>{loginMethod === 'magic' ? t("login.sendLink") : t("common.signIn")}</span>
                                         {loginMethod === 'magic' ? <Mail size={16} className="opacity-60" /> : <ChevronRight size={16} className="opacity-60" />}
                                     </>
                                 )}
@@ -306,7 +308,7 @@ function LoginInner() {
                                 <span className="w-full border-t border-[#3D3630]/10" />
                             </div>
                             <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                                <span className="bg-[#E6DED6] px-4 text-[#3D3630]/40">Or</span>
+                                <span className="bg-[#E6DED6] px-4 text-[#3D3630]/40">{t("common.or")}</span>
                             </div>
                         </div>
 
@@ -336,7 +338,7 @@ function LoginInner() {
                                     <Loader2 className="animate-spin" size={14} />
                                 ) : (
                                     <>
-                                        <span>Guest</span>
+                                        <span>{t("login.guest")}</span>
                                         <User size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
                                     </>
                                 )}
@@ -345,8 +347,8 @@ function LoginInner() {
                     </div>
 
                     <p className="text-center text-[10px] text-[#3D3630]/40 leading-relaxed max-w-xs mx-auto">
-                        By continuing, you agree to our Terms of Service. <br />
-                        New to the Vault? <Link href="/vault/join" className="text-[#3D3630] border-b border-[#3D3630]/30 hover:border-[#3D3630] transition-colors pb-0.5">Start your membership</Link>
+                        {t("login.terms")} <br />
+                        {t("login.newToVault")} <Link href="/vault/join" className="text-[#3D3630] border-b border-[#3D3630]/30 hover:border-[#3D3630] transition-colors pb-0.5">{t("login.startMembership")}</Link>
                     </p>
                 </motion.div>
 

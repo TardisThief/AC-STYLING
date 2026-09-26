@@ -2,12 +2,14 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { Mail, Loader2, Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 function SignupInner() {
+    const t = useTranslations("Auth");
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
@@ -48,9 +50,9 @@ function SignupInner() {
         const result = await signUpWithMagicLink(email, nextUrl ?? undefined);
 
         if (result.error) {
-            setMessage("Error: " + result.error);
+            setMessage(t("common.error", { message: result.error }));
         } else {
-            setMessage("Check your email to confirm your account!");
+            setMessage(t("signup.checkEmail"));
         }
         setIsLoading(false);
     };
@@ -67,7 +69,7 @@ function SignupInner() {
             },
         });
         if (error) {
-            setMessage("Error: " + error.message);
+            setMessage(t("common.error", { message: error.message }));
         }
     };
 
@@ -83,11 +85,11 @@ function SignupInner() {
                     <div className="inline-block p-2 bg-ac-gold/10 rounded-full mb-4">
                         <Sparkles className="text-ac-gold" size={24} />
                     </div>
-                    <h1 className="font-serif text-3xl text-ac-taupe mb-2">Join the Lab</h1>
-                    <p className="text-ac-coffee text-sm uppercase tracking-widest">Create your styling profile</p>
+                    <h1 className="font-serif text-3xl text-ac-taupe mb-2">{t("signup.title")}</h1>
+                    <p className="text-ac-coffee text-sm uppercase tracking-widest">{t("signup.subtitle")}</p>
                     {token && (
                         <p className="mt-2 text-[10px] text-ac-gold font-bold uppercase tracking-widest bg-ac-gold/5 py-1 px-3 rounded-full inline-block">
-                            Personalized Invite Active
+                            {t("signup.invite")}
                         </p>
                     )}
                 </div>
@@ -95,7 +97,7 @@ function SignupInner() {
                 <form onSubmit={handleSignup} className="space-y-6">
                     <div>
                         <label htmlFor="email" className="block text-xs font-bold text-ac-taupe/60 uppercase tracking-widest mb-2">
-                            Email Address
+                            {t("common.email")}
                         </label>
                         <input
                             id="email"
@@ -117,7 +119,7 @@ function SignupInner() {
                             <Loader2 className="animate-spin" size={18} />
                         ) : (
                             <>
-                                <span>Create Account</span>
+                                <span>{t("signup.create")}</span>
                                 <Mail size={16} className="group-hover:translate-x-1 transition-transform" />
                             </>
                         )}
@@ -130,7 +132,7 @@ function SignupInner() {
                         <span className="w-full border-t border-ac-taupe/10" />
                     </div>
                     <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                        <span className="bg-white/80 px-4 text-ac-taupe/40">Or</span>
+                        <span className="bg-white/80 px-4 text-ac-taupe/40">{t("common.or")}</span>
                     </div>
                 </div>
 
@@ -146,11 +148,11 @@ function SignupInner() {
                         <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                     </svg>
-                    Continue with Google
+                    {t("common.continueWithGoogle")}
                 </button>
 
                 <p className="text-center text-[10px] text-ac-taupe/40 uppercase tracking-widest mt-6">
-                    Already have an account? <Link href="/login" className="text-ac-taupe font-bold hover:text-ac-gold transition-colors">Sign In</Link>
+                    {t("common.haveAccount")} <Link href="/login" className="text-ac-taupe font-bold hover:text-ac-gold transition-colors">{t("common.signIn")}</Link>
                 </p>
 
                 {message && (

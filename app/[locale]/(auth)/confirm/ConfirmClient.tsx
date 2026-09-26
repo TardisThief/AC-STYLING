@@ -7,11 +7,13 @@ import { Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { processOnboarding } from "@/app/actions/onboarding";
 import { safeNextPath } from "@/app/lib/safe-redirect";
+import { useTranslations } from "next-intl";
 
 function AuthConfirmInner() {
+    const t = useTranslations("Auth");
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [status, setStatus] = useState("Verifying authentication...");
+    const [status, setStatus] = useState(() => t("confirm.verifying"));
 
     // Params that might be in URL if PKCE or simple redirect
     const nextUrl = searchParams.get('next');
@@ -22,11 +24,11 @@ function AuthConfirmInner() {
 
         const finalize = async (userId: string) => {
             console.log('[Confirm] Finalizing onboarding for:', userId);
-            setStatus("Finalizing your account...");
+            setStatus(t("confirm.finalizing"));
             try {
                 const result = await processOnboarding();
                 if (result.success) {
-                    toast.success("Welcome to the Studio!");
+                    toast.success(t("confirm.welcomeStudio"));
                 } else {
                     console.error("Onboarding warning:", result.error);
                 }
@@ -84,7 +86,7 @@ function AuthConfirmInner() {
 
         // 4. Status updates for better UX
         const timeout = setTimeout(() => {
-            if (mounted) setStatus("Connecting to secure vault...");
+            if (mounted) setStatus(t("confirm.connecting"));
         }, 5000);
 
         return () => {
@@ -92,13 +94,13 @@ function AuthConfirmInner() {
             subscription.unsubscribe();
             clearTimeout(timeout);
         };
-    }, [nextUrl, router]);
+    }, [nextUrl, router, t]);
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#E6DED6]">
             <div className="text-center p-8">
                 <Loader2 className="animate-spin h-10 w-10 text-[#3D3630] mx-auto mb-4" />
-                <h2 className="text-xl font-serif text-[#3D3630] mb-2">Authenticated</h2>
+                <h2 className="text-xl font-serif text-[#3D3630] mb-2">{t("confirm.authenticated")}</h2>
                 <p className="text-[#3D3630]/60 text-sm uppercase tracking-widest animate-pulse">
                     {status}
                 </p>
