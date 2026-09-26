@@ -621,7 +621,7 @@ CREATE TABLE "public"."fulfillments" (
     "stripe_line_item_id" "text" NOT NULL,
     "stripe_session_id" "text" NOT NULL,
     "stripe_event_id" "text" NOT NULL,
-    "user_id" "uuid" NOT NULL,
+    "user_id" "uuid",
     "stripe_product_id" "text" NOT NULL,
     "amount_total" integer,
     "currency" "text",
@@ -859,7 +859,7 @@ COMMENT ON TABLE "public"."purchase_claims" IS 'Single-use, short-lived credenti
 
 CREATE TABLE "public"."purchases" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "user_id" "uuid" NOT NULL,
+    "user_id" "uuid",
     "product_id" "text" NOT NULL,
     "amount_paid" numeric(10,2) DEFAULT 0.00,
     "currency" "text" DEFAULT 'USD'::"text",
@@ -1766,7 +1766,7 @@ ALTER TABLE ONLY "public"."essence_responses"
 --
 
 ALTER TABLE ONLY "public"."fulfillments"
-    ADD CONSTRAINT "fulfillments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+    ADD CONSTRAINT "fulfillments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
 
 --
 -- Name: lookbook_items lookbook_items_item_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
@@ -1821,7 +1821,7 @@ ALTER TABLE ONLY "public"."purchase_claims"
 --
 
 ALTER TABLE ONLY "public"."purchases"
-    ADD CONSTRAINT "purchases_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+    ADD CONSTRAINT "purchases_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
 
 --
 -- Name: tailor_cards tailor_cards_last_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres

@@ -21,7 +21,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { createLiveSchemaDb, createUser, expectMigrationApplied, readMigration } from '../utils/pglite-db';
+import { createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 type LineItem = { id: string; price: { product: string }; amount_total: number; currency: string };
@@ -200,8 +200,8 @@ beforeAll(async () => {
     await expectMigrationApplied(db, '20260925_23_grant_uniqueness_and_studio_unlock.sql');
     // PAY-001, closed by migration 27 (applied to production 2026-09-26).
     await expectMigrationApplied(db, '20260926_27_term_line_item.sql');
-    // The deleted-account test below reproduces it on the schema without this.
-    await db.exec(readMigration('20260926_32_keep_sales_after_account_deletion.sql'));
+    // Deleting an account closes its purchases; applied to production 2026-09-26.
+    await expectMigrationApplied(db, '20260926_32_keep_sales_after_account_deletion.sql');
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
