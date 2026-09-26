@@ -10,11 +10,12 @@
  *
  * The admin console writes these through the admin's own session client
  * (app/actions/admin/manage-boutique.ts), so the fix must keep admin writes
- * working, not just refuse everyone.
+ * working, not just refuse everyone. beforeAll reproduces the hole on the live
+ * schema, then applies migration 26.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const MEMBER = id(1);
@@ -31,24 +32,31 @@ beforeAll(async () => {
         `INSERT INTO trusted_by_logos (id, name, logo_url) VALUES ($1, 'Real Brand', 'https://theacstyle.com/logo.png')`,
         [LOGO]
     );
+
+    // Before migration 26: a member can plant a logo on the homepage.
+    const planted = await asRole(db, 'authenticated', MEMBER,
+        `INSERT INTO trusted_by_logos (name, logo_url) VALUES ('Injected', 'https://attacker.invalid/x.png') RETURNING id`);
+    expect(planted.rows).toHaveLength(1);
+
+    await db.exec(readMigration('20260926_26_trusted_logos_admin_write.sql'));
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
 
 describe('trusted_by_logos writes', () => {
-    it.fails('refuses a signed-in member inserting a logo', async () => {
+    it('refuses a signed-in member inserting a logo', async () => {
         await expect(asRole(db, 'authenticated', MEMBER,
             `INSERT INTO trusted_by_logos (name, logo_url) VALUES ('Injected', 'https://attacker.invalid/x.png') RETURNING id`
         )).rejects.toMatchObject({ code: '42501' });
     });
 
-    it.fails('refuses a signed-in member changing a logo', async () => {
+    it('refuses a signed-in member changing a logo', async () => {
         const result = await asRole(db, 'authenticated', MEMBER,
             `UPDATE trusted_by_logos SET logo_url = 'https://attacker.invalid/x.png' WHERE id = $1 RETURNING id`, [LOGO]);
         expect(result.rows).toEqual([]);
     });
 
-    it.fails('refuses a signed-in member deleting a logo', async () => {
+    it('refuses a signed-in member deleting a logo', async () => {
         const result = await asRole(db, 'authenticated', MEMBER,
             `DELETE FROM trusted_by_logos WHERE id = $1 RETURNING id`, [LOGO]);
         expect(result.rows).toEqual([]);
