@@ -357,6 +357,14 @@ If the answer is "no, it should go too", it is a one-line migration. If the
 answer is "yes", the privacy notice's deletion section should say so plainly,
 because at the moment it implies everything goes.
 
+**Two more things wait on the same answer** (2026-09-26). Account deletion
+now removes every file under her own folder, sub-folders and avatar included,
+but not photos uploaded through an intake link (stored under the wardrobe,
+not under her), because those belong to the wardrobe. And when a stylist
+reassigns a wardrobe from one client to another, photos already stored under
+the first client's folder stay there. If wardrobes should go with the client,
+both follow; if they stay, the photos should move with the wardrobe.
+
 ---
 
 ## 8. Confirm the testimonials are real and attributable
@@ -379,6 +387,16 @@ authoritative version and the two must change together.
 Ale or counsel should read the Spanish before launch.
 
 ---
+
+## 9b. Read the new Spanish copy — added 2026-09-26
+
+The login, signup, forgot-password, confirm and `/vault/join` screens, their
+error messages, and the sign-in, signup, password-reset and answer emails now
+have Spanish versions (they were English only). They were drafted to match
+the site's existing Spanish (tú, "invitada", "Bienvenida"). A native read
+before launch is worth it: the `Auth` block in `messages/es.json`, the
+`es` entries in `lib/email-templates.ts`, and `AUTH_ERRORS.es` in
+`app/actions/auth.ts`.
 
 ## 10. Replace `public/logo.png` with a larger original — minor
 
@@ -474,6 +492,15 @@ bash scripts/backup/verify_storage.sh  /mnt/backup/ac-styling/storage-mirror
 ```
 
 Add the result to the drill table in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md).
+
+**New on 2026-09-26 — drill the next nightly.** Until today no backup
+contained the database privileges that make up the app's security model (see
+"Privileges" in [`DISASTER-RECOVERY.md`](DISASTER-RECOVERY.md)). The dump
+scripts now keep them. Once `hermes` has pulled the change, run
+`bash scripts/backup/restore_drill.sh <that night's snapshot>` there: it
+should pass, including the five privilege checks. Older snapshots need
+`DRILL_LEGACY_PRIVILEGES=1` and, in a real restore, the baseline step in the
+runbook.
 
 Reference, now that it is running: [`BACKUP-OWNER-SETUP.md`](BACKUP-OWNER-SETUP.md)
 is how it was set up, [`HERMES-BACKUP-SETUP.md`](HERMES-BACKUP-SETUP.md) is the

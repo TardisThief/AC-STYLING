@@ -79,7 +79,14 @@ The standard is "the Vault is sellable", not "a page exists".
   third — and a lapse of over thirty days resets it to the current price.
   Everyone who bought before that date keeps perpetual access (a null expiry).
   This replaces the earlier "lifetime (de por vida)" founding promise; no
-  page may still make it. Price still rises as the library grows, with no
+  page may still make it.
+- **Passes share one term** (owner decision, 2026-09-26): a buyer holding
+  more than one pass has one expiry and one renewal ladder on her profile.
+  Renewing renews her highest pass, and the term covers every pass she holds.
+- **Lab questions and downloads are paid content** (owner decision,
+  2026-09-26; migration 30). Only a buyer with access to the module or
+  masterclass can read them; files are served as short-lived signed links.
+  A visitor sees how many questions there are, nothing more. Price still rises as the library grows, with no
   mechanism, trigger, date, seat count or timer, and no future price named.
 - **Pay-before-signup works.** Stripe collects the email, the webhook creates the
   account and sends a set-password link, and the buyer lands on `/welcome` to

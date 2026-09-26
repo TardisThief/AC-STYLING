@@ -26,8 +26,9 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   victim's address (SEC-001); any signed-in user could rewrite the homepage
   logos (SEC-002, migration 26); Resend refusals were reported as sent
   (MAIL-001); a retried guest delivery sent no welcome (PAY-002); checkout sold
-  any Stripe price the browser named (PAY-004). Migrations are applied and
-  verified through **26**. What is still open from it is listed below.
+  any Stripe price the browser named (PAY-004). The rest of its findings were
+  then worked through the same way (below). Migrations are applied and
+  verified through **31, except 30**, which waits on a deploy (below).
 - **The Vault is populated but mostly parked.** 4 masterclasses, **21 modules**
   and 4 standalone courses, all bilingual. **Colorimetry is published and
   priced, so it is on sale, while all 21 modules are unpublished** — checked
@@ -79,13 +80,51 @@ the welcome fast lane staying usable after she had signed in some other way
 paid-but-not-granted check (`scripts/ops/check_fulfillments.mjs`, OPS-001)
 that alerts once the owner schedules it (owner action 1d).
 
-**Still open from the 2026-09-25 assessment** (real, but not blocking the
-first sale; each wants a failing test first):
+**Lower-priority findings, also closed on 2026-09-26** (each with a test that
+failed first): Node 22 everywhere (ENV-001); renewing a pass taken off sale,
+and quoting the item she can still renew (PAY-005); answer dismissal and
+Studio writes that reported success while changing nothing (UX-001/002);
+intake links that never expired, unlimited upload URLs, a third wardrobe, and
+a non-atomic assignment (STUDIO-001/002, migration 28); the notification
+inbox policy naming a deleted account (migration 29); guest lookups that
+stopped at the 2,000th account (SCALE-001, migration 31); account deletion
+missing nested, overflow and avatar files (DATA-001); every member email and
+the auth screens and errors in Spanish (I18N-001); and paid Lab questions and
+downloads made paid-only (MEDIA-001, migration 30).
 
-- Lower: Studio ownership/token/deletion lifecycle, renewal semantics across
-  the three passes, `markAnswerAsRead` silently updating 0 rows under RLS,
-  English-only auth screens and emails (F15), public lab questions/resources
-  (a product decision), recovery rehearsal on a managed Supabase project.
+**Recovery (OPS-002) turned up the most serious finding of the pass:** no
+backup contained any privileges, and even with them a straight restore into
+Supabase reopens every locked column. Fixed and drilled on 2026-09-26: see
+"Privileges" in [`docs/DISASTER-RECOVERY.md`](docs/DISASTER-RECOVERY.md).
+
+**Waiting on a deploy — do in this order:**
+
+1. Push `main` (Vercel deploys it). Migrations 27, 28 and 31 are already live
+   and this code needs them; migration 30 must NOT be live before it.
+2. Apply migration 30 (snapshot, dry run with probes, apply, re-probe; see
+   `supabase/migrations/README.md`), then
+   `node scripts/ops/move_public_resources.mjs` and `--apply`, which moves the
+   one live PDF out of the public bucket.
+3. Check a module page as a member with access (resources and Lab load) and
+   as one without (count only).
+
+**Still open, and why:**
+
+- **Scenario 3 against a real new Supabase project** has not been run; its
+  ordering was checked against a snapshot's table of contents.
+- **Studio screens, journal feedback and service-purchase messages** are still
+  English; the Calendly embed is not locale-specific; the live service rows
+  carry placeholder copy (content). Not on a member's path to what she paid
+  for, so after launch.
+- **Objects stay under a previous owner's folder** after a wardrobe is
+  reassigned, and **intake uploads outlive a deleted client**: both wait on
+  the wardrobe-retention decision (owner action 7).
+- **PAY-001's limit:** only the last line item is remembered on a term, so a
+  crash followed by a different purchase on the same term inside the
+  15-minute window could still double. Recorded in migration 27.
+- **SEC-004** (the scraper's browser subrequests are checked by address, not
+  by resolved DNS) and **ARCH-001** (handwritten types, the dual lookbook
+  representation): real, admin-only or structural; parked.
 
 Everything owner-only lives in [`docs/OWNER-ACTIONS.md`](docs/OWNER-ACTIONS.md)
 — 12 items, kept there rather than here so that "what Claude does next" and
