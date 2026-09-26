@@ -153,12 +153,15 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
     };
 
     const handleDeleteItem = async (itemId: string) => {
-        const { error } = await supabase
+        // Row count checked as well: RLS refusing a delete changes no rows and
+        // raises no error, which used to read as "removed" (UX-002).
+        const { data, error } = await supabase
             .from('wardrobe_items')
             .delete()
-            .eq('id', itemId);
+            .eq('id', itemId)
+            .select('id');
 
-        if (error) {
+        if (error || !data?.length) {
             toast.error("Failed to delete item");
         } else {
             setItems(prev => prev.filter(item => item.id !== itemId));

@@ -150,12 +150,36 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
         setIsSaving(false);
     };
 
+    // Both of these used to ignore the result and report success regardless
+    // (UX-002, 2026-09-25 assessment). RLS refusing a write is not an error in
+    // Postgres — it changes no rows — so the row count is checked too.
     const handleDeleteLookbook = async (id: string) => {
-        await supabase.from('lookbooks').delete().eq('id', id);
+        const { data, error } = await supabase.from('lookbooks').delete().eq('id', id).select('id');
+        setPendingDelete(null);
+        if (error || !data?.length) {
+            toast.error("Failed to delete lookbook");
+            return;
+        }
         setLookbooks(prev => prev.filter(lb => lb.id !== id));
         if (activeLookbook?.id === id) setActiveLookbook(null);
         toast.success("Lookbook deleted");
-        setPendingDelete(null);
+    };
+
+    const handleTogglePublished = async () => {
+        if (!activeLookbook) return;
+        const newStatus = activeLookbook.status === 'Published' ? 'Draft' : 'Published';
+        const { data, error } = await supabase
+            .from('lookbooks')
+            .update({ status: newStatus })
+            .eq('id', activeLookbook.id)
+            .select('id');
+        if (error || !data?.length) {
+            toast.error(`Failed to set lookbook to ${newStatus}`);
+            return;
+        }
+        setActiveLookbook({ ...activeLookbook, status: newStatus });
+        setLookbooks(prev => prev.map(l => l.id === activeLookbook.id ? { ...l, status: newStatus } : l));
+        toast.success(`Lookbook ${newStatus}`);
     };
 
     const handleCloneLookbook = async (lookbook: Lookbook) => {
@@ -234,12 +258,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                 {!isClientView && (
                                     <>
                                         <button
-                                            onClick={() => supabase.from('lookbooks').update({ status: activeLookbook.status === 'Published' ? 'Draft' : 'Published' }).eq('id', activeLookbook.id).then(() => {
-                                                const newStatus = activeLookbook.status === 'Published' ? 'Draft' : 'Published';
-                                                setActiveLookbook({ ...activeLookbook, status: newStatus });
-                                                setLookbooks(prev => prev.map(l => l.id === activeLookbook.id ? { ...l, status: newStatus } : l));
-                                                toast.success(`Lookbook ${newStatus}`);
-                                            })}
+                                            onClick={handleTogglePublished}
                                             className={`px-3 py-1.5 rounded-sm text-[10px] uppercase font-bold tracking-widest border transition-all ${activeLookbook.status === 'Published' ? 'bg-ac-olive text-white border-ac-olive' : 'text-ac-taupe/60 border-ac-taupe/20'}`}
                                         >
                                             {activeLookbook.status}
