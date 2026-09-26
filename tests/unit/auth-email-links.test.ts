@@ -106,14 +106,14 @@ describe('auth email links (AUTH-001)', () => {
         expect(existsSync('app/[locale]/(auth)/confirm/page.tsx')).toBe(true)
     })
 
-    it.fails.each(Object.keys(actions))('%s sends the reader to /en/confirm', async name => {
+    it.each(Object.keys(actions))('%s sends the reader to /en/confirm', async name => {
         await actions[name as keyof typeof actions]()
 
         expect(redirectTarget().origin).toBe(ORIGIN)
         expect(redirectTarget().pathname).toBe('/en/confirm')
     })
 
-    it.fails.each(Object.keys(actions))('%s keeps a Spanish reader in Spanish', async name => {
+    it.each(Object.keys(actions))('%s keeps a Spanish reader in Spanish', async name => {
         getLocale.mockResolvedValue('es')
 
         await actions[name as keyof typeof actions]()
@@ -121,7 +121,7 @@ describe('auth email links (AUTH-001)', () => {
         expect(redirectTarget().pathname).toBe('/es/confirm')
     })
 
-    it.fails('falls back to English for a locale the site does not serve', async () => {
+    it('falls back to English for a locale the site does not serve', async () => {
         getLocale.mockResolvedValue('fr')
 
         await signInWithMagicLink('someone@example.invalid')
@@ -135,7 +135,7 @@ describe('auth email links (AUTH-001)', () => {
         expect(redirectTarget().searchParams.get('next')).toBe('/es/vault/foundations')
     })
 
-    it.fails('drops a next that would leave the site', async () => {
+    it('drops a next that would leave the site', async () => {
         await signInWithMagicLink('someone@example.invalid', '//attacker.invalid/phish')
 
         expect(redirectTarget().searchParams.get('next')).toBeNull()
@@ -143,7 +143,7 @@ describe('auth email links (AUTH-001)', () => {
 })
 
 describe('an auth email proves nothing until it is opened (SEC-001)', () => {
-    it.fails('signUpWithMagicLink never confirms an existing account itself', async () => {
+    it('signUpWithMagicLink never confirms an existing account itself', async () => {
         admin.auth.admin.generateLink.mockResolvedValue(linkFor(unconfirmed))
 
         await signUpWithMagicLink('victim@example.invalid')
@@ -160,7 +160,7 @@ describe('an auth email proves nothing until it is opened (SEC-001)', () => {
         requestPasswordReset: () => requestPasswordReset('victim@example.invalid'),
     }
 
-    it.fails.each(Object.keys(emailing))(
+    it.each(Object.keys(emailing))(
         '%s replaces the password on an unconfirmed account before emailing a link',
         async name => {
             admin.auth.admin.generateLink.mockResolvedValue(linkFor(unconfirmed))
@@ -181,7 +181,7 @@ describe('an auth email proves nothing until it is opened (SEC-001)', () => {
         }
     )
 
-    it.fails.each(Object.keys(emailing))(
+    it.each(Object.keys(emailing))(
         '%s sends nothing when the password could not be replaced',
         async name => {
             admin.auth.admin.generateLink.mockResolvedValue(linkFor(unconfirmed))

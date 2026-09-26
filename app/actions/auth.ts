@@ -5,6 +5,27 @@ import { sendEmail } from '@/lib/resend';
 import { getMagicLinkHtml, getPasswordResetHtml } from '@/lib/email-templates';
 import { headers } from 'next/headers';
 import { checkEmailRateLimit } from '@/app/lib/rate-limit';
+import { getLocale } from 'next-intl/server';
+import { authConfirmUrl, revokeUnprovenPassword } from '@/app/lib/auth-links';
+
+/**
+ * The locale of the page the form was submitted from. A server action is
+ * POSTed to that page's URL, which the proxy runs next-intl on, so this is
+ * the reader's language. English if it cannot be determined — /en/confirm
+ * still works, it is just in the wrong language.
+ */
+async function formLocale(): Promise<string> {
+    try {
+        return await getLocale();
+    } catch {
+        return 'en';
+    }
+}
+
+/** The origin the form was posted from, or the configured site if absent. */
+function siteOrigin(origin: string | null): string {
+    return origin || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+}
 
 export async function signInWithMagicLink(email: string, redirectTo?: string) {
     console.log('--- signInWithMagicLink START ---', email);
@@ -20,21 +41,23 @@ export async function signInWithMagicLink(email: string, redirectTo?: string) {
 
     // 1. Generate Link
     console.log('Generating Magic Link...');
-    const url = new URL(`${origin}/auth/confirm`);
-    if (redirectTo) {
-        url.searchParams.set('next', redirectTo);
-    }
+    const confirmUrl = authConfirmUrl(siteOrigin(origin), await formLocale(), redirectTo);
 
     const { data, error } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
         email,
         options: {
-            redirectTo: url.toString(),
+            redirectTo: confirmUrl,
         },
     });
 
     if (error) {
         console.error('Error generating magic link:', error);
+        return { error: 'Could not generate login link. Please try again.' };
+    }
+
+    // Opening this link confirms the account; see revokeUnprovenPassword.
+    if (!(await revokeUnprovenPassword(supabase, data.user))) {
         return { error: 'Could not generate login link. Please try again.' };
     }
 
@@ -73,19 +96,24 @@ export async function requestPasswordReset(email: string) {
     const supabase = createAdminClient();
 
     // 1. Generate Link
-    const url = new URL(`${origin}/auth/confirm`);
-    url.searchParams.set('next', '/update-password');
+    const locale = await formLocale();
+    const confirmUrl = authConfirmUrl(siteOrigin(origin), locale, `/${locale}/update-password`);
 
     const { data, error } = await supabase.auth.admin.generateLink({
         type: 'recovery',
         email,
         options: {
-            redirectTo: url.toString()
+            redirectTo: confirmUrl
         },
     });
 
     if (error) {
         console.error('Error generating recovery link:', error);
+        return { error: 'Could not generate reset link. Please try again.' };
+    }
+
+    // Opening this link confirms the account; see revokeUnprovenPassword.
+    if (!(await revokeUnprovenPassword(supabase, data.user))) {
         return { error: 'Could not generate reset link. Please try again.' };
     }
 
@@ -123,40 +151,28 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
 
     // 1. Try to generate Link (works if user exists)
     console.log('Attempting to generate link for existing user...');
-    const confirmUrl = new URL(`${origin}/auth/confirm`);
-    if (redirectTo) {
-        confirmUrl.searchParams.set('next', redirectTo);
-    }
+    const confirmUrl = authConfirmUrl(siteOrigin(origin), await formLocale(), redirectTo);
 
     let { data, error } = await adminSupabase.auth.admin.generateLink({
         type: 'magiclink',
         email,
-        options: { redirectTo: confirmUrl.toString() }
+        options: { redirectTo: confirmUrl }
     });
 
-    // 1b. If user exists but is unverified, Supabase might calculate type='signup'.
-    // We want to force 'magiclink' for a smoother login experience (since we are verifying via email).
-    if (data?.user && !data.user.email_confirmed_at) {
-        console.log('User exists but is unverified. Auto-verifying and regenerating link...');
-        // Confirm the user
-        await adminSupabase.auth.admin.updateUserById(data.user.id, {
-            email_confirm: true,
-            user_metadata: { ...data.user.user_metadata, email_verified: true }
-        });
-
-        // Regenerate link as proper magiclink
-        const retry = await adminSupabase.auth.admin.generateLink({
-            type: 'magiclink',
-            email,
-            options: { redirectTo: confirmUrl.toString() }
-        });
-        if (retry.data) data = retry.data;
-        if (retry.error) error = retry.error;
+    // 1b. An existing account nobody has proved the mailbox of. This used to
+    // be marked confirmed right here, by a public action, before any email was
+    // opened — which made a password someone else set at /vault/join usable
+    // (SEC-001). Opening the link is the proof, and confirms it; until then,
+    // make sure no one else holds a password to it.
+    if (data?.user && !(await revokeUnprovenPassword(adminSupabase, data.user))) {
+        return { error: 'Could not generate login link. Please try again.' };
     }
 
     // 2. If User Not Found, Create User First
     if (error && error.message.includes("User not found")) {
         console.log('User not found. Creating new user...');
+        // Confirmed but with NO password: the emailed link is the only way in,
+        // so there is nothing here for anyone but the mailbox's owner to use.
         const { error: createError } = await adminSupabase.auth.admin.createUser({
             email,
             email_confirm: true,
@@ -172,7 +188,7 @@ export async function signUpWithMagicLink(email: string, redirectTo?: string) {
         const result = await adminSupabase.auth.admin.generateLink({
             type: 'magiclink',
             email,
-            options: { redirectTo: confirmUrl.toString() }
+            options: { redirectTo: confirmUrl }
         });
         data = result.data;
         error = result.error;
@@ -247,7 +263,7 @@ export async function signUpSeamless(formData: FormData, redirectTo: string) {
         email,
         password,
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || origin}/auth/confirm?next=${encodeURIComponent(redirectTo)}`,
+            redirectTo: authConfirmUrl(process.env.NEXT_PUBLIC_SITE_URL || siteOrigin(origin), await formLocale(), redirectTo),
             data: { full_name: fullName } // redundant but safe
         },
     });
