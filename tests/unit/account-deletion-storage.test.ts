@@ -57,7 +57,7 @@ beforeEach(() => {
 })
 
 describe('deleteAccount storage cleanup', () => {
-    it.fails('removes files in sub-folders of her folder', async () => {
+    it('removes files in sub-folders of her folder', async () => {
         buckets['studio-wardrobe'] = ['user-1/a.jpg', 'user-1/lookbook-thumbs/thumb_1.jpg', 'user-2/theirs.jpg']
 
         await deleteAccount()
@@ -65,7 +65,7 @@ describe('deleteAccount storage cleanup', () => {
         expect(removed['studio-wardrobe']?.sort()).toEqual(['user-1/a.jpg', 'user-1/lookbook-thumbs/thumb_1.jpg'])
     })
 
-    it.fails('removes every file, not the first thousand', async () => {
+    it('removes every file, not the first thousand', async () => {
         buckets['studio-wardrobe'] = Array.from({ length: 1205 }, (_, i) => `user-1/${String(i).padStart(5, '0')}.jpg`)
 
         await deleteAccount()
@@ -73,7 +73,7 @@ describe('deleteAccount storage cleanup', () => {
         expect(removed['studio-wardrobe']).toHaveLength(1205)
     })
 
-    it.fails('removes her avatar too', async () => {
+    it('removes her avatar too', async () => {
         buckets['avatars'] = ['user-1/avatar.png', 'user-2/avatar.png']
 
         await deleteAccount()
