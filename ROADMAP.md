@@ -71,19 +71,19 @@ Two content/owner things, plus the open assessment items below.
    first real sale or they will quote real customers renewals priced off fake
    money.
 
-**Still open from the 2026-09-25 assessment** (real, but not blocking the
-first sale; each wants a failing test first, like the six above):
+**Also fixed on 2026-09-26, from the same assessment's second tier:**
+a crashed fulfilment run re-granting a year on retry (PAY-001, migration 27);
+the welcome fast lane staying usable after she had signed in some other way
+(SEC-003); Restore missing purchases behind 100 newer checkouts, and the
+"Content Unlocked" toast shown when nothing was found; and a read-only
+paid-but-not-granted check (`scripts/ops/check_fulfillments.mjs`, OPS-001)
+that alerts once the owner schedules it (owner action 1d).
 
-- **PAY-001** — the grant and "line item completed" are separate writes. A
-  crash between them, re-claimed after 15 minutes, extends a term a second
-  year. Narrow window; fix by recording the extending line item on the grant.
-- **SEC-003** — a purchase claim is closed only from the update-password page;
-  set a password any other way and the claim stays usable for its 24 hours.
-- **OPS-001** — nothing alerts on a paid-but-unfulfilled purchase (F16's open
-  half). The data is in `fulfillments`; nobody is told.
-- **Restore scans only the last 100 checkout sessions** (`commerce.ts`), and
-  the "Content Unlocked" toast shows even when nothing was restored.
-- **CI runs Node 20; Puppeteer 25 needs ≥22.12** (owner action 6 for Vercel).
+**Still open from the 2026-09-25 assessment** (real, but not blocking the
+first sale; each wants a failing test first):
+
+- **CI runs Node 20; Puppeteer 25 needs ≥22.12.** Works on 20 (tested);
+  CI moves with Vercel, not before (owner action 6).
 - Lower: Studio ownership/token/deletion lifecycle, renewal semantics across
   the three passes, `markAnswerAsRead` silently updating 0 rows under RLS,
   English-only auth screens and emails (F15), public lab questions/resources

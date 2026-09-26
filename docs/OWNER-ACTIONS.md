@@ -125,6 +125,35 @@ Either unpublish it in admin until its modules have video (F09), or do the
 cutover only after content lands. Checkout now refuses anything the catalogue
 is *not* selling, so unpublishing is enough to stop sales.
 
+## 1d. Schedule the paid-but-not-granted check on `hermes` — added 2026-09-26
+
+`scripts/ops/check_fulfillments.mjs` finds every paid line item that was not
+granted: rows left `failed` or stuck `processing`, and (with a Stripe key)
+paid checkouts in the last 3 days with no finished fulfilment at all — a
+webhook that never arrived. It is read-only and exits non-zero if it finds
+anything. Until it runs on a schedule, the first person to learn that a
+customer paid and cannot get in is the customer.
+
+1. In healthchecks.io, create a **second** check (not the backup one), period
+   30 minutes, grace 30 minutes. Copy its ping URL.
+2. Add to `~/.ac-styling/.env.backup` on `hermes`:
+   ```bash
+   FULFILLMENT_HEALTHCHECK_URL="https://hc-ping.com/<the new uuid>"
+   # Optional but recommended: enables the "webhook never arrived" check.
+   # A restricted key with read access to Checkout Sessions is enough.
+   STRIPE_SECRET_KEY="rk_live_..."
+   ```
+3. `crontab -e` and add:
+   ```cron
+   # AC Styling: paid-but-not-granted check, every 30 minutes
+   */30 * * * * cd "$HOME/ac-styling" && set -a && . "$HOME/.ac-styling/.env.backup" && set +a && node scripts/ops/check_fulfillments.mjs >> "$HOME/.ac-styling/fulfillment-check.log" 2>&1
+   ```
+
+A failing run pings the check's `/fail` URL with the report, so the email says
+which line items and whose. A missed run (hermes down) alerts through the
+check's schedule. Run it once by hand first: it should print `OK`. Verified
+read-only against production on 2026-09-26: OK.
+
 ## 2. Confirm the other Vercel environment variables
 
 `NEXT_PUBLIC_SITE_URL` is missing from `.env.local` but **is set correctly in
@@ -312,6 +341,11 @@ Worth aligning when convenient, since running a dependency outside its
 supported range means upstream will not treat any resulting bug as theirs.
 
 **How to check:** Vercel → Project → Settings → General → Node.js Version.
+
+If you move Vercel to 22.x, have CI moved in the same change
+(`.github/workflows` → `node-version: 22`), so CI keeps testing the runtime
+production runs. The 2026-09-25 assessment flagged the mismatch (ENV-001);
+CI deliberately stays on 20 until Vercel moves.
 
 ---
 
