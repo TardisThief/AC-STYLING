@@ -36,7 +36,7 @@ try {
     }
     const { rows: policies } = await db.query(`SELECT schemaname,tablename,policyname,roles::text,qual,with_check
         FROM pg_policies WHERE (schemaname='public' AND tablename IN
-        ('boutique_collections','boutique_collection_items','boutique_clicks'))
+        ('boutique_collections','boutique_collection_items','boutique_clicks','trusted_by_logos'))
         OR (schemaname='storage' AND tablename='objects')`);
     const policy = (table, name) => policies.find(p => p.tablename === table && p.policyname === name);
     const isAdmin = value => value?.includes('get_user_role') && value.includes('auth.uid()') && value.includes("'admin'");
@@ -44,6 +44,10 @@ try {
         const p = policy(table, `${table}: admin write`);
         check(`${table}: admin policy`, p?.roles === '{authenticated}' && isAdmin(p.qual) && isAdmin(p.with_check));
     }
+    // Migration 26: the homepage logos were writable by any signed-in user.
+    const logos = policy('trusted_by_logos', 'trusted_by_logos: admin write');
+    const checksAdminRow = value => value?.includes('profiles') && value.includes('auth.uid()') && value.includes("'admin'");
+    check('trusted_by_logos: admin write policy', checksAdminRow(logos?.qual) && checksAdminRow(logos?.with_check));
     const clicks = policy('boutique_clicks', 'boutique_clicks: admin read');
     check('click analytics: admin policy', clicks?.roles === '{authenticated}' && isAdmin(clicks.qual));
     const memberClick = policy('boutique_clicks', 'boutique_clicks: authenticated insert');

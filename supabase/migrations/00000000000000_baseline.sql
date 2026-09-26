@@ -2419,7 +2419,11 @@ ALTER TABLE "public"."trusted_by_logos" ENABLE ROW LEVEL SECURITY;
 -- Name: trusted_by_logos trusted_by_logos: admin write; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY "trusted_by_logos: admin write" ON "public"."trusted_by_logos" USING (("auth"."role"() = 'authenticated'::"text")) WITH CHECK (("auth"."role"() = 'authenticated'::"text"));
+CREATE POLICY "trusted_by_logos: admin write" ON "public"."trusted_by_logos" USING ((("auth"."uid"() IS NOT NULL) AND (EXISTS ( SELECT 1
+   FROM "public"."profiles"
+  WHERE (("profiles"."id" = "auth"."uid"()) AND ("profiles"."role" = 'admin'::"text")))))) WITH CHECK ((("auth"."uid"() IS NOT NULL) AND (EXISTS ( SELECT 1
+   FROM "public"."profiles"
+  WHERE (("profiles"."id" = "auth"."uid"()) AND ("profiles"."role" = 'admin'::"text"))))));
 
 --
 -- Name: trusted_by_logos trusted_by_logos: public read; Type: POLICY; Schema: public; Owner: postgres

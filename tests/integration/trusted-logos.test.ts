@@ -10,12 +10,12 @@
  *
  * The admin console writes these through the admin's own session client
  * (app/actions/admin/manage-boutique.ts), so the fix must keep admin writes
- * working, not just refuse everyone. beforeAll reproduces the hole on the live
- * schema, then applies migration 26.
+ * working, not just refuse everyone. Closed by migration 26, applied to
+ * production on 2026-09-26; beforeAll checks the live schema carries it.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const MEMBER = id(1);
@@ -33,12 +33,7 @@ beforeAll(async () => {
         [LOGO]
     );
 
-    // Before migration 26: a member can plant a logo on the homepage.
-    const planted = await asRole(db, 'authenticated', MEMBER,
-        `INSERT INTO trusted_by_logos (name, logo_url) VALUES ('Injected', 'https://attacker.invalid/x.png') RETURNING id`);
-    expect(planted.rows).toHaveLength(1);
-
-    await db.exec(readMigration('20260926_26_trusted_logos_admin_write.sql'));
+    await expectMigrationApplied(db, '20260926_26_trusted_logos_admin_write.sql');
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
