@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { graceEnds, renewalAmountCents, withinGrace } from '@/app/lib/entitlement-period';
+import { graceEnds, renewalAmountCents, RENEWAL_GRACE_DAYS, withinGrace } from '@/app/lib/entitlement-period';
 import { isSellablePrice } from '@/app/lib/sellable-price';
 import { safeNextPath } from '@/app/lib/safe-redirect';
 
@@ -236,10 +236,21 @@ async function resolveRenewal(): Promise<ResolvedRenewal | { error: string }> {
             ? 'course_pass'
             : null;
 
+    // Catalogue lookups below go through the service role. Which product a
+    // slug or item maps to is not hers to see or hide, and members can read
+    // only ACTIVE offers — so through her session, a pass taken off sale since
+    // she bought it could never be renewed (PAY-005,
+    // tests/integration/renewal.test.ts). Her identity and her own rows are
+    // still read through her session above and below.
+    const { createAdminClient } = await import('@/utils/supabase/admin');
+    const catalogue = createAdminClient();
+
+    // Passes share one term on the profile (owner decision 2026-09-26):
+    // renewing her highest pass renews that term for every pass she holds.
     if (passSlug && profile?.access_expires_at) {
         // Not filtered on `active`: she is renewing what she bought, which may
         // well have been taken off sale since.
-        const { data: offer } = await supabase
+        const { data: offer } = await catalogue
             .from('offers')
             .select('stripe_product_id')
             .eq('slug', passSlug)
@@ -266,16 +277,25 @@ async function resolveRenewal(): Promise<ResolvedRenewal | { error: string }> {
         };
     }
 
-    // Otherwise a single masterclass or chapter. The one expiring soonest is the
-    // one she is being asked about.
-    const { data: grant } = await supabase
-        .from('user_access_grants')
-        .select('masterclass_id, chapter_id, expires_at, renewal_count')
-        .eq('user_id', user.id)
-        .not('expires_at', 'is', null)
-        .order('expires_at', { ascending: true })
-        .limit(1)
-        .maybeSingle();
+    // Otherwise a single masterclass or chapter: the one expiring soonest
+    // among those she can still renew. Soonest overall used to win, so an item
+    // that lapsed months ago — past its window — was quoted, and a current one
+    // could not be renewed (PAY-005). Only if every grant has lapsed does the
+    // soonest overall stand, so she is told its price has reset.
+    const soonest = (renewableOnly: boolean) => {
+        let query = supabase
+            .from('user_access_grants')
+            .select('masterclass_id, chapter_id, expires_at, renewal_count')
+            .eq('user_id', user.id)
+            .not('expires_at', 'is', null);
+        if (renewableOnly) {
+            const windowStart = new Date(Date.now() - RENEWAL_GRACE_DAYS * 24 * 60 * 60 * 1000);
+            query = query.gt('expires_at', windowStart.toISOString());
+        }
+        return query.order('expires_at', { ascending: true }).limit(1).maybeSingle();
+    };
+    const { data: renewable } = await soonest(true);
+    const grant = renewable ?? (await soonest(false)).data;
 
     if (!grant?.expires_at) {
         return { error: 'There is nothing to renew on this account.' };
@@ -287,7 +307,7 @@ async function resolveRenewal(): Promise<ResolvedRenewal | { error: string }> {
         return { error: 'There is nothing to renew on this account.' };
     }
 
-    const { data: item } = await supabase
+    const { data: item } = await catalogue
         .from(table)
         .select('stripe_product_id')
         .eq('id', itemId)

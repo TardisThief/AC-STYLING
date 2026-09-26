@@ -73,7 +73,7 @@ beforeAll(async () => {
 afterAll(async () => { await state.db?.close(); });
 
 describe('renewal quote', () => {
-    it.fails('renews a pass whose offer has been taken off sale', async () => {
+    it('renews a pass whose offer has been taken off sale', async () => {
         state.user = PASS_HOLDER;
 
         const quote = await getRenewalQuote();
@@ -81,7 +81,7 @@ describe('renewal quote', () => {
         expect(quote).toMatchObject({ renewable: true, amountCents: 10000, currency: 'usd' });
     });
 
-    it.fails('quotes the current masterclass, not one that lapsed months ago', async () => {
+    it('quotes the current masterclass, not one that lapsed months ago', async () => {
         state.user = ITEM_BUYER;
 
         const quote = await getRenewalQuote();
