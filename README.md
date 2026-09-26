@@ -14,7 +14,7 @@ Design language is "Liquid Glass & Taupe": warm neutrals (`#5A4F44` taupe,
 
 ## Requirements
 
-- Node 20+
+- Node 22 (`.nvmrc`; `engines` in package.json pins Vercel to 22.x). Puppeteer 25 requires ≥22.12.
 - A Supabase project (PostgreSQL + Auth + Storage)
 - Stripe, Resend, and Vimeo accounts for payments, email, and video
 

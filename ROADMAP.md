@@ -82,8 +82,6 @@ that alerts once the owner schedules it (owner action 1d).
 **Still open from the 2026-09-25 assessment** (real, but not blocking the
 first sale; each wants a failing test first):
 
-- **CI runs Node 20; Puppeteer 25 needs ≥22.12.** Works on 20 (tested);
-  CI moves with Vercel, not before (owner action 6).
 - Lower: Studio ownership/token/deletion lifecycle, renewal semantics across
   the three passes, `markAnswerAsRead` silently updating 0 rows under RLS,
   English-only auth screens and emails (F15), public lab questions/resources

@@ -324,29 +324,21 @@ monthly limits against expected volume.
 
 ---
 
-## 6. Consider setting Vercel's Node version to 22.x — not urgent
+## 6. ~~Set Vercel's Node version to 22.x~~ — done in code 2026-09-26; confirm once
 
-`puppeteer@25` declares `engines: { node: ">=22.12.0" }`, and this project
-declares no `engines` field, so production runs whatever the Vercel dashboard
-is set to.
+`package.json` now declares `"engines": { "node": "22.x" }`. Vercel uses that
+in preference to the dashboard's Node.js Version, so the next deploy builds
+and runs on Node 22 without a dashboard change. CI (`node-version: 22`) and
+`.nvmrc` moved in the same commit, so CI tests the runtime production runs.
+This closes ENV-001 from the 2026-09-25 assessment: Puppeteer 25 requires
+Node ≥22.12.
 
-**This is not currently broken.** Puppeteer 25 was tested on Node 20.19.4
-locally — browser launch, the stealth plugin, request interception and
-navigation all work — so the requirement is advisory rather than enforced. No
-`engines` constraint was added to the repo precisely because declaring
-`>=22.12.0` could *fail* your build if the dashboard is pinned to 20.x, which
-would be a worse outcome than an unsupported-but-working runtime.
+Verified before the change, on Node 22.23.3: the full test suite, the
+production build, and a Puppeteer headless launch.
 
-Worth aligning when convenient, since running a dependency outside its
-supported range means upstream will not treat any resulting bug as theirs.
-
-**How to check:** Vercel → Project → Settings → General → Node.js Version.
-
-If you move Vercel to 22.x, have CI moved in the same change
-(`.github/workflows` → `node-version: 22`), so CI keeps testing the runtime
-production runs. The 2026-09-25 assessment flagged the mismatch (ENV-001);
-CI deliberately stays on 20 until Vercel moves.
-
+**How to check (once):** the first deploy's build log should say it is using
+Node 22.x. If the dashboard shows a warning that `engines` overrides its
+setting, set the dashboard to 22.x too so the two agree.
 ---
 
 ## 7. Decide whether a wardrobe should outlive the client who left
