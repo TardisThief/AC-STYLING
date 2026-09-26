@@ -28,7 +28,7 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   (MAIL-001); a retried guest delivery sent no welcome (PAY-002); checkout sold
   any Stripe price the browser named (PAY-004). The rest of its findings were
   then worked through the same way (below). Migrations are applied and
-  verified through **31**; the code is deployed (`afde214`).
+  verified through **32**; the code is deployed.
 - **The Vault is populated but mostly parked.** 4 masterclasses, **21 modules**
   and 4 standalone courses, all bilingual. **Colorimetry is published and
   priced, so it is on sale, while all 21 modules are unpublished** — checked
@@ -96,6 +96,17 @@ downloads made paid-only (MEDIA-001, migration 30).
 backup contained any privileges, and even with them a straight restore into
 Supabase reopens every locked column. Fixed and drilled on 2026-09-26: see
 "Privileges" in [`docs/DISASTER-RECOVERY.md`](docs/DISASTER-RECOVERY.md).
+
+**Found by the owner after the pass, same day:** Restore handed a wiped
+account's old guest purchase (Full Access) to a new account with the same
+email, because deleting an account deleted the record that its line items were
+settled. Owner decision: deleting an account closes its purchases. Fixed by
+migration 32 (sales rows are kept, detached), a Restore check that skips
+refunded or disputed charges, and `scripts/ops/close_orphaned_sessions.mjs`,
+which closed the 11 paid line items that earlier deletions had already
+orphaned. Then, at the owner's request, a **clean slate**: every grant, pass
+and purchase removed from the three remaining accounts (rows detached, not
+deleted), so testing starts from no purchases at all.
 
 **Deployed 2026-09-26:** `main` pushed and live, then migration 30 applied
 and the one live download (Colorimetry's PDF) moved into the private bucket;
