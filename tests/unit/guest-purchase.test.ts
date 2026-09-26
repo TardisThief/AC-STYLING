@@ -11,9 +11,12 @@ const listUsers = vi.fn()
 const createUser = vi.fn()
 const generateLink = vi.fn()
 const updateUserById = vi.fn()
+const getUserById = vi.fn()
+const rpc = vi.fn()
 
 const admin = {
-    auth: { admin: { listUsers, createUser, generateLink, updateUserById } },
+    auth: { admin: { listUsers, createUser, generateLink, updateUserById, getUserById } },
+    rpc,
 } as never
 
 beforeEach(() => {
@@ -166,6 +169,25 @@ describe('resolveOrCreateUserByEmail', () => {
         await resolveOrCreateUserByEmail(admin, 'regular@example.com')
 
         expect(updateUserById).not.toHaveBeenCalled()
+    })
+
+    // SCALE-001 (2026-09-25 external assessment). The lookup paged through at
+    // most 10 × 200 accounts. Past the 2,000th, a returning buyer was not
+    // found; createUser then failed "already registered", the re-resolve
+    // failed the same way, and the webhook answered 500 for ever.
+    it.fails('finds a returning buyer however many accounts there are', async () => {
+        const page = (n: number) => Array.from({ length: 200 }, (_, i) => ({ id: `other-${n}-${i}`, email: `other${n}-${i}@example.invalid` }))
+        listUsers.mockImplementation(async ({ page: n }: { page: number }) => ({ data: { users: page(n) }, error: null }))
+        rpc.mockResolvedValue({ data: 'buyer-2001', error: null })
+        getUserById.mockResolvedValue({
+            data: { user: { id: 'buyer-2001', email: 'late@example.invalid', email_confirmed_at: '2026-01-01T00:00:00Z', last_sign_in_at: '2026-02-01T00:00:00Z' } },
+            error: null,
+        })
+
+        const result = await resolveOrCreateUserByEmail(admin, 'Late@Example.invalid')
+
+        expect(result).toEqual({ userId: 'buyer-2001', created: false, needsWayIn: false })
+        expect(createUser).not.toHaveBeenCalled()
     })
 
     it('returns null for a missing or malformed email so the caller can fail loudly', async () => {

@@ -24,6 +24,7 @@ const { admin, consume, isOpen, signIn, retrieve } = vi.hoisted(() => ({
                 updateUserById: vi.fn(),
             },
         },
+        rpc: vi.fn(),
     },
     consume: vi.fn(),
     isOpen: vi.fn(),
@@ -106,3 +107,19 @@ describe('getPurchaseSession', () => {
         expect(info).toMatchObject({ ok: true, claimable: true })
     })
 })
+
+// SCALE-001: the welcome page found her account by paging through at most
+// 2,000 users. Past that it said "still being set up" for ever.
+describe('finding her account', () => {
+    it.fails('finds it however many accounts there are', async () => {
+        const page = (n: number) => Array.from({ length: 200 }, (_, i) => ({ id: `other-${n}-${i}`, email: `o${n}-${i}@example.invalid`, last_sign_in_at: null }))
+        admin.auth.admin.listUsers.mockImplementation(async ({ page: n }: { page: number }) => ({ data: { users: page(n) }, error: null }))
+        admin.rpc.mockResolvedValue({ data: 'buyer-id', error: null })
+        admin.auth.admin.getUserById.mockResolvedValue({ data: { user: account(null) }, error: null })
+
+        const info = await getPurchaseSession('cs_test_1')
+
+        expect(info).toMatchObject({ ok: true, claimable: true })
+    })
+})
+
