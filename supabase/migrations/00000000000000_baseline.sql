@@ -1882,12 +1882,6 @@ ALTER TABLE ONLY "public"."wardrobes"
     ADD CONSTRAINT "wardrobes_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "public"."profiles"("id") ON DELETE SET NULL;
 
 --
--- Name: admin_notifications Admin full access to notifications; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Admin full access to notifications" ON "public"."admin_notifications" USING ((("auth"."uid"() IS NOT NULL) AND ("auth"."uid"() = '4613bce4-5a40-4779-9e87-0def946be940'::"uuid"))) WITH CHECK ((("auth"."uid"() IS NOT NULL) AND ("auth"."uid"() = '4613bce4-5a40-4779-9e87-0def946be940'::"uuid")));
-
---
 -- Name: wardrobes Admin full access to wardrobes; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -2272,6 +2266,16 @@ CREATE POLICY "Users can view their published lookbooks" ON "public"."lookbooks"
 --
 
 ALTER TABLE "public"."admin_notifications" ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: admin_notifications admin_notifications: admin access; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "admin_notifications: admin access" ON "public"."admin_notifications" USING ((("auth"."uid"() IS NOT NULL) AND (EXISTS ( SELECT 1
+   FROM "public"."profiles"
+  WHERE (("profiles"."id" = "auth"."uid"()) AND ("profiles"."role" = 'admin'::"text")))))) WITH CHECK ((("auth"."uid"() IS NOT NULL) AND (EXISTS ( SELECT 1
+   FROM "public"."profiles"
+  WHERE (("profiles"."id" = "auth"."uid"()) AND ("profiles"."role" = 'admin'::"text"))))));
 
 --
 -- Name: boutique_clicks; Type: ROW SECURITY; Schema: public; Owner: postgres
