@@ -13,7 +13,7 @@ import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 import { pageMetadata } from '@/app/lib/seo';
 import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
 import ResourcesCard from "@/components/vault/ResourcesCard";
-import type { VaultResource } from "@/app/lib/types";
+import { loadChapterPaidContent } from "@/app/lib/paid-content";
 
 export const generateMetadata = pageMetadata({ key: 'vaultFoundation' });
 
@@ -63,16 +63,14 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     // is one unbroken literal that Supabase parses to infer the row shape, so
     // an embedded join cannot be added to it without collapsing that type.
     let masterclassTitle: string | null = null;
-    let masterclassResources: VaultResource[] = [];
     if (chapter.masterclass_id) {
         const { data: mc } = await supabase
             .from('masterclasses')
-            .select('title, title_es, resource_urls')
+            .select('title, title_es')
             .eq('id', chapter.masterclass_id)
             .single();
         if (mc) {
             masterclassTitle = locale === 'es' && mc.title_es ? mc.title_es : mc.title;
-            masterclassResources = (mc.resource_urls as VaultResource[] | null) ?? [];
         }
     }
 
@@ -80,23 +78,9 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     const title = locale === 'es' && chapter.title_es ? chapter.title_es : chapter.title;
     const subtitle = locale === 'es' && chapter.subtitle_es ? chapter.subtitle_es : chapter.subtitle;
     const description = locale === 'es' && chapter.description_es ? chapter.description_es : chapter.description;
-    const labQuestionsRaw = chapter.lab_questions || [];
-    // Shared Key Strategy: We map over the SINGLE array of questions, but swap the label/placeholder if locale is ES.
-    const labQuestions = labQuestionsRaw.map((q: Record<string, unknown>) => ({
-        ...q,
-        label: (locale === 'es' && q.label_es) ? q.label_es : q.label,
-        placeholder: (locale === 'es' && q.placeholder_es) ? q.placeholder_es : q.placeholder
-    }));
     const takeaways = (locale === 'es' && chapter.takeaways_es && chapter.takeaways_es.length > 0)
         ? chapter.takeaways_es
         : (chapter.takeaways || []);
-    // A module inside a masterclass shows the masterclass's resources first,
-    // then its own — the workbook that covers the whole collection belongs on
-    // every module, not duplicated into one of them.
-    const resources: VaultResource[] = [
-        ...masterclassResources,
-        ...((chapter.resource_urls as VaultResource[] | null) ?? []),
-    ];
 
     // Fetch User Data
     const { data: { user } } = await supabase.auth.getUser();
@@ -131,6 +115,13 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     const video = hasAccess
         ? await getChapterVideo(chapter.id)
         : { videoId: null, videoIdEs: null };
+
+    // Lab questions and downloads are paid content (migration 30): read after
+    // the access check, through the service role. A module shows its
+    // masterclass's downloads first, then its own. Without access only the
+    // question count comes back.
+    const paid = await loadChapterPaidContent(chapter.id, { hasAccess });
+    const resources = paid.resources;
 
     return (
         <section className="min-h-screen pb-20">
@@ -219,7 +210,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                                             <CompleteChapterButton 
                                                 slug={slug} 
                                                 chapterId={chapter.id} 
-                                                totalQuestions={labQuestions.length} 
+                                                totalQuestions={paid.labQuestionCount} 
                                                 nextChapterSlug={nextChapterSlug} 
                                                 isCompletedInitial={isCompleted} 
                                                 baseRoute="/vault/foundations" 
@@ -241,7 +232,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                                 <CompleteChapterButton 
                                     slug={slug} 
                                     chapterId={chapter.id} 
-                                    totalQuestions={labQuestions.length} 
+                                    totalQuestions={paid.labQuestionCount} 
                                     nextChapterSlug={nextChapterSlug} 
                                     isCompletedInitial={isCompleted} 
                                     baseRoute="/vault/foundations" 

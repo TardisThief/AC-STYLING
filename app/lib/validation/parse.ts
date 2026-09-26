@@ -142,22 +142,36 @@ export const jsonArray = (label: string) =>
     );
 
 /**
- * A list of downloadable resources ([{ name, url }]) from a jsonb column or a
- * JSON string form field. jsonArray would take these as z.unknown(), so the
- * only place the item shape was ever checked was scripts/import_catalog.mjs —
- * the admin forms could write a row the importer would later reject.
+ * A list of downloadable resources from a jsonb column or a JSON string form
+ * field. Each is `{ name, url }` (an external http(s) link, or a legacy public
+ * file) or `{ name, path }` (an object in the private vault-resources bucket,
+ * migration 30). jsonArray would take these as z.unknown(), so the only place
+ * the item shape was ever checked was scripts/import_catalog.mjs — the admin
+ * forms could write a row the importer would later reject.
  */
 export const resourceList = (label: string) =>
     z.preprocess(
         (value, ctx) => parseJsonArrayInput(value, ctx, label),
         z.array(
-            z.object({
-                name: requiredText(`${label}: each file needs a name`),
-                url: z
-                    .string({ error: `${label}: each file needs a link` })
-                    .trim()
-                    .regex(/^https?:\/\//, `${label}: each link must start with http:// or https://`),
-            }),
+            z.union([
+                z.strictObject({
+                    name: requiredText(`${label}: each file needs a name`),
+                    url: z
+                        .string({ error: `${label}: each file needs a link` })
+                        .trim()
+                        .regex(/^https?:\/\//, `${label}: each link must start with http:// or https://`),
+                }),
+                z.strictObject({
+                    name: requiredText(`${label}: each file needs a name`),
+                    // A flat object key, as createResourceUploadUrl issues:
+                    // no folders, no traversal.
+                    path: z
+                        .string()
+                        .trim()
+                        .regex(/^[^/\\]+$/, `${label}: a file path must be a single name`)
+                        .refine(p => !p.includes('..'), `${label}: a file path must be a single name`),
+                }),
+            ], { error: `${label}: each item needs a name and either a link or an uploaded file` }),
             { error: `${label} must be a list` },
         ),
     );

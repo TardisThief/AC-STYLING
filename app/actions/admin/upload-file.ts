@@ -12,6 +12,20 @@ import { requireAdmin } from '@/app/lib/auth-guards';
  * then PUTs the file straight to storage (app/lib/upload-client.ts).
  */
 export async function createVaultUploadUrl(fileName: string) {
+    return createUploadUrl('vault-assets', fileName);
+}
+
+/**
+ * The same, for a paid download: the PRIVATE vault-resources bucket
+ * (migration 30). Members get these files only as short-lived signed links
+ * minted after the access check (app/lib/paid-content.ts), so what the admin
+ * console stores is the object path, never a public URL.
+ */
+export async function createResourceUploadUrl(fileName: string) {
+    return createUploadUrl('vault-resources', fileName);
+}
+
+async function createUploadUrl(bucket: 'vault-assets' | 'vault-resources', fileName: string) {
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false as const, error: auth.error };
 
@@ -24,7 +38,7 @@ export async function createVaultUploadUrl(fileName: string) {
     const path = `${Date.now()}-${safeName}`;
 
     const { data, error } = await auth.supabase.storage
-        .from('vault-assets')
+        .from(bucket)
         .createSignedUploadUrl(path);
 
     if (error || !data) {

@@ -188,4 +188,18 @@ describe('parseInput at the edges', () => {
         }
         expect(parseInput(schema, { resource_urls: [{ name: 'n', url: 'https://ok.invalid/a.pdf' }] }).ok).toBe(true)
     })
+
+    // Since migration 30 an uploaded download is stored as an object path in
+    // the private vault-resources bucket and signed per viewer. A path that
+    // could reach another object — a folder, traversal — must not be stored.
+    it('accepts a private file path, and refuses one that could reach another object', () => {
+        const schema = zod.object({ resource_urls: resourceList('Resources') })
+        expect(parseInput(schema, { resource_urls: [{ name: 'Workbook', path: '1790199111540-Workbook.pdf' }] }).ok).toBe(true)
+        for (const path of ['../vault-assets/a.pdf', 'other/a.pdf', 'a\\b.pdf', '..', '']) {
+            expect(parseInput(schema, { resource_urls: [{ name: 'n', path }] }).ok, path).toBe(false)
+        }
+        // Exactly one of url or path, and nothing else.
+        expect(parseInput(schema, { resource_urls: [{ name: 'n', url: 'https://ok.invalid/a.pdf', path: 'a.pdf' }] }).ok).toBe(false)
+        expect(parseInput(schema, { resource_urls: [{ name: 'n' }] }).ok).toBe(false)
+    })
 })

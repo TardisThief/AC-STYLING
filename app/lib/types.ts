@@ -90,10 +90,12 @@ export interface Chapter {
     order_index: number;
     category: string | null;
     thumbnail_url: string | null;
-    lab_questions: unknown[] | null;
+    /** Paid content: absent on browser-side reads since migration 30. */
+    lab_questions?: unknown[] | null;
     takeaways: unknown[] | null;
     takeaways_es: unknown[] | null;
-    resource_urls: unknown[] | null;
+    /** Paid content: absent on browser-side reads since migration 30. */
+    resource_urls?: unknown[] | null;
     masterclass_id: string | null;
     is_standalone: boolean | null;
     stripe_product_id: string | null;
@@ -107,10 +109,25 @@ export interface Chapter {
     masterclasses?: { title: string } | { title: string }[] | null;
 }
 
-/** One downloadable in a chapter's or masterclass's `resource_urls` column. */
+/**
+ * One downloadable as a member sees it: a name and a link she can open. For a
+ * file in the private vault-resources bucket the link is a short-lived signed
+ * URL minted after the access check (app/lib/paid-content.ts).
+ */
 export interface VaultResource {
     name: string;
     url: string;
+}
+
+/**
+ * One downloadable as stored in a `resource_urls` column: either an external
+ * link (`url`), or an object in the private vault-resources bucket (`path`).
+ * Legacy rows carry a public vault-assets `url`.
+ */
+export interface StoredVaultResource {
+    name: string;
+    url?: string;
+    path?: string;
 }
 
 export interface Masterclass {
@@ -127,7 +144,8 @@ export interface Masterclass {
     subtitle_es: string | null;
     description_es: string | null;
     takeaways_es: unknown;
-    resource_urls: unknown[] | null;
+    /** Paid content: absent on browser-side reads since migration 30. */
+    resource_urls?: unknown[] | null;
     // Added by migration 10; what the public catalogue reads to decide whether
     // this can be shown and sold on its own.
     is_published: boolean;

@@ -2,6 +2,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft, Layers, Check } from "lucide-react";
+import { MASTERCLASS_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 import { createClient } from "@/utils/supabase/server";
 
 import FullAccessUnlock from "@/components/vault/FullAccessUnlock";
@@ -22,7 +23,7 @@ export default async function FoundationsPage({ params }: { params: Promise<{ lo
     // 1. Fetch Masterclasses
     const { data: masterclasses } = await supabase
         .from('masterclasses')
-        .select('*')
+        .select(MASTERCLASS_CATALOG_COLUMNS)
         .order('order_index', { ascending: true });
 
     // 2. Fetch all chapters for these masterclasses to calculate completion

@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, ChevronUp, ChevronDown, Link2 } from "lucide-react";
 import { toast } from "sonner";
-import { uploadAssetWithToast } from "@/app/lib/upload-client";
-import type { VaultResource } from "@/app/lib/types";
+import { uploadResourceWithToast } from "@/app/lib/upload-client";
+import type { StoredVaultResource } from "@/app/lib/types";
 
 interface ResourceEditorProps {
-    value: VaultResource[];
-    onChange: (next: VaultResource[]) => void;
+    value: StoredVaultResource[];
+    onChange: (next: StoredVaultResource[]) => void;
     /** Heading above the editor. */
     label?: string;
     /** Line under the heading explaining where these files surface. */
@@ -24,8 +24,10 @@ interface ResourceEditorProps {
  * order is what they read it in, so it is movable, and not every resource lives
  * in our bucket, so a plain link can be added.
  *
- * Uploads go to `vault-assets` via a signed URL (admin-only INSERT, 15 MB,
- * pdf/zip) — the bytes never pass through a server action.
+ * Uploads go to the PRIVATE `vault-resources` bucket via a signed URL
+ * (admin-only INSERT, 15 MB, pdf/zip) — the bytes never pass through a server
+ * action — and are stored as `{ name, path }`. Members only ever get them as
+ * short-lived signed links, after the access check (migration 30).
  */
 export default function ResourceEditor({
     value,
@@ -48,8 +50,8 @@ export default function ResourceEditor({
 
             setUploading(true);
             const file = acceptedFiles[0];
-            const url = await uploadAssetWithToast(file, "File uploaded");
-            if (url) onChange([...value, { name: file.name, url }]);
+            const path = await uploadResourceWithToast(file, "File uploaded");
+            if (path) onChange([...value, { name: file.name, path }]);
             setUploading(false);
         },
     });
@@ -129,7 +131,7 @@ export default function ResourceEditor({
 
             <div className="space-y-2">
                 {value.map((r, i) => (
-                    <div key={`${r.url}-${i}`} className="flex gap-2 items-center bg-white/20 p-2 rounded-sm">
+                    <div key={`${r.path ?? r.url}-${i}`} className="flex gap-2 items-center bg-white/20 p-2 rounded-sm">
                         <div className="flex flex-col">
                             <button
                                 type="button"
@@ -159,14 +161,20 @@ export default function ResourceEditor({
                             className="flex-1 min-w-0 bg-white/40 border border-ac-taupe/10 rounded-sm p-2 text-xs text-ac-taupe focus:outline-none focus:border-ac-gold"
                         />
 
-                        <a
-                            href={r.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[10px] text-ac-taupe/50 hover:text-ac-gold underline shrink-0"
-                        >
-                            Open
-                        </a>
+                        {r.path ? (
+                            <span className="text-[10px] text-ac-taupe/50 shrink-0" title={r.path}>
+                                Private file
+                            </span>
+                        ) : (
+                            <a
+                                href={r.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[10px] text-ac-taupe/50 hover:text-ac-gold underline shrink-0"
+                            >
+                                Open
+                            </a>
+                        )}
 
                         <button
                             type="button"

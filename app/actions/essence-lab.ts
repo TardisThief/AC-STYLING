@@ -3,6 +3,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { loadLabQuestionsFor } from "@/app/lib/paid-content";
 
 export type EssenceResponse = {
     question_key: string;
@@ -180,7 +181,6 @@ export async function getAllEssenceData() {
             slug,
             title,
             masterclass_id,
-            lab_questions,
             masterclasses ( id, title )
         `)
         .in('slug', unlockedChapterSlugs);
@@ -188,6 +188,11 @@ export async function getAllEssenceData() {
     if (!chaptersData) return [];
 
     const unlockedChapterIds = chaptersData.map((c: { id: string }) => c.id);
+
+    // The questions are paid content (migration 30), so they come through the
+    // service role — only for chapters whose Lab she has unlocked, which is
+    // taken from her own progress rows above.
+    const questionsByChapter = await loadLabQuestionsFor(unlockedChapterIds);
 
     // 3. Fetch essence_responses for this user
     const { data: responsesData } = await supabase
@@ -217,7 +222,7 @@ export async function getAllEssenceData() {
             };
         }
 
-        const questions = Array.isArray(chapter.lab_questions) ? chapter.lab_questions : [];
+        const questions = questionsByChapter.get(chapter.id) ?? [];
 
         if (questions.length === 0) continue;
 

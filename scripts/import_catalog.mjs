@@ -76,7 +76,10 @@ function checkResources(where, row) {
     resources.forEach((r, i) => {
         if (!r || typeof r !== 'object') return err(where, `resource_urls[${i}] must be an object`);
         if (!r.name?.trim()) err(where, `resource_urls[${i}].name is required`);
-        if (!/^https?:\/\//.test(r.url ?? '')) err(where, `resource_urls[${i}].url must be an http(s) URL`);
+        // A link, or since migration 30 an object in the private vault-resources bucket.
+        const isLink = /^https?:\/\//.test(r.url ?? '');
+        const isPath = typeof r.path === 'string' && /^[^/\\]+$/.test(r.path) && !r.path.includes('..');
+        if (!isLink && !isPath) err(where, `resource_urls[${i}] needs an http(s) url or a vault-resources path`);
     });
 }
 

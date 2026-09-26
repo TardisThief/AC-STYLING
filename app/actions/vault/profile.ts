@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
+import { loadLabQuestionsFor } from '@/app/lib/paid-content';
 
 export interface StyleEssentials {
     styleWords: string[];
@@ -32,12 +33,16 @@ export async function getProfileHubData() {
     // 3. Fetch Essence Responses
     const { data: responses } = await supabase
         .from('essence_responses')
-        .select('question_key, answer_value');
+        .select('question_key, answer_value, chapter_id')
+        .eq('user_id', user.id);
 
-    // 4. Fetch Question Definitions (to find mappings)
-    const { data: chapters } = await supabase
-        .from('chapters')
-        .select('lab_questions');
+    // 4. Question definitions, for the chapters she has answered only. Paid
+    // content since migration 30, so read through the service role; the
+    // chapter ids come from her own responses above.
+    const questionsByChapter = await loadLabQuestionsFor(
+        (responses ?? []).map(r => r.chapter_id as string)
+    );
+    const chapters = [...questionsByChapter.values()].map(lab_questions => ({ lab_questions }));
 
     // 5. Compile Essence
     const essence: StyleEssentials = {

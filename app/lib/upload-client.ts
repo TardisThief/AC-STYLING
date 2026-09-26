@@ -1,4 +1,4 @@
-import { createVaultUploadUrl } from '@/app/actions/admin/upload-file';
+import { createResourceUploadUrl, createVaultUploadUrl } from '@/app/actions/admin/upload-file';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 
@@ -35,6 +35,41 @@ export async function uploadAssetWithToast(file: File, successMessage: string): 
         const { data: { publicUrl } } = storage.getPublicUrl(authorized.path);
         toast.success(successMessage);
         return publicUrl;
+    } catch {
+        toast.error('Upload failed — please check your connection and try again.');
+        return null;
+    }
+}
+
+/**
+ * Upload a paid download to the PRIVATE vault-resources bucket and return its
+ * object path (not a URL: there is no public one). Stored as `{ name, path }`
+ * in a resource_urls column; members get it as a signed link after the access
+ * check (app/lib/paid-content.ts).
+ */
+export async function uploadResourceWithToast(file: File, successMessage: string): Promise<string | null> {
+    if (file.size > MAX_UPLOAD_BYTES) {
+        toast.error(`"${file.name}" is too large — uploads are limited to 15 MB.`);
+        return null;
+    }
+
+    try {
+        const authorized = await createResourceUploadUrl(file.name);
+        if (!authorized.success) {
+            toast.error(authorized.error || 'Upload failed. Check storage permissions.');
+            return null;
+        }
+
+        const { error } = await createClient()
+            .storage.from('vault-resources')
+            .uploadToSignedUrl(authorized.path, authorized.token, file);
+        if (error) {
+            toast.error(error.message || 'Upload failed. Check storage permissions.');
+            return null;
+        }
+
+        toast.success(successMessage);
+        return authorized.path;
     } catch {
         toast.error('Upload failed — please check your connection and try again.');
         return null;

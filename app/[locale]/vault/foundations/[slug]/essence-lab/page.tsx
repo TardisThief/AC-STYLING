@@ -5,6 +5,7 @@ import EssenceLab from "@/components/vault/EssenceLab";
 import CompleteChapterButton from "@/components/vault/CompleteChapterButton";
 import { createClient } from "@/utils/supabase/server";
 import { checkAccess } from "@/utils/access-control";
+import { loadChapterPaidContent } from "@/app/lib/paid-content";
 import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
@@ -119,8 +120,10 @@ export default async function FoundationsEssenceLabPage({ params }: { params: Pr
 
     const title = locale === 'es' && chapter.title_es ? chapter.title_es : chapter.title;
     
-    const labQuestionsRaw = chapter.lab_questions || [];
-    const labQuestions = labQuestionsRaw.map((q: Record<string, unknown>) => ({
+    // Paid content (migration 30): read through the service role, and only
+    // after the redirect above has established access.
+    const labQuestionsRaw = (await loadChapterPaidContent(chapter.id, { hasAccess: true })).labQuestions;
+    const labQuestions = labQuestionsRaw.map((q) => ({
         ...q,
         label: (locale === 'es' && q.label_es) ? q.label_es : q.label,
         placeholder: (locale === 'es' && q.placeholder_es) ? q.placeholder_es : q.placeholder

@@ -10,33 +10,69 @@
  * downloadable link, for content they had not bought and content not yet
  * published, straight from PostgREST. The pages only hid them.
  */
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { pgliteSupabase } from '../utils/pglite-supabase';
 
 const MEMBER = '00000000-0000-4000-8000-00000000e001';
+const MC = '00000000-0000-4000-8000-00000000e101';
+const CH = '00000000-0000-4000-8000-00000000e201';
+
+const { state, signed } = vi.hoisted(() => ({
+    state: { db: null as PGlite | null },
+    signed: [] as { bucket: string; path: string; seconds: number }[],
+}));
+
+vi.mock('@/utils/supabase/admin', () => ({
+    createAdminClient: () => {
+        const client = pgliteSupabase(state.db!);
+        return {
+            from: client.from.bind(client),
+            storage: {
+                from: (bucket: string) => ({
+                    createSignedUrl: async (path: string, seconds: number) => {
+                        signed.push({ bucket, path, seconds });
+                        return path === 'missing.pdf'
+                            ? { data: null, error: { message: 'Object not found' } }
+                            : { data: { signedUrl: `https://storage.invalid/sign/${bucket}/${path}?token=t` }, error: null };
+                    },
+                }),
+            },
+        };
+    },
+}));
+
+import { loadChapterPaidContent, loadLabQuestionsFor, loadMasterclassResources } from '@/app/lib/paid-content';
+
 let db: PGlite;
 
 beforeAll(async () => {
     db = await createLiveSchemaDb();
+    state.db = db;
     await createUser(db, MEMBER);
-    await db.query(`INSERT INTO masterclasses (title, resource_urls, is_published) VALUES ('Draft', '[{"name":"Workbook","url":"https://files.invalid/workbook.pdf"}]', false)`);
-    await db.query(`INSERT INTO chapters (slug, title, video_id, lab_questions, resource_urls) VALUES ('m1', 'Module', 'pending_video', '[{"key":"q1","label":"Paid question"}]', '[{"name":"Sheet","url":"https://files.invalid/sheet.pdf"}]')`);
+    await db.query(`INSERT INTO masterclasses (id, title, resource_urls, is_published) VALUES ($1, 'Draft', '[{"name":"Workbook","url":"https://files.invalid/workbook.pdf"},{"name":"Private workbook","path":"workbook.pdf"}]', false)`, [MC]);
+    await db.query(`INSERT INTO chapters (id, slug, title, video_id, masterclass_id, lab_questions, resource_urls) VALUES ($1, 'm1', 'Module', 'pending_video', $2, '[{"key":"q1","label":"Paid question","placeholder":""},{"key":"q2","label":"Second","placeholder":""}]', '[{"name":"Sheet","path":"sheet.pdf"},{"name":"Gone","path":"missing.pdf"}]')`, [CH, MC]);
+
+    // Before migration 30 a signed-out caller reads the questions.
+    const leak = await asRole(db, 'anon', null, 'SELECT lab_questions FROM chapters');
+    expect(leak.rows).toHaveLength(1);
+    await db.exec(readMigration('20260926_30_paid_content_columns.sql'));
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
 
 describe.each([['anyone signed out', 'anon', null], ['a member who bought nothing', 'authenticated', MEMBER]] as const)(
     '%s', (_, role, who) => {
-        it.fails('cannot read the Essence Lab questions', async () => {
+        it('cannot read the Essence Lab questions', async () => {
             await expect(asRole(db, role, who, 'SELECT lab_questions FROM chapters')).rejects.toMatchObject({ code: '42501' });
         });
 
-        it.fails('cannot read chapter downloads', async () => {
+        it('cannot read chapter downloads', async () => {
             await expect(asRole(db, role, who, 'SELECT resource_urls FROM chapters')).rejects.toMatchObject({ code: '42501' });
         });
 
-        it.fails('cannot read masterclass downloads', async () => {
+        it('cannot read masterclass downloads', async () => {
             await expect(asRole(db, role, who, 'SELECT resource_urls FROM masterclasses')).rejects.toMatchObject({ code: '42501' });
         });
 
@@ -48,3 +84,47 @@ describe.each([['anyone signed out', 'anon', null], ['a member who bought nothin
         });
     }
 );
+
+describe('paid content, read on the server after the access check', () => {
+    it('without access, gives only the question count', async () => {
+        const paid = await loadChapterPaidContent(CH, { hasAccess: false });
+
+        expect(paid).toEqual({ labQuestions: [], labQuestionCount: 2, resources: [] });
+    });
+
+    it('with access, gives the questions and the masterclass downloads before the module’s own', async () => {
+        signed.length = 0;
+        const paid = await loadChapterPaidContent(CH, { hasAccess: true });
+
+        expect(paid.labQuestions.map(q => q.key)).toEqual(['q1', 'q2']);
+        expect(paid.resources).toEqual([
+            { name: 'Workbook', url: 'https://files.invalid/workbook.pdf' },
+            { name: 'Private workbook', url: 'https://storage.invalid/sign/vault-resources/workbook.pdf?token=t' },
+            { name: 'Sheet', url: 'https://storage.invalid/sign/vault-resources/sheet.pdf?token=t' },
+        ]);
+        // Signed from the private bucket, for an hour; a file that cannot be
+        // signed is left out rather than shown as a dead link.
+        expect(signed.every(s => s.bucket === 'vault-resources' && s.seconds === 3600)).toBe(true);
+        expect(signed.map(s => s.path)).toContain('missing.pdf');
+    });
+
+    it('gives masterclass downloads only with access', async () => {
+        expect(await loadMasterclassResources(MC, { hasAccess: false })).toEqual([]);
+        expect((await loadMasterclassResources(MC, { hasAccess: true })).map(r => r.name)).toEqual(['Workbook', 'Private workbook']);
+    });
+
+    it('gives question definitions only for the chapters asked about', async () => {
+        const byChapter = await loadLabQuestionsFor([CH, CH]);
+
+        expect([...byChapter.keys()]).toEqual([CH]);
+        expect(await loadLabQuestionsFor([])).toEqual(new Map());
+    });
+});
+
+describe('the private downloads bucket', () => {
+    it('exists, is private, and takes documents', async () => {
+        const { rows } = await db.query<{ public: boolean; allowed_mime_types: string[] }>(`SELECT public, allowed_mime_types FROM storage.buckets WHERE id = 'vault-resources'`);
+        expect(rows[0].public).toBe(false);
+        expect(rows[0].allowed_mime_types).toContain('application/pdf');
+    });
+});

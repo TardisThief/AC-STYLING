@@ -11,12 +11,12 @@ import CheckoutSyncHandler from "@/components/monetization/CheckoutSyncHandler";
 import VaultVideoPlayer from "@/components/vault/VaultVideoPlayer";
 import SafeImage from "@/components/ui/SafeImage";
 import { parseVimeoId } from "@/app/lib/vimeo";
-import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
+import { CHAPTER_CATALOG_COLUMNS, MASTERCLASS_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
+import { loadMasterclassResources } from "@/app/lib/paid-content";
 
 import { pageMetadata } from '@/app/lib/seo';
 import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
 import MasterclassResourcesButton from "@/components/vault/MasterclassResourcesButton";
-import type { VaultResource } from "@/app/lib/types";
 
 export const generateMetadata = pageMetadata({ key: 'vaultMasterclass' });
 
@@ -36,7 +36,7 @@ export default async function MasterclassPage({ params }: { params: Promise<{ id
     // 1. Fetch Masterclass Details
     const { data: masterclass, error: mcError } = await supabase
         .from('masterclasses')
-        .select('*')
+        .select(MASTERCLASS_CATALOG_COLUMNS)
         .eq('id', id)
         .single();
 
@@ -91,7 +91,9 @@ export default async function MasterclassPage({ params }: { params: Promise<{ id
     // Resources for the collection as a whole. The same list is repeated above
     // each module's own resources, so a member finds the workbook wherever
     // they happen to be.
-    const mcResources = (masterclass.resource_urls as VaultResource[] | null) ?? [];
+    // Paid content since migration 30: only for a viewer with access, and
+    // file downloads as short-lived signed links.
+    const mcResources = await loadMasterclassResources(masterclass.id, { hasAccess });
 
     return (
         <section className="min-h-screen">

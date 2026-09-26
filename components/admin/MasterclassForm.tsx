@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Masterclass, VaultResource } from "@/app/lib/types";
+import type { Masterclass, StoredVaultResource } from "@/app/lib/types";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { createMasterclass, updateMasterclass } from "@/app/actions/admin/manage-masterclasses";
@@ -40,8 +40,8 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
         runtimeMinutes: masterclass?.runtime_minutes ?? '',
     });
 
-    const [resourceUrls, setResourceUrls] = useState<VaultResource[]>(
-        (masterclass?.resource_urls as VaultResource[] | null) || []
+    const [resourceUrls, setResourceUrls] = useState<StoredVaultResource[]>(
+        (masterclass?.resource_urls as StoredVaultResource[] | null) || []
     );
 
     const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
@@ -63,7 +63,7 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
             priceDisplay: masterclass?.price_display || '',
             runtimeMinutes: masterclass?.runtime_minutes ?? '',
         });
-        setResourceUrls((masterclass?.resource_urls as VaultResource[] | null) || []);
+        setResourceUrls((masterclass?.resource_urls as StoredVaultResource[] | null) || []);
     }, [masterclass]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({

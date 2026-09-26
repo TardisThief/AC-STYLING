@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
+import { MASTERCLASS_CATALOG_COLUMNS } from '@/app/lib/chapter-columns';
 import { requireAdmin } from '@/app/lib/auth-guards';
 import { parseInput, uuid } from '@/app/lib/validation/parse';
 import { masterclassSchema } from '@/app/lib/validation/masterclasses';
@@ -38,7 +39,10 @@ export async function createMasterclass(formData: FormData) {
     const { data, error } = await auth.supabase
         .from('masterclasses')
         .insert(parsed.data)
-        .select()
+        // Not `.select()`: since migration 30 even an admin's session cannot
+        // read resource_urls (column privileges do not know about roles in
+        // profiles). The caller does not need it back.
+        .select(MASTERCLASS_CATALOG_COLUMNS)
         .single();
     if (error) {
         return { success: false, error: error.message };
@@ -117,10 +121,18 @@ export async function deleteMasterclass(id: string) {
     return { success: true };
 }
 
+/**
+ * Full masterclass rows for the admin console, resources included.
+ *
+ * Service role, because migration 30 removed resource_urls from what any
+ * session may read, and the console edits it. requireAdmin() first, always —
+ * the same arrangement as getChapters().
+ */
 export async function getMasterclasses() {
-    const supabase = await createClient(); // Public read is allowed via RLS
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error, masterclasses: [] };
 
-    const { data, error } = await supabase
+    const { data, error } = await createAdminClient()
         .from('masterclasses')
         .select('*')
         .order('order_index', { ascending: true });

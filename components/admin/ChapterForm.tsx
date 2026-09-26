@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Masterclass, VaultResource } from "@/app/lib/types";
+import type { Masterclass, StoredVaultResource } from "@/app/lib/types";
 import { useDropzone } from "react-dropzone";
 import { X, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import ResourceEditor from "./ResourceEditor";
@@ -30,7 +30,7 @@ interface Chapter {
     lab_questions: LabQuestion[];
     takeaways: string[];
     takeaways_es?: string[];
-    resource_urls: VaultResource[];
+    resource_urls: StoredVaultResource[];
     stripe_product_id?: string;
     price_id?: string;
 }
@@ -90,7 +90,7 @@ export default function ChapterForm({ chapter, onSuccess, onCancel }: ChapterFor
     const [takeawaysEs, setTakeawaysEs] = useState<string[]>(
         chapter?.takeaways_es || []
     );
-    const [resourceUrls, setResourceUrls] = useState<VaultResource[]>(
+    const [resourceUrls, setResourceUrls] = useState<StoredVaultResource[]>(
         chapter?.resource_urls || []
     );
 

@@ -11,6 +11,13 @@ vi.mock('@/utils/supabase/server', () => ({
     })),
 }))
 
+// Question definitions are paid content, read through the service role since
+// migration 30 (tests/integration/paid-content.test.ts covers the loader).
+const loadLabQuestionsFor = vi.fn(async (ids: string[]) => { void ids; return new Map() })
+vi.mock('@/app/lib/paid-content', () => ({
+    loadLabQuestionsFor: (ids: string[]) => loadLabQuestionsFor(ids),
+}))
+
 // Import after mocks
 import { getProfileHubData } from '@/app/actions/vault/profile'
 
@@ -51,18 +58,11 @@ describe('Vault Profile Server Actions', () => {
                 }),
             })
 
-            // Mock essence responses query
+            // Mock essence responses query (hers only)
             mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockResolvedValue({
-                    data: [{ question_key: 'style_words', answer_value: 'elegant' }],
-                    error: null,
-                }),
-            })
-
-            // Mock chapters query for lab questions
-            mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockResolvedValue({
-                    data: [],
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockResolvedValue({
+                    data: [{ question_key: 'style_words', answer_value: 'elegant', chapter_id: 'chapter-1' }],
                     error: null,
                 }),
             })
@@ -93,26 +93,24 @@ describe('Vault Profile Server Actions', () => {
                 single: vi.fn().mockResolvedValue({ data: null, error: null }),
             })
 
-            // Mock essence responses with style_words
+            // Mock essence responses with style_words (hers only)
             mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockResolvedValue({
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockResolvedValue({
                     data: [
-                        { question_key: 'style_words', answer_value: 'elegant' },
-                        { question_key: 'archetype', answer_value: 'Classic' },
+                        { question_key: 'style_words', answer_value: 'elegant', chapter_id: 'chapter-1' },
+                        { question_key: 'archetype', answer_value: 'Classic', chapter_id: 'chapter-2' },
                     ],
                     error: null,
                 }),
-            })
-
-            // Mock chapters
-            mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockResolvedValue({ data: [], error: null }),
             })
 
             const result = await getProfileHubData()
 
             expect(result?.essence.styleWords).toContain('elegant')
             expect(result?.essence.archetype).toContain('Classic')
+            // Only the chapters she answered are read, never the whole catalogue.
+            expect(loadLabQuestionsFor).toHaveBeenCalledWith(['chapter-1', 'chapter-2'])
         })
     })
 })

@@ -16,7 +16,7 @@ import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 import { pageMetadata } from '@/app/lib/seo';
 import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
 import ResourcesCard from "@/components/vault/ResourcesCard";
-import type { VaultResource } from "@/app/lib/types";
+import { loadChapterPaidContent } from "@/app/lib/paid-content";
 
 export const generateMetadata = pageMetadata({ key: 'vaultCourse' });
 
@@ -51,17 +51,9 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
     const title = locale === 'es' && chapter.title_es ? chapter.title_es : chapter.title;
     const subtitle = locale === 'es' && chapter.subtitle_es ? chapter.subtitle_es : chapter.subtitle;
     const description = locale === 'es' && chapter.description_es ? chapter.description_es : chapter.description;
-    const labQuestionsRaw = chapter.lab_questions || [];
-    // Shared Key Strategy: We map over the SINGLE array of questions, but swap the label/placeholder if locale is ES.
-    const labQuestions = labQuestionsRaw.map((q: Record<string, unknown>) => ({
-        ...q,
-        label: (locale === 'es' && q.label_es) ? q.label_es : q.label,
-        placeholder: (locale === 'es' && q.placeholder_es) ? q.placeholder_es : q.placeholder
-    }));
     const takeaways = (locale === 'es' && chapter.takeaways_es && chapter.takeaways_es.length > 0)
         ? chapter.takeaways_es
         : (chapter.takeaways || []);
-    const resources = (chapter.resource_urls as VaultResource[] | null) ?? [];
 
     // Fetch User Data
     const { data: { user } } = await supabase.auth.getUser();
@@ -78,6 +70,11 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
     const video = hasAccess
         ? await getChapterVideo(chapter.id)
         : { videoId: null, videoIdEs: null };
+
+    // Lab questions and downloads are paid content (migration 30), read after
+    // the access check. Without access only the question count comes back.
+    const paid = await loadChapterPaidContent(chapter.id, { hasAccess });
+    const resources = paid.resources;
 
 
     let isCompleted = false;
@@ -178,7 +175,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
                                             <CompleteChapterButton 
                                                 slug={chapter.slug} 
                                                 chapterId={chapter.id} 
-                                                totalQuestions={labQuestions.length} 
+                                                totalQuestions={paid.labQuestionCount} 
                                                 nextChapterSlug={nextChapterSlug} 
                                                 isCompletedInitial={isCompleted} 
                                                 baseRoute="/vault/courses" 
@@ -200,7 +197,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
                                     <CompleteChapterButton 
                                         slug={chapter.slug} 
                                         chapterId={chapter.id} 
-                                        totalQuestions={labQuestions.length} 
+                                        totalQuestions={paid.labQuestionCount} 
                                         nextChapterSlug={nextChapterSlug} 
                                         isCompletedInitial={isCompleted} 
                                         baseRoute="/vault/courses" 
