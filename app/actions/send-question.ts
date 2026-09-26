@@ -132,13 +132,22 @@ export async function markAnswerAsRead(questionId: string) {
 
     if (!user) return { success: false, error: "Not authenticated" };
 
-    const { error } = await supabase
+    // Through the service role, because members have no UPDATE policy on
+    // user_questions: through her session RLS matched no rows, Postgres said
+    // nothing, and this answered success while the answer stayed unread
+    // (UX-001, tests/integration/answer-dismissal.test.ts). A member policy is
+    // not the answer — RLS cannot limit columns, so it would also let her
+    // rewrite the question or the stylist's answer. The owner check is in the
+    // WHERE clause, and only the status column is written.
+    const { data, error } = await createAdminClient()
         .from('user_questions')
         .update({ status: 'read' })
         .eq('id', questionId)
-        .eq('user_id', user.id); // Ensure ownership
+        .eq('user_id', user.id)
+        .select('id');
 
     if (error) return { success: false, error: error.message };
+    if (!data || data.length === 0) return { success: false, error: "Question not found" };
     return { success: true };
 }
 

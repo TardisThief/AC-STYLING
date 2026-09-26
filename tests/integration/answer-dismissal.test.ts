@@ -55,7 +55,7 @@ beforeAll(async () => {
 afterAll(async () => { await state.db?.close(); });
 
 describe('markAnswerAsRead', () => {
-    it.fails('actually marks her answered question as read', async () => {
+    it('actually marks her answered question as read', async () => {
         state.user = MEMBER;
 
         const result = await markAnswerAsRead(HERS);
@@ -64,7 +64,7 @@ describe('markAnswerAsRead', () => {
         expect(await status(HERS)).toBe('read');
     });
 
-    it.fails('does not touch someone else’s question, and says so', async () => {
+    it('does not touch someone else’s question, and says so', async () => {
         state.user = MEMBER;
 
         const result = await markAnswerAsRead(THEIRS);
