@@ -35,7 +35,11 @@ DUMP="$OUT/database.dump"
 TMP="$DUMP.partial"
 trap 'rm -f "$TMP"' EXIT
 
-COMMON=(--no-owner --no-privileges --quote-all-identifiers)
+# Privileges ARE dumped (they were not until 2026-09-26): the GRANT/REVOKEs
+# are the app's column-level security model, and a restore without them gets
+# Supabase's default ALL grants. See docs/DISASTER-RECOVERY.md. Owners are
+# still omitted; they name platform roles.
+COMMON=(--no-owner --quote-all-identifiers)
 AUTH_MODE="full"
 
 log "dumping schemas public, auth, storage ..."

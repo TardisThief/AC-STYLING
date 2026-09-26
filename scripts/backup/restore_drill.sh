@@ -54,26 +54,65 @@ check() { if [ "$1" = 0 ]; then log "  PASS  $2"; else log "  FAIL  $2"; fails=$
 # which check failed. That is how a broken drill looked like no drill at all.
 status_of() { if "$@" >/dev/null 2>&1; then echo 0; else echo $?; fi; }
 
-# The roles Supabase owns do not exist here; create the ones the dump
-# references so grants resolve. --no-owner/--no-privileges covers most of it.
-for r in anon authenticated service_role supabase_auth_admin supabase_storage_admin authenticator; do
+# The roles Supabase owns do not exist here; create every one the dump's
+# GRANT/REVOKEs name, so the privileges restore (owners are not dumped).
+for r in anon authenticated service_role supabase_admin supabase_auth_admin supabase_storage_admin authenticator dashboard_user; do
     psql "$URL" -X -q -c "DO \$\$ BEGIN CREATE ROLE $r NOLOGIN; EXCEPTION WHEN duplicate_object THEN NULL; END \$\$;" >/dev/null 2>&1 || true
 done
 
-# dump_database.sh passes --schema=public explicitly, so the archive carries
-# `CREATE SCHEMA public` -- and a stock postgres image already has one. With
-# --exit-on-error (which we keep, so any OTHER error still fails the drill)
-# pg_restore aborted on the very first statement. Drop the empty schema first,
-# in the THROWAWAY container only, so the archive can recreate it as dumped.
-log "clearing the stock public schema in the throwaway container ..."
-psql "$URL" -X -q -v ON_ERROR_STOP=1 -c 'DROP SCHEMA public CASCADE;' >/dev/null \
-    || die "could not drop the stock public schema in the drill container"
+# Supabase grants ALL on every new table, function and sequence in public to
+# the API roles, through default privileges. A stock postgres grants them
+# nothing, so here a restore that lost its privileges would still look locked
+# down and the privilege checks below would pass vacuously. Mirror the
+# platform, in the stock public schema the restore will reuse.
+psql "$URL" -X -q -v ON_ERROR_STOP=1 -c "
+    ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+    ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role;
+    ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;" >/dev/null \
+    || die "could not set Supabase-like default privileges in the drill container"
+
+# The step docs/DISASTER-RECOVERY.md prescribes before restoring public. pg_dump
+# writes each ACL relative to an owner-only object and never revokes the
+# platform's default ALL, so without this the restored tables keep it --
+# measured: all three privilege checks fail. Same file the runbook uses.
+psql "$URL" -X -q -v ON_ERROR_STOP=1 -f "$REPO_ROOT/scripts/backup/pre_restore_privileges.sql" >/dev/null \
+    || die "pre_restore_privileges.sql failed in the drill container"
+
+# The archive carries CREATE SCHEMA public (dump_database.sh passes
+# --schema=public), and the image already has one. This used to DROP the stock
+# schema so the archive could recreate it; that also dropped the default
+# privileges above, which live on the schema, and hid the hazard a real
+# Supabase restore meets. Skip the archive's CREATE SCHEMA entry instead, as a
+# restore into an existing project has to.
+TOC="$(mktemp)"
+pg_restore -l "$SNAP/database.dump" | grep -vE '^[0-9]+; [0-9]+ [0-9]+ SCHEMA - public ' > "$TOC"
 
 # --- drill 1: whole-database restore --------------------------------------
 log "restoring the whole snapshot ..."
-if pg_restore -d "$URL" --no-owner --no-privileges --exit-on-error \
+# WITH privileges. This passed --no-privileges until 2026-09-26, and the dumps
+# carried none either, so no drill ever restored the GRANT/REVOKEs that are
+# the app's column-level security model -- and none noticed. --exit-on-error
+# stays: a GRANT naming a role not created above fails the drill loudly.
+if pg_restore -d "$URL" --no-owner --exit-on-error -L "$TOC" \
        "$SNAP/database.dump" 2>"$SNAP/restore_drill.log"; then rc=0; else rc=$?; fi
+rm -f "$TOC"
 check "$rc" "whole-database restore completed without errors"
+
+# Snapshots taken before 2026-09-26 carry no privileges at all. For those the
+# runbook re-applies the GRANT/REVOKEs of the committed baseline (regenerated
+# WITH privileges, and identical to production's as of that date). Opt in with
+# DRILL_LEGACY_PRIVILEGES=1 to prove that path on an old snapshot.
+if [ "${DRILL_LEGACY_PRIVILEGES:-0}" = "1" ]; then
+    log "legacy snapshot: applying privileges from the committed baseline ..."
+    # Statement by statement, not stopping: the baseline is usually newer than
+    # the snapshot, so a grant on an object the snapshot predates (a function
+    # added by a later migration) fails, and must not stop the rest. The
+    # privilege checks below are the verdict.
+    skipped="$(tr -d '\r' < "$REPO_ROOT/supabase/migrations/00000000000000_baseline.sql" \
+         | grep -E '^(GRANT|REVOKE|ALTER DEFAULT PRIVILEGES) ' \
+         | psql "$URL" -X -q 2>&1 >/dev/null | grep -c 'ERROR' || true)"
+    log "  baseline privileges applied; ${skipped:-0} statement(s) named objects this snapshot predates"
+fi
 
 # --- row counts, in two separate questions --------------------------------
 # These used to be one check, which made it both too strict and too loose:
@@ -233,6 +272,25 @@ rls="$(psql "$URL" -X -q -t -A -c \
     "SELECT count(*) FROM pg_tables WHERE schemaname='public' AND rowsecurity;" 2>/dev/null | tr -dc '0-9')"
 if [ -n "$rls" ] && [ "$rls" -ge 20 ]; then rc=0; else rc=1; fi
 check "$rc" "RLS still enabled on the public tables (${rls:-0})"
+
+# The privileges came back. Without them every column falls back to the
+# default ALL grants: video ids, paid content and profile flags all open.
+# A snapshot taken before 2026-09-26 carries no privileges and fails these,
+# which is the correct answer for it -- see docs/DISASTER-RECOVERY.md.
+rc=$(status_of has_row "SELECT 1 WHERE NOT has_column_privilege('anon', 'public.chapters', 'video_id', 'SELECT');")
+check "$rc" "privileges restored: anon cannot read chapters.video_id (migration 09)"
+rc=$(status_of has_row "SELECT 1 WHERE NOT has_column_privilege('authenticated', 'public.profiles', 'role', 'UPDATE');")
+check "$rc" "privileges restored: members cannot set profiles.role (migration 12)"
+rc=$(status_of has_row "SELECT 1 WHERE NOT has_function_privilege('anon', 'public.check_access(uuid, uuid)', 'EXECUTE');")
+check "$rc" "privileges restored: anon cannot call check_access (migration 22)"
+# ...and not by locking everything: a restore that left the API roles with no
+# grants at all passes the three checks above and serves an empty site.
+rc=$(status_of has_row "SELECT 1 WHERE has_column_privilege('anon', 'public.chapters', 'title', 'SELECT')
+                                  AND has_table_privilege('anon', 'public.masterclasses', 'SELECT')
+                                  OR has_column_privilege('anon', 'public.masterclasses', 'title', 'SELECT');")
+check "$rc" "privileges restored: the catalogue is still readable"
+rc=$(status_of has_row "SELECT 1 WHERE has_column_privilege('authenticated', 'public.profiles', 'full_name', 'UPDATE');")
+check "$rc" "privileges restored: members can still edit their own name"
 
 # A dump whose auth schema came back empty restores the data but not anyone's
 # ability to sign in, which is the failure most likely to go unnoticed until

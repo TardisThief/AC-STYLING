@@ -109,11 +109,23 @@ Restoring over a live Supabase project is not a clean operation: the `auth` and
 exist will collide.
 
 ```bash
+# 1. Clear Supabase's default ALL grants so restored objects start owner-only
+#    (see "Privileges" below: skipping this reopens every locked column).
+psql "$DATABASE_URL" -f scripts/backup/pre_restore_privileges.sql
+
+# 2. Restore public WITH privileges. Never --no-privileges: the GRANT/REVOKEs
+#    are the app's column-level security model.
 pg_restore -d "$DATABASE_URL" \
-  --no-owner --no-privileges \
+  --no-owner \
   --clean --if-exists \
   --schema=public \
   "$SNAP/database.dump"
+
+# 3. Snapshot taken before 2026-09-26? It carries no privileges: apply the
+#    committed baseline's. A statement naming an object the snapshot predates
+#    fails on its own; that is expected.
+tr -d '\r' < supabase/migrations/00000000000000_baseline.sql \
+  | grep -E '^(GRANT|REVOKE|ALTER DEFAULT PRIVILEGES) ' | psql "$DATABASE_URL"
 ```
 
 Restore `public` only, as above. The `auth` and `storage` schemas in a live
@@ -144,19 +156,41 @@ scenario the whole system exists for.
 ```bash
 NEW="postgresql://postgres.<newref>:<pw>@<region>.pooler.supabase.com:5432/postgres"
 
-# public schema and data
-pg_restore -d "$NEW" --no-owner --no-privileges --schema=public "$SNAP/database.dump"
+# 1. auth users and identities FIRST. profiles.id references auth.users(id)
+#    (migration 15): restored the other way round, the foreign key cannot be
+#    created over profiles whose users do not exist yet, and pg_restore carries
+#    on without it. Supabase manages the rest of the auth schema, so only these
+#    two tables' data. The new project has no trigger yet, so no profiles are
+#    created behind your back.
+pg_restore -d "$NEW" --no-owner --data-only -n auth -t users -t identities "$SNAP/database.dump"
 
-# auth: users and identities only. Supabase manages the rest of this schema,
-# so restoring it wholesale fights the new project's own objects.
-pg_restore -d "$NEW" --no-owner --no-privileges --data-only \
-  -t 'auth.users' -t 'auth.identities' "$SNAP/database.dump"
+# 2. Clear Supabase's default ALL grants so restored objects start owner-only.
+psql "$NEW" -f scripts/backup/pre_restore_privileges.sql
+
+# 3. public schema and data, WITH privileges (never --no-privileges), skipping
+#    the archive's CREATE SCHEMA public: the project already has one.
+pg_restore -l "$SNAP/database.dump" | grep -vE '^[0-9]+; [0-9]+ [0-9]+ SCHEMA - public ' > /tmp/toc.list
+pg_restore -d "$NEW" --no-owner --schema=public -L /tmp/toc.list "$SNAP/database.dump"
+
+# 4. Snapshot taken before 2026-09-26? It carries no privileges: apply the
+#    committed baseline's (Scenario 2, step 3).
+
+# 5. What lives outside public but is ours: the trigger that creates a profile
+#    for each new auth user, our storage policies, and the bucket rows.
+pg_restore -l "$SNAP/database.dump" \
+  | grep -E 'TRIGGER auth users on_auth_user_created| POLICY storage objects | TABLE DATA storage buckets ' > /tmp/ours.list
+pg_restore -d "$NEW" --no-owner -L /tmp/ours.list "$SNAP/database.dump"
 ```
 
-3. **Recreate what lives outside the database:** storage buckets (names and
-   public/private flags — `studio-wardrobe` is **private**), auth providers and
-   redirect URLs, and any edge configuration. The bucket policy function
-   `public.can_access_wardrobe_object` comes back with the `public` schema.
+Then check it the same way as Scenario 2 (`db:schema:check`,
+`verify_authorization.mjs`), and confirm `SELECT count(*) FROM pg_policies
+WHERE schemaname = 'storage'` is 9 and `studio-wardrobe` is private.
+
+3. **Recreate what lives outside the database:** auth providers and redirect
+   URLs, and any edge configuration. Buckets and their policies came back in
+   step 5 above; check that `studio-wardrobe` is **private**. The bucket
+   policy function `public.can_access_wardrobe_object` comes back with the
+   `public` schema.
 4. **Re-upload the storage objects** (Scenario 4).
 5. **Update every environment**: Vercel environment variables, `.env.local`, and
    `~/.ac-styling/.env.backup` on hermes. See
@@ -166,6 +200,40 @@ pg_restore -d "$NEW" --no-owner --no-privileges --data-only \
 
 Expect password resets: user rows carry their hashes, but anything the platform
 held outside the database does not come back.
+
+---
+
+### Privileges — read this before any restore
+
+Until 2026-09-26 every backup (nightly and `db:snapshot`) was taken with
+`pg_dump --no-privileges`, and every restore command here passed it too. The
+GRANT/REVOKEs are this app's column-level security model: chapter video ids,
+paid Lab questions and downloads, profile role and access flags, and which
+RPCs browser roles may call. None of it was in any backup.
+
+Dumping them is not enough. Supabase gives every new object in `public` ALL
+for `anon`, `authenticated` and `service_role` through default privileges, and
+`pg_dump` writes ACLs as if objects start owner-only: it never revokes a grant
+it assumes is not there. A straight restore into a Supabase project therefore
+leaves, for example, table-level SELECT on `chapters` for `anon`, and
+`video_id` is public again. `scripts/backup/pre_restore_privileges.sql` clears
+those defaults first; the dump then reproduces production exactly and puts the
+defaults back afterwards.
+
+Measured with `restore_drill.sh`, which since that date sets Supabase-like
+default privileges in its container and checks five privileges after the
+restore (three locked, two open):
+
+| Snapshot | Pre-restore step | Result |
+|---|---|---|
+| taken with privileges | yes | all pass |
+| taken with privileges | no | anon reads `video_id`, members set their own `role`, anon calls `check_access` |
+| taken before 2026-09-26 | yes, plus baseline privileges | all pass (2 baseline statements named a later object) |
+| taken before 2026-09-26 | yes, without baseline privileges | the site cannot read its own catalogue |
+
+Scenario 3's ordering (auth first) and step 5 were checked against a real
+snapshot's table of contents; the full sequence has not yet been run against
+a new Supabase project.
 
 ---
 
@@ -242,6 +310,7 @@ files are still the files that were mirrored.
 | Date | Snapshot | Result | Run by | Notes |
 |---|---|---|---|---|
 | 2026-09-25 | `2026-09-25T001744Z` | **PASSED** (10/10) | hermes | First real drill. Restored into a disposable postgres:17 container; container removed afterwards. Exact-count comparison, 0 tables outside tolerance. `profiles → auth.users` FK intact, `check_access()` present, RLS on all 28 tables, `auth.users` restored with 58 rows, single-table `pg_restore -t purchases` worked. Snapshot: `auth_mode=full`, 28 public tables, 435,911 bytes, sha256 `049d722a…33678`; storage mirror 74 objects / 58.4 MB, 0 quarantined. Script revision `7225858`. |
+| 2026-09-26 | `privileges-check--2026-09-26T145009Z` and `pre-migration-31--2026-09-26T092643Z` | **PASSED** (both) | owner's workstation (Docker Desktop) | First drill of privileges, after finding that no backup contained any (see "Privileges" above). The drill now sets Supabase-like default privileges, runs `pre_restore_privileges.sql`, restores WITH privileges (skipping the archive's `CREATE SCHEMA public`) and checks five privileges. New-style snapshot: all checks pass. Pre-2026-09-26 snapshot with `DRILL_LEGACY_PRIVILEGES=1` (baseline privileges re-applied): all pass, 2 baseline statements skipped as naming migration 31's function. The same old snapshot without that step fails 3 checks (catalogue unreadable), and the new one without the pre-restore step failed all three lock checks. Also found: the dump names `supabase_admin` and `dashboard_user`, which the drill now creates. |
 
 **What this drill establishes:** the nightly backup is restorable end to end,
 including the login tables, and a single damaged table can be recovered on its

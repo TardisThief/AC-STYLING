@@ -86,7 +86,13 @@ fs.mkdirSync(dir, { recursive: true });
 
 // `auth` is not optional: migration 15 added profiles.id -> auth.users(id),
 // so a public-only dump cannot be restored on its own.
-const common = ['--no-owner', '--no-privileges', '--quote-all-identifiers'];
+//
+// Privileges ARE dumped. This passed --no-privileges until 2026-09-26, so no
+// snapshot held the GRANT/REVOKEs that are this app's column-level security
+// model (video ids, paid content, profile flags); a restore from one came back
+// with Supabase's default ALL grants. Owners are still omitted: they name
+// roles only the platform has, and the restore runs as whoever restores.
+const common = ['--no-owner', '--quote-all-identifiers'];
 const run = (args, label) => {
     process.stdout.write(`${label} ... `);
     const r = spawnSync('pg_dump', [process.env.DATABASE_URL, ...args], {
