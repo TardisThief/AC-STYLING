@@ -26,7 +26,7 @@ import type { ApiRole } from './pglite-db';
  * test are two transactions, so a read-then-write race is reproducible.
  */
 
-type Filter = { column: string; op: '=' | 'IS' | 'IN' | '>' | '<'; value: unknown };
+type Filter = { column: string; op: '=' | 'IS' | 'IS NOT' | 'IN' | '>' | '<'; value: unknown };
 type Result = { data: unknown; error: { code?: string; message: string } | null; count?: number | null };
 
 const IDENT = /^[a-z_][a-z0-9_]*$/;
@@ -75,6 +75,8 @@ class Builder implements PromiseLike<Result> {
     private countExact = false;
     private head = false;
     private cardinality: 'many' | 'maybe' | 'one' = 'many';
+    private ordering: { column: string; ascending: boolean }[] = [];
+    private rowLimit: number | null = null;
 
     constructor(private db: PGlite, private role: ApiRole, private userId: string | null, private table: string) {
         ident(table);
@@ -130,6 +132,23 @@ class Builder implements PromiseLike<Result> {
         this.filters.push({ column, op: 'IS', value: null });
         return this;
     }
+    not(column: string, operator: string, value: null) {
+        if (operator !== 'is' || value !== null) throw new Error('pglite-supabase: only not(column, "is", null) is supported');
+        this.filters.push({ column, op: 'IS NOT', value: null });
+        return this;
+    }
+    order(column: string, options?: { ascending?: boolean }) {
+        onlyKnownOptions(options, ['ascending'], 'order');
+        ident(column);
+        // PostgREST's default direction is ascending, nulls last.
+        this.ordering.push({ column, ascending: options?.ascending !== false });
+        return this;
+    }
+    limit(count: number) {
+        if (!Number.isInteger(count) || count < 0) throw new Error('pglite-supabase: limit() needs a non-negative integer');
+        this.rowLimit = count;
+        return this;
+    }
     in(column: string, values: unknown[]) { this.filters.push({ column, op: 'IN', value: values.map(checkValue) }); return this; }
 
     maybeSingle() { this.cardinality = 'maybe'; return this; }
@@ -143,6 +162,7 @@ class Builder implements PromiseLike<Result> {
         if (this.filters.length === 0) return '';
         const parts = this.filters.map(f => {
             if (f.op === 'IS') return `${ident(f.column)} IS NULL`;
+            if (f.op === 'IS NOT') return `${ident(f.column)} IS NOT NULL`;
             params.push(f.value);
             return f.op === 'IN'
                 ? `${ident(f.column)} = ANY($${params.length})`
@@ -159,8 +179,13 @@ class Builder implements PromiseLike<Result> {
         if (this.op === 'select') {
             const cols = this.countExact && this.head ? 'count(*)::int AS count' : columnList(this.columns);
             if (this.countExact && !this.head) throw new Error('pglite-supabase: count without head is not implemented');
-            return { sql: `SELECT ${cols} FROM ${table}${this.where(params)}`, params };
+            const order = this.ordering.length
+                ? ` ORDER BY ${this.ordering.map(o => `${ident(o.column)} ${o.ascending ? 'ASC' : 'DESC'} NULLS LAST`).join(', ')}`
+                : '';
+            const limit = this.rowLimit === null ? '' : ` LIMIT ${this.rowLimit}`;
+            return { sql: `SELECT ${cols} FROM ${table}${this.where(params)}${order}${limit}`, params };
         }
+        if (this.ordering.length || this.rowLimit !== null) throw new Error('pglite-supabase: order()/limit() are only supported on select');
         if (this.op === 'delete') return { sql: `DELETE FROM ${table}${this.where(params)}${returning}`, params };
         if (this.op === 'update') {
             const sets = Object.entries(this.values[0]).map(([k, v]) => { params.push(checkValue(v)); return `${ident(k)} = $${params.length}`; });

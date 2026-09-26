@@ -51,7 +51,7 @@ describe('pglite-supabase', () => {
 
     it('refuses builder calls it does not implement', () => {
         const builder = pgliteSupabase(db).from('offers').select('slug') as unknown as Record<string, unknown>;
-        expect(builder.order).toBeUndefined();
+        expect(builder.ilike).toBeUndefined();
         expect(() => pgliteSupabase(db).from('offers').select('slug, profiles:owner_id (email)')).not.toThrow();
         expect(() => pgliteSupabase(db).rpc).toThrow(/not implemented/);
     });
@@ -63,5 +63,22 @@ describe('pglite-supabase', () => {
 
     it('refuses embedded-relation selects when they run', async () => {
         await expect(pgliteSupabase(db).from('offers').select('slug, profiles:owner_id (email)')).rejects.toThrow(/unsupported identifier/);
+    });
+
+    it('orders, limits and filters not-null as PostgREST does', async () => {
+        const client = pgliteSupabase(db);
+        await client.from('offers').insert({ slug: 'o-b', title: 'B', price_id: 'p2' });
+        await client.from('offers').insert({ slug: 'o-a', title: 'A', price_id: 'p1' });
+        await client.from('offers').insert({ slug: 'o-c', title: 'C' });
+
+        const { data } = await client.from('offers').select('slug').in('slug', ['o-a', 'o-b', 'o-c'])
+            .not('price_id', 'is', null).order('price_id', { ascending: false }).limit(1);
+
+        expect(data).toEqual([{ slug: 'o-b' }]);
+    });
+
+    it('refuses a not() it does not implement rather than approximating it', () => {
+        const client = pgliteSupabase(db);
+        expect(() => client.from('offers').select('slug').not('slug', 'eq', 'x' as never)).toThrow(/only not/);
     });
 });
