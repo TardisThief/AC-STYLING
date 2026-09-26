@@ -9,7 +9,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
 
 const BUYER = '00000000-0000-4000-8000-00000000f001';
 let db: PGlite;
@@ -18,7 +18,8 @@ beforeAll(async () => {
     db = await createLiveSchemaDb();
     await createUser(db, BUYER);
     await db.query('UPDATE auth.users SET email = $1 WHERE id = $2', ['buyer@example.invalid', BUYER]);
-    await db.exec(readMigration('20260926_31_auth_user_by_email.sql'));
+    // Applied to production 2026-09-26.
+    await expectMigrationApplied(db, '20260926_31_auth_user_by_email.sql');
 }, 60000);
 
 afterAll(async () => { await db?.close(); });

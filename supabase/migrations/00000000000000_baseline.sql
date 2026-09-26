@@ -61,6 +61,25 @@ ALTER FUNCTION "public"."assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "u
 COMMENT ON FUNCTION "public"."assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "uuid") IS 'Give a wardrobe, its items and Studio access to one client in a single transaction (migration 28). Service role only.';
 
 --
+-- Name: auth_user_id_by_email("text"); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION "public"."auth_user_id_by_email"("p_email" "text") RETURNS "uuid"
+    LANGUAGE "sql" STABLE SECURITY DEFINER
+    SET "search_path" TO ''
+    AS $$
+  SELECT id FROM auth.users WHERE lower(email) = lower(btrim(p_email)) LIMIT 1;
+$$;
+
+ALTER FUNCTION "public"."auth_user_id_by_email"("p_email" "text") OWNER TO "postgres";
+
+--
+-- Name: FUNCTION "auth_user_id_by_email"("p_email" "text"); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION "public"."auth_user_id_by_email"("p_email" "text") IS 'Id of the auth user with this email, or NULL (migration 31). Service role only: it would otherwise reveal which addresses have accounts.';
+
+--
 -- Name: can_access_wardrobe_object("text"); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -2530,6 +2549,13 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 
 REVOKE ALL ON FUNCTION "public"."assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "uuid") FROM PUBLIC;
 GRANT ALL ON FUNCTION "public"."assign_wardrobe"("p_wardrobe_id" "uuid", "p_user_id" "uuid") TO "service_role";
+
+--
+-- Name: FUNCTION "auth_user_id_by_email"("p_email" "text"); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION "public"."auth_user_id_by_email"("p_email" "text") FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."auth_user_id_by_email"("p_email" "text") TO "service_role";
 
 --
 -- Name: FUNCTION "can_access_wardrobe_object"("object_name" "text"); Type: ACL; Schema: public; Owner: postgres
