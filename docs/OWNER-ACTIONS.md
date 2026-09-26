@@ -351,9 +351,9 @@ setting, set the dashboard to 22.x too so the two agree.
 so do its garments and lookbooks (confirmed the same day). Her personal data
 — avatar, measurements, Lab answers — is still deleted. **Built and live
 2026-09-26** (migration 33): garments, lookbooks and their photos stay with
-the wardrobe, and photos follow a wardrobe that is reassigned. **Left for
-you:** the privacy notice (EN and ES) should say that a stylist-managed
-wardrobe is kept after an account closes — part of item 9's legal review.
+the wardrobe, and photos follow a wardrobe that is reassigned. The privacy
+notice now says so (EN and ES, section 8, 2026-09-26); it is part of item 9's
+legal review.
 
 
 When someone deletes their account, migration 15 now removes their profile,
@@ -398,6 +398,15 @@ by an agent, not legal review. They bind customers. The English remains the
 authoritative version and the two must change together.
 
 Ale or counsel should read the Spanish before launch.
+
+**Updated 2026-09-26, please include in the review:** section 8 of the privacy
+notice ("When you close your account" / "Cuando das de baja tu cuenta") and the
+"Uploads" paragraph in section 1 were rewritten, in both languages, to say what
+closing an account now keeps: a stylist-managed wardrobe with its garments,
+photos and lookbooks, and purchase records for accounting. Two choices in that
+text are worth confirming as yours: that a client can **ask for her wardrobe to
+be deleted** (the notice promises this; it is done by hand on request), and the
+feminine *la clienta* in the Spanish, which matches the rest of the site.
 
 ---
 

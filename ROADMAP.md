@@ -128,10 +128,11 @@ as intended.
   and its photos move to `wardrobe/<id>/`, where the bucket policy lets the
   wardrobe's current owner and admins read them; the same move happens when a
   wardrobe is reassigned. What is hers alone still goes: avatar, measurements,
-  Lab answers, progress, and garments or lookbooks in no wardrobe. Still to do,
-  owner side: the privacy notice (EN and ES) must say a stylist-managed
-  wardrobe is kept after an account closes — part of owner action 9's legal
-  review.
+  Lab answers, progress, and garments or lookbooks in no wardrobe. The
+  privacy notice says so in EN and ES (section 8, updated 2026-09-26,
+  `d4564f2`), including that purchase records are kept and that a client
+  can ask for her wardrobe to be deleted; it is a draft awaiting owner
+  action 9's legal review.
 - ~~44 intake photos from wiped wardrobes~~ — removed 2026-09-26 with
   `scripts/cleanup_orphaned_wardrobe_files.ts` (dry run first: all 44 under
   `wardrobe/<id>/` of wardrobes the wipe removed, none referenced). The
