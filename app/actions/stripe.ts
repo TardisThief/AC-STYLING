@@ -8,6 +8,7 @@ import { headers } from 'next/headers';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { graceEnds, renewalAmountCents, RENEWAL_GRACE_DAYS, withinGrace } from '@/app/lib/entitlement-period';
 import { isSellablePrice } from '@/app/lib/sellable-price';
+import { alreadyHolds } from '@/app/lib/already-owned';
 import { safeNextPath } from '@/app/lib/safe-redirect';
 
 /**
@@ -40,6 +41,14 @@ export async function createCheckoutSession(priceId: string, returnUrl: string) 
 
     const refusal = await checkoutRefusal(priceId, [returnUrl]);
     if (refusal) return { error: refusal };
+
+    // Not a second payment for what she already has (2026-09-28 rehearsal).
+    // `error` too, so a caller that does not know `alreadyOwned` still says
+    // something true instead of "checkout could not be started".
+    const { createAdminClient } = await import('@/utils/supabase/admin');
+    if (await alreadyHolds(createAdminClient(), user.id, priceId)) {
+        return { alreadyOwned: true as const, error: 'You already have access to this. It is in your Vault.' };
+    }
 
     const headersList = await headers();
     const origin = headersList.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
