@@ -631,6 +631,7 @@ CREATE TABLE "public"."fulfillments" (
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "completed_at" timestamp with time zone,
+    "receipt_sent_at" timestamp with time zone,
     CONSTRAINT "fulfillments_status_check" CHECK (("status" = ANY (ARRAY['processing'::"text", 'completed'::"text", 'failed'::"text", 'unfulfillable'::"text"])))
 );
 
@@ -643,6 +644,12 @@ ALTER TABLE "public"."fulfillments" OWNER TO "postgres";
 --
 
 COMMENT ON TABLE "public"."fulfillments" IS 'One row per Stripe line item, unique on the line item id. The idempotency and retry boundary for payment fulfillment; see migration 14.';
+
+--
+-- Name: COLUMN "fulfillments"."receipt_sent_at"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "public"."fulfillments"."receipt_sent_at" IS 'When this checkout''s purchase email (receipt, or the welcome for a new account) was sent. Claimed for all of a session''s rows at once; see migration 34.';
 
 --
 -- Name: lookbook_items; Type: TABLE; Schema: public; Owner: postgres

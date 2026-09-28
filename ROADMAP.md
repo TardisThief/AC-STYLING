@@ -28,7 +28,7 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   (MAIL-001); a retried guest delivery sent no welcome (PAY-002); checkout sold
   any Stripe price the browser named (PAY-004). The rest of its findings were
   then worked through the same way (below). Migrations are applied and
-  verified through **33**; the code is deployed.
+  verified through **34**; the code is deployed.
 - **The Vault is populated but mostly parked.** 4 masterclasses, **21 modules**
   and 4 standalone courses, all bilingual. **Colorimetry is published and
   priced, so it is on sale, while none of its 5 modules is published or has a
@@ -114,6 +114,17 @@ records in `supabase/migrations/README.md`. Checked by the owner the same day: a
 (resources and Lab load) and as one without (question count only) behave
 as intended.
 
+**Paid-path rehearsal, 2026-09-28** (live site, Stripe test mode; record in
+progress at `docs/REHEARSAL-2026-09-28.md`). Found and fixed the same day,
+each with a test that failed first: after a password login the Profile link
+pointed at `/vault/join` until a reload (a prefetched signed-out Vault layout;
+every browser-side sign-in and sign-out now does a full load); `/welcome`
+promised an existing member an email that is never sent; the Stripe test
+webhooks were not subscribed to refund or dispute events, so that admin alert
+had never fired (cutover checklist updated); and a buyer with an existing
+account got no email at all, now a branded receipt sent exactly once per
+checkout (migration 34).
+
 **Still open, and why:**
 
 - **Scenario 3 against a real new Supabase project** has not been run; its
@@ -137,9 +148,9 @@ as intended.
   `scripts/cleanup_orphaned_wardrobe_files.ts` (dry run first: all 44 under
   `wardrobe/<id>/` of wardrobes the wipe removed, none referenced). The
   `studio-wardrobe` bucket is now empty; a re-run finds 0.
-- **No database migration is planned.** The next one would be 34; none of
+- **No database migration is planned.** The next one would be 35; none of
   the open items needs one. When one is planned it is written up in
-  `supabase/migrations/README.md`, like 26–33.
+  `supabase/migrations/README.md`, like 26–34.
 - **PAY-001's limit:** only the last line item is remembered on a term, so a
   crash followed by a different purchase on the same term inside the
   15-minute window could still double. Recorded in migration 27.
