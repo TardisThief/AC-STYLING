@@ -287,3 +287,40 @@ export async function fulfillLineItem(
         throw itemError;
     }
 }
+
+/**
+ * Take the right to send this checkout's purchase email (migration 34).
+ *
+ * One statement for every row of the session, conditional on none having
+ * been claimed: a concurrent claim waits on the row locks, then sees the
+ * first one's write and matches nothing. True only for the caller that
+ * should send. Stripe redelivers, deliveries overlap, and her checkout return
+ * may have settled the items first, so nothing else about a delivery says
+ * whether the email already went (tests/integration/purchase-receipt.test.ts).
+ *
+ * False on an error too: a missed receipt is recoverable, a duplicate is not.
+ */
+export async function claimPurchaseEmail(admin: SupabaseClient, sessionId: string): Promise<boolean> {
+    const { data, error } = await admin
+        .from('fulfillments')
+        .update({ receipt_sent_at: new Date().toISOString() })
+        .eq('stripe_session_id', sessionId)
+        .is('receipt_sent_at', null)
+        .select('id');
+
+    if (error) {
+        console.error('[fulfillment] claimPurchaseEmail failed:', error);
+        return false;
+    }
+    return Array.isArray(data) && data.length > 0;
+}
+
+/** Give the claim back after a send that failed, so a redelivery can send it. */
+export async function releasePurchaseEmail(admin: SupabaseClient, sessionId: string): Promise<void> {
+    const { error } = await admin
+        .from('fulfillments')
+        .update({ receipt_sent_at: null })
+        .eq('stripe_session_id', sessionId);
+
+    if (error) console.error('[fulfillment] releasePurchaseEmail failed:', error);
+}

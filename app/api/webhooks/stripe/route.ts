@@ -3,9 +3,16 @@ import { stripe } from '@/utils/stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { resolveOrCreateUserByEmail, generateSetPasswordLink } from '@/app/lib/guest-purchase';
 import { createPurchaseClaim, isClaimOpen } from '@/app/lib/purchase-claims';
-import { fulfillLineItem } from '@/app/lib/fulfillment';
+import { claimPurchaseEmail, fulfillLineItem, releasePurchaseEmail } from '@/app/lib/fulfillment';
 import { sendEmail } from '@/lib/resend';
-import { getPurchaseWelcomeHtml, getPurchaseWelcomeSubject, type EmailLocale } from '@/lib/email-templates';
+import {
+    emailLocale,
+    getPurchaseReceiptHtml,
+    getPurchaseReceiptSubject,
+    getPurchaseWelcomeHtml,
+    getPurchaseWelcomeSubject,
+    type EmailLocale,
+} from '@/lib/email-templates';
 import Stripe from 'stripe';
 
 export async function POST(req: Request) {
@@ -224,6 +231,8 @@ export async function POST(req: Request) {
 
         // Remembered for the welcome email below, which names what was bought.
         let purchasedTitle = 'your Vault access';
+        // Every paid line item, however it gets settled, for the receipt.
+        const paidItems: { productId: string; amountCents: number; currency: string }[] = [];
 
         // A renewal extends the term she already holds and climbs the price
         // ladder; a first purchase starts both. Only the renewal action sets
@@ -246,6 +255,11 @@ export async function POST(req: Request) {
                     await logEvent('warning', 'Item has no Product ID');
                     continue;
                 }
+                paidItems.push({
+                    productId: stripeProductId,
+                    amountCents: item.amount_total ?? 0,
+                    currency: item.currency ?? 'usd',
+                });
 
                 // Claim, record the purchase, grant, settle — per item, via the
                 // same path the buyer's checkout return uses. A failure on the
@@ -422,6 +436,12 @@ export async function POST(req: Request) {
 
             const needsWelcome = await isClaimOpen(supabase, session.id);
 
+            // The language she bought in, recorded on the session at checkout.
+            // Falls back to English for anything else, including sessions
+            // created before this was captured.
+            const buyerLocale: EmailLocale =
+                session.metadata?.locale === 'es' ? 'es' : 'en';
+
             // Only once access is actually granted: an email inviting her in
             // before the grant landed would be a link to a locked Vault.
             if (needsWelcome) {
@@ -433,12 +453,6 @@ export async function POST(req: Request) {
                 );
 
                 if (link) {
-                    // The language she bought in, recorded on the session at
-                    // checkout. Falls back to English for anything else,
-                    // including sessions created before this was captured.
-                    const buyerLocale: EmailLocale =
-                        session.metadata?.locale === 'es' ? 'es' : 'en';
-
                     const { success, error: mailError } = await sendEmail({
                         to: customerEmail,
                         subject: getPurchaseWelcomeSubject(buyerLocale),
@@ -450,6 +464,10 @@ export async function POST(req: Request) {
                             ? `Welcome email sent to ${customerEmail}`
                             : `Welcome email FAILED for ${customerEmail}: ${mailError}`
                     );
+                    // The welcome confirms the purchase, so it is this
+                    // checkout's receipt: take the claim, so a replay after
+                    // she has signed in does not send a second email.
+                    if (success) await claimPurchaseEmail(supabase, session.id);
                 } else {
                     // The account and the grant both exist, so this is not worth
                     // a retry of the whole event — it is worth being loud about,
@@ -459,6 +477,21 @@ export async function POST(req: Request) {
                         `Could not generate a set-password link for ${customerEmail}`
                     );
                 }
+            } else if (paidItems.length > 0 && (await claimPurchaseEmail(supabase, session.id))) {
+                // Everyone who does not get the welcome gets a receipt: a
+                // member buying while signed in, a guest checkout under an
+                // email that already signs in, a renewal. Until 2026-09-28
+                // they got nothing (found in the paid-path rehearsal). Sent
+                // once per checkout by the claim above (migration 34).
+                await sendPurchaseReceipt(supabase, {
+                    sessionId: session.id,
+                    userId: resolvedUserId,
+                    email: customerEmail !== 'No Email' ? customerEmail : null,
+                    sessionLocale: session.metadata?.locale ?? null,
+                    renewal: isRenewal,
+                    items: paidItems,
+                    logEvent,
+                });
             }
         } catch (err: unknown) {
             const error = err as Error;
@@ -476,4 +509,92 @@ export async function POST(req: Request) {
     }
 
     return new Response('Received', { status: 200 });
+}
+
+/** The catalogue title a Stripe product sells, or null if it sells nothing we name. */
+async function productTitle(
+    supabase: ReturnType<typeof createAdminClient>,
+    productId: string
+): Promise<string | null> {
+    for (const table of ['services', 'masterclasses', 'chapters', 'offers'] as const) {
+        const { data } = await supabase
+            .from(table)
+            .select('title')
+            .eq('stripe_product_id', productId)
+            .maybeSingle();
+        if (data?.title) return data.title as string;
+    }
+    return null;
+}
+
+/**
+ * Send the receipt the caller has already claimed, and give the claim back
+ * if the send fails so a redelivery can try again. Never throws: the grant is
+ * done, and a receipt is not worth failing the delivery over.
+ */
+async function sendPurchaseReceipt(
+    supabase: ReturnType<typeof createAdminClient>,
+    {
+        sessionId,
+        userId,
+        email,
+        sessionLocale,
+        renewal,
+        items,
+        logEvent,
+    }: {
+        sessionId: string;
+        userId: string | null | undefined;
+        email: string | null;
+        sessionLocale: string | null;
+        renewal: boolean;
+        items: { productId: string; amountCents: number; currency: string }[];
+        logEvent: (status: string, message?: string, details?: unknown) => Promise<void>;
+    }
+) {
+    try {
+        // Her own settings when the session did not record a language (a
+        // signed-in checkout), and her account email when Stripe has none.
+        const { data: profile } = userId
+            ? await supabase.from('profiles').select('email, language_preference').eq('id', userId).maybeSingle()
+            : { data: null };
+        const to = email ?? (profile?.email as string | undefined) ?? null;
+        const locale = emailLocale(sessionLocale ?? (profile?.language_preference as string | undefined));
+
+        if (!to) {
+            await releasePurchaseEmail(supabase, sessionId);
+            await logEvent('error', `No address for the receipt of ${sessionId}`);
+            return;
+        }
+
+        const titles: string[] = [];
+        for (const item of items) {
+            const title = await productTitle(supabase, item.productId);
+            if (title && !titles.includes(title)) titles.push(title);
+        }
+
+        const { success, error } = await sendEmail({
+            to,
+            subject: getPurchaseReceiptSubject(locale, { renewal }),
+            html: getPurchaseReceiptHtml(
+                {
+                    titles,
+                    amountCents: items.reduce((sum, i) => sum + i.amountCents, 0),
+                    currency: items[0]?.currency ?? 'usd',
+                    renewal,
+                },
+                locale
+            ),
+        });
+
+        if (!success) {
+            await releasePurchaseEmail(supabase, sessionId);
+            await logEvent('error', `Receipt FAILED for ${to}: ${error}`);
+            return;
+        }
+        await logEvent('notification', `Receipt sent to ${to}`);
+    } catch (err) {
+        await releasePurchaseEmail(supabase, sessionId);
+        await logEvent('error', `Receipt FAILED for ${sessionId}: ${(err as Error).message}`);
+    }
 }

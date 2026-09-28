@@ -362,3 +362,121 @@ export const getPurchaseWelcomeHtml = (
 </html>
 `;
 };
+
+/**
+ * Copy for the purchase receipt.
+ *
+ * Sent for every paid checkout that does not get the welcome above: a member
+ * buying while signed in, a guest checkout under an email that already signs
+ * in, and a renewal. Until 2026-09-28 those buyers received nothing at all
+ * (found in the paid-path rehearsal). Kept here for the same reason as the
+ * welcome: plain HTML assembled outside React.
+ */
+const purchaseReceiptCopy: Record<EmailLocale, {
+    subject: string;
+    renewalSubject: string;
+    heading: string;
+    renewalHeading: string;
+    intro: string;
+    renewalIntro: string;
+    total: string;
+    cta: string;
+    disclaimer: string;
+    footerReason: string;
+}> = {
+    en: {
+        subject: 'Your AC Styling purchase is confirmed',
+        renewalSubject: 'Your AC Styling access is renewed',
+        heading: 'Purchase confirmed',
+        renewalHeading: 'Access renewed',
+        intro: 'Thank you. Your purchase is confirmed and already in your Vault:',
+        renewalIntro: 'Thank you for staying with us. Your access is renewed for another year:',
+        total: 'Total paid',
+        cta: 'Go to the Vault',
+        disclaimer: 'If you did not make this purchase, reply to this email and we will sort it out.',
+        footerReason: 'you completed a purchase at AC Styling',
+    },
+    es: {
+        subject: 'Tu compra en AC Styling está confirmada',
+        renewalSubject: 'Tu acceso a AC Styling está renovado',
+        heading: 'Compra confirmada',
+        renewalHeading: 'Acceso renovado',
+        intro: 'Gracias. Tu compra está confirmada y ya está en tu Vault:',
+        renewalIntro: 'Gracias por seguir con nosotras. Tu acceso está renovado por un año más:',
+        total: 'Total pagado',
+        cta: 'Ir al Vault',
+        disclaimer: 'Si no hiciste esta compra, responde a este correo y lo resolvemos.',
+        footerReason: 'completaste una compra en AC Styling',
+    },
+};
+
+/** The subject line for the purchase receipt, in the buyer's language. */
+export const getPurchaseReceiptSubject = (locale: EmailLocale = 'en', { renewal = false } = {}) => {
+    const copy = purchaseReceiptCopy[locale] ?? purchaseReceiptCopy.en;
+    return renewal ? copy.renewalSubject : copy.subject;
+};
+
+/** An amount in minor units as a price, e.g. 15000 usd -> "$150.00 USD". */
+const formatAmount = (cents: number, currency: string, locale: EmailLocale) => {
+    const code = (currency || 'usd').toUpperCase();
+    try {
+        return new Intl.NumberFormat(locale === 'es' ? 'es-US' : 'en-US', { style: 'currency', currency: code })
+            .format(cents / 100) + ` ${code}`;
+    } catch {
+        return `${(cents / 100).toFixed(2)} ${code}`;
+    }
+};
+
+export const getPurchaseReceiptHtml = (
+    { titles, amountCents, currency, renewal = false }: {
+        titles: string[];
+        amountCents: number;
+        currency: string;
+        renewal?: boolean;
+    },
+    locale: EmailLocale = 'en'
+) => {
+    const copy = purchaseReceiptCopy[locale] ?? purchaseReceiptCopy.en;
+    const subject = renewal ? copy.renewalSubject : copy.subject;
+    const items = titles
+        .map((title) => `<li style="margin: 0 0 6px 0;">${escapeHtml(title)}</li>`)
+        .join('');
+
+    return `
+<!DOCTYPE html>
+<html lang="${locale}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${subject}</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; background-color: #E6DED6; margin: 0; padding: 0; color: #3D3630; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #E6DED6; padding: 40px 20px; text-align: center; }
+        .logo { font-size: 24px; font-weight: bold; margin-bottom: 30px; letter-spacing: 1px; color: #3D3630; }
+        .content { background-color: #ffffff; padding: 40px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h1 { font-size: 20px; font-weight: normal; margin-bottom: 20px; color: #3D3630; text-transform: uppercase; letter-spacing: 2px; }
+        p, li { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #5A4F44; }
+        p { margin-bottom: 24px; }
+        ul { list-style: none; padding: 0; margin: 0 0 24px 0; }
+        .total { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #8C847B; }
+        .button { display: inline-block; background-color: #3D3630; color: #E6DED6; padding: 15px 30px; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; border-radius: 2px; }
+        .footer { font-family: Arial, sans-serif; font-size: 11px; color: #8C847B; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">AC STYLING</div>
+        <div class="content">
+            <h1>${renewal ? copy.renewalHeading : copy.heading}</h1>
+            <p>${renewal ? copy.renewalIntro : copy.intro}</p>
+            <ul>${items}</ul>
+            <p class="total">${copy.total}: <strong style="color: #3D3630;">${formatAmount(amountCents, currency, locale)}</strong></p>
+            <a href="${SITE_URL}/${locale}/vault" class="button">${copy.cta}</a>
+            <p class="footer">${copy.disclaimer}</p>
+        </div>
+        ${emailFooter(copy.footerReason, locale)}
+    </div>
+</body>
+</html>
+`;
+};
