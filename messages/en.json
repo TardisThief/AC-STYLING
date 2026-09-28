@@ -357,14 +357,17 @@
             "catalog": "Courses",
             "alejandra": "Alejandra",
             "offer": "Access",
-            "faq": "Questions"
+            "faq": "Questions",
+            "signIn": "Sign in",
+            "enterVault": "Go to the Vault"
         },
         "hero": {
             "eyebrow": "The Vault",
             "title": "Your style already speaks for you. Learn to direct it.",
             "lede": "AC Styling's school: the same method I use with my clients, in courses you take at your own pace.",
             "ctaPrimary": "Get access",
-            "ctaSecondary": "See what's inside"
+            "ctaSecondary": "See what's inside",
+            "returning": "Already have an account?"
         },
         "mirror": {
             "title": "If any of this sounds familiar:",
@@ -435,7 +438,9 @@
             "unavailable": "Available soon",
             "guestCta": "Log in as a guest",
             "guestLoading": "Entering the Vault…",
-            "guestError": "Guest access isn't available right now. Please try again."
+            "guestError": "Guest access isn't available right now. Please try again.",
+            "alreadyOwned": "You already have this. It's waiting in your Vault.",
+            "openVault": "Open the Vault"
         },
         "singles": {
             "title": "Or one masterclass at a time",

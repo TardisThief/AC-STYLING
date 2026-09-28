@@ -128,8 +128,9 @@ account got no email at all, now a branded receipt sent exactly once per
 checkout (migration 34); a signed-in member buying from `/vault-access` went
 through the guest checkout, so a mistyped email would have sent her purchase
 to another account (now decided at click time), and two sales-path links led
-members to the signup form. **Still open from it:** the sales page will sell a
-member what she already holds, and shows her "Log in as a guest".
+members to the signup form. Closed the same day: the sales page no longer
+sells a member what she already holds, no longer offers her "Log in as a
+guest", and now has a sign-in link for returning clients.
 
 **Still open, and why:**
 

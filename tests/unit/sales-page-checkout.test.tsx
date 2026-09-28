@@ -33,6 +33,7 @@ vi.mock('@/utils/stripe', () => ({ stripe: { checkout: { sessions: { create: (p:
 vi.mock('next/headers', () => ({ headers: async () => new Headers({ origin: 'https://www.theacstyle.com' }) }))
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }))
 vi.mock('@/app/lib/analytics', () => ({ trackCta: vi.fn() }))
+vi.mock('@/i18n/routing', () => ({ useRouter: () => ({ push: vi.fn() }) }))
 
 import VaultCheckoutButton from '@/components/vault-sales/VaultCheckoutButton'
 

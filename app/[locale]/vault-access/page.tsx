@@ -10,6 +10,7 @@ import CatalogRail from "@/components/vault-sales/CatalogRail";
 import TrackedCta from "@/components/vault-sales/TrackedCta";
 import VaultCheckoutButton from "@/components/vault-sales/VaultCheckoutButton";
 import GuestAccessLink from "@/components/vault-sales/GuestAccessLink";
+import MemberEntryLink from "@/components/vault-sales/MemberEntryLink";
 import dynamic from "next/dynamic";
 import TrustedBy from "@/components/TrustedBy";
 
@@ -144,6 +145,7 @@ export default async function VaultLandingPage({
                     { name: t("nav.offer"), href: "#offer" },
                     { name: t("nav.faq"), href: "#faq" },
                 ]}
+                account={<MemberEntryLink signInLabel={t("nav.signIn")} enterVaultLabel={t("nav.enterVault")} />}
             />
             <main className="bg-ac-sand text-ac-taupe">
                 {/* ── Hero ─────────────────────────────────────────────── */}
@@ -210,6 +212,16 @@ export default async function VaultLandingPage({
                                     {t("hero.ctaSecondary")}
                                 </TrackedCta>
                             </div>
+                            {/* Returning clients: the navbar's link is behind the
+                                menu on a phone, so the way in is here too. */}
+                            <p className="mt-6 text-sm text-white/75">
+                                {t("hero.returning")}{" "}
+                                <MemberEntryLink
+                                    signInLabel={t("nav.signIn")}
+                                    enterVaultLabel={t("nav.enterVault")}
+                                    className="border-b border-white/50 pb-0.5 text-white transition-colors hover:border-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-sand"
+                                />
+                            </p>
                         </div>
                     </div>
                 </section>

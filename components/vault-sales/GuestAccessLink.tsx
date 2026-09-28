@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
 import { useLocale } from "next-intl";
 import { navigateAfterAuthChange } from "@/app/lib/after-auth-change";
+import { useSessionKind } from "@/app/lib/use-session-kind";
 
 /**
  * "Log in as a guest", under the Full Access button.
@@ -14,6 +15,11 @@ import { navigateAfterAuthChange } from "@/app/lib/after-auth-change";
  * styled as a small italic link rather than competing with the checkout
  * button. It is a <button> because it does something (it signs in) rather
  * than navigate.
+ *
+ * Only for someone with no session at all. The sales page is prerendered, so
+ * it used to show this to signed-in members too, and clicking it swapped her
+ * real session for an anonymous one (2026-09-28 rehearsal). Hidden until the
+ * browser has checked, so a member never sees it flash.
  */
 export default function GuestAccessLink({
     label,
@@ -28,6 +34,7 @@ export default function GuestAccessLink({
 }) {
     const locale = useLocale();
     const [loading, setLoading] = useState(false);
+    const sessionKind = useSessionKind();
 
     const enterAsGuest = async () => {
         setLoading(true);
@@ -42,6 +49,8 @@ export default function GuestAccessLink({
         // with a freshly rendered layout (see navigateAfterAuthChange).
         navigateAfterAuthChange(`/${locale}/vault`);
     };
+
+    if (sessionKind !== "none") return null;
 
     return (
         <button

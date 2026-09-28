@@ -6,8 +6,8 @@ any of it. The owner clicked; the agent checked the database, the emails and
 the logs after each step, and fixed what broke.
 
 **Status: complete.** Every journey below ran; six defects were found, and
-all six are fixed, tested and deployed. Two gaps on the sales page are left
-open, with reasons (end of this file).
+all six are fixed, tested and deployed. The two sales-page gaps it also
+exposed were closed the same day (end of this file).
 
 ## Setup
 
@@ -82,18 +82,23 @@ it is visible on the site, re-checked live.
    (`tests/unit/renew-access-banner.test.tsx`), and the sales page's closing
    "Get access" goes to its own offer section, like the hero's.
 
-## Left open
+## Closed afterwards, same day
 
-- **The sales page sells a member what she already holds.** It is
-  prerendered and cannot know what she owns, so a pass holder can pay for the
-  pass again (the owner noticed it at journey 6). The fix is the same shape
-  as defect 5: when a signed-in member clicks a buy button, the server checks
-  her entitlements and tells her she already has access instead of opening
-  Stripe.
-- **"Log in as a guest" shows to signed-in members** on the same page, and
-  clicking it swaps her real session for an anonymous one. An anonymous
-  account was created during cleanup (18:45 UTC), probably by that link; it
-  holds nothing.
+- **The sales page sold a member what she already held** (the owner noticed
+  it at journey 6). Checkout now asks `alreadyHolds` (`app/lib/already-owned.ts`)
+  before opening Stripe, by the Vault's own rule: live term, `check_access`
+  for content, Full Access covers the passes, services never count, admins
+  are never refused. The button says it is already hers, with a link in.
+  `tests/integration/already-owned.test.ts` (5 of 12 failed first; removing
+  the term check or the admin exemption each fails one).
+- **"Log in as a guest" showed to signed-in members**, and clicking it
+  swapped her session for an anonymous one (an anonymous account appeared
+  during cleanup at 18:45 UTC, probably from it; it holds nothing). It now
+  shows only to someone with no session (`app/lib/use-session-kind.ts`).
+- **Returning clients had no way to sign in from the page** (owner request).
+  A "Sign in" link in the navbar (desktop and mobile menu) and under the hero
+  buttons; it reads "Go to the Vault" for a member already signed in.
+  `tests/unit/sales-page-session.test.tsx`.
 
 ## Using this as the cutover smoke test
 

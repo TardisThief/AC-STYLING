@@ -16,8 +16,16 @@ export type NavLink = { name: string; href: string };
  * sections of the page the navbar sits on. Each href must be an in-page
  * anchor (`#id`) that exists on that page. Without it, a page that is not the
  * landing page gets links to sections it doesn't have.
+ *
+ * `account` is an extra link beside them, on desktop and in the mobile menu:
+ * the sales page's way back in for returning clients (MemberEntryLink). It
+ * takes the bar's colour, so it reads over the hero and once scrolled.
  */
-export default function Navbar({ links, menuLabel }: { links?: NavLink[]; menuLabel?: string } = {}) {
+export default function Navbar({
+    links,
+    menuLabel,
+    account,
+}: { links?: NavLink[]; menuLabel?: string; account?: React.ReactNode } = {}) {
     const t = useTranslations('Navbar');
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -205,6 +213,16 @@ export default function Navbar({ links, menuLabel }: { links?: NavLink[]; menuLa
                                 {link.name}
                             </a>
                         ))}
+                        {account && (
+                            <div
+                                className={cn(
+                                    "text-sm uppercase tracking-widest transition-colors duration-300 border-b border-current/40 pb-0.5",
+                                    isScrolled ? "hover:text-ac-beige" : "hover:text-gray-300"
+                                )}
+                            >
+                                {account}
+                            </div>
+                        )}
                         <div className="z-50 relative">
 
                             <LanguageSwitcher isScrolled={isScrolled} />
@@ -270,6 +288,14 @@ export default function Navbar({ links, menuLabel }: { links?: NavLink[]; menuLa
                                     AC Styling Lab
                                 </Link>
                             </motion.div> */}
+                            {account && (
+                                <div
+                                    className="font-serif text-2xl italic hover:text-ac-beige transition-colors"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    {account}
+                                </div>
+                            )}
                             <div className="pt-8">
                                 <LanguageSwitcher isScrolled={false} />
                             </div>

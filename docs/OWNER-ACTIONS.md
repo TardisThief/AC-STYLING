@@ -428,6 +428,13 @@ before launch is worth it: the `Auth` block in `messages/es.json`, the
 `es` entries in `lib/email-templates.ts`, and `AUTH_ERRORS.es` in
 `app/actions/auth.ts`.
 
+**Added 2026-09-28, same read:** the purchase receipt (`purchaseReceiptCopy.es`
+in `lib/email-templates.ts`: "Tu compra en AC Styling está confirmada",
+"Gracias por seguir con nosotras…"), and on the sales page the sign-in link
+and the already-owned message (`VaultSales.nav.signIn` / `enterVault`,
+`VaultSales.hero.returning`, `VaultSales.offer.alreadyOwned` / `openVault` in
+`messages/es.json`).
+
 ## 10. Replace `public/logo.png` with a larger original — minor
 
 150×150. It clears Google's 112×112 floor for the `Organization` logo in

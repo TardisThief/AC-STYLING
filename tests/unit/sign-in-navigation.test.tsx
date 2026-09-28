@@ -120,7 +120,7 @@ describe('entering the Vault after a browser-side sign-in', () => {
             </NextIntlClientProvider>
         )
 
-        fireEvent.click(screen.getByRole('button', { name: 'Log in as a guest' }))
+        fireEvent.click(await screen.findByRole('button', { name: 'Log in as a guest' }))
 
         await waitFor(() => expect(assign).toHaveBeenCalledWith('/es/vault'))
         expect(push).not.toHaveBeenCalled()

@@ -16,7 +16,14 @@ vi.mock('next-intl', () => ({ useLocale: () => 'en' }))
 
 const signInAnonymously = vi.fn()
 vi.mock('@/utils/supabase/client', () => ({
-    createClient: () => ({ auth: { signInAnonymously } }),
+    // Signed out: the link only shows to someone with no session.
+    createClient: () => ({
+        auth: {
+            signInAnonymously,
+            getSession: async () => ({ data: { session: null } }),
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
+        },
+    }),
 }))
 
 const toastError = vi.fn()
@@ -163,7 +170,7 @@ describe('GuestAccessLink', () => {
         signInAnonymously.mockResolvedValue({ error: null })
         renderLink()
 
-        fireEvent.click(screen.getByRole('button', { name: 'Log in as a guest' }))
+        fireEvent.click(await screen.findByRole('button', { name: 'Log in as a guest' }))
 
         await waitFor(() => expect(navigateAfterAuthChange).toHaveBeenCalledWith('/en/vault'))
         expect(signInAnonymously).toHaveBeenCalledTimes(1)
@@ -175,7 +182,7 @@ describe('GuestAccessLink', () => {
         vi.spyOn(console, 'error').mockImplementation(() => {})
         renderLink()
 
-        fireEvent.click(screen.getByRole('button', { name: 'Log in as a guest' }))
+        fireEvent.click(await screen.findByRole('button', { name: 'Log in as a guest' }))
 
         await waitFor(() => expect(toastError).toHaveBeenCalledWith('Not available'))
         expect(navigateAfterAuthChange).not.toHaveBeenCalled()

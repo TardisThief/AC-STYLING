@@ -357,14 +357,17 @@
             "catalog": "Cursos",
             "alejandra": "Alejandra",
             "offer": "Acceso",
-            "faq": "Preguntas"
+            "faq": "Preguntas",
+            "signIn": "Iniciar sesión",
+            "enterVault": "Ir al Vault"
         },
         "hero": {
             "eyebrow": "El Vault",
             "title": "Tu estilo ya habla por ti. Aprende a dirigirlo.",
             "lede": "La escuela de AC Styling: el mismo método que uso con mis clientas, en cursos que haces a tu ritmo.",
             "ctaPrimary": "Obtener acceso",
-            "ctaSecondary": "Ver qué hay dentro"
+            "ctaSecondary": "Ver qué hay dentro",
+            "returning": "¿Ya tienes cuenta?"
         },
         "mirror": {
             "title": "Si algo de esto te suena:",
@@ -435,7 +438,9 @@
             "unavailable": "Disponible pronto",
             "guestCta": "Entrar como invitada",
             "guestLoading": "Entrando al Vault…",
-            "guestError": "El acceso como invitada no está disponible ahora. Inténtalo de nuevo."
+            "guestError": "El acceso como invitada no está disponible ahora. Inténtalo de nuevo.",
+            "alreadyOwned": "Ya lo tienes. Te espera en tu Vault.",
+            "openVault": "Abrir el Vault"
         },
         "singles": {
             "title": "O una masterclass a la vez",

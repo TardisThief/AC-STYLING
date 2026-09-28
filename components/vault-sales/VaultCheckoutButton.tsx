@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { createSalesPageCheckout } from "@/app/actions/stripe";
+import { useRouter } from "@/i18n/routing";
 import { trackCta, type CtaSection } from "@/app/lib/analytics";
 
 /**
@@ -37,6 +38,8 @@ export default function VaultCheckoutButton({
 }: Props) {
     const [loading, setLoading] = useState(false);
     const locale = useLocale();
+    const t = useTranslations("VaultSales.offer");
+    const router = useRouter();
     const unavailable = !priceId;
 
     const handleClick = async () => {
@@ -47,6 +50,16 @@ export default function VaultCheckoutButton({
 
         try {
             const result = await createSalesPageCheckout(priceId!, returnUrl, `/${locale}/welcome`, locale);
+
+            // A signed-in member who already holds this: say so and show the
+            // way in, rather than an error or a second payment (2026-09-28).
+            if ("alreadyOwned" in result && result.alreadyOwned) {
+                toast.info(t("alreadyOwned"), {
+                    action: { label: t("openVault"), onClick: () => router.push("/vault") },
+                });
+                setLoading(false);
+                return;
+            }
 
             if (result.error) {
                 toast.error(result.error);
