@@ -9,8 +9,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 
-const push = vi.fn()
-vi.mock('@/i18n/routing', () => ({ useRouter: () => ({ push }) }))
+// The link leaves with a full page load (tests/unit/sign-in-navigation.test.tsx).
+const navigateAfterAuthChange = vi.fn()
+vi.mock('@/app/lib/after-auth-change', () => ({ navigateAfterAuthChange: (p: string) => navigateAfterAuthChange(p) }))
+vi.mock('next-intl', () => ({ useLocale: () => 'en' }))
 
 const signInAnonymously = vi.fn()
 vi.mock('@/utils/supabase/client', () => ({
@@ -149,7 +151,7 @@ describe('CatalogRail', () => {
 
 describe('GuestAccessLink', () => {
     beforeEach(() => {
-        push.mockReset()
+        navigateAfterAuthChange.mockReset()
         signInAnonymously.mockReset()
         toastError.mockReset()
     })
@@ -163,7 +165,7 @@ describe('GuestAccessLink', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Log in as a guest' }))
 
-        await waitFor(() => expect(push).toHaveBeenCalledWith('/vault'))
+        await waitFor(() => expect(navigateAfterAuthChange).toHaveBeenCalledWith('/en/vault'))
         expect(signInAnonymously).toHaveBeenCalledTimes(1)
         expect(toastError).not.toHaveBeenCalled()
     })
@@ -176,7 +178,7 @@ describe('GuestAccessLink', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Log in as a guest' }))
 
         await waitFor(() => expect(toastError).toHaveBeenCalledWith('Not available'))
-        expect(push).not.toHaveBeenCalled()
+        expect(navigateAfterAuthChange).not.toHaveBeenCalled()
         // Usable again, not stuck on the loading label.
         expect(screen.getByRole('button', { name: 'Log in as a guest' })).not.toBeDisabled()
     })

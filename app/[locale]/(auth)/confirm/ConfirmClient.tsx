@@ -2,16 +2,17 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { processOnboarding } from "@/app/actions/onboarding";
 import { safeNextPath } from "@/app/lib/safe-redirect";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { navigateAfterAuthChange } from "@/app/lib/after-auth-change";
 
 function AuthConfirmInner() {
     const t = useTranslations("Auth");
-    const router = useRouter();
+    const locale = useLocale();
     const searchParams = useSearchParams();
     const [status, setStatus] = useState(() => t("confirm.verifying"));
 
@@ -36,8 +37,9 @@ function AuthConfirmInner() {
                 console.error("Onboarding failed:", err);
             }
 
-            const target = safeNextPath(nextUrl, '/vault');
-            router.replace(target);
+            // A full load, not router.replace: see navigateAfterAuthChange.
+            const target = safeNextPath(nextUrl, `/${locale}/vault`);
+            navigateAfterAuthChange(target, { replace: true });
         };
 
         // 1. Check if session exists immediately
@@ -94,7 +96,7 @@ function AuthConfirmInner() {
             subscription.unsubscribe();
             clearTimeout(timeout);
         };
-    }, [nextUrl, router, t]);
+    }, [nextUrl, locale, t]);
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#E6DED6]">

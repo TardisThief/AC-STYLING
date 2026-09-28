@@ -4,11 +4,12 @@ import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { Mail, Loader2, User, ChevronRight } from "lucide-react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { safeNextPath } from "@/app/lib/safe-redirect";
 import { Link } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { navigateAfterAuthChange } from "@/app/lib/after-auth-change";
 
 function LoginInner() {
     const t = useTranslations("Auth");
@@ -23,7 +24,8 @@ function LoginInner() {
     const [isSuccess, setIsSuccess] = useState(false);
 
     const searchParams = useSearchParams();
-    const router = useRouter();
+    const locale = useLocale();
+    const vaultHome = `/${locale}/vault`;
     const token = searchParams.get('token');
     const wardrobeToken = searchParams.get('wardrobe');
     const nextUrl = searchParams.get('next');
@@ -43,11 +45,11 @@ function LoginInner() {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 // Determine redirect path
-                const target = safeNextPath(nextUrl, '/vault');
+                const target = safeNextPath(nextUrl, vaultHome);
                 // Avoid double-toast if we dealt with it in handle functions
                 if (!isLoading) {
                     toast.success(t("login.signedIn"));
-                    router.push(target);
+                    navigateAfterAuthChange(target);
                 }
             }
         });
@@ -74,7 +76,7 @@ function LoginInner() {
         return () => {
             subscription.unsubscribe();
         };
-    }, [token, wardrobeToken, nextUrl, errorMsg, errorDetails, supabase, router, isLoading, t]);
+    }, [token, wardrobeToken, nextUrl, errorMsg, errorDetails, supabase, vaultHome, isLoading, t]);
 
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -107,7 +109,8 @@ function LoginInner() {
                 toast.error(error.message);
             } else {
                 toast.success(t("login.welcomeBack"));
-                router.push(safeNextPath(nextUrl, '/vault'));
+                // A full load, not a push: see navigateAfterAuthChange.
+                navigateAfterAuthChange(safeNextPath(nextUrl, vaultHome));
             }
         }
 
@@ -148,7 +151,7 @@ function LoginInner() {
             }
         } else {
             toast.success(t("login.guestWelcome"));
-            router.push('/vault');
+            navigateAfterAuthChange(vaultHome);
         }
         setGuestLoading(false);
     };

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "@/i18n/routing";
+import { useLocale } from "next-intl";
+import { navigateAfterAuthChange } from "@/app/lib/after-auth-change";
 
 /**
  * "Log in as a guest", under the Full Access button.
@@ -25,7 +26,7 @@ export default function GuestAccessLink({
     errorLabel: string;
     className?: string;
 }) {
-    const router = useRouter();
+    const locale = useLocale();
     const [loading, setLoading] = useState(false);
 
     const enterAsGuest = async () => {
@@ -37,8 +38,9 @@ export default function GuestAccessLink({
             setLoading(false);
             return;
         }
-        // Locale-aware router, so a Spanish visitor lands in /es/vault.
-        router.push("/vault");
+        // A full load in her language, so a Spanish visitor lands in /es/vault
+        // with a freshly rendered layout (see navigateAfterAuthChange).
+        navigateAfterAuthChange(`/${locale}/vault`);
     };
 
     return (

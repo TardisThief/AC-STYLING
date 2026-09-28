@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { deleteAccount } from '@/app/actions/vault/account';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { navigateAfterAuthChange } from '@/app/lib/after-auth-change';
 import { toast } from 'sonner';
 import { LogOut, Trash2, AlertTriangle, X } from 'lucide-react';
 
@@ -11,12 +13,14 @@ export default function AccountSettings() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const router = useRouter();
+    const locale = useLocale();
     const supabase = createClient();
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
-        router.refresh(); // Refresh connection state
-        router.push('/login');
+        // A full load, so no signed-in page survives in the router cache for
+        // Back to show (see navigateAfterAuthChange).
+        navigateAfterAuthChange(`/${locale}/login`);
     };
 
     const handleDelete = async () => {
