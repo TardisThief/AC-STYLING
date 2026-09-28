@@ -4,27 +4,30 @@ import { useState, useRef, useCallback } from 'react';
 import { Ruler, Loader2, Lock, Check } from 'lucide-react';
 import { saveMyMeasurements } from '@/app/actions/client-studio';
 import { toast } from 'sonner';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 interface TailorCardUserProps {
     initialMeasurements: Record<string, string>;
     isActiveClient: boolean;
 }
 
+// Labels come from MyStudio.tailor.fields.<key>, in her language.
 const MEASUREMENT_FIELDS = [
-    { key: 'bust', label: 'Bust', unit: 'cm/in' },
-    { key: 'waist', label: 'Waist', unit: 'cm/in' },
-    { key: 'hips', label: 'Hips', unit: 'cm/in' },
-    { key: 'inseam', label: 'Inseam', unit: 'cm/in' },
-    { key: 'shoulders', label: 'Shoulders', unit: 'cm/in' },
-    { key: 'height', label: 'Height', unit: 'cm/in' },
-    { key: 'shoe_size', label: 'Shoe Size', unit: 'US/EU' },
-];
+    { key: 'bust', unit: 'cm/in' },
+    { key: 'waist', unit: 'cm/in' },
+    { key: 'hips', unit: 'cm/in' },
+    { key: 'inseam', unit: 'cm/in' },
+    { key: 'shoulders', unit: 'cm/in' },
+    { key: 'height', unit: 'cm/in' },
+    { key: 'shoe_size', unit: 'US/EU' },
+] as const;
 
 export default function TailorCardUser({ initialMeasurements, isActiveClient }: TailorCardUserProps) {
     const [measurements, setMeasurements] = useState<Record<string, string>>(initialMeasurements || {});
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const t = useTranslations('MyStudio.tailor');
 
     const persistMeasurements = useCallback(async (newMeasurements: Record<string, string>) => {
         setSaveStatus('saving');
@@ -33,13 +36,15 @@ export default function TailorCardUser({ initialMeasurements, isActiveClient }: 
         const { success, error } = await saveMyMeasurements(newMeasurements);
 
         if (!success) {
-            toast.error(error || "Failed to save measurements");
+            // Her language, not the action's English reason.
+            if (error) console.error('[TailorCardUser] save failed:', error);
+            toast.error(t('saveFailed'));
             setSaveStatus('idle');
         } else {
             setSaveStatus('saved');
             setTimeout(() => setSaveStatus('idle'), 2000);
         }
-    }, []);
+    }, [t]);
 
     const handleUpdate = (key: string, value: string) => {
         const newMeasurements = { ...measurements, [key]: value };
@@ -59,15 +64,15 @@ export default function TailorCardUser({ initialMeasurements, isActiveClient }: 
                     <div className="w-12 h-12 bg-[#3D3630]/10 text-[#3D3630] rounded-full flex items-center justify-center mb-6">
                         <Lock size={20} />
                     </div>
-                    <h3 className="font-serif text-2xl text-[#3D3630] mb-2">Technical Profile</h3>
+                    <h3 className="font-serif text-2xl text-[#3D3630] mb-2">{t('lockedTitle')}</h3>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#3D3630]/60 mb-8 max-w-[200px]">
-                        This card tracks metrics for your bespoke curation.
+                        {t('lockedBody')}
                     </p>
                     <Link
                         href="/vault/services"
                         className="text-[10px] font-bold uppercase tracking-widest text-[#3D3630] border-b border-[#3D3630]/20 hover:border-[#3D3630] transition-all pb-1"
                     >
-                        Unlock via Services
+                        {t('unlock')}
                     </Link>
                 </div>
             </div>
@@ -80,25 +85,25 @@ export default function TailorCardUser({ initialMeasurements, isActiveClient }: 
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                     <Ruler className="text-ac-gold" size={20} />
-                    <h3 className="font-serif text-2xl text-ac-taupe">Tailor&apos;s Card</h3>
+                    <h3 className="font-serif text-2xl text-ac-taupe">{t('title')}</h3>
                 </div>
                 {saveStatus === 'saving' && <Loader2 size={14} className="animate-spin text-ac-gold" />}
                 {saveStatus === 'saved' && (
                     <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-ac-olive font-bold">
-                        <Check size={12} strokeWidth={3} /> Saved
+                        <Check size={12} strokeWidth={3} /> {t('saved')}
                     </span>
                 )}
             </div>
 
             <p className="text-[10px] uppercase tracking-widest text-ac-taupe/40 font-bold mb-8 leading-relaxed">
-                Your technical measurements card will appear here after you start a studio collaboration. You may also log them yourself below.
+                {t('intro')}
             </p>
 
             <div className="grid grid-cols-2 gap-y-6 gap-x-8">
                 {MEASUREMENT_FIELDS.map((field) => (
                     <div key={field.key} className="group">
                         <label className="block text-[9px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-2 group-focus-within:text-ac-gold transition-colors">
-                            {field.label}
+                            {t(`fields.${field.key}`)}
                         </label>
                         <input
                             type="text"
@@ -113,7 +118,7 @@ export default function TailorCardUser({ initialMeasurements, isActiveClient }: 
 
             <div className="mt-auto pt-8">
                 <p className="text-[10px] text-ac-taupe/40 italic text-center">
-                    These metrics help us curate the perfect fit for your digital wardrobe.
+                    {t('footer')}
                 </p>
             </div>
         </div>

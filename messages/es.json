@@ -312,7 +312,16 @@
         "suggested": "Sugerido",
         "whatsapp": "Consulta Directa por WhatsApp",
         "corporate": "Para proyectos corporativos o personalizados, contacta a",
-        "no_sessions": "No hay sesiones disponibles en este momento."
+        "no_sessions": "No hay sesiones disponibles en este momento.",
+        "requestReceived": "Solicitud recibida",
+        "thanks": "Gracias por tu confianza.",
+        "notified": "Alejandra ya recibió el aviso y tu solicitud está en la bandeja de su estudio.",
+        "inTouch": "Te escribirá muy pronto.",
+        "returnToVault": "Volver al Vault",
+        "recommended": "Recomendado para tu esencia.",
+        "redirecting": "Redirigiendo a Stripe de forma segura…",
+        "missingPrice": "Este servicio aún no se puede reservar en línea.",
+        "checkoutFailed": "No se pudo iniciar el pago. Inténtalo de nuevo."
     },
     "Courses": {
         "title": "Cursos Individuales",
@@ -630,5 +639,148 @@
             "submit": "Únete al Vault",
             "signInHere": "Inicia sesión aquí"
         }
+    },
+    "MyStudio": {
+        "title": "Estudio personal",
+        "welcome": "Bienvenida, {name}",
+        "fallbackName": "Clienta",
+        "tabs": {
+            "lookbooks": "Lookbooks",
+            "wardrobe": "Armario",
+            "measurements": "Medidas"
+        },
+        "close": "Cerrar",
+        "measurements": {
+            "title": "Tus medidas",
+            "subtitle": "Revisa tu perfil de medidas"
+        },
+        "tailor": {
+            "lockedTitle": "Perfil técnico",
+            "lockedBody": "Esta ficha guarda las medidas para tu curaduría a medida.",
+            "unlock": "Desbloquéala con los servicios",
+            "title": "Ficha de medidas",
+            "saved": "Guardado",
+            "intro": "Tu ficha de medidas aparecerá aquí cuando empieces a trabajar con el estudio. También puedes anotarlas tú misma abajo.",
+            "footer": "Estas medidas nos ayudan a elegir el ajuste perfecto para tu armario digital.",
+            "saveFailed": "No se pudieron guardar tus medidas. Inténtalo de nuevo.",
+            "fields": {
+                "bust": "Busto",
+                "waist": "Cintura",
+                "hips": "Cadera",
+                "inseam": "Entrepierna",
+                "shoulders": "Hombros",
+                "height": "Altura",
+                "shoe_size": "Talla de calzado"
+            }
+        },
+        "categories": {
+            "Tops": "Blusas y tops",
+            "Bottoms": "Pantalones y faldas",
+            "Dresses": "Vestidos",
+            "Outerwear": "Abrigos",
+            "Shoes": "Zapatos",
+            "Accessories": "Accesorios",
+            "Bags": "Bolsos"
+        },
+        "statuses": {
+            "Keep": "Conservar",
+            "Tailor": "Arreglar",
+            "Donate": "Donar",
+            "Archive": "Archivar"
+        },
+        "lookbook": {
+            "loading": "Cargando colecciones…",
+            "collections": "Colecciones",
+            "general": "General",
+            "empty": "Aún no hay colecciones",
+            "select": "Elige un lookbook para verlo",
+            "download": "Descargar imagen",
+            "itemAlt": "{category} en el lookbook",
+            "itemAltGeneric": "Prenda en el lookbook"
+        },
+        "wardrobe": {
+            "loading": "Cargando armario",
+            "loadFailed": "No se pudo cargar tu armario.",
+            "updateFailed": "No se pudo guardar el cambio.",
+            "notReviewed": "{count, plural, one {# prenda aún sin revisar} other {# prendas aún sin revisar}}",
+            "filters": "Filtros",
+            "all": "Todo",
+            "uncategorized": "Sin categoría",
+            "profile": "Ficha de la prenda",
+            "details": "Detalles de curaduría",
+            "closeDetails": "Cerrar detalles",
+            "category": "Categoría",
+            "status": "Estado de curaduría",
+            "brand": "Marca / diseñador",
+            "brandPlaceholder": "p. ej. Zara, Prada",
+            "tags": "Etiquetas",
+            "tagsPlaceholder": "Verano, trabajo…",
+            "yourNote": "Tu nota",
+            "yourNotePlaceholder": "Escribe tus notas aquí…",
+            "stylistNote": "Nota de tu estilista",
+            "noStylistNote": "Tu estilista aún no ha dejado notas.",
+            "shopLook": "Compra este look",
+            "linkedProduct": "Producto vinculado",
+            "selectItem": "Elige una prenda para ver sus detalles"
+        },
+        "add": {
+            "open": "Añadir una foto",
+            "title": "Añadir una foto",
+            "subtitle": "Una prenda para que tu estilista la vea y la revise.",
+            "choose": "Elige una foto",
+            "change": "Elegir otra",
+            "category": "Categoría",
+            "note": "Tu nota (opcional)",
+            "notePlaceholder": "Dónde la usas, qué te gustaría saber…",
+            "submit": "Añadir a mi armario",
+            "added": "Añadida. Tu estilista la revisará.",
+            "errors": {
+                "full": "Tu armario está lleno.",
+                "rate": "Demasiadas subidas seguidas. Espera unos minutos e inténtalo de nuevo.",
+                "failed": "No se pudo añadir la foto. Inténtalo de nuevo.",
+                "tooLarge": "La foto es demasiado grande (máximo 15 MB)."
+            }
+        },
+        "upload": {
+            "welcomeStudio": "¡Bienvenida al AC Styling Studio!",
+            "gateTitle": "Bienvenida al AC Styling Studio",
+            "gateBody": "Para subir tu armario, por favor crea una cuenta o inicia sesión.",
+            "createAccount": "Crear Cuenta",
+            "haveAccount": "Ya tengo cuenta",
+            "settingUp": "Configurando tu armario...",
+            "readyBody": "Tu armario personal está listo. Ahora puedes subir tus prendas.",
+            "start": "Comenzar a Subir",
+            "headerTitle": "Bienvenida a tu Armario",
+            "instructions": "Sube fotos de tus prendas. Las revisaremos y organizaremos para ti.",
+            "takePhoto": "Tomar Foto",
+            "gallery": "Galería",
+            "readyToUpload": "Preparados para subir ({count})",
+            "addMore": "+ Añadir más",
+            "notePlaceholder": "Nota (opcional)...",
+            "uploadAll": "Subir Todo",
+            "uploadedCount": "{count, plural, one {# artículo subido} other {# artículos subidos}}",
+            "done": "Terminé de Subir",
+            "uploaded": "{count, plural, one {¡# artículo subido!} other {¡# artículos subidos!}}",
+            "prepareFailed": "No se pudo preparar la subida de {name}.",
+            "saveFailed": "No se pudo guardar {name}.",
+            "uploadError": "Error al subir {name}."
+        }
+    },
+    "Journal": {
+        "back": "Volver al perfil",
+        "title": "Mi esencia de estilo",
+        "subtitle": "Una colección de tus descubrimientos personales.",
+        "errorSaving": "No se guardó",
+        "placeholder": "Tus reflexiones…",
+        "emptyTitle": "Tu diario está vacío",
+        "emptyBody": "Completa tu primer módulo de masterclass para desbloquear tu diario interactivo.",
+        "filterBy": "Filtrar por masterclass:",
+        "all": "Todas las masterclasses",
+        "notStarted": "(sin empezar)",
+        "missingOnly": "Mostrar solo las respuestas pendientes",
+        "noMatch": "Ninguna respuesta coincide con los filtros.",
+        "answered": "{answered} de {total} respondidas",
+        "questions": "{count, plural, one {# pregunta} other {# preguntas}}",
+        "end": "— Fin del diario —"
     }
 }

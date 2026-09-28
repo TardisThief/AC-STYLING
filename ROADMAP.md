@@ -136,10 +136,17 @@ guest", and now has a sign-in link for returning clients.
 
 - **Scenario 3 against a real new Supabase project** has not been run; its
   ordering was checked against a snapshot's table of contents.
-- **Studio screens, journal feedback and service-purchase messages** are still
-  English; the Calendly embed is not locale-specific; the live service rows
-  carry placeholder copy (content). Not on a member's path to what she paid
-  for, so after launch.
+- ~~**Studio screens, journal feedback and service-purchase messages** in
+  English~~ — **done 2026-09-28** for everything a client sees (`MyStudio`,
+  `Journal`, `Studio` in `messages/*.json`; `tests/unit/client-studio-i18n.test.tsx`).
+  The stylist-only screens stay English (owner decision). Doing it turned up
+  that a client's own wardrobe showed the stylist's tools, including a
+  "Change Image" that her update action refuses while the screen said
+  "Image Updated": she now gets one "add a photo" of her own
+  (`getMyItemUploadUrl` / `addMyWardrobeItem`,
+  `tests/integration/my-wardrobe-upload.test.ts`), and the stylist's tools are
+  hidden from her. Still open: the Calendly embed is not locale-specific, and
+  the live service rows carry placeholder copy (content).
 - **A wardrobe outlives the client who leaves, garments and lookbooks
   included** (owner decisions, 2026-09-26) — **built and live** (migration 33,
   `6ff30f6`). A deleted client's garments and lookbooks stay in the wardrobe,

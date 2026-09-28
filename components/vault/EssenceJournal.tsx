@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookHeart, Sparkles, ChevronDown, ChevronRight, Loader2, CheckCircle2 } from "lucide-react";
 import { saveEssenceResponse } from "@/app/actions/essence-lab";
+import { useTranslations } from "next-intl";
 
 type Question = {
     key: string;
@@ -42,6 +43,7 @@ function JournalQuestionRow({
     chapterSlug: string, 
     masterclassId: string 
 }) {
+    const t = useTranslations("Journal");
     const [val, setVal] = useState(question.value || '');
     const [status, setStatus] = useState<'idle'|'saving'|'saved'|'error'>('idle');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -86,7 +88,7 @@ function JournalQuestionRow({
                 {status === 'saving' ? (
                     <Loader2 size={14} className="text-ac-gold animate-spin" />
                 ) : status === 'error' ? (
-                    <span className="text-[10px] text-red-500">Error saving</span>
+                    <span className="text-[10px] text-red-500">{t("errorSaving")}</span>
                 ) : isFilled ? (
                     <CheckCircle2 size={16} className="text-ac-olive translate-y-2" strokeWidth={2.5} />
                 ) : null}
@@ -101,7 +103,7 @@ function JournalQuestionRow({
                     if (status !== 'idle') setStatus('idle');
                 }}
                 onBlur={handleBlur}
-                placeholder={question.placeholder || 'Your insights...'}
+                placeholder={question.placeholder || t("placeholder")}
                 rows={1}
                 className="w-full bg-white/40 border border-white/50 rounded-sm p-3 text-sm text-ac-taupe placeholder:text-ac-taupe/40 focus:outline-none focus:border-ac-gold focus:ring-1 focus:ring-ac-gold transition-colors resize-none font-serif overflow-hidden leading-relaxed"
             />
@@ -110,6 +112,7 @@ function JournalQuestionRow({
 }
 
 export default function EssenceJournal({ data, allMasterclasses }: EssenceJournalProps) {
+    const t = useTranslations("Journal");
     const [filterMc, setFilterMc] = useState<string>('ALL');
     const [filterIncomplete, setFilterIncomplete] = useState<boolean>(false);
     
@@ -140,9 +143,9 @@ export default function EssenceJournal({ data, allMasterclasses }: EssenceJourna
         return (
             <div className="flex flex-col items-center justify-center p-12 text-center bg-white/40 backdrop-blur-md rounded-sm border border-ac-taupe/10 min-h-[400px]">
                 <Sparkles size={48} className="text-ac-gold mb-4 opacity-50" />
-                <h3 className="font-serif text-2xl text-ac-taupe mb-2">Your Journal is Empty</h3>
+                <h3 className="font-serif text-2xl text-ac-taupe mb-2">{t("emptyTitle")}</h3>
                 <p className="text-ac-taupe/60 max-w-md">
-                    Complete your first Masterclass module to unlock your interactive journal.
+                    {t("emptyBody")}
                 </p>
             </div>
         );
@@ -172,19 +175,19 @@ export default function EssenceJournal({ data, allMasterclasses }: EssenceJourna
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white/40 p-4 border border-ac-taupe/10 rounded-sm mb-6">
                 <div className="flex items-center gap-2">
                     <label className="text-[10px] uppercase tracking-widest font-bold text-ac-taupe/60">
-                        Filter by Masterclass:
+                        {t("filterBy")}
                     </label>
                     <select
                         value={filterMc}
                         onChange={(e) => setFilterMc(e.target.value)}
                         className="text-xs border border-ac-taupe/20 rounded p-1.5 focus:outline-none focus:border-ac-gold bg-white text-ac-taupe"
                     >
-                        <option value="ALL">All Masterclasses</option>
+                        <option value="ALL">{t("all")}</option>
                         {(allMasterclasses && allMasterclasses.length > 0 ? allMasterclasses : data.map(mc => ({ id: mc.masterclassId, title: mc.masterclassTitle }))).map(mc => {
                             const hasEntries = data.some(d => d.masterclassId === mc.id);
                             return (
                                 <option key={mc.id} value={mc.id}>
-                                    {mc.title}{!hasEntries ? ' (not started)' : ''}
+                                    {mc.title}{!hasEntries ? ` ${t("notStarted")}` : ''}
                                 </option>
                             );
                         })}
@@ -199,14 +202,14 @@ export default function EssenceJournal({ data, allMasterclasses }: EssenceJourna
                         className="w-4 h-4 rounded border-ac-taupe/20 text-ac-gold focus:ring-ac-gold accent-ac-gold"
                     />
                     <span className="text-[10px] uppercase tracking-widest font-bold text-ac-taupe/60 group-hover:text-ac-taupe transition-colors">
-                        Show Missing Answers Only
+                        {t("missingOnly")}
                     </span>
                 </label>
             </div>
 
             {filteredData.length === 0 && (
                 <div className="text-center py-12 text-ac-taupe/60">
-                    No answers match your required filters.
+                    {t("noMatch")}
                 </div>
             )}
 
@@ -241,7 +244,7 @@ export default function EssenceJournal({ data, allMasterclasses }: EssenceJourna
                                 <div>
                                     <h2 className="font-serif text-2xl text-ac-taupe leading-tight">{mc.masterclassTitle}</h2>
                                     <p className="text-[10px] uppercase tracking-widest text-ac-taupe/40 font-bold mt-1">
-                                        {answQs} of {totalQs} Answered
+                                        {t("answered", { answered: answQs, total: totalQs })}
                                     </p>
                                 </div>
                             </div>
@@ -274,7 +277,7 @@ export default function EssenceJournal({ data, allMasterclasses }: EssenceJourna
                                                         <span className="flex items-center gap-2">
                                                             {ch.chapterTitle} 
                                                             <span className="text-[10px] uppercase tracking-widest text-ac-taupe/40 font-bold group-hover:text-ac-taupe/60 transition-colors">
-                                                                ({ch.questions.length} Questions)
+                                                                ({t("questions", { count: ch.questions.length })})
                                                             </span>
                                                             {allAnswered && (
                                                                 <CheckCircle2 size={16} className="text-ac-olive" strokeWidth={2.5} />
@@ -318,7 +321,7 @@ export default function EssenceJournal({ data, allMasterclasses }: EssenceJourna
 
             {filteredData.length > 0 && (
                 <div className="text-center pt-8 text-ac-taupe/40 italic text-sm">
-                    — End of Journal —
+                    {t("end")}
                 </div>
             )}
         </div>

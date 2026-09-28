@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import VirtualWardrobe from "@/components/studio/VirtualWardrobe";
 import DigitalLookbook from "@/components/studio/DigitalLookbook";
 import TailorCardUser from "@/components/vault/TailorCardUser";
+import { useTranslations } from "next-intl";
 
 interface ClientStudioDashboardProps {
     wardrobeId: string;
@@ -17,6 +18,7 @@ interface ClientStudioDashboardProps {
 export default function ClientStudioDashboard({ wardrobeId, ownerId, initialMeasurements, userName }: ClientStudioDashboardProps) {
     const [activeTab, setActiveTab] = useState<'lookbooks' | 'wardrobe'>('lookbooks');
     const [isTailorCardOpen, setIsTailorCardOpen] = useState(false);
+    const t = useTranslations("MyStudio");
 
     return (
         <div className="min-h-screen bg-ac-sand/30 pb-20">
@@ -24,9 +26,9 @@ export default function ClientStudioDashboard({ wardrobeId, ownerId, initialMeas
             <header className="bg-white/60 backdrop-blur-md border-b border-ac-taupe/5 sticky top-20 z-40">
                 <div className="container mx-auto px-6 py-4 flex items-center justify-between">
                     <div>
-                        <h1 className="font-serif text-2xl text-ac-taupe">Personal Studio</h1>
+                        <h1 className="font-serif text-2xl text-ac-taupe">{t("title")}</h1>
                         <p className="text-[10px] uppercase tracking-widest text-ac-taupe/40 font-bold">
-                            Welcome, {userName}
+                            {t("welcome", { name: userName || t("fallbackName") })}
                         </p>
                     </div>
                     <div className="flex items-center gap-4 bg-ac-taupe/5 p-1 rounded-sm">
@@ -35,14 +37,14 @@ export default function ClientStudioDashboard({ wardrobeId, ownerId, initialMeas
                             className={`flex items-center gap-2 px-4 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === 'lookbooks' ? 'bg-white text-ac-taupe shadow-sm' : 'text-ac-taupe/40 hover:text-ac-taupe'}`}
                         >
                             <BookOpen size={14} />
-                            Lookbooks
+                            {t("tabs.lookbooks")}
                         </button>
                         <button
                             onClick={() => setActiveTab('wardrobe')}
                             className={`flex items-center gap-2 px-4 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === 'wardrobe' ? 'bg-white text-ac-taupe shadow-sm' : 'text-ac-taupe/40 hover:text-ac-taupe'}`}
                         >
                             <Shirt size={14} />
-                            Wardrobe
+                            {t("tabs.wardrobe")}
                         </button>
                         <div className="w-px h-4 bg-ac-taupe/20 hidden md:block" />
                         <button
@@ -50,7 +52,7 @@ export default function ClientStudioDashboard({ wardrobeId, ownerId, initialMeas
                             className="flex items-center gap-2 px-4 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest transition-all text-ac-taupe/40 hover:bg-white hover:text-ac-taupe"
                         >
                             <Ruler size={14} />
-                            Measurements
+                            {t("tabs.measurements")}
                         </button>
                     </div>
                 </div>
@@ -101,6 +103,7 @@ export default function ClientStudioDashboard({ wardrobeId, ownerId, initialMeas
                         >
                             <button
                                 onClick={() => setIsTailorCardOpen(false)}
+                                aria-label={t("close")}
                                 className="absolute top-6 right-6 z-50 text-ac-taupe/40 hover:text-ac-taupe transition-colors bg-white/50 backdrop-blur-sm rounded-full p-1"
                             >
                                 <X size={24} />
@@ -108,8 +111,8 @@ export default function ClientStudioDashboard({ wardrobeId, ownerId, initialMeas
 
                             <div className="p-8 space-y-8">
                                 <div className="pr-12">
-                                    <h3 className="font-serif text-3xl text-ac-taupe">Your Measurements</h3>
-                                    <p className="text-[10px] uppercase tracking-widest font-bold text-ac-taupe/40 mt-1">Review your tailoring profile</p>
+                                    <h3 className="font-serif text-3xl text-ac-taupe">{t("measurements.title")}</h3>
+                                    <p className="text-[10px] uppercase tracking-widest font-bold text-ac-taupe/40 mt-1">{t("measurements.subtitle")}</p>
                                 </div>
 
                                 <div className="h-fit">

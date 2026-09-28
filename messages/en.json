@@ -312,7 +312,16 @@
         "suggested": "Suggested",
         "whatsapp": "Direct WhatsApp Inquiry",
         "corporate": "For corporate or bespoke projects, contact",
-        "no_sessions": "No sessions available at the moment."
+        "no_sessions": "No sessions available at the moment.",
+        "requestReceived": "Request Received",
+        "thanks": "Thank you for your trust.",
+        "notified": "Alejandra has been notified and your request is now in her personal studio inbox.",
+        "inTouch": "She will be in touch shortly.",
+        "returnToVault": "Return to Vault",
+        "recommended": "Recommended for your essence.",
+        "redirecting": "Securely redirecting to Stripe…",
+        "missingPrice": "This service can't be booked online yet.",
+        "checkoutFailed": "Checkout could not be started. Please try again."
     },
     "Courses": {
         "title": "Standalone Courses",
@@ -630,5 +639,148 @@
             "submit": "Join The Vault",
             "signInHere": "Sign in here"
         }
+    },
+    "MyStudio": {
+        "title": "Personal Studio",
+        "welcome": "Welcome, {name}",
+        "fallbackName": "Client",
+        "tabs": {
+            "lookbooks": "Lookbooks",
+            "wardrobe": "Wardrobe",
+            "measurements": "Measurements"
+        },
+        "close": "Close",
+        "measurements": {
+            "title": "Your Measurements",
+            "subtitle": "Review your tailoring profile"
+        },
+        "tailor": {
+            "lockedTitle": "Technical Profile",
+            "lockedBody": "This card tracks metrics for your bespoke curation.",
+            "unlock": "Unlock via Services",
+            "title": "Tailor's Card",
+            "saved": "Saved",
+            "intro": "Your technical measurements card will appear here after you start a studio collaboration. You may also log them yourself below.",
+            "footer": "These metrics help us curate the perfect fit for your digital wardrobe.",
+            "saveFailed": "Your measurements could not be saved. Please try again.",
+            "fields": {
+                "bust": "Bust",
+                "waist": "Waist",
+                "hips": "Hips",
+                "inseam": "Inseam",
+                "shoulders": "Shoulders",
+                "height": "Height",
+                "shoe_size": "Shoe Size"
+            }
+        },
+        "categories": {
+            "Tops": "Tops",
+            "Bottoms": "Bottoms",
+            "Dresses": "Dresses",
+            "Outerwear": "Outerwear",
+            "Shoes": "Shoes",
+            "Accessories": "Accessories",
+            "Bags": "Bags"
+        },
+        "statuses": {
+            "Keep": "Keep",
+            "Tailor": "Tailor",
+            "Donate": "Donate",
+            "Archive": "Archive"
+        },
+        "lookbook": {
+            "loading": "Loading collections…",
+            "collections": "Collections",
+            "general": "General",
+            "empty": "No collections yet",
+            "select": "Select a lookbook to view",
+            "download": "Download image",
+            "itemAlt": "{category} on the lookbook",
+            "itemAltGeneric": "Wardrobe item on the lookbook"
+        },
+        "wardrobe": {
+            "loading": "Loading wardrobe",
+            "loadFailed": "Your wardrobe could not be loaded.",
+            "updateFailed": "That change could not be saved.",
+            "notReviewed": "{count, plural, one {# item not yet reviewed} other {# items not yet reviewed}}",
+            "filters": "Filters",
+            "all": "All",
+            "uncategorized": "Uncategorized",
+            "profile": "Item Profile",
+            "details": "Curation Details",
+            "closeDetails": "Close item details",
+            "category": "Category",
+            "status": "Curation Status",
+            "brand": "Brand / Designer",
+            "brandPlaceholder": "e.g. Zara, Prada",
+            "tags": "Tags",
+            "tagsPlaceholder": "Summer, Work…",
+            "yourNote": "Your Note",
+            "yourNotePlaceholder": "Add your notes here…",
+            "stylistNote": "Stylist Note",
+            "noStylistNote": "No notes from your stylist yet.",
+            "shopLook": "Shop This Look",
+            "linkedProduct": "Linked product",
+            "selectItem": "Select an item to view details"
+        },
+        "add": {
+            "open": "Add a photo",
+            "title": "Add a photo",
+            "subtitle": "A garment for your stylist to see and review.",
+            "choose": "Choose a photo",
+            "change": "Choose another",
+            "category": "Category",
+            "note": "Your note (optional)",
+            "notePlaceholder": "Where you wear it, what you would like to know…",
+            "submit": "Add to my wardrobe",
+            "added": "Added. Your stylist will review it.",
+            "errors": {
+                "full": "Your wardrobe is full.",
+                "rate": "Too many uploads at once. Wait a few minutes and try again.",
+                "failed": "The photo could not be added. Please try again.",
+                "tooLarge": "That photo is too large (15 MB maximum)."
+            }
+        },
+        "upload": {
+            "welcomeStudio": "Welcome to the AC Styling Studio!",
+            "gateTitle": "Welcome to AC Styling Studio",
+            "gateBody": "To upload your wardrobe, please create an account or sign in.",
+            "createAccount": "Create Account",
+            "haveAccount": "I Already Have an Account",
+            "settingUp": "Setting up your wardrobe…",
+            "readyBody": "Your personal wardrobe is ready. You can now upload your clothing items.",
+            "start": "Start Uploading",
+            "headerTitle": "Welcome to Your Wardrobe",
+            "instructions": "Upload photos of your clothing items. We'll review and organize them for you.",
+            "takePhoto": "Take Photo",
+            "gallery": "Gallery",
+            "readyToUpload": "Ready to upload ({count})",
+            "addMore": "+ Add more",
+            "notePlaceholder": "Note (optional)…",
+            "uploadAll": "Upload All",
+            "uploadedCount": "{count, plural, one {# item uploaded} other {# items uploaded}}",
+            "done": "I'm Done Uploading",
+            "uploaded": "{count, plural, one {# item uploaded successfully!} other {# items uploaded successfully!}}",
+            "prepareFailed": "Could not prepare the upload for {name}.",
+            "saveFailed": "Could not save {name}.",
+            "uploadError": "Error uploading {name}."
+        }
+    },
+    "Journal": {
+        "back": "Back to Profile",
+        "title": "My Styling Essence",
+        "subtitle": "A collection of your personal discoveries.",
+        "errorSaving": "Error saving",
+        "placeholder": "Your insights…",
+        "emptyTitle": "Your Journal is Empty",
+        "emptyBody": "Complete your first Masterclass module to unlock your interactive journal.",
+        "filterBy": "Filter by Masterclass:",
+        "all": "All Masterclasses",
+        "notStarted": "(not started)",
+        "missingOnly": "Show Missing Answers Only",
+        "noMatch": "No answers match your required filters.",
+        "answered": "{answered} of {total} Answered",
+        "questions": "{count, plural, one {# Question} other {# Questions}}",
+        "end": "— End of Journal —"
     }
 }

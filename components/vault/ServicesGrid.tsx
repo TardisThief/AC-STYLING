@@ -76,20 +76,20 @@ export default function ServicesGrid({ sessionServices, retainerService, recomme
         }
 
         if (!priceId) {
-            toast.error("Configuration Error: Missing Price ID");
+            toast.error(t("missingPrice"));
             return;
         }
 
         // ... (rest of handleCheckout logic)
-        const toastId = toast.loading("Securely redirecting to Stripe...");
+        const toastId = toast.loading(t("redirecting"));
 
         try {
             const { url, error } = await createCheckoutSession(priceId, '/vault/services');
             if (error) throw new Error(error);
             if (url) window.location.href = url;
         } catch (e: unknown) {
-            const errorMessage = e instanceof Error ? e.message : "Checkout initialization failed";
-            toast.error(errorMessage, { id: toastId });
+            console.error("[ServicesGrid] checkout failed:", e);
+            toast.error(t("checkoutFailed"), { id: toastId });
         }
     };
 
@@ -116,19 +116,19 @@ export default function ServicesGrid({ sessionServices, retainerService, recomme
                                 <Check size={32} />
                             </div>
 
-                            <h2 className="font-serif text-3xl text-ac-taupe">Request Received</h2>
+                            <h2 className="font-serif text-3xl text-ac-taupe">{t("requestReceived")}</h2>
 
                             <div className="space-y-2 text-sm text-ac-taupe/80 font-sans leading-relaxed">
-                                <p>Thank you for your trust.</p>
-                                <p>Alejandra has been notified and your request is now in her personal studio inbox.</p>
-                                <p className="pt-2 text-ac-taupe/60 text-xs uppercase tracking-widest">She will be in touch shortly.</p>
+                                <p>{t("thanks")}</p>
+                                <p>{t("notified")}</p>
+                                <p className="pt-2 text-ac-taupe/60 text-xs uppercase tracking-widest">{t("inTouch")}</p>
                             </div>
 
                             <button
                                 onClick={() => setShowSuccess(false)}
                                 className="mt-6 px-8 py-3 bg-ac-taupe text-white text-xs font-bold uppercase tracking-widest hover:bg-ac-gold transition-colors w-full rounded-sm"
                             >
-                                Return to Vault
+                                {t("returnToVault")}
                             </button>
                         </div>
                     </motion.div>
@@ -207,7 +207,7 @@ export default function ServicesGrid({ sessionServices, retainerService, recomme
                         <div className="bg-white/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-ac-gold/20 flex items-center gap-2 shadow-sm text-center">
                             <Sparkles size={12} className="text-ac-gold" />
                             <p className="font-serif text-ac-taupe italic text-xs">
-                                {recommendationReason || 'Recommended for your essence.'}
+                                {recommendationReason || t("recommended")}
                             </p>
                         </div>
                     </motion.div>

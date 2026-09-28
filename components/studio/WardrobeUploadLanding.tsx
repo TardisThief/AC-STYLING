@@ -8,6 +8,7 @@ import { getSignedUploadUrl, createWardrobeItem, claimWardrobe } from "@/app/act
 import type { Wardrobe } from "@/app/actions/wardrobes";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface Props {
     wardrobe: Wardrobe;
@@ -27,6 +28,10 @@ const CATEGORIES = ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Accesso
 export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props) {
     const router = useRouter();
     const supabase = createClient();
+    // MyStudio.upload.* — this page used inline per-locale ternaries,
+    // which left every toast and the category chips in English.
+    const t = useTranslations("MyStudio.upload");
+    const tc = useTranslations("MyStudio.categories");
 
     // Auth state
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -68,7 +73,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                         if (result.success) {
                             // Show welcome regardless - it's a new visit after signup/login
                             setShowWelcome(true);
-                            toast.success(locale === 'es' ? '¡Bienvenida al AC Styling Studio!' : 'Welcome to the AC Styling Studio!');
+                            toast.success(t('welcomeStudio'));
                         } else {
                             // Only show error if it's not an "already owned" situation
                             console.warn('Claim result:', result.error);
@@ -93,6 +98,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
             }
         }
         checkAuth();
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- t is stable per locale
     }, [supabase, wardrobe.owner_id, token, locale]);
 
     // File input refs
@@ -158,7 +164,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                 const urlResult = await getSignedUploadUrl(token, staged.file.name);
 
                 if (!urlResult.success || !urlResult.signedUrl || !urlResult.filePath) {
-                    toast.error(`Failed to prepare upload for ${staged.file.name}`);
+                    toast.error(t('prepareFailed', { name: staged.file.name }));
                     continue;
                 }
 
@@ -186,17 +192,17 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                 if (dbResult.success) {
                     successCount++;
                 } else {
-                    toast.error(`Failed to save ${staged.file.name}`);
+                    toast.error(t('saveFailed', { name: staged.file.name }));
                 }
             } catch (err) {
                 console.error('Upload error:', err);
-                toast.error(`Error uploading ${staged.file.name}`);
+                toast.error(t('uploadError', { name: staged.file.name }));
             }
         }
 
         if (successCount > 0) {
             setUploadedCount(prev => prev + successCount);
-            toast.success(`${successCount} item(s) uploaded successfully!`);
+            toast.success(t('uploaded', { count: successCount }));
             // Clear staged files
             stagedFiles.forEach(s => URL.revokeObjectURL(s.preview));
             setStagedFiles([]);
@@ -247,25 +253,23 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                     <Sparkles className="w-8 h-8 text-ac-gold" />
                 </div>
                 <h1 className="font-serif text-2xl text-ac-taupe mb-2">
-                    {locale === 'es' ? 'Bienvenida al AC Styling Studio' : 'Welcome to AC Styling Studio'}
+                    {t('gateTitle')}
                 </h1>
                 <p className="text-sm text-ac-taupe/60 mb-8">
-                    {locale === 'es'
-                        ? 'Para subir tu armario, por favor crea una cuenta o inicia sesión.'
-                        : 'To upload your wardrobe, please create an account or sign in.'}
+                    {t('gateBody')}
                 </p>
                 <div className="space-y-3">
                     <button
                         onClick={handleCreateAccount}
                         className="w-full bg-ac-taupe text-white py-3 rounded-sm font-bold uppercase tracking-widest text-xs hover:bg-ac-gold transition-all"
                     >
-                        {locale === 'es' ? 'Crear Cuenta' : 'Create Account'}
+                        {t('createAccount')}
                     </button>
                     <button
                         onClick={handleLogin}
                         className="w-full border border-ac-taupe/20 text-ac-taupe py-3 rounded-sm font-bold uppercase tracking-widest text-xs hover:border-ac-gold hover:text-ac-gold transition-all"
                     >
-                        {locale === 'es' ? 'Ya tengo cuenta' : 'I Already Have an Account'}
+                        {t('haveAccount')}
                     </button>
                 </div>
             </motion.div>
@@ -278,7 +282,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
             <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
                 <Loader2 className="w-10 h-10 text-ac-gold animate-spin mb-4" />
                 <p className="text-ac-taupe/60 text-sm uppercase tracking-widest">
-                    {locale === 'es' ? 'Configurando tu armario...' : 'Setting up your wardrobe...'}
+                    {t('settingUp')}
                 </p>
             </div>
         );
@@ -296,18 +300,16 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                     <Sparkles className="w-10 h-10 text-ac-gold" />
                 </div>
                 <h1 className="font-serif text-3xl text-ac-taupe mb-3">
-                    {locale === 'es' ? '¡Bienvenida al AC Styling Studio!' : 'Welcome to the AC Styling Studio!'}
+                    {t('welcomeStudio')}
                 </h1>
                 <p className="text-sm text-ac-taupe/60 mb-8">
-                    {locale === 'es'
-                        ? 'Tu armario personal está listo. Ahora puedes subir tus prendas.'
-                        : 'Your personal wardrobe is ready. You can now upload your clothing items.'}
+                    {t('readyBody')}
                 </p>
                 <button
                     onClick={handleDismissWelcome}
                     className="w-full bg-ac-taupe text-white py-3 rounded-sm font-bold uppercase tracking-widest text-xs hover:bg-ac-gold transition-all flex items-center justify-center gap-2"
                 >
-                    <span>{locale === 'es' ? 'Comenzar a Subir' : 'Start Uploading'}</span>
+                    <span>{t('start')}</span>
                     <ChevronRight size={14} />
                 </button>
             </motion.div>
@@ -325,7 +327,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                 <div className="bg-gradient-to-r from-ac-taupe to-ac-olive p-6 md:p-8 text-white text-center">
                     <Sparkles className="w-8 h-8 md:w-10 md:h-10 mx-auto mb-3 opacity-80" />
                     <h1 className="font-serif text-2xl md:text-3xl mb-2">
-                        {locale === 'es' ? 'Bienvenida a tu Armario' : 'Welcome to Your Wardrobe'}
+                        {t('headerTitle')}
                     </h1>
                     <p className="opacity-70 text-sm">
                         {wardrobe.title}
@@ -337,9 +339,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                     {/* Instructions */}
                     <div className="bg-ac-gold/10 border border-ac-gold/20 p-3 md:p-4 rounded-sm text-center">
                         <p className="text-xs md:text-sm text-ac-taupe">
-                            {locale === 'es'
-                                ? 'Sube fotos de tus prendas. Las revisaremos y organizaremos para ti.'
-                                : 'Upload photos of your clothing items. We\'ll review and organize them for you.'}
+                            {t('instructions')}
                         </p>
                     </div>
 
@@ -373,7 +373,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                             >
                                 <Camera className="w-6 h-6" />
                                 <span className="text-[10px] font-bold uppercase tracking-widest">
-                                    {locale === 'es' ? 'Tomar Foto' : 'Take Photo'}
+                                    {t('takePhoto')}
                                 </span>
                             </button>
 
@@ -385,7 +385,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                             >
                                 <ImagePlus className="w-6 h-6" />
                                 <span className="text-[10px] font-bold uppercase tracking-widest">
-                                    {locale === 'es' ? 'Galería' : 'Gallery'}
+                                    {t('gallery')}
                                 </span>
                             </button>
                         </div>
@@ -402,13 +402,13 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                             >
                                 <div className="flex items-center justify-between">
                                     <p className="text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40">
-                                        {locale === 'es' ? 'Preparados para subir' : 'Ready to upload'} ({stagedFiles.length})
+                                        {t('readyToUpload', { count: stagedFiles.length })}
                                     </p>
                                     <button
                                         onClick={() => galleryInputRef.current?.click()}
                                         className="text-[10px] font-bold uppercase tracking-widest text-ac-gold hover:text-ac-taupe transition-colors"
                                     >
-                                        {locale === 'es' ? '+ Añadir más' : '+ Add more'}
+                                        {t('addMore')}
                                     </button>
                                 </div>
 
@@ -443,7 +443,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                                                                 : 'border-ac-taupe/10 text-ac-taupe/60 hover:border-ac-taupe/30'
                                                                 }`}
                                                         >
-                                                            {cat}
+                                                            {tc(cat)}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -453,7 +453,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                                                     type="text"
                                                     value={staged.note}
                                                     onChange={(e) => updateStaged(index, { note: e.target.value })}
-                                                    placeholder={locale === 'es' ? 'Nota (opcional)...' : 'Note (optional)...'}
+                                                    placeholder={t('notePlaceholder')}
                                                     className="w-full bg-white border border-ac-taupe/10 rounded-sm px-2 py-1 text-xs focus:outline-none focus:border-ac-gold"
                                                 />
                                             </div>
@@ -479,7 +479,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                                         <Loader2 className="animate-spin" size={16} />
                                     ) : (
                                         <>
-                                            <span>{locale === 'es' ? 'Subir Todo' : 'Upload All'}</span>
+                                            <span>{t('uploadAll')}</span>
                                             <ChevronRight size={14} />
                                         </>
                                     )}
@@ -500,7 +500,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                                 <div className="bg-ac-olive/10 border border-ac-olive/20 p-3 md:p-4 rounded-sm flex items-center justify-center gap-3">
                                     <Check className="text-ac-olive" size={20} />
                                     <span className="text-sm text-ac-taupe font-medium">
-                                        {uploadedCount} {locale === 'es' ? 'artículos subidos' : 'items uploaded'}
+                                        {t('uploadedCount', { count: uploadedCount })}
                                     </span>
                                 </div>
 
@@ -509,7 +509,7 @@ export default function WardrobeUploadLanding({ wardrobe, token, locale }: Props
                                     onClick={handleDone}
                                     className="w-full bg-ac-taupe text-white py-3 rounded-sm font-bold uppercase tracking-widest text-xs hover:bg-ac-gold transition-all"
                                 >
-                                    {locale === 'es' ? 'Terminé de Subir' : "I'm Done Uploading"}
+                                    {t('done')}
                                 </button>
                             </motion.div>
                         )}

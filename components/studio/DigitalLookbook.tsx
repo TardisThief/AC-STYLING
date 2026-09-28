@@ -11,6 +11,7 @@ import { CLIENT_ITEM_COLUMNS } from "@/app/lib/wardrobe-columns";
 import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 import type { Lookbook, WardrobeItem } from "@/app/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useTranslations } from "next-intl";
 
 // Draggable image placed on the lookbook canvas (persisted in lookbooks.lookbook_items).
 interface CanvasItem {
@@ -49,6 +50,9 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
     const [newCollection, setNewCollection] = useState("");
 
     const supabase = createClient();
+    // What her own view shows is in her language. The stylist-only controls
+    // (create, publish, clone, delete, the asset sidebar) stay English.
+    const t = useTranslations("MyStudio");
 
     useEffect(() => {
         loadData();
@@ -202,14 +206,14 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
         ? lookbooks.filter(lb => lb.status === 'Published')
         : lookbooks;
 
-    if (loading) return <div className="p-8 text-center text-ac-taupe/40">Loading Collections...</div>;
+    if (loading) return <div className="p-8 text-center text-ac-taupe/40">{t("lookbook.loading")}</div>;
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-200px)] min-h-[600px]">
             {/* Lookbook List */}
             <div className="lg:col-span-3 flex flex-col h-full border-r border-ac-taupe/10 pr-4">
                 <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-serif text-xl text-ac-taupe">Collections</h3>
+                    <h3 className="font-serif text-xl text-ac-taupe">{t("lookbook.collections")}</h3>
                     {!isClientView && (
                         <button
                             onClick={() => setIsCreating(true)}
@@ -236,13 +240,13 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                 )}
                             </div>
                             <p className="text-[9px] uppercase tracking-widest font-bold text-ac-taupe/40">
-                                {lb.collection_name || 'General'}
+                                {lb.collection_name || t("lookbook.general")}
                             </p>
                         </button>
                     ))}
                     {visibleLookbooks.length === 0 && (
                         <div className="text-center py-8 text-ac-taupe/30 text-[10px] uppercase font-bold tracking-widest">
-                            No collections found
+                            {t("lookbook.empty")}
                         </div>
                     )}
                 </div>
@@ -279,7 +283,8 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                         }
                                     }}
                                     className="p-2 text-ac-taupe/40 hover:text-ac-taupe transition-colors"
-                                    title="Download Image"
+                                    title={t("lookbook.download")}
+                                    aria-label={t("lookbook.download")}
                                 >
                                     <Download size={18} />
                                 </button>
@@ -348,7 +353,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                         className={`absolute cursor-move ${selectedCanvasItem === index.toString() && !isClientView ? 'ring-1 ring-ac-gold ring-offset-2' : ''}`}
                                         style={{ left: item.x || '10%', top: item.y || '10%', width: item.width || 150 }}
                                     >
-                                        <img src={item.image_url ?? undefined} alt={item.category ? `${item.category} on the lookbook` : "Wardrobe item on the lookbook"} className="w-full h-full object-contain pointer-events-none drop-shadow-xl" />
+                                        <img src={item.image_url ?? undefined} alt={item.category ? t("lookbook.itemAlt", { category: t.has(`categories.${item.category}`) ? t(`categories.${item.category}`) : item.category }) : t("lookbook.itemAltGeneric")} className="w-full h-full object-contain pointer-events-none drop-shadow-xl" />
 
                                         {/* Resize / Remove Handles - Only for Admin */}
                                         {selectedCanvasItem === index.toString() && !isClientView && (
@@ -404,7 +409,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center bg-ac-taupe/5 border-2 border-dashed border-ac-taupe/10 rounded-sm text-ac-taupe/30">
                         <LayoutGrid size={48} strokeWidth={1} className="mb-4" />
-                        <p className="text-[10px] font-bold uppercase tracking-widest">Select a lookbook to view</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest">{t("lookbook.select")}</p>
                     </div>
                 )}
             </div>

@@ -435,6 +435,15 @@ and the already-owned message (`VaultSales.nav.signIn` / `enterVault`,
 `VaultSales.hero.returning`, `VaultSales.offer.alreadyOwned` / `openVault` in
 `messages/es.json`).
 
+**Added 2026-09-28, the biggest part of this read:** a Studio client's own
+screens are now in Spanish: `MyStudio` (her dashboard, measurements card,
+lookbooks, wardrobe, the new "Añadir una foto", and the intake upload page),
+`Journal` (the Essence journal) and the service-request confirmation (new keys
+in `Studio`). Two choices worth confirming: the category names
+("Blusas y tops", "Pantalones y faldas", "Abrigos"…) and the curation
+statuses ("Conservar", "Arreglar", "Donar", "Archivar"). The upload page's
+existing Spanish was kept as it was.
+
 ## 10. Replace `public/logo.png` with a larger original — minor
 
 150×150. It clears Google's 112×112 floor for the `Organization` logo in

@@ -17,6 +17,8 @@ import type { WardrobeItem, BoutiqueItem } from "@/app/lib/types";
 import SafeImage from "@/components/ui/SafeImage";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { SkeletonBlock, SkeletonScreen } from "@/components/ui/Skeleton";
+import { useTranslations } from "next-intl";
+import ClientAddPhoto from "@/components/studio/ClientAddPhoto";
 
 interface VirtualWardrobeProps {
     wardrobeId: string;
@@ -28,6 +30,18 @@ const CATEGORIES = ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Accesso
 const STATUSES = ['Keep', 'Tailor', 'Donate', 'Archive'];
 
 export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = false }: VirtualWardrobeProps) {
+    // Everything a client can see is in her language (MyStudio.*). Stored
+    // values stay English (a category or status is data); only their labels
+    // are translated. Stylist-only controls stay English.
+    const t = useTranslations("MyStudio");
+    const categoryLabel = (c: string | null | undefined) =>
+        !c ? t("wardrobe.uncategorized") : t.has(`categories.${c}`) ? t(`categories.${c}`) : c;
+    const statusLabel = (st: string) => (t.has(`statuses.${st}`) ? t(`statuses.${st}`) : st);
+    // Her own "add a photo" (owner decision 2026-09-28); bumping reloadKey
+    // re-reads the wardrobe once it is added.
+    const [isClientAdding, setIsClientAdding] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
+    const openAdd = () => (isClientView ? setIsClientAdding(true) : setIsAdding(true));
     const [items, setItems] = useState<WardrobeItem[]>([]);
     const [boutiqueItems, setBoutiqueItems] = useState<BoutiqueItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -105,7 +119,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                     .eq('wardrobe_id', wardrobeId)
                     .order('created_at', { ascending: false });
 
-                if (error) toast.error("Failed to load wardrobe");
+                if (error) toast.error(t("wardrobe.loadFailed"));
                 else setItems(await signWardrobeItems(supabase, (data ?? []) as unknown as WardrobeItem[]));
             } else {
                 // Admin view needs the private note, which only the service role
@@ -129,7 +143,8 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
         }
 
         loadData();
-    }, [wardrobeId, ownerId, supabase, isClientView]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- t is stable per locale
+    }, [wardrobeId, ownerId, supabase, isClientView, reloadKey]);
 
     const handleUpdateItem = async (itemId: string, updates: Partial<WardrobeItem>) => {
         // Both sides go through a guarded action. The client's used to be a
@@ -142,7 +157,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
             : !(await updateAdminWardrobeItem(itemId, updates)).success;
 
         if (failed) {
-            toast.error("Failed to update item");
+            toast.error(isClientView ? t("wardrobe.updateFailed") : "Failed to update item");
             return;
         }
 
@@ -287,7 +302,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
     // "Loading Wardrobe..." line this replaces was the open Studio P3 nit.
     if (loading) {
         return (
-            <SkeletonScreen label="Loading wardrobe">
+            <SkeletonScreen label={t("wardrobe.loading")}>
                 <div className="space-y-8">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         {Array.from({ length: 4 }, (_, i) => (
@@ -323,12 +338,12 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                 {STATUSES.map(s => (
                     <div key={s} className="bg-white/40 border border-white/50 rounded-sm p-4 text-center">
                         <div className="text-2xl font-serif text-ac-taupe">{statusCounts[s]}</div>
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mt-1">{s}</div>
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mt-1">{statusLabel(s)}</div>
                     </div>
                 ))}
             </div>
             {untagged > 0 && (
-                <p className="text-[10px] text-ac-taupe/30 text-right -mt-4">{untagged} item{untagged !== 1 ? 's' : ''} not yet reviewed</p>
+                <p className="text-[10px] text-ac-taupe/30 text-right -mt-4">{t("wardrobe.notReviewed", { count: untagged })}</p>
             )}
 
             {/* Bulk bar — takes the filter bar's place while a selection is live, so
@@ -381,13 +396,13 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
             <div className={`flex flex-wrap items-center gap-4 bg-white/40 backdrop-blur-md border border-white/50 p-4 rounded-sm ${!isClientView && selectedIds.size > 0 ? 'hidden' : ''}`}>
                 <div className="flex items-center gap-2 text-ac-taupe/40 px-2">
                     <Filter size={14} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Filters</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{t("wardrobe.filters")}</span>
                 </div>
                 <button
                     onClick={() => setFilterCategory(null)}
                     className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${!filterCategory ? 'bg-ac-taupe text-white' : 'bg-white/50 text-ac-taupe/40'}`}
                 >
-                    All
+                    {t("wardrobe.all")}
                 </button>
                 {CATEGORIES.map(cat => (
                     <button
@@ -395,18 +410,18 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                         onClick={() => setFilterCategory(cat)}
                         className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${filterCategory === cat ? 'bg-ac-taupe text-white' : 'bg-white/50 text-ac-taupe/40'}`}
                     >
-                        {cat}
+                        {categoryLabel(cat)}
                     </button>
                 ))}
 
                 <div className="flex-1" /> {/* Spacer */}
 
                 <button
-                    onClick={() => setIsAdding(true)}
+                    onClick={openAdd}
                     className="ml-auto bg-ac-gold text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-ac-taupe transition-colors flex items-center gap-2 shadow-sm"
                 >
                     <Plus size={14} strokeWidth={3} />
-                    Add Item
+                    {isClientView ? t("add.open") : "Add Item"}
                 </button>
             </div>
 
@@ -438,15 +453,15 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                 >
                                     <SafeImage
                                         src={item.image_url ?? undefined}
-                                        alt={`${item.category || 'Uncategorized'}${item.brand ? ` by ${item.brand}` : ''}${item.status ? ` — marked ${item.status}` : ''}`}
+                                        alt={`${categoryLabel(item.category)}${item.brand ? ` · ${item.brand}` : ''}${item.status && t.has(`statuses.${item.status}`) ? ` · ${statusLabel(item.status)}` : ''}`}
                                         className="w-full h-full object-cover"
                                     />
                                     <div className="absolute top-2 left-2 flex gap-1">
-                                        {item.status === 'Keep' && <span className="bg-ac-olive text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">Keep</span>}
-                                        {item.status === 'Tailor' && <span className="bg-ac-gold text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">Tailor</span>}
+                                        {item.status === 'Keep' && <span className="bg-ac-olive text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">{statusLabel('Keep')}</span>}
+                                        {item.status === 'Tailor' && <span className="bg-ac-gold text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-full">{statusLabel('Tailor')}</span>}
                                     </div>
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                                        <p className="text-white text-[10px] font-bold uppercase tracking-widest truncate">{item.category || 'Uncategorized'}</p>
+                                        <p className="text-white text-[10px] font-bold uppercase tracking-widest truncate">{categoryLabel(item.category)}</p>
                                     </div>
                                 </button>
 
@@ -475,11 +490,11 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
 
                     {/* Add Item Trigger Card */}
                     <button
-                        onClick={() => setIsAdding(true)}
+                        onClick={openAdd}
                         className="aspect-[3/4] border-2 border-dashed border-ac-taupe/10 rounded-sm flex flex-col items-center justify-center gap-4 text-ac-taupe/20 hover:border-ac-gold/40 hover:text-ac-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold transition-all"
                     >
                         <Plus size={32} strokeWidth={1} aria-hidden="true" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Add Item</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">{isClientView ? t("add.open") : "Add Item"}</span>
                     </button>
                 </div>
 
@@ -496,8 +511,8 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                             >
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <h3 className="font-serif text-2xl text-ac-taupe">Item Profile</h3>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-ac-taupe/30">Curation Details</p>
+                                        <h3 className="font-serif text-2xl text-ac-taupe">{t("wardrobe.profile")}</h3>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-ac-taupe/30">{t("wardrobe.details")}</p>
                                     </div>
                                     {!isClientView && (
                                         <div className="flex items-center gap-2">
@@ -527,7 +542,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                     {isClientView && (
                                         <button
                                             onClick={() => setSelectedItem(null)}
-                                            aria-label="Close item details"
+                                            aria-label={t("wardrobe.closeDetails")}
                                             className="p-2 rounded-sm text-ac-taupe/20 hover:text-ac-taupe focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ac-gold transition-colors"
                                         >
                                             <X size={20} aria-hidden="true" />
@@ -536,8 +551,8 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                 </div>
 
                                 <div className="aspect-[3/4] w-full bg-ac-taupe/5 rounded-sm overflow-hidden border border-ac-taupe/10 relative group">
-                                    <SafeImage src={selectedItem.image_url ?? undefined} className="w-full h-full object-cover" alt={`${selectedItem.category || 'Item'}${selectedItem.brand ? ` by ${selectedItem.brand}` : ''}`} />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <SafeImage src={selectedItem.image_url ?? undefined} className="w-full h-full object-cover" alt={`${categoryLabel(selectedItem.category)}${selectedItem.brand ? ` · ${selectedItem.brand}` : ''}`} />
+                                    {!isClientView && <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button
                                             onClick={() => setIsUpdatingImage(true)}
                                             className="bg-white text-ac-taupe px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-ac-gold hover:text-white transition-colors flex items-center gap-2"
@@ -545,13 +560,13 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                             <Camera size={14} />
                                             Change Image
                                         </button>
-                                    </div>
+                                    </div>}
                                 </div>
 
                                 <div className="space-y-6">
                                     {/* Category */}
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-3">Category</label>
+                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-3">{t("wardrobe.category")}</label>
                                         <div className="flex flex-wrap gap-2">
                                             {CATEGORIES.map(cat => (
                                                 <button
@@ -559,7 +574,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                     onClick={() => handleUpdateItem(selectedItem.id, { category: cat })}
                                                     className={`px-3 py-1 rounded-sm text-[10px] uppercase font-bold tracking-tighter border transition-all ${selectedItem.category === cat ? 'bg-ac-taupe text-white border-ac-taupe' : 'border-ac-taupe/10 text-ac-taupe/60'}`}
                                                 >
-                                                    {cat}
+                                                    {categoryLabel(cat)}
                                                 </button>
                                             ))}
                                         </div>
@@ -567,7 +582,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
 
                                     {/* Status - Read Only for Client */}
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-3">Curation Status</label>
+                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-3">{t("wardrobe.status")}</label>
                                         <div className="flex flex-wrap gap-2">
                                             {STATUSES.map(stat => (
                                                 <button
@@ -580,7 +595,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                         ${isClientView ? 'opacity-80 cursor-default' : ''}
                                                     `}
                                                 >
-                                                    {stat}
+                                                    {statusLabel(stat)}
                                                 </button>
                                             ))}
                                         </div>
@@ -589,17 +604,17 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                     {/* Brand & Tags */}
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-2">Brand / Designer</label>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-2">{t("wardrobe.brand")}</label>
                                             <input
                                                 type="text"
                                                 value={selectedItem.brand || ""}
                                                 onChange={(e) => handleUpdateItem(selectedItem.id, { brand: e.target.value })}
-                                                placeholder="e.g. Zara, Prada"
+                                                placeholder={t("wardrobe.brandPlaceholder")}
                                                 className="w-full bg-ac-taupe/5 border border-ac-taupe/10 rounded-sm p-2 text-xs focus:outline-none focus:border-ac-gold"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-2">Tags</label>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40 mb-2">{t("wardrobe.tags")}</label>
                                             <input
                                                 type="text"
                                                 value={selectedItem.tags?.join(', ') || ""}
@@ -607,7 +622,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                     const tags = e.target.value.split(',').map(t => t.trim()).filter(Boolean);
                                                     handleUpdateItem(selectedItem.id, { tags });
                                                 }}
-                                                placeholder="Summer, Work..."
+                                                placeholder={t("wardrobe.tagsPlaceholder")}
                                                 className="w-full bg-ac-taupe/5 border border-ac-taupe/10 rounded-sm p-2 text-xs focus:outline-none focus:border-ac-gold"
                                             />
                                         </div>
@@ -618,12 +633,12 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                         <div>
                                             <div className="flex items-center gap-2 mb-2">
                                                 <MessageSquare size={12} className="text-ac-taupe/40" />
-                                                <label className="text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40">Client Note</label>
+                                                <label className="text-[10px] font-bold uppercase tracking-widest text-ac-taupe/40">{isClientView ? t("wardrobe.yourNote") : "Client Note"}</label>
                                             </div>
                                             <textarea
                                                 value={selectedItem.client_note || ""}
                                                 onChange={(e) => handleUpdateItem(selectedItem.id, { client_note: e.target.value })}
-                                                placeholder="Add your notes here..."
+                                                placeholder={t("wardrobe.yourNotePlaceholder")}
                                                 className="w-full bg-ac-taupe/5 border border-ac-taupe/10 rounded-sm p-3 text-[11px] text-ac-taupe placeholder:text-ac-taupe/40 focus:outline-none focus:border-ac-gold transition-all resize-none h-24"
                                             />
                                         </div>
@@ -637,12 +652,12 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                             <div className="flex items-center gap-2 mb-2">
                                                 <Briefcase size={12} className="text-ac-gold" />
                                                 <label htmlFor="item-shared-note" className="text-[10px] font-bold uppercase tracking-widest text-ac-gold">
-                                                    {isClientView ? "Stylist Note" : "Note to Client"}
+                                                    {isClientView ? t("wardrobe.stylistNote") : "Note to Client"}
                                                 </label>
                                             </div>
                                             {isClientView ? (
                                                 <div className="bg-ac-gold/5 border border-ac-gold/10 p-3 rounded-sm text-[11px] text-ac-taupe min-h-[60px]">
-                                                    {selectedItem.notes || <span className="text-ac-taupe/30 italic">No notes from your stylist yet.</span>}
+                                                    {selectedItem.notes || <span className="text-ac-taupe/30 italic">{t("wardrobe.noStylistNote")}</span>}
                                                 </div>
                                             ) : (
                                                 <>
@@ -713,7 +728,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                             <div className="pt-4 border-t border-ac-taupe/10">
                                                 <div className="flex items-center gap-2 mb-3">
                                                     <ShoppingBag size={12} className="text-ac-olive" />
-                                                    <label className="text-[10px] font-bold uppercase tracking-widest text-ac-olive">Shop This Look</label>
+                                                    <label className="text-[10px] font-bold uppercase tracking-widest text-ac-olive">{t("wardrobe.shopLook")}</label>
                                                 </div>
                                                 {shopUrl ? (
                                                     <a
@@ -722,12 +737,12 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                         rel="noopener noreferrer"
                                                         className="bg-ac-olive/5 border border-ac-olive/20 hover:border-ac-olive/60 p-3 rounded-sm text-xs text-ac-taupe flex justify-between items-center transition-colors group"
                                                     >
-                                                        <span>{linked?.name || 'Linked Product'}</span>
+                                                        <span>{linked?.name || t("wardrobe.linkedProduct")}</span>
                                                         <ExternalLink size={14} className="text-ac-olive group-hover:scale-110 transition-transform" />
                                                     </a>
                                                 ) : (
                                                     <div className="bg-ac-olive/5 border border-ac-olive/10 p-3 rounded-sm text-xs text-ac-taupe flex justify-between items-center">
-                                                        <span>{linked?.name || 'Linked Product'}</span>
+                                                        <span>{linked?.name || t("wardrobe.linkedProduct")}</span>
                                                         <ExternalLink size={14} className="text-ac-olive/40" />
                                                     </div>
                                                 )}
@@ -739,7 +754,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                         ) : (
                             <div className="bg-white/20 border-2 border-dashed border-ac-taupe/10 rounded-sm p-12 text-center h-[600px] flex flex-col items-center justify-center">
                                 <Tag className="text-ac-taupe/10 mb-4" size={40} strokeWidth={1} />
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-ac-taupe/30">Select an item to view details</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-ac-taupe/30">{t("wardrobe.selectItem")}</p>
                             </div>
                         )}
                     </AnimatePresence>
@@ -748,7 +763,17 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
 
             {/* Add Item Modal */}
             <AnimatePresence>
-                {isAdding && (
+                {isClientView && isClientAdding && (
+                    <ClientAddPhoto
+                        wardrobeId={wardrobeId}
+                        onClose={() => setIsClientAdding(false)}
+                        onAdded={() => setReloadKey((k) => k + 1)}
+                    />
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {isAdding && !isClientView && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -1110,7 +1135,7 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
 
             {/* Update Image Modal */}
             <AnimatePresence>
-                {isUpdatingImage && selectedItem && (
+                {isUpdatingImage && selectedItem && !isClientView && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
