@@ -114,8 +114,10 @@ records in `supabase/migrations/README.md`. Checked by the owner the same day: a
 (resources and Lab load) and as one without (question count only) behave
 as intended.
 
-**Paid-path rehearsal, 2026-09-28** (live site, Stripe test mode; record in
-progress at `docs/REHEARSAL-2026-09-28.md`). Found and fixed the same day,
+**Paid-path rehearsal, 2026-09-28** (live site, Stripe test mode; complete,
+record at `docs/REHEARSAL-2026-09-28.md`). Every money path ran once for
+real: both guest checkouts, a signed-in purchase, the whole renewal ladder
+($150 → $100 → $50), grace, lapse and reset, a refund, and account deletion. Found and fixed the same day,
 each with a test that failed first: after a password login the Profile link
 pointed at `/vault/join` until a reload (a prefetched signed-out Vault layout;
 every browser-side sign-in and sign-out now does a full load); `/welcome`
@@ -123,7 +125,11 @@ promised an existing member an email that is never sent; the Stripe test
 webhooks were not subscribed to refund or dispute events, so that admin alert
 had never fired (cutover checklist updated); and a buyer with an existing
 account got no email at all, now a branded receipt sent exactly once per
-checkout (migration 34).
+checkout (migration 34); a signed-in member buying from `/vault-access` went
+through the guest checkout, so a mistyped email would have sent her purchase
+to another account (now decided at click time), and two sales-path links led
+members to the signup form. **Still open from it:** the sales page will sell a
+member what she already holds, and shows her "Log in as a guest".
 
 **Still open, and why:**
 

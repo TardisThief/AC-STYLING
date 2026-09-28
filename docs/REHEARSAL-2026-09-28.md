@@ -5,8 +5,9 @@ The first end-to-end run of every money path on the live site
 any of it. The owner clicked; the agent checked the database, the emails and
 the logs after each step, and fixed what broke.
 
-**Status: in progress.** Steps 1–5 done (purchases, the whole renewal
-ladder, grace and lapse); refund, Restore and cleanup are next.
+**Status: complete.** Every journey below ran; six defects were found, and
+all six are fixed, tested and deployed. Two gaps on the sales page are left
+open, with reasons (end of this file).
 
 ## Setup
 
@@ -37,6 +38,15 @@ ladder, grace and lapse); refund, Restore and cleanup are next.
 | 4 | **Second renewal**, term moved to end in 10 days again | $50 (⅓, the floor); count 2; one "access is renewed" receipt | $50.00; expiry **2027-10-08**; count 2; receipt arrived, `receipt_sent_at` claimed once | Pass |
 | 5a | **Ended, within grace** (expired 5 days ago) | Content locked; banner keeps her $50 price until the grace end | Colorimetry locked; banner offers $50 | Pass |
 | 5b | **Lapsed** (expired 31 days ago), then buy the pass again from `/vault-access` while signed in | Banner: price reset, link to buy; $150; count reset to 0; expiry a year from today; one "purchase confirmed" receipt | Banner's "See the current price" went to the **signup form**. Bought at $150: count **0**, expiry **2027-09-28**, receipt arrived. But the checkout was the **guest** flow: email typed into Stripe, return to `/welcome` saying "sign in". | Fixed (below) |
+| 6 | Re-run of 5b after the fix: signed in, start checkout from `/vault-access`, then cancel | Checkout attached to her account, email prefilled, success back to the Vault | Session `cs_test_a1wi8…`: `client_reference_id` = her id, `customer_email` prefilled, `success_url` `/vault?checkout_success=true`; left unpaid (she already held the pass) | Pass |
+| 7 | **Refund** of journey 1's $150 through the Stripe API | `charge.refunded` reaches the webhook; "Refund issued" admin alert; access kept | Alert within seconds (the first time it has ever fired); the account kept its pass | Pass |
+| 8 | **Cleanup**: all three rehearsal accounts deleted through the app (Profile → Delete Account) | Purchases and fulfilments kept, detached; no grants; check OK | 12 purchases and 20 fulfilments kept, **0 attached**; 0 grants; 0 orphaned profiles; 0 open claims; `check_fulfillments.mjs` `OK` | Pass |
+
+**Not run live: Restore.** Its button only shows on a locked masterclass, and
+every rehearsal account had access. Its guards (skip refunded or disputed
+charges; never hand a deleted account's purchase to a new account with the
+same email) are covered on the real schema by
+`tests/integration/fulfillment.test.ts`.
 
 ## Defects found and fixed
 
@@ -72,13 +82,23 @@ it is visible on the site, re-checked live.
    (`tests/unit/renew-access-banner.test.tsx`), and the sales page's closing
    "Get access" goes to its own offer section, like the hero's.
 
-## Still to run
+## Left open
 
-- Re-run 5b after deploy: signed in, buy from `/vault-access`; expect a
-  checkout with her email prefilled and a return to the Vault.
-- Refund one test charge: admin "Refund issued" alert, access not revoked.
-- Restore: a new account with a guest buyer's email gets the unrefunded
-  purchase and not the refunded one.
-- A receipt arrives for a signed-in purchase and for a renewal.
-- Cleanup: delete the three accounts in the app; purchases and fulfilments
-  stay, detached; `check_fulfillments.mjs` `OK`.
+- **The sales page sells a member what she already holds.** It is
+  prerendered and cannot know what she owns, so a pass holder can pay for the
+  pass again (the owner noticed it at journey 6). The fix is the same shape
+  as defect 5: when a signed-in member clicks a buy button, the server checks
+  her entitlements and tells her she already has access instead of opening
+  Stripe.
+- **"Log in as a guest" shows to signed-in members** on the same page, and
+  clicking it swaps her real session for an anonymous one. An anonymous
+  account was created during cleanup (18:45 UTC), probably by that link; it
+  holds nothing.
+
+## Using this as the cutover smoke test
+
+After the Stripe live cutover (owner action 1), with a real card and a real
+product: run journeys 1 or 2 (a guest purchase), 6 without cancelling (a
+signed-in purchase), and 7 (refund it), then `check_fulfillments.mjs`. That
+exercises both checkout flows, both purchase emails, the refund alert and
+the fulfilment record on live keys.
