@@ -114,9 +114,17 @@ export default async function WelcomePage({
                                     </p>
                                 )}
 
-                                <p className="mt-10 text-sm leading-relaxed text-ac-taupe">
-                                    {t("emailFallback")}
-                                </p>
+                                {/* Only when an email was, or is about to be, sent.
+                                    The webhook emails a way in only while the
+                                    account has never been signed in, which is
+                                    what `claimable: false` rules out; saying it
+                                    anyway promised an email that never came
+                                    (2026-09-28 rehearsal). */}
+                                {info.claimable !== false && (
+                                    <p className="mt-10 text-sm leading-relaxed text-ac-taupe">
+                                        {t("emailFallback")}
+                                    </p>
+                                )}
                             </>
                         )}
                     </div>
