@@ -44,7 +44,14 @@ and match nothing.
 4. Swap `STRIPE_SECRET_KEY` to the `sk_live_…` key.
 5. Create a **new webhook endpoint** in live mode and set `STRIPE_WEBHOOK_SECRET`
    to its signing secret. The test-mode secret will not verify live events, and
-   the handler rejects anything that fails signature verification.
+   the handler rejects anything that fails signature verification. Subscribe it
+   to exactly these six events:
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+   `checkout.session.async_payment_failed`, `checkout.session.expired`,
+   `charge.refunded`, `charge.dispute.created`. The last two are what raise the
+   "Refund issued" / "Payment disputed" admin notification; until 2026-09-28
+   neither test endpoint was subscribed to them, so that notification had never
+   fired (both test endpoints were fixed that day through the API).
 6. Make one real purchase end to end and confirm a row appears in
    `fulfillments` with `status = 'completed'`.
 7. The `masterclass_pass` offer (added 2026-09-21, created from admin with the
