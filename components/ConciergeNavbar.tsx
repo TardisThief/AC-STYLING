@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/routing";
-import { User } from "lucide-react";
+import { LayoutDashboard, User } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import UserNotifications from "./UserNotifications";
 
@@ -48,6 +48,18 @@ export default function ConciergeNavbar({ isGuest, isAdmin }: { isGuest?: boolea
 
                 {/* Right Side Actions */}
                 <div className="flex items-center space-x-4 md:space-x-6">
+                    {/* The centred Admin Panel link is desktop-only; on a phone
+                        it would collide with the logo, so admins get an icon
+                        here instead (owner request 2026-09-28). */}
+                    {isAdmin && (
+                        <Link
+                            href="/vault/admin"
+                            aria-label="Admin Panel"
+                            className="md:hidden p-2 border border-ac-taupe/20 rounded-full hover:border-ac-gold hover:text-ac-gold transition-colors"
+                        >
+                            <LayoutDashboard size={18} aria-hidden="true" />
+                        </Link>
+                    )}
                     <UserNotifications />
 
                     <div className="h-4 w-px bg-ac-taupe/10 hidden md:block"></div>

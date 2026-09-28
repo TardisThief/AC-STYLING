@@ -57,10 +57,16 @@ test.describe('a visitor on the sales page', () => {
 })
 
 test.describe('an admin', () => {
-    // The navbar's Admin Panel link is desktop-only by design (hidden below md).
-    test('sees the admin panel link', async ({ page, isMobile }) => {
-        test.skip(isMobile, 'the Admin Panel link is not shown at phone width')
+    // On a phone the centred link is hidden and an icon link takes its place.
+    test('sees the admin panel link, on desktop and on a phone', async ({ page }) => {
         await signIn(page, ADMIN)
-        await expect(page.getByRole('link', { name: 'Admin Panel' })).toBeVisible()
+        const link = page.getByRole('link', { name: 'Admin Panel' }).locator('visible=true')
+        await expect(link).toHaveCount(1)
+        await expect(link).toHaveAttribute('href', '/en/vault/admin')
+    })
+
+    test('a member does not', async ({ page }) => {
+        await signIn(page, MEMBER)
+        await expect(page.getByRole('link', { name: 'Admin Panel' })).toHaveCount(0)
     })
 })
