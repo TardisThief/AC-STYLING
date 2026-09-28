@@ -21,7 +21,9 @@
     "test:e2e:local-db": "bash scripts/ci/e2e-db.sh start && node scripts/ci/run-e2e.mjs",
     "test:e2e:db:stop": "bash scripts/ci/e2e-db.sh stop",
     "db:platform": "node scripts/ci/dump_platform_sql.mjs",
-    "db:platform:check": "node scripts/ci/dump_platform_sql.mjs --check"
+    "db:platform:check": "node scripts/ci/dump_platform_sql.mjs --check",
+    "db:types": "bash scripts/ci/db-types.sh",
+    "db:types:check": "bash scripts/ci/db-types.sh --check"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",

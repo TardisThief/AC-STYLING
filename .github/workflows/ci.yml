@@ -94,6 +94,11 @@ jobs:
       - name: Start the local test database
         run: bash scripts/ci/e2e-db.sh start
 
+      # The committed schema types (lib/database.types.ts) must be what this
+      # database, built from the committed baseline, generates.
+      - name: Generated types match the schema
+        run: npm run db:types:check
+
       - name: Build and run the browser tests
         run: node scripts/ci/run-e2e.mjs --reporter=line
 
