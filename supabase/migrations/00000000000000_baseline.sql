@@ -244,93 +244,6 @@ $$;
 ALTER FUNCTION "public"."check_wardrobe_eligibility"() OWNER TO "postgres";
 
 --
--- Name: clone_lookbook("uuid", "uuid"); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION "public"."clone_lookbook"("lookbook_id" "uuid", "target_profile_id" "uuid") RETURNS "uuid"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
-    AS $$
-DECLARE
-    new_lookbook_id UUID;
-    item_record RECORD;
-    new_item_id UUID;
-    original_item_owner UUID;
-BEGIN
-    -- 1. Get original lookbook owner to check if we need to clone items too
-    SELECT user_id INTO original_item_owner FROM public.lookbooks WHERE id = lookbook_id;
-
-    -- 2. Create the new lookbook
-    INSERT INTO public.lookbooks (
-        user_id, title, collection_name, status, metadata
-    )
-    SELECT
-        target_profile_id,
-        title || ' (Copy)',
-        collection_name,
-        'Draft', -- Reset to draft
-        metadata
-    FROM public.lookbooks
-    WHERE id = lookbook_id
-    RETURNING id INTO new_lookbook_id;
-
-    -- 3. Clone items and link them
-    -- We assume lookbooks largely consist of items we want to copy into the new user's wardrobe (e.g. from Warehouse)
-    
-    FOR item_record IN 
-        SELECT li.item_id, li.position
-        FROM public.lookbook_items li
-        WHERE li.lookbook_id = lookbook_id
-    LOOP
-        -- Clone item to new user
-        new_item_id := public.clone_wardrobe_item(item_record.item_id, target_profile_id);
-        
-        -- Link new item to new lookbook
-        INSERT INTO public.lookbook_items (lookbook_id, item_id, position)
-        VALUES (new_lookbook_id, new_item_id, item_record.position);
-        
-    END LOOP;
-
-    RETURN new_lookbook_id;
-END;
-$$;
-
-ALTER FUNCTION "public"."clone_lookbook"("lookbook_id" "uuid", "target_profile_id" "uuid") OWNER TO "postgres";
-
---
--- Name: clone_wardrobe_item("uuid", "uuid"); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION "public"."clone_wardrobe_item"("item_id" "uuid", "target_profile_id" "uuid") RETURNS "uuid"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
-    AS $$
-DECLARE
-    new_item_id UUID;
-BEGIN
-    INSERT INTO public.wardrobe_items (
-        user_id, image_url, category, client_note, internal_note, status, product_link_id, is_general_library
-    )
-    SELECT
-        target_profile_id, -- New owner
-        image_url,
-        category,
-        client_note,
-        internal_note,
-        'Keep', -- Default status for cloned items
-        product_link_id,
-        FALSE -- Cloned items are specific to the client, not general library (unless specified otherwise)
-    FROM public.wardrobe_items
-    WHERE id = item_id
-    RETURNING id INTO new_item_id;
-
-    RETURN new_item_id;
-END;
-$$;
-
-ALTER FUNCTION "public"."clone_wardrobe_item"("item_id" "uuid", "target_profile_id" "uuid") OWNER TO "postgres";
-
---
 -- Name: get_user_role("uuid"); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -652,18 +565,6 @@ COMMENT ON TABLE "public"."fulfillments" IS 'One row per Stripe line item, uniqu
 COMMENT ON COLUMN "public"."fulfillments"."receipt_sent_at" IS 'When this checkout''s purchase email (receipt, or the welcome for a new account) was sent. Claimed for all of a session''s rows at once; see migration 34.';
 
 --
--- Name: lookbook_items; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE "public"."lookbook_items" (
-    "lookbook_id" "uuid" NOT NULL,
-    "item_id" "uuid" NOT NULL,
-    "position" integer DEFAULT 0
-);
-
-ALTER TABLE "public"."lookbook_items" OWNER TO "postgres";
-
---
 -- Name: lookbooks; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -689,6 +590,12 @@ ALTER TABLE "public"."lookbooks" OWNER TO "postgres";
 --
 
 COMMENT ON COLUMN "public"."lookbooks"."user_id" IS 'DEPRECATED: Use wardrobe_id instead. Will be removed in future migration.';
+
+--
+-- Name: COLUMN "lookbooks"."lookbook_items"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "public"."lookbooks"."lookbook_items" IS 'The canvas: [{id, x, y, width}], each id a wardrobe_items.id. References only; the garment and its photo are read live. See migration 35.';
 
 --
 -- Name: masterclasses; Type: TABLE; Schema: public; Owner: postgres
@@ -1208,13 +1115,6 @@ ALTER TABLE ONLY "public"."fulfillments"
 
 ALTER TABLE ONLY "public"."fulfillments"
     ADD CONSTRAINT "fulfillments_stripe_line_item_id_key" UNIQUE ("stripe_line_item_id");
-
---
--- Name: lookbook_items lookbook_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY "public"."lookbook_items"
-    ADD CONSTRAINT "lookbook_items_pkey" PRIMARY KEY ("lookbook_id", "item_id");
 
 --
 -- Name: lookbooks lookbooks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
@@ -1776,20 +1676,6 @@ ALTER TABLE ONLY "public"."fulfillments"
     ADD CONSTRAINT "fulfillments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
 
 --
--- Name: lookbook_items lookbook_items_item_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY "public"."lookbook_items"
-    ADD CONSTRAINT "lookbook_items_item_id_fkey" FOREIGN KEY ("item_id") REFERENCES "public"."wardrobe_items"("id") ON DELETE CASCADE;
-
---
--- Name: lookbook_items lookbook_items_lookbook_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY "public"."lookbook_items"
-    ADD CONSTRAINT "lookbook_items_lookbook_id_fkey" FOREIGN KEY ("lookbook_id") REFERENCES "public"."lookbooks"("id") ON DELETE CASCADE;
-
---
 -- Name: lookbooks lookbooks_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1956,16 +1842,6 @@ CREATE POLICY "Admins can insert masterclasses" ON "public"."masterclasses" FOR 
 CREATE POLICY "Admins can insert services" ON "public"."services" FOR INSERT WITH CHECK ((EXISTS ( SELECT 1
    FROM "public"."profiles"
   WHERE (("profiles"."id" = "auth"."uid"()) AND ("profiles"."role" = 'admin'::"text")))));
-
---
--- Name: lookbook_items Admins can manage all lookbook items; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Admins can manage all lookbook items" ON "public"."lookbook_items" USING ((("auth"."uid"() IS NOT NULL) AND (EXISTS ( SELECT 1
-   FROM "public"."profiles"
-  WHERE (("profiles"."id" = "auth"."uid"()) AND ("profiles"."role" = 'admin'::"text")))))) WITH CHECK ((("auth"."uid"() IS NOT NULL) AND (EXISTS ( SELECT 1
-   FROM "public"."profiles"
-  WHERE (("profiles"."id" = "auth"."uid"()) AND ("profiles"."role" = 'admin'::"text"))))));
 
 --
 -- Name: lookbooks Admins can manage all lookbooks; Type: POLICY; Schema: public; Owner: postgres
@@ -2214,16 +2090,6 @@ CREATE POLICY "Users can update own profile" ON "public"."profiles" FOR UPDATE U
 CREATE POLICY "Users can update own progress." ON "public"."user_progress" FOR INSERT WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "user_id"));
 
 --
--- Name: lookbook_items Users can view items in their lookbooks; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Users can view items in their lookbooks" ON "public"."lookbook_items" FOR SELECT USING ((("auth"."uid"() IS NOT NULL) AND ("lookbook_id" IN ( SELECT "lookbooks"."id"
-   FROM "public"."lookbooks"
-  WHERE (("lookbooks"."user_id" = "auth"."uid"()) OR ("lookbooks"."wardrobe_id" IN ( SELECT "wardrobes"."id"
-           FROM "public"."wardrobes"
-          WHERE ("wardrobes"."owner_id" = "auth"."uid"()))))))));
-
---
 -- Name: essence_responses Users can view own essence responses; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -2412,12 +2278,6 @@ ALTER TABLE "public"."essence_responses" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."fulfillments" ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: lookbook_items; Type: ROW SECURITY; Schema: public; Owner: postgres
---
-
-ALTER TABLE "public"."lookbook_items" ENABLE ROW LEVEL SECURITY;
-
---
 -- Name: lookbooks; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
@@ -2594,20 +2454,6 @@ GRANT ALL ON FUNCTION "public"."check_rate_limit"("p_key" "text", "p_max" intege
 GRANT ALL ON FUNCTION "public"."check_wardrobe_eligibility"() TO "anon";
 GRANT ALL ON FUNCTION "public"."check_wardrobe_eligibility"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."check_wardrobe_eligibility"() TO "service_role";
-
---
--- Name: FUNCTION "clone_lookbook"("lookbook_id" "uuid", "target_profile_id" "uuid"); Type: ACL; Schema: public; Owner: postgres
---
-
-REVOKE ALL ON FUNCTION "public"."clone_lookbook"("lookbook_id" "uuid", "target_profile_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."clone_lookbook"("lookbook_id" "uuid", "target_profile_id" "uuid") TO "service_role";
-
---
--- Name: FUNCTION "clone_wardrobe_item"("item_id" "uuid", "target_profile_id" "uuid"); Type: ACL; Schema: public; Owner: postgres
---
-
-REVOKE ALL ON FUNCTION "public"."clone_wardrobe_item"("item_id" "uuid", "target_profile_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."clone_wardrobe_item"("item_id" "uuid", "target_profile_id" "uuid") TO "service_role";
 
 --
 -- Name: FUNCTION "get_user_role"("user_id" "uuid"); Type: ACL; Schema: public; Owner: postgres
@@ -2857,14 +2703,6 @@ GRANT ALL ON TABLE "public"."essence_responses" TO "service_role";
 --
 
 GRANT ALL ON TABLE "public"."fulfillments" TO "service_role";
-
---
--- Name: TABLE "lookbook_items"; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE "public"."lookbook_items" TO "anon";
-GRANT ALL ON TABLE "public"."lookbook_items" TO "authenticated";
-GRANT ALL ON TABLE "public"."lookbook_items" TO "service_role";
 
 --
 -- Name: TABLE "lookbooks"; Type: ACL; Schema: public; Owner: postgres

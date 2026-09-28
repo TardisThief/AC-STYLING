@@ -28,7 +28,7 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   (MAIL-001); a retried guest delivery sent no welcome (PAY-002); checkout sold
   any Stripe price the browser named (PAY-004). The rest of its findings were
   then worked through the same way (below). Migrations are applied and
-  verified through **34**; the code is deployed.
+  verified through **35**; the code is deployed.
 - **The Vault is populated but mostly parked.** 4 masterclasses, **21 modules**
   and 4 standalone courses, all bilingual. **Colorimetry is published and
   priced, so it is on sale, while none of its 5 modules is published or has a
@@ -162,9 +162,9 @@ guest", and now has a sign-in link for returning clients.
   `scripts/cleanup_orphaned_wardrobe_files.ts` (dry run first: all 44 under
   `wardrobe/<id>/` of wardrobes the wipe removed, none referenced). The
   `studio-wardrobe` bucket is now empty; a re-run finds 0.
-- **No database migration is planned.** The next one would be 35; none of
+- **No database migration is planned.** The next one would be 36; none of
   the open items needs one. When one is planned it is written up in
-  `supabase/migrations/README.md`, like 26–34.
+  `supabase/migrations/README.md`, like 26–35.
 - **PAY-001's limit:** only the last line item is remembered on a term, so a
   crash followed by a different purchase on the same term inside the
   15-minute window could still double. Recorded in migration 27.
@@ -172,8 +172,11 @@ guest", and now has a sign-in link for returning clients.
   now checked by its resolved address, once per host per page
   (`createSubrequestGuard`, `tests/unit/scraper-subrequests.test.ts`). Residual,
   documented: DNS rebinding between our lookup and the browser's.
-- **ARCH-001** (handwritten types, the dual lookbook representation):
-  structural; parked.
+- **ARCH-001**: the dual lookbook representation is **gone (migration 35,
+  2026-09-28)**: one canvas of references, read live; the unused join table
+  and two SECURITY DEFINER clone functions dropped. Doing it found the lookbook
+  editor never kept a dragged position (Save stored the original ones); fixed.
+  Handwritten types: in progress.
 
 Everything owner-only lives in [`docs/OWNER-ACTIONS.md`](docs/OWNER-ACTIONS.md)
 — kept there rather than here so that "what Claude does next" and

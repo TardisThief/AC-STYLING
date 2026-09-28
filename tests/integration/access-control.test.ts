@@ -256,13 +256,13 @@ describe('The gate answers only for the caller', () => {
 });
 
 describe('Other SECURITY DEFINER functions that take someone else’s id', () => {
-    // Same shape as check_access: they run as the owner and take the target
-    // as an argument. clone_* copies any item, internal_note included, into
-    // any profile. authorization.test.ts pins anon; a signed-in member is the
-    // caller that actually has a session to try it with.
-    it.each(['clone_wardrobe_item', 'clone_lookbook'])('denies a signed-in member %s', async fn => {
-        await expect(asRole(db, 'authenticated', U.nobody, `SELECT public.${fn}($1, $2)`, [id(999), U.nobody]))
-            .rejects.toMatchObject({ code: '42501' });
+    // clone_wardrobe_item and clone_lookbook ran as the owner and copied any
+    // item, internal_note included, into any profile. Service-role-only since
+    // migration 12, used by nothing, and dropped by migration 35: pin that
+    // they stay gone (authorization.test.ts keeps the migration 12 proof).
+    it('the clone functions no longer exist', async () => {
+        const { rows } = await db.query("SELECT proname FROM pg_proc WHERE proname IN ('clone_wardrobe_item', 'clone_lookbook')");
+        expect(rows).toEqual([]);
     });
 });
 
