@@ -27,3 +27,16 @@ export const measurementsSchema = z.partialRecord(
     z.enum(MEASUREMENT_KEYS, { error: 'Unknown measurement' }),
     z.string({ error: 'Measurements must be text' }).trim().max(40, { error: 'A measurement is at most 40 characters' }),
 );
+
+/**
+ * A photo a Studio client adds to her own wardrobe from My Studio (owner
+ * decision 2026-09-28: one client-shaped way to add, replacing the stylist's
+ * tools that showed in her view). Her words go to `client_note`, never to the
+ * stylist's `notes`; no status, so the stylist still reviews it.
+ */
+export const myWardrobeItemSchema = z.object({
+    wardrobe_id: z.uuid({ error: 'Wardrobe is invalid' }),
+    file_path: z.string({ error: 'Upload path is missing' }).trim().min(1, { error: 'Upload path is missing' }).max(300),
+    category: z.enum(CATEGORY_VALUES, { error: 'Unknown category' }),
+    client_note: optionalTextPreserve,
+});

@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { requireAdmin } from "@/app/lib/auth-guards";
+import { requireAdmin, requireUser } from "@/app/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import { getErrorMessage } from "@/app/lib/errors";
 import { deriveStoragePath, signWardrobeItems } from "@/lib/wardrobe-images";
@@ -10,6 +10,7 @@ import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 import { parseInput, uuid } from "@/app/lib/validation/parse";
 import { adminWardrobeItemUpdateSchema, bulkStatusSchema } from "@/app/lib/validation/wardrobe-items";
 import { wardrobeUpdateSchema } from "@/app/lib/validation/wardrobes";
+import { myWardrobeItemSchema } from "@/app/lib/validation/client-studio";
 import type { WardrobeItem } from "@/app/lib/types";
 import { MAX_ITEMS_PER_WARDROBE, uploadTokenExpiry } from '@/app/lib/wardrobe-tokens';
 import { checkIntakeUploadRate } from '@/app/lib/rate-limit';
@@ -392,6 +393,103 @@ export async function createWardrobeItem(
     } catch (error) {
         console.error("Create Item Error:", error);
         return { success: false, error: getErrorMessage(error) || "Failed to save item" };
+    }
+}
+
+// =============================================================================
+// A Studio client adding a photo to her own wardrobe (My Studio)
+// =============================================================================
+//
+// Owner decision 2026-09-28: her view offered the stylist's tools — boutique
+// import, the admin-only link scraper, a "Change Image" that her own update
+// action refuses — and its upload wrote her words into the stylist's note.
+// She now gets one way to add: a photo, a category and her note. Same guards
+// as the intake link (her own folder, the item cap, the upload rate, the
+// object must exist), keyed to the wardrobe she owns instead of a token.
+// Errors are codes, so her screen can say them in her language.
+
+type MyUploadError = 'not_yours' | 'full' | 'rate' | 'invalid' | 'failed';
+
+/** The active wardrobe with this id, if the signed-in caller owns it. */
+async function ownedWardrobe(wardrobeId: string) {
+    const auth = await requireUser();
+    if (!auth.ok || auth.user.is_anonymous) return null;
+    const { data } = await createAdminClient()
+        .from('wardrobes')
+        .select('id, owner_id')
+        .eq('id', wardrobeId)
+        .eq('owner_id', auth.user.id)
+        .eq('status', 'active')
+        .maybeSingle();
+    return data ? { id: data.id as string, ownerId: auth.user.id } : null;
+}
+
+/** Step 1: a signed URL for her browser to upload the photo to, in her own folder. */
+export async function getMyItemUploadUrl(
+    wardrobeId: string,
+    fileName: string
+): Promise<{ success: boolean; signedUrl?: string; filePath?: string; error?: MyUploadError }> {
+    const id = parseInput(uuid('Wardrobe'), wardrobeId);
+    if (!id.ok) return { success: false, error: 'invalid' };
+
+    const wardrobe = await ownedWardrobe(id.data);
+    if (!wardrobe) return { success: false, error: 'not_yours' };
+
+    const supabase = createAdminClient();
+    if (await isWardrobeFull(supabase, wardrobe.id)) return { success: false, error: 'full' };
+    if (!(await checkIntakeUploadRate(wardrobe.id))) return { success: false, error: 'rate' };
+
+    const filePath = wardrobeUploadPath(wardrobe.ownerId, wardrobe.id, String(fileName ?? ''));
+    const { data, error } = await supabase.storage.from('studio-wardrobe').createSignedUploadUrl(filePath);
+    if (error || !data) {
+        console.error('[getMyItemUploadUrl]', error);
+        return { success: false, error: 'failed' };
+    }
+    return { success: true, signedUrl: data.signedUrl, filePath };
+}
+
+/** Step 2: register the uploaded photo as an item in her wardrobe. */
+export async function addMyWardrobeItem(input: unknown): Promise<{ success: boolean; error?: MyUploadError }> {
+    const parsed = parseInput(myWardrobeItemSchema, input);
+    if (!parsed.ok) return { success: false, error: 'invalid' };
+    const { wardrobe_id, file_path, category, client_note } = parsed.data;
+
+    const wardrobe = await ownedWardrobe(wardrobe_id);
+    if (!wardrobe) return { success: false, error: 'not_yours' };
+
+    // Her own folder only: the intake folder is the stylist's link's, and
+    // anything else is another wardrobe's or another user's.
+    if (!isPathWithinWardrobe(file_path, wardrobe.id, wardrobe.ownerId) || !file_path.startsWith(`${wardrobe.ownerId}/`)) {
+        return { success: false, error: 'invalid' };
+    }
+
+    const supabase = createAdminClient();
+    if (await isWardrobeFull(supabase, wardrobe.id)) return { success: false, error: 'full' };
+
+    try {
+        const folder = file_path.slice(0, file_path.lastIndexOf('/'));
+        const name = file_path.slice(file_path.lastIndexOf('/') + 1);
+        const { data: found, error: listError } = await supabase.storage
+            .from('studio-wardrobe')
+            .list(folder, { search: name, limit: 1 });
+        if (listError) throw listError;
+        if (!found?.some((f) => f.name === name)) return { success: false, error: 'failed' };
+
+        const { data: { publicUrl } } = supabase.storage.from('studio-wardrobe').getPublicUrl(file_path);
+        const { error: dbError } = await supabase.from('wardrobe_items').insert({
+            wardrobe_id: wardrobe.id,
+            user_id: wardrobe.ownerId,
+            image_url: publicUrl,
+            category,
+            client_note: client_note || '',
+            // For the stylist to review, like an intake upload.
+            status: 'inbox',
+        });
+        if (dbError) throw dbError;
+        return { success: true };
+    } catch (error) {
+        console.error('[addMyWardrobeItem]', error);
+        return { success: false, error: 'failed' };
     }
 }
 
