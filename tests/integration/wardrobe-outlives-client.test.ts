@@ -122,7 +122,7 @@ describe('a client closes her account', () => {
             `INSERT INTO lookbooks (id, user_id, wardrobe_id, title, thumbnail_url, lookbook_items) VALUES
                 ($1, $3, $4, 'Autumn', '${PUBLIC}${CLIENT}/thumb.jpg', $5::jsonb),
                 ($2, $3, NULL, 'Loose', NULL, '[]'::jsonb)`,
-            [id(301), id(302), CLIENT, W, JSON.stringify([{ id: 'x', image_url: `${CLIENT}/a.jpg`, x: 10 }])]);
+            [id(301), id(302), CLIENT, W, JSON.stringify([{ id: id(201), x: 10 }])]);
         await db().query(`INSERT INTO tailor_cards (user_id, measurements) VALUES ($1, '{"waist": 70}')`, [CLIENT]);
     });
 
@@ -155,7 +155,9 @@ describe('a client closes her account', () => {
         expect(items.map(r => r.image_url)).toEqual([`wardrobe/${W}/a.jpg`, `wardrobe/${W}/b.jpg`]);
         const [lb] = await rows('SELECT thumbnail_url, lookbook_items FROM lookbooks WHERE id = $1', [id(301)]);
         expect(lb.thumbnail_url).toBe(`wardrobe/${W}/thumb.jpg`);
-        expect((lb.lookbook_items as { image_url: string }[])[0].image_url).toBe(`wardrobe/${W}/a.jpg`);
+        // The canvas references the garment, whose image_url moved above: it
+        // needs no rewrite and gets none (migration 35).
+        expect(lb.lookbook_items).toEqual([{ id: id(201), x: 10 }]);
     });
 
     it('never deletes a photo it could not move, and says the cleanup was incomplete', async () => {

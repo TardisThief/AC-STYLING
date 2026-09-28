@@ -27,7 +27,14 @@ try {
         check(`${role}: only intended profile columns writable`, rows.length > 0 && rows.every(r =>
             !r.can_insert && r.can_update === (role === 'authenticated' && editable.has(r.attname))));
     }
-    for (const signature of ['clone_lookbook(uuid,uuid)', 'clone_wardrobe_item(uuid,uuid)', 'check_rate_limit(text,integer,interval)']) {
+    // clone_lookbook and clone_wardrobe_item (SECURITY DEFINER, unused) were
+    // dropped by migration 35; they must not come back.
+    {
+        const { rows } = await db.query(`SELECT proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+            WHERE n.nspname = 'public' AND proname IN ('clone_lookbook', 'clone_wardrobe_item')`);
+        check('legacy clone functions are gone (migration 35)', rows.length === 0);
+    }
+    for (const signature of ['check_rate_limit(text,integer,interval)']) {
         const { rows: [r] } = await db.query(`SELECT
             has_function_privilege('anon',$1,'EXECUTE') AS anon,
             has_function_privilege('authenticated',$1,'EXECUTE') AS member,

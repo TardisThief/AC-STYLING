@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Plus, LayoutGrid, Save, Share2, Download, Trash2, X, Move, Type, Image as ImageIcon, Shirt, Loader2, Eye, EyeOff, Copy } from "lucide-react";
 import { toast } from "sonner";
@@ -11,19 +11,8 @@ import { CLIENT_ITEM_COLUMNS } from "@/app/lib/wardrobe-columns";
 import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 import type { Lookbook, WardrobeItem } from "@/app/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { canvasToStore, moveBy, readCanvas, type CanvasPlacement } from "@/app/lib/lookbook-canvas";
 import { useTranslations } from "next-intl";
-
-// Draggable image placed on the lookbook canvas (persisted in lookbooks.lookbook_items).
-interface CanvasItem {
-    id: string;
-    x?: number;
-    y?: number;
-    width?: number;
-    image_url?: string | null;
-    /** Spread in from the WardrobeItem; the index signature would type it `unknown`. */
-    category?: string | null;
-    [key: string]: unknown;
-}
 
 interface DigitalLookbookProps {
     wardrobeId: string;
@@ -40,7 +29,9 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
     const [isSaving, setIsSaving] = useState(false);
 
     // Canvas State
-    const [canvasItems, setCanvasItems] = useState<CanvasItem[]>([]);
+    // Placements only ({id, x, y, width}); the garment is looked up live from
+    // wardrobeItems (migration 35, app/lib/lookbook-canvas.ts).
+    const [canvasItems, setCanvasItems] = useState<CanvasPlacement[]>([]);
     const [selectedCanvasItem, setSelectedCanvasItem] = useState<string | null>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -60,14 +51,11 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
     }, [wardrobeId]);
 
     useEffect(() => {
-        if (activeLookbook) {
-            // Re-sign saved canvas image URLs for the private bucket.
-            signWardrobeItems(supabase, (activeLookbook.lookbook_items as CanvasItem[]) || []).then(setCanvasItems);
-        } else {
-            setCanvasItems([]);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        setCanvasItems(activeLookbook ? readCanvas(activeLookbook.lookbook_items) : []);
     }, [activeLookbook]);
+
+    // The wardrobe's garments by id, already signed for the private bucket.
+    const itemsById = useMemo(() => new Map(wardrobeItems.map((item) => [item.id, item])), [wardrobeItems]);
 
     async function loadData() {
         setLoading(true);
@@ -137,10 +125,11 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
             }
         }
 
+        const placements = canvasToStore(canvasItems, new Set(itemsById.keys()));
         const { error } = await supabase
             .from('lookbooks')
             .update({
-                lookbook_items: canvasItems,
+                lookbook_items: placements,
                 thumbnail_url: thumbnailUrl,
                 updated_at: new Date().toISOString()
             })
@@ -149,7 +138,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
         if (error) toast.error("Failed to save");
         else {
             toast.success("Lookbook saved");
-            setLookbooks(prev => prev.map(lb => lb.id === activeLookbook.id ? { ...lb, lookbook_items: canvasItems, thumbnail_url: thumbnailUrl } : lb));
+            setLookbooks(prev => prev.map(lb => lb.id === activeLookbook.id ? { ...lb, lookbook_items: placements, thumbnail_url: thumbnailUrl } : lb));
         }
         setIsSaving(false);
     };
@@ -325,33 +314,29 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                 className="flex-1 relative overflow-hidden bg-[#F5F5F0]"
                                 onClick={() => setSelectedCanvasItem(null)} // Deselect on bg click
                             >
-                                {canvasItems.map((item, index) => (
+                                {canvasItems.map((placement, index) => {
+                                    const item = itemsById.get(placement.id);
+                                    // A garment no longer in this wardrobe: nothing to show.
+                                    if (!item) return null;
+                                    return (
                                     <motion.div
-                                        key={item.id + index}
+                                        // Keyed by position too, so after a drag the element
+                                        // remounts at its new left/top with no leftover transform.
+                                        key={`${placement.id}-${index}-${placement.x ?? ''}-${placement.y ?? ''}`}
                                         drag={!isClientView} // Disable drag for client
                                         dragMomentum={false}
                                         onDragEnd={(_, info) => {
                                             if (isClientView) return;
-                                            const newItems = [...canvasItems];
-                                            newItems[index] = {
-                                                ...item,
-                                                x: (item.x || 0) + info.offset.x,
-                                                y: (item.y || 0) + info.offset.y
-                                            };
-                                            // Note: Framer motion drag offset is relative to start. 
-                                            // Real implementation needs robust coordinate tracking (e.g. absolute position).
-                                            // For simplicity in this demo, we assume the user saves visually.
-                                            // A better approach for "Save" is to read the DOM styles or track state perfectly.
-                                            // But let's just track it via state updates if possible or stick to simple drag.
-                                            // Actually, saving dragging coordinates reliably requires updating state with absolute positions.
-                                            // Let's assume standard drag behavior for now and maybe "Save" captures the screenshot primarily.
+                                            // Kept, so Save stores where the stylist put it. This
+                                            // used to be computed and thrown away (2026-09-28).
+                                            setCanvasItems(prev => moveBy(prev, index, info.offset.x, info.offset.y));
                                         }}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            !isClientView && setSelectedCanvasItem(index.toString());
+                                            if (!isClientView) setSelectedCanvasItem(index.toString());
                                         }}
                                         className={`absolute cursor-move ${selectedCanvasItem === index.toString() && !isClientView ? 'ring-1 ring-ac-gold ring-offset-2' : ''}`}
-                                        style={{ left: item.x || '10%', top: item.y || '10%', width: item.width || 150 }}
+                                        style={{ left: placement.x ?? '10%', top: placement.y ?? '10%', width: placement.width ?? 150 }}
                                     >
                                         <img src={item.image_url ?? undefined} alt={item.category ? t("lookbook.itemAlt", { category: t.has(`categories.${item.category}`) ? t(`categories.${item.category}`) : item.category }) : t("lookbook.itemAltGeneric")} className="w-full h-full object-contain pointer-events-none drop-shadow-xl" />
 
@@ -362,7 +347,9 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setCanvasItems(prev => prev.filter((_, i) => i !== index));
+                                                        setSelectedCanvasItem(null);
                                                     }}
+                                                    aria-label="Remove from the lookbook"
                                                     className="absolute -top-2 -right-2 bg-red-400 text-white p-1 rounded-full shadow-sm hover:scale-110 transition-transform"
                                                 >
                                                     <X size={10} />
@@ -372,7 +359,8 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                             </>
                                         )}
                                     </motion.div>
-                                ))}
+                                    );
+                                })}
 
                                 {canvasItems.length === 0 && (
                                     <div className="absolute inset-0 flex items-center justify-center text-ac-taupe/10 pointer-events-none">
@@ -391,7 +379,7 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
                                         {wardrobeItems.map(item => (
                                             <button
                                                 key={item.id}
-                                                onClick={() => setCanvasItems([...canvasItems, { ...item, x: 50, y: 50, width: 150 }])}
+                                                onClick={() => setCanvasItems([...canvasItems, { id: item.id, x: 50, y: 50, width: 150 }])}
                                                 aria-label={item.category ? `Add ${item.category} to the lookbook` : "Add wardrobe item to the lookbook"}
                                                 className="aspect-[3/4] border border-ac-taupe/10 rounded-sm overflow-hidden hover:border-ac-gold transition-all relative group"
                                             >

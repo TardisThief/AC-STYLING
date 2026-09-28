@@ -10,8 +10,9 @@ import { deriveStoragePath } from '@/lib/wardrobe-images';
  * and can move to another client (owner decisions, 2026-09-26), so photos
  * left under a person's folder end up readable by nobody but a person who is
  * gone or no longer owns the wardrobe. Here they move to the wardrobe's
- * folder, and every reference follows: garment image_url, lookbook
- * thumbnail_url, and the image paths inside a lookbook's canvas JSON.
+ * folder, and every reference follows: garment image_url and lookbook
+ * thumbnail_url. A lookbook's canvas holds references to garments, not their
+ * photos (migration 35), so it needs no rewriting.
  *
  * For each photo: move the object, then rewrite the rows. If a rewrite fails
  * the object is moved back, so a reference never points at a missing file.
@@ -29,8 +30,6 @@ export interface RelocationResult {
     /** Old paths that stayed where they were, and why. */
     failed: Record<string, string>;
 }
-
-type CanvasItem = Record<string, unknown> & { image_url?: unknown };
 
 function under(path: string | null, folder: string): path is string {
     return !!path && path.startsWith(`${folder}/`);
@@ -53,7 +52,7 @@ export async function relocateWardrobePhotos(
 
     const [{ data: items, error: itemsError }, { data: lookbooks, error: lookbooksError }] = await Promise.all([
         admin.from('wardrobe_items').select('id, image_url').eq('wardrobe_id', wardrobeId),
-        admin.from('lookbooks').select('id, thumbnail_url, lookbook_items').eq('wardrobe_id', wardrobeId),
+        admin.from('lookbooks').select('id, thumbnail_url').eq('wardrobe_id', wardrobeId),
     ]);
     if (itemsError || lookbooksError) {
         throw new Error(`reading wardrobe ${wardrobeId}: ${(itemsError ?? lookbooksError)!.message}`);
@@ -68,10 +67,6 @@ export async function relocateWardrobePhotos(
     for (const l of lookbooks ?? []) {
         const t = deriveStoragePath(l.thumbnail_url as string | null);
         if (under(t, fromFolder)) paths.add(t);
-        for (const c of (Array.isArray(l.lookbook_items) ? l.lookbook_items : []) as CanvasItem[]) {
-            const p = typeof c?.image_url === 'string' ? deriveStoragePath(c.image_url) : null;
-            if (under(p, fromFolder)) paths.add(p);
-        }
     }
 
     const storage = admin.storage.from(BUCKET);
@@ -96,20 +91,9 @@ export async function relocateWardrobePhotos(
                 if (error) return error.message;
             }
             for (const l of lookbooks ?? []) {
-                const canvas = (Array.isArray(l.lookbook_items) ? l.lookbook_items : []) as CanvasItem[];
-                const thumbHit = deriveStoragePath(l.thumbnail_url as string | null) === from;
-                const canvasHit = canvas.some(c => typeof c?.image_url === 'string' && deriveStoragePath(c.image_url) === from);
-                if (!thumbHit && !canvasHit) continue;
-                const next = canvas.map(c =>
-                    typeof c?.image_url === 'string' && deriveStoragePath(c.image_url) === from ? { ...c, image_url: to } : c
-                );
-                const patch: Record<string, unknown> = { lookbook_items: next };
-                if (thumbHit) patch.thumbnail_url = to;
-                const { error } = await admin.from('lookbooks').update(patch).eq('id', l.id);
+                if (deriveStoragePath(l.thumbnail_url as string | null) !== from) continue;
+                const { error } = await admin.from('lookbooks').update({ thumbnail_url: to }).eq('id', l.id);
                 if (error) return error.message;
-                // Later photos of the same lookbook rewrite from this state.
-                l.lookbook_items = next;
-                if (thumbHit) l.thumbnail_url = to;
             }
             return null;
         };
