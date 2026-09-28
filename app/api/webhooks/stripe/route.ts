@@ -14,6 +14,7 @@ import {
     type EmailLocale,
 } from '@/lib/email-templates';
 import Stripe from 'stripe';
+import type { Json } from '@/lib/database.types';
 
 export async function POST(req: Request) {
     const body = await req.text();
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
         try {
             await supabase.from('webhook_events').insert({
                 event_type: event?.type || 'unknown',
-                payload: details || (event?.data?.object),
+                payload: (details || event?.data?.object || null) as Json,
                 status,
                 error_message: message
             });
@@ -332,15 +333,15 @@ export async function POST(req: Request) {
                     if (service) {
                         notificationType = 'service_booking';
                         productTitle = service.title;
-                        productImage = service.image_url;
+                        productImage = service.image_url ?? '';
                     } else if (masterclass) {
                         notificationType = 'masterclass_purchase';
                         productTitle = masterclass.title;
-                        productImage = masterclass.thumbnail_url;
+                        productImage = masterclass.thumbnail_url ?? '';
                     } else if (chapter) {
                         notificationType = 'course_sale';
                         productTitle = chapter.title;
-                        productImage = chapter.thumbnail_url;
+                        productImage = chapter.thumbnail_url ?? '';
                     } else if (offer) {
                         notificationType = 'offer_sale';
                         productTitle = offer.title;

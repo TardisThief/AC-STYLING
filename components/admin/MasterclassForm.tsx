@@ -17,6 +17,7 @@ interface MasterclassFormProps {
 
 // ... (imports)
 import { Video } from "lucide-react";
+import { jsonResources } from '@/app/lib/json';
 
 
 
@@ -41,7 +42,7 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
     });
 
     const [resourceUrls, setResourceUrls] = useState<StoredVaultResource[]>(
-        (masterclass?.resource_urls as StoredVaultResource[] | null) || []
+        jsonResources(masterclass?.resource_urls)
     );
 
     const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
@@ -63,7 +64,7 @@ export default function MasterclassForm({ masterclass, onSuccess, onCancel }: Ma
             priceDisplay: masterclass?.price_display || '',
             runtimeMinutes: masterclass?.runtime_minutes ?? '',
         });
-        setResourceUrls((masterclass?.resource_urls as StoredVaultResource[] | null) || []);
+        setResourceUrls(jsonResources(masterclass?.resource_urls));
     }, [masterclass]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({

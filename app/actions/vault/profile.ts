@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { loadLabQuestionsFor } from '@/app/lib/paid-content';
+import { jsonText } from '@/app/lib/json';
 
 export interface StyleEssentials {
     styleWords: string[];
@@ -111,7 +112,7 @@ export async function getProfileHubData() {
             }
 
             if (category) {
-                const val = r.answer_value;
+                const val = jsonText(r.answer_value);
                 if (!val) return;
 
                 // Determine Label

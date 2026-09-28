@@ -261,7 +261,7 @@ export default function AdminDashboard() {
                             />
                         ) : activeTab === 'chapters' ? (
                             <ChapterForm
-                                chapter={editingItem as ComponentProps<typeof ChapterForm>['chapter']}
+                                chapter={(editingItem ?? undefined) as ComponentProps<typeof ChapterForm>['chapter']}
                                 onSuccess={handleSuccess}
                                 onCancel={() => { setIsCreating(false); setEditingItem(null); }}
                             />

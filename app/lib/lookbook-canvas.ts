@@ -9,13 +9,13 @@
  * had to be rewritten when a wardrobe's photos moved (ARCH-001).
  */
 
-export interface CanvasPlacement {
+export type CanvasPlacement = {
     /** The wardrobe item this placement shows. */
     id: string;
     x?: number;
     y?: number;
     width?: number;
-}
+};
 
 const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 

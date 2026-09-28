@@ -13,14 +13,14 @@ export type PartnerBrand = {
 export type BoutiqueItem = {
     id: string;
     name: string;
-    brand_id: string;
+    brand_id: string | null;
     image_url: string;
     curator_note: string | null;
     affiliate_url_usa: string | null;
     affiliate_url_es: string | null;
     brand?: {
         name: string;
-    };
+    } | null;
 };
 
 // Public display columns only. Sensitive fields (internal_notes,

@@ -7,17 +7,18 @@
 
 export type AccessLevel = 'all_access' | 'course_pass' | 'masterclass_pass' | 'restricted' | 'basic';
 
+/** The profile columns access is decided on. Null reads as false (several are nullable in the schema). */
 export interface UserProfile {
-    has_full_unlock?: boolean;
-    has_course_pass?: boolean;
-    has_masterclass_pass?: boolean;
+    has_full_unlock?: boolean | null;
+    has_course_pass?: boolean | null;
+    has_masterclass_pass?: boolean | null;
     /**
      * When the three pass flags stop meaning anything. Null is perpetual
      * access, sold before the one-year term existed and honoured for good.
      */
     access_expires_at?: string | null;
-    is_guest?: boolean;
-    active_studio_client?: boolean;
+    is_guest?: boolean | null;
+    active_studio_client?: boolean | null;
 }
 
 /**

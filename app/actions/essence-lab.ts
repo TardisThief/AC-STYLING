@@ -4,12 +4,13 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { loadLabQuestionsFor } from "@/app/lib/paid-content";
+import type { Json } from '@/lib/database.types';
 
 export type EssenceResponse = {
     question_key: string;
-    answer_value: unknown;
-    chapter_slug?: string;
-    updated_at: string;
+    answer_value: Json;
+    chapter_slug: string | null;
+    updated_at: string | null;
 };
 
 /**
@@ -54,7 +55,8 @@ export async function saveEssenceResponse(
     chapterId: string,
     chapterSlug: string,
     questionKey: string,
-    answerValue: unknown
+    // answer_value is NOT NULL.
+    answerValue: Exclude<Json, null>
 ) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

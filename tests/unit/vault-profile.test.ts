@@ -71,7 +71,7 @@ describe('Vault Profile Server Actions', () => {
 
             expect(result).not.toBeNull()
             expect(result?.profile).toBeDefined()
-            expect(result?.profile.full_name).toBe('Test User')
+            expect(result?.profile?.full_name).toBe('Test User')
             expect(result?.tailorCard).toBeDefined()
             expect(result?.essence).toBeDefined()
         })

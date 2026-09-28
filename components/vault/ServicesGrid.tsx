@@ -10,16 +10,17 @@ import { useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 
+// As the services table has them: every column but id and title is nullable.
 interface Service {
     id: string;
     title: string;
-    description: string;
-    subtitle?: string;
-    price_display: string;
-    stripe_url: string;
-    price_id?: string;
-    image_url: string;
-    type?: string;
+    description: string | null;
+    subtitle?: string | null;
+    price_display: string | null;
+    stripe_url: string | null;
+    price_id?: string | null;
+    image_url: string | null;
+    type?: string | null;
 }
 
 interface ServicesGridProps {

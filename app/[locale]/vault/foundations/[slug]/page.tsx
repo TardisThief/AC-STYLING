@@ -14,6 +14,7 @@ import { pageMetadata } from '@/app/lib/seo';
 import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
 import ResourcesCard from "@/components/vault/ResourcesCard";
 import { loadChapterPaidContent } from "@/app/lib/paid-content";
+import { jsonStrings, jsonText } from '@/app/lib/json';
 
 export const generateMetadata = pageMetadata({ key: 'vaultFoundation' });
 
@@ -78,9 +79,8 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     const title = locale === 'es' && chapter.title_es ? chapter.title_es : chapter.title;
     const subtitle = locale === 'es' && chapter.subtitle_es ? chapter.subtitle_es : chapter.subtitle;
     const description = locale === 'es' && chapter.description_es ? chapter.description_es : chapter.description;
-    const takeaways = (locale === 'es' && chapter.takeaways_es && chapter.takeaways_es.length > 0)
-        ? chapter.takeaways_es
-        : (chapter.takeaways || []);
+    const takeawaysEs = jsonStrings(chapter.takeaways_es);
+    const takeaways = locale === 'es' && takeawaysEs.length > 0 ? takeawaysEs : jsonStrings(chapter.takeaways);
 
     // Fetch User Data
     const { data: { user } } = await supabase.auth.getUser();
@@ -94,7 +94,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
             .eq('chapter_id', chapter.id);
 
         answers?.forEach(a => {
-            essenceMap[a.question_key] = a.answer_value;
+            essenceMap[a.question_key] = jsonText(a.answer_value);
         });
     }
 

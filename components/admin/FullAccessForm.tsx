@@ -36,7 +36,7 @@ export default function FullAccessForm({ onClose }: FullAccessFormProps) {
                     priceDisplay: res.offer.price_display || '',
                     priceId: res.offer.price_id || '',
                     stripeProductId: res.offer.stripe_product_id || '',
-                    active: res.offer.active,
+                    active: res.offer.active ?? false,
                 });
             }
             setFetching(false);

@@ -5,6 +5,7 @@ import type { Chapter } from "@/app/lib/types";
 import { Edit2, Trash2, Filter, ChevronUp, ChevronDown } from "lucide-react";
 import { deleteChapter } from "@/app/actions/admin/manage-chapters";
 import { toast } from "sonner";
+import { jsonArray } from '@/app/lib/json';
 
 interface ChaptersTableProps {
     chapters: Chapter[];
@@ -76,7 +77,7 @@ export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTa
             return mcTitleOf(chapter) || chapter.category || '';
         }
         if (field === 'resources') {
-            return chapter.resource_urls?.length || 0;
+            return jsonArray(chapter.resource_urls).length;
         }
         return chapter[field] || '';
     };
@@ -162,7 +163,7 @@ export default function ChaptersTable({ chapters, onEdit, onDelete }: ChaptersTa
                                 <td className="py-3 px-4 text-ac-taupe/60 text-sm">{chapter.slug}</td>
                                 <td className="py-3 px-4 text-ac-taupe/60 text-sm">{chapter.video_id}</td>
                                 <td className="py-3 px-4 text-ac-taupe/60 text-sm">
-                                    {chapter.resource_urls?.length || 0} files
+                                    {jsonArray(chapter.resource_urls).length} files
                                 </td>
                                 <td className="py-3 px-4 text-right">
                                     <div className="flex gap-2 justify-end">

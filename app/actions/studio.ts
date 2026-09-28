@@ -96,6 +96,7 @@ export async function deleteWardrobeItem(itemId: string) {
         // 5. Delete from Storage (Best Effort)
         // Extract path from public URL: .../studio-wardrobe/user_id/filename
         try {
+            if (!item.image_url) throw new Error('no image');
             const url = new URL(item.image_url);
             const pathParts = url.pathname.split('/studio-wardrobe/');
             if (pathParts.length > 1) {

@@ -10,6 +10,7 @@ import { CHAPTER_CATALOG_COLUMNS } from "@/app/lib/chapter-columns";
 
 import { pageMetadata } from '@/app/lib/seo';
 import VaultBreadcrumbs from "@/components/vault/VaultBreadcrumbs";
+import { jsonText } from '@/app/lib/json';
 
 export const generateMetadata = pageMetadata({ key: 'vaultEssenceLab' });
 
@@ -107,7 +108,7 @@ export default async function FoundationsEssenceLabPage({ params }: { params: Pr
         .eq('chapter_id', chapter.id);
 
     answers?.forEach(a => {
-        essenceMap[a.question_key] = a.answer_value;
+        essenceMap[a.question_key] = jsonText(a.answer_value);
     });
 
     const { data: progress } = await supabase

@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { toggleStudioAccess } from "@/app/actions/admin/manage-clients";
 import { Ruler, Sparkles, Check, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
+import { jsonText, jsonTextRecord } from '@/app/lib/json';
 
 interface TailorCardProps {
     wardrobeId: string;        // kept for parity/logging; not queried
@@ -54,7 +55,7 @@ export default function TailorCard({ ownerId: ownerIdProp }: TailorCardProps) {
             ]);
 
             if (tailorRes.data) {
-                setMeasurements(tailorRes.data.measurements || {});
+                setMeasurements(jsonTextRecord(tailorRes.data.measurements));
             } else {
                 setMeasurements({});
             }
@@ -168,7 +169,7 @@ export default function TailorCard({ ownerId: ownerIdProp }: TailorCardProps) {
                                         {entry.question_key.replace(/_/g, ' ')}
                                     </h4>
                                     <p className="font-serif text-lg italic leading-relaxed">
-                                        &quot;{String(entry.response_value || entry.answer_value || '')}&quot;
+                                        &quot;{jsonText(entry.answer_value)}&quot;
                                     </p>
                                 </div>
                             )) : (

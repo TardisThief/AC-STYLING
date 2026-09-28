@@ -67,7 +67,6 @@ export default async function ServicesPage({ params }: { params: { locale: strin
         title: locale === 'es' && s.title_es ? s.title_es : s.title,
         subtitle: locale === 'es' && s.subtitle_es ? s.subtitle_es : s.subtitle,
         description: locale === 'es' && s.description_es ? s.description_es : s.description,
-        price_display: locale === 'es' && s.price_display_es ? s.price_display_es : s.price_display,
     })) || [];
 
     const retainerServiceRaw = services?.find(s => s.type === 'retainer');
@@ -76,7 +75,6 @@ export default async function ServicesPage({ params }: { params: { locale: strin
         title: locale === 'es' && retainerServiceRaw.title_es ? retainerServiceRaw.title_es : retainerServiceRaw.title,
         subtitle: locale === 'es' && retainerServiceRaw.subtitle_es ? retainerServiceRaw.subtitle_es : retainerServiceRaw.subtitle,
         description: locale === 'es' && retainerServiceRaw.description_es ? retainerServiceRaw.description_es : retainerServiceRaw.description,
-        price_display: locale === 'es' && retainerServiceRaw.price_display_es ? retainerServiceRaw.price_display_es : retainerServiceRaw.price_display,
     } : undefined;
 
     return (

@@ -175,7 +175,7 @@ export default async function MasterclassPage({ params }: { params: Promise<{ id
                             ) : (
                                 <>
                                     <UnlockButton
-                                        priceId={masterclass.price_id}
+                                        priceId={masterclass.price_id ?? undefined}
                                         isSignedIn={!!isAuthenticated}
                                         returnUrl={`/vault/foundations/masterclass/${id}`}
                                         label={tUnlock('cta')}

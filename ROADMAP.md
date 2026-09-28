@@ -176,7 +176,14 @@ guest", and now has a sign-in link for returning clients.
   2026-09-28)**: one canvas of references, read live; the unused join table
   and two SECURITY DEFINER clone functions dropped. Doing it found the lookbook
   editor never kept a dragged position (Save stored the original ones); fixed.
-  Handwritten types: in progress.
+  Handwritten types: **replaced (2026-09-28)** by types generated from the
+  schema (`lib/database.types.ts`, `npm run db:types`, drift-checked in CI);
+  every Supabase client is typed with them. Typing surfaced 53 mismatches,
+  among them a Spanish price column the Services page read that never existed
+  (Spanish visitors always got the English price text) and a legacy
+  `response_value` column the tailor card read. Still open from ARCH-001, by
+  choice: duplicate ownership (`lookbooks.user_id` beside `wardrobe_id`) and
+  the remaining browser-side mutations.
 
 Everything owner-only lives in [`docs/OWNER-ACTIONS.md`](docs/OWNER-ACTIONS.md)
 — kept there rather than here so that "what Claude does next" and

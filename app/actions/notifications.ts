@@ -29,7 +29,7 @@ export interface AdminNotification {
     profiles?: {
         full_name: string | null;
         avatar_url: string | null;
-    };
+    } | null;
 }
 
 interface GetNotificationsFilter {
@@ -97,7 +97,7 @@ export async function getAdminNotifications(filter?: GetNotificationsFilter): Pr
         if (!wardrobeError && wardrobeItems) {
             const mappedItems: AdminNotification[] = wardrobeItems.map(item => ({
                 id: item.id,
-                created_at: item.created_at,
+                created_at: item.created_at ?? '',
                 type: 'wardrobe_item',
                 title: 'New Wardrobe Item',
                 message: item.client_note || 'No notes provided.',
