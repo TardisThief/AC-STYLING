@@ -1,9 +1,14 @@
 import createNextIntlPlugin from 'next-intl/plugin';
+import { buildCsp } from './lib/csp.mjs';
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // The browser tests build into their own folder against a local database
+  // (scripts/ci/run-e2e.mjs), so they never overwrite, or get mistaken for,
+  // the production-configured build in .next.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   serverExternalPackages: ['puppeteer', 'puppeteer-extra', 'puppeteer-extra-plugin-stealth'],
   // Increase Server Action body size limit for photo uploads (default is 1MB).
   // On Next 16 this lives under `experimental` — at the top level it is ignored.
@@ -65,27 +70,18 @@ const nextConfig = {
   },
 
   async headers() {
-    // CSP is shipped Report-Only first so we can observe violations without
-    // breaking the app; promote to Content-Security-Policy once the report
-    // stream is clean. The other headers are safe to enforce immediately.
-    const csp = [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.stripe.com https://*.vercel-insights.com https://va.vercel-scripts.com",
-      "frame-src 'self' https://js.stripe.com https://player.vimeo.com https://calendly.com https://*.calendly.com",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join('; ');
+    // Enforced since 2026-09-28; what it allows, and why, is in lib/csp.mjs.
+    const csp = buildCsp({
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+      dev: process.env.NODE_ENV !== 'production',
+    });
 
     return [
       {
         source: '/:path*',
         headers: [
-          { key: 'Content-Security-Policy-Report-Only', value: csp },
+          { key: 'Content-Security-Policy', value: csp },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },

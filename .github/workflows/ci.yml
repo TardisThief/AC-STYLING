@@ -63,3 +63,46 @@ jobs:
       # production build.
       - name: Production build
         run: npm run build
+
+  e2e:
+    # Added 2026-09-28 (F13). The Playwright suite runs the real app, built
+    # for production, against a local Supabase in Docker: the baseline schema,
+    # supabase/platform.sql (the auth trigger, buckets and storage policies
+    # that live outside `public`) and tests/e2e/db/supabase/seed.sql. It never
+    # reaches the production project, and needs no secrets: the local keys are
+    # Supabase's published demo keys and the Stripe/Resend keys are dummies.
+    # Chromium and WebKit (the iPhone profile), because Safari is the browser
+    # that complained about the report-only CSP nobody saw in Chrome.
+    name: Browser tests against a local database
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Start the local test database
+        run: bash scripts/ci/e2e-db.sh start
+
+      - name: Build and run the browser tests
+        run: node scripts/ci/run-e2e.mjs --reporter=line
+
+      - name: Keep the report when something failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

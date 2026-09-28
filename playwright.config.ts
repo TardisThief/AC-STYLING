@@ -13,7 +13,8 @@ export default defineConfig({
     reporter: 'html',
 
     use: {
-        baseURL: 'http://localhost:3000',
+        // E2E_BASE_URL is set by scripts/ci/run-e2e.mjs (local database, port 3100).
+        baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
     },
@@ -29,11 +30,17 @@ export default defineConfig({
         },
     ],
 
-    // Run local dev server before tests
+    // Against the local test database (scripts/ci/run-e2e.mjs) the runner
+    // names the server and it is never reused: a server already running on a
+    // developer's machine is `npm run dev`, which talks to PRODUCTION. Without
+    // the runner this is the old behaviour: the dev server, reused locally.
     webServer: {
-        command: 'npm run dev',
-        url: 'http://localhost:3000',
-        reuseExistingServer: !process.env.CI,
+        command: process.env.E2E_WEB_SERVER ?? 'npm run dev',
+        url: process.env.E2E_BASE_URL ?? 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI && !process.env.E2E_WEB_SERVER,
+        // Server logs in the test output when running against the test
+        // database, so a failure in CI shows what the server did.
+        stdout: process.env.E2E_WEB_SERVER ? 'pipe' : 'ignore',
         timeout: 120000,
     },
 })

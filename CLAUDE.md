@@ -58,7 +58,7 @@ Always run `npm run lint` and `npm run test:run` before considering a change don
 
 RLS is enabled on every table. The 28 tables in the baseline dump: `profiles`, `wardrobes`, `wardrobe_items`, `tailor_cards`, `lookbooks`, `lookbook_items`, `user_questions`, `admin_notifications`, `purchases`, `webhook_events`, `stripe_processed_events`, `rate_limits`, `services`, `masterclasses`, `chapters`, `offers`, `user_access_grants`, `user_progress`, `essence_responses`, `partner_brands`, `boutique_items`, `boutique_collections`, `boutique_collection_items`, `boutique_saves`, `boutique_clicks`, `trusted_by_logos`, `purchase_claims`, `fulfillments` (the last two are service-role only: RLS forced, no policies).
 
-Schema is managed directly in Supabase. The historical `supabase/migrations/` SQL was reset for a clean start (2026-07); add new migrations there going forward. `scripts/` holds one-off DB/QA helpers (need `DATABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`).
+Schema is managed directly in Supabase. The historical `supabase/migrations/` SQL was reset for a clean start (2026-07); add new migrations there going forward. The baseline covers only `public`: what we own outside it (the `on_auth_user_created` trigger, storage buckets and storage policies) is in `supabase/platform.sql`, generated with `npm run db:platform`; regenerate it after any migration that touches them, and `npm run db:platform:check` detects drift. `scripts/` holds one-off DB/QA helpers (need `DATABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`).
 
 Agents are authorized to execute and verify migrations themselves, including on
 the shared production database (owner authorization, 2026-09-19). Follow
@@ -86,7 +86,7 @@ DATABASE_URL                      # direct Postgres, used by scripts/
 ## Testing
 
 - **Unit** (`tests/unit/`, Vitest + Testing Library): access-control, access-logic, stripe-webhook, commerce, studio, wardrobes, dashboard, essence-lab, notifications, boutique, auth, paywall-guard, etc.
-- **E2E** (`tests/e2e/`, Playwright): `smoke.spec.ts`, `intake-flow.spec.ts`.
+- **E2E** (`tests/e2e/`, Playwright, Chromium + WebKit): run with `npm run test:e2e:local-db` (needs Docker). It starts a local Supabase built from the baseline + `supabase/platform.sql` + `tests/e2e/db/supabase/seed.sql`, builds the app into `.next-e2e` and serves it on port 3100; CI runs the same (`e2e` job). Signed-in specs use the seeded accounts in `tests/e2e/fixtures.ts` and skip without the local database, so `npm run test:e2e` against a dev server (which talks to production) never signs in. Never point the e2e runner at production; `scripts/ci/run-e2e.mjs` refuses a non-local Supabase URL.
 - **Integration** (`tests/integration/`, Vitest project `integration`, run serially): real PostgreSQL via PGlite, loaded from the live schema dump by `tests/utils/pglite-db.ts` (`createLiveSchemaDb`, `asRole`). `tests/utils/pglite-supabase.ts` is a strict supabase-js-shaped client over it, so real server code (the Stripe webhook, `syncStripePurchases`, the grant path) runs against real constraints and RLS.
 - Shared setup in `tests/setup.ts`, helpers in `tests/utils/`.
 
