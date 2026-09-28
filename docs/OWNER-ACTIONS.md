@@ -120,8 +120,9 @@ confirm page and signs you in.
 ## 1c. Colorimetry is on sale with nothing playable — decide before the cutover
 
 Checked live 2026-09-26: the **Colorimetry masterclass is published and has a
-price**, so the sales page and checkout sell it, but **all 21 modules are
-unpublished and none has a video**. While Stripe is in test mode no one can
+price**, so the sales page and checkout sell it, but **none of its 5 modules
+is published or has a video** (recounted 2026-09-28; 21 is the total across
+all four masterclasses). While Stripe is in test mode no one can
 pay. The moment item 1 is done, a real customer could buy it and find nothing
 to watch.
 
@@ -450,11 +451,12 @@ one place.
   **7 days**, and a wardrobe caps at 500 items. The cap lives in code
   (`app/lib/wardrobe-tokens.ts`) so it can be lowered without a migration once
   there is real usage to size it against.
-- **F12–F16** remain open: the 2,000-account lookup ceiling in guest
-  resolution, test coverage of the highest-consequence boundaries, deployed-vs-
-  source drift, bilingual/performance polish, and observability. **F16's backup
-  half is done and proven** (item 13), and the credential question it raised is
-  closed by owner decision (13b).
+- **F13–F16** remain open: test coverage of the highest-consequence
+  boundaries, deployed-vs-source drift, bilingual/performance polish, and
+  observability. F12 (the 2,000-account lookup ceiling) was fixed by migration
+  31. **F16's backup half is done and proven** (item 13), its
+  paid-but-not-granted alert runs on `hermes` (item 1d), and the credential
+  question it raised is closed by owner decision (13b).
 
 - **2026-09-25 external assessment**
   ([`docs/archive/ENG_ASSESSMENT.MD`](archive/ENG_ASSESSMENT.MD)): it found

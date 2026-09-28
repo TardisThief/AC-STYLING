@@ -31,8 +31,9 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   verified through **33**; the code is deployed.
 - **The Vault is populated but mostly parked.** 4 masterclasses, **21 modules**
   and 4 standalone courses, all bilingual. **Colorimetry is published and
-  priced, so it is on sale, while all 21 modules are unpublished** — checked
-  live 2026-09-26. Harmless while Stripe is in test mode; after the cutover it
+  priced, so it is on sale, while none of its 5 modules is published or has a
+  video** — checked live 2026-09-26, recounted 2026-09-28 (the 21 modules are
+  Body Shape 6, Closet Curation 4, Colorimetry 5, Style & Essence 6). Harmless while Stripe is in test mode; after the cutover it
   sells a masterclass with nothing playable (owner action 1c). Publishing is a
   flag flip in the admin console, not a re-import.
 - **Launch offer is the Masterclass Pass** (2026-09-21, migration 19): every
@@ -67,10 +68,9 @@ Two content/owner things, plus the open assessment items below.
 2. **Stripe is in the test sandbox.** The 11 `stripe_product_id` and 9
    `price_id` values in the database are test-mode, and IDs do not carry across
    modes. A real customer would pay and match nothing. This is owner action 1.
-   Since 2026-09-24 the cutover has one more step: renewal prices are computed
-   from `purchases`, so the 9 sandbox rows there must be cleared before the
-   first real sale or they will quote real customers renewals priced off fake
-   money.
+   (Renewal prices are computed from `purchases`, so the sandbox rows there had
+   to go before the first real sale: done 2026-09-26, detached rather than
+   deleted.)
 
 **Also fixed on 2026-09-26, from the same assessment's second tier:**
 a crashed fulfilment run re-granting a year on retry (PAY-001, migration 27);
@@ -148,7 +148,7 @@ as intended.
   representation): real, admin-only or structural; parked.
 
 Everything owner-only lives in [`docs/OWNER-ACTIONS.md`](docs/OWNER-ACTIONS.md)
-— 12 items, kept there rather than here so that "what Claude does next" and
+— kept there rather than here so that "what Claude does next" and
 "what the owner does next" do not get shuffled together again.
 
 ## Parked, with reasons
@@ -160,10 +160,10 @@ of these is cheaper or safer to do *after* content exists.
 |---|---|
 | **Ops polish (CSP hardening)** | The policy is decorative today and the UI surface changes as content lands — exactly the churn that breaks a nonce policy. Harden once, against the settled surface. |
 | **North-star features** (Style of the Week, Ale's Pick, boutique carousel) | These are editorial *surfaces* with no editorial content to put in them. Building them now means designing against placeholders. |
-| **F12 — scale limits** | Guest resolution pages through at most 2,000 auth users. Real, invisible at 55 users, and it fires precisely when growth goes well. Belongs before a marketing push. |
+| ~~**F12 — scale limits**~~ | **Fixed 2026-09-26** (SCALE-001, migration 31): guest resolution finds an account by email directly instead of paging through at most 2,000 auth users. |
 | **F13 — E2E in CI** | The Playwright suite exists and is correct; wiring it into CI needs a test database, which is F16's dependency. |
 | **F15 — ES parity and performance** | Best measured against real content and real copy. |
-| **F16 — recovery and observability** | **Backup half DONE and proven 2026-09-25.** Nightly encrypted database + storage backups run on the owner's `hermes` host to Cloudflare R2, and the first restore drill passed 10/10 on snapshot `2026-09-25T001744Z` — restored whole, restored a single table, logins included ([`docs/DISASTER-RECOVERY.md`](docs/DISASTER-RECOVERY.md) carries the record). This mattered more than its "parked" status implied: the project is on the Supabase free tier, which has **no backups at all**. Still open: a staging database (F13 waits on it) and alerting on paid-but-unfulfilled purchases. |
+| **F16 — recovery and observability** | **Backup half DONE and proven 2026-09-25.** Nightly encrypted database + storage backups run on the owner's `hermes` host to Cloudflare R2, and the first restore drill passed 10/10 on snapshot `2026-09-25T001744Z` — restored whole, restored a single table, logins included ([`docs/DISASTER-RECOVERY.md`](docs/DISASTER-RECOVERY.md) carries the record). This mattered more than its "parked" status implied: the project is on the Supabase free tier, which has **no backups at all**. Alerting on paid-but-unfulfilled purchases is also done (`scripts/ops/check_fulfillments.mjs`, scheduled on `hermes` 2026-09-26, owner action 1d). Still open: a staging database (F13 waits on it). |
 
 ## Next planning session
 
