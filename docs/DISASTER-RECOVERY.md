@@ -184,7 +184,13 @@ pg_restore -d "$NEW" --no-owner -L /tmp/ours.list "$SNAP/database.dump"
 
 Then check it the same way as Scenario 2 (`db:schema:check`,
 `verify_authorization.mjs`), and confirm `SELECT count(*) FROM pg_policies
-WHERE schemaname = 'storage'` is 9 and `studio-wardrobe` is private.
+WHERE schemaname = 'storage'` is 10 (it was 9 until migration 30 added the
+private-downloads upload policy) and `studio-wardrobe` is private. Better:
+point `DATABASE_URL` at the new project and run `npm run db:platform:check`,
+which compares the trigger, all five buckets and every storage policy with
+`supabase/platform.sql`. If step 5 failed or the snapshot is older than the
+file, `psql "$NEW" -f supabase/platform.sql` recreates them (it is idempotent,
+and is what the browser tests build their database from).
 
 3. **Recreate what lives outside the database:** auth providers and redirect
    URLs, and any edge configuration. Buckets and their policies came back in

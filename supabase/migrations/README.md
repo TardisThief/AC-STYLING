@@ -28,6 +28,15 @@ baseline for *removals*, not just additions: on this project a disappearing
 grant is a security change, and the only ones that should ever vanish are the
 ones a migration deliberately revoked (migration 12 removed twelve).
 
+**What the baseline does not cover.** It is `public` only. The objects we own
+elsewhere (the `on_auth_user_created` trigger on `auth.users` that creates
+every profile, the storage buckets and the storage policies) are in
+`supabase/platform.sql`, generated from the live project by `npm run
+db:platform` (added 2026-09-28, when a database built from the baseline alone
+turned out to have signups with no profiles and no storage at all). After a
+migration that changes any of them, regenerate it with the baseline;
+`npm run db:platform:check` is its drift detector.
+
 Note the dump is **schema only**. It is not a backup of the data, and the
 project is on the Supabase free tier, which has none of its own. Data recovery
 comes from the nightly snapshots described in
