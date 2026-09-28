@@ -3,17 +3,16 @@
 import { useState } from "react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
-import { createGuestCheckoutSession, createCheckoutSession } from "@/app/actions/stripe";
+import { createSalesPageCheckout } from "@/app/actions/stripe";
 import { trackCta, type CtaSection } from "@/app/lib/analytics";
 
 /**
  * The single place the sales page turns intent into a Stripe session.
  *
- * Every CTA that sells goes through here, so the account-then-pay and
- * pay-then-account flows differ in one file rather than seven. A signed-in
- * visitor keeps the existing path (her purchase is attached by
- * client_reference_id); everyone else goes straight to Stripe and gets an
- * account created from the email she pays with.
+ * Every CTA that sells goes through here. Whether she pays as a signed-in
+ * member (attached by client_reference_id) or as a guest (an account created
+ * from the email she pays with) is decided by the server action at click
+ * time: the page is prerendered and cannot know who is looking.
  *
  * `priceId` can be absent while a course has no Stripe price yet — the button
  * says so rather than failing on click.
@@ -21,7 +20,6 @@ import { trackCta, type CtaSection } from "@/app/lib/analytics";
 
 interface Props {
     priceId: string | null;
-    isSignedIn: boolean;
     section: CtaSection;
     label: string;
     unavailableLabel: string;
@@ -31,7 +29,6 @@ interface Props {
 
 export default function VaultCheckoutButton({
     priceId,
-    isSignedIn,
     section,
     label,
     unavailableLabel,
@@ -49,9 +46,7 @@ export default function VaultCheckoutButton({
         setLoading(true);
 
         try {
-            const result = isSignedIn
-                ? await createCheckoutSession(priceId!, returnUrl)
-                : await createGuestCheckoutSession(priceId!, returnUrl, `/${locale}/welcome`, locale);
+            const result = await createSalesPageCheckout(priceId!, returnUrl, `/${locale}/welcome`, locale);
 
             if (result.error) {
                 toast.error(result.error);

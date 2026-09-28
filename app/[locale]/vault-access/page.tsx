@@ -354,7 +354,6 @@ export default async function VaultLandingPage({
                                             entry.is_published && entry.price_id ? (
                                                 <VaultCheckoutButton
                                                     priceId={entry.price_id}
-                                                    isSignedIn={false}
                                                     section="catalog_buy"
                                                     label={t("catalog.buyCta")}
                                                     unavailableLabel={t("offer.unavailable")}
@@ -496,12 +495,8 @@ export default async function VaultLandingPage({
                                     {t(`pass.${passSlug}.body`)}
                                 </p>
                                 <div className="mt-7 pt-1">
-                                    {/* isSignedIn is false by construction: the proxy
-                                        only rewrites anonymous visitors here, so a
-                                        member never sees this page. */}
                                     <VaultCheckoutButton
                                         priceId={pass?.price_id ?? null}
-                                        isSignedIn={false}
                                         section={passSlug === "masterclass_pass" ? "offer_masterclass_pass" : "offer_full"}
                                         label={t(`pass.${passSlug}.cta`)}
                                         unavailableLabel={t("offer.unavailable")}
@@ -559,7 +554,6 @@ export default async function VaultLandingPage({
                                                 </div>
                                                 <VaultCheckoutButton
                                                     priceId={entry.price_id}
-                                                    isSignedIn={false}
                                                     section="offer_single_masterclass"
                                                     label={t("singles.buy", { title })}
                                                     unavailableLabel={t("offer.unavailable")}
@@ -665,11 +659,15 @@ export default async function VaultLandingPage({
                             {t("closing.body")}
                         </p>
                         <div className="mt-10">
+                            {/* To the offer, like the hero's CTA: the pay-first
+                                buttons are there, and they check at click time
+                                whether she is signed in. /vault/join was the
+                                signup form, a dead end for a member (2026-09-28
+                                rehearsal). */}
                             <TrackedCta
-                                href="/vault/join"
-                                internal
+                                href="#offer"
                                 section="closing"
-                                target="checkout"
+                                target="anchor"
                                 className="inline-block bg-ac-espresso px-9 py-4 text-xs font-bold uppercase tracking-widest text-ac-sand transition-colors hover:bg-ac-taupe focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ac-olive"
                             >
                                 {t("closing.cta")}

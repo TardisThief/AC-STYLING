@@ -159,6 +159,34 @@ export async function createGuestCheckoutSession(
 }
 
 /**
+ * Checkout from the public sales page, for whoever is actually clicking.
+ *
+ * /vault-access is prerendered, so it cannot know who is looking, and it used
+ * to hard-code the guest checkout on the grounds that a member never sees the
+ * page. That stopped being true when it got its own public address (and the
+ * lapsed-renewal banner sends members there on purpose): in the 2026-09-28
+ * rehearsal a signed-in member bought through the guest flow, typing her email
+ * into Stripe, so a different address would have sent her purchase to another
+ * account. Decided here, at click time, from the session cookie: a real
+ * account pays as herself; a visitor or an anonymous guest pays first and gets
+ * an account from her email (tests/unit/sales-page-checkout.test.tsx).
+ */
+export async function createSalesPageCheckout(
+    priceId: string,
+    returnUrl: string,
+    welcomePath: string,
+    locale: string = 'en'
+) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user && !user.is_anonymous) {
+        return createCheckoutSession(priceId, returnUrl);
+    }
+    return createGuestCheckoutSession(priceId, returnUrl, welcomePath, locale);
+}
+
+/**
  * Everything a renewal needs, resolved from durable state.
  *
  * Not exported: a "use server" module may only export async functions that are

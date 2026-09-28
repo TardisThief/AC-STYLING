@@ -75,7 +75,7 @@ export default async function RenewAccessBanner({ locale, accessExpiresAt }: Pro
             <div className="mt-5">
                 {lapsed ? (
                     <Link
-                        href="/vault/join"
+                        href="/vault-access"
                         className="inline-block border border-ac-taupe/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-ac-taupe transition-colors hover:border-ac-taupe hover:bg-ac-taupe hover:text-ac-sand"
                     >
                         {t("resetCta")}
