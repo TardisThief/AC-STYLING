@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAdmin } from '@/app/lib/auth-guards';
-import { assertPublicUrl, assertSafeUrl } from '@/app/lib/ssrf-guard';
+import { assertPublicUrl, createSubrequestGuard } from '@/app/lib/ssrf-guard';
 
 export async function extractUrlMetadata(url: string) {
     if (!url) return null;
@@ -42,18 +42,16 @@ export async function extractUrlMetadata(url: string) {
         // for. Without this, a public page can pull in subresources pointed at
         // internal addresses and the browser fetches them for it (F07).
         //
-        // The check here is the synchronous one: it catches literal private,
-        // loopback, link-local and multicast addresses, and non-http schemes.
-        // Resolving DNS for every subrequest would stall page loads, and this
-        // tool is admin-gated, so that trade is deliberate and noted.
+        // Each subrequest is checked by its resolved address, not only by how
+        // it is written: a hostname whose DNS answer is internal used to pass
+        // (SEC-004). Each host is resolved once per page, so this does not
+        // stall page loads the way a lookup per request would.
+        const allowed = createSubrequestGuard();
         await page.setRequestInterception(true);
         page.on('request', (request) => {
-            try {
-                assertSafeUrl(request.url());
-                void request.continue();
-            } catch {
-                void request.abort();
-            }
+            void allowed(request.url())
+                .then((ok) => (ok ? request.continue() : request.abort()))
+                .catch(() => request.abort());
         });
 
         // Go to URL and wait for meaningful content

@@ -21,6 +21,11 @@
  * what limit the damage in the meantime.
  */
 
+// A static import, not `await import('dns')`: this module is only ever used by
+// server actions, and a dynamic import raced under test mocks, so concurrent
+// lookups could reach the real resolver (found writing SEC-004's tests).
+import { promises as dnsPromises } from 'dns';
+
 const PRIVATE_V4 = [
     /^127\./,             // loopback
     /^10\./,              // private
@@ -207,8 +212,7 @@ export async function resolveAndAssertPublic(url: URL): Promise<void> {
     // Literal IPs were already checked in assertSafeUrl.
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(':')) return;
 
-    const dns = await import('dns');
-    const results = await dns.promises.lookup(host, { all: true });
+    const results = await dnsPromises.lookup(host, { all: true });
     if (!results.length) throw new Error('URL host does not resolve');
 
     for (const { address } of results) {
@@ -346,4 +350,43 @@ async function readCapped(response: Response, maxBytes: number): Promise<Uint8Ar
         offset += chunk.byteLength;
     }
     return out;
+}
+
+/**
+ * A request filter for a headless browser loading a caller-supplied page.
+ *
+ * Validating the page URL says nothing about what the page then asks for: a
+ * public page can reference a hostname whose DNS answer is internal (the
+ * cloud metadata address, say), and the browser fetches it for us. The
+ * scraper used to check each subrequest with `assertSafeUrl` alone, which
+ * sees only the written address (SEC-004, 2026-09-25 assessment;
+ * tests/unit/scraper-subrequests.test.ts).
+ *
+ * Each subrequest gets the synchronous check and then the DNS check. Every
+ * host is resolved once per guard (one guard per page), so a page with fifty
+ * images from one CDN costs one lookup. A lookup that fails refuses the host.
+ *
+ * DNS rebinding between this lookup and the browser's own remains the
+ * residual risk described at the top of this file; the scraper is also
+ * admin-only.
+ */
+export function createSubrequestGuard(): (rawUrl: string) => Promise<boolean> {
+    const verdicts = new Map<string, Promise<boolean>>();
+
+    return (rawUrl: string) => {
+        let url: URL;
+        try {
+            url = assertSafeUrl(rawUrl);
+        } catch {
+            return Promise.resolve(false);
+        }
+
+        const host = url.hostname;
+        let verdict = verdicts.get(host);
+        if (!verdict) {
+            verdict = resolveAndAssertPublic(url).then(() => true, () => false);
+            verdicts.set(host, verdict);
+        }
+        return verdict;
+    };
 }

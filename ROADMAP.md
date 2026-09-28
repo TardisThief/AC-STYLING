@@ -168,9 +168,12 @@ guest", and now has a sign-in link for returning clients.
 - **PAY-001's limit:** only the last line item is remembered on a term, so a
   crash followed by a different purchase on the same term inside the
   15-minute window could still double. Recorded in migration 27.
-- **SEC-004** (the scraper's browser subrequests are checked by address, not
-  by resolved DNS) and **ARCH-001** (handwritten types, the dual lookbook
-  representation): real, admin-only or structural; parked.
+- ~~**SEC-004**~~ — **fixed 2026-09-28**: every subrequest of a scraped page is
+  now checked by its resolved address, once per host per page
+  (`createSubrequestGuard`, `tests/unit/scraper-subrequests.test.ts`). Residual,
+  documented: DNS rebinding between our lookup and the browser's.
+- **ARCH-001** (handwritten types, the dual lookbook representation):
+  structural; parked.
 
 Everything owner-only lives in [`docs/OWNER-ACTIONS.md`](docs/OWNER-ACTIONS.md)
 — kept there rather than here so that "what Claude does next" and
