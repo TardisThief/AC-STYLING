@@ -93,6 +93,19 @@ function isDuplicate(error: { code?: string } | null): boolean {
 }
 
 /**
+ * The line items that have extended a term, as the keys of a jsonb map
+ * (`profiles.access_term_line_items`, `user_access_grants.term_line_items`,
+ * migration 37). Anything that is not a plain object reads as none.
+ */
+function lineItemsOf(value: unknown): Record<string, true> {
+    return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, true>) : {};
+}
+
+function withLineItem(held: Record<string, true>, lineItemId: string | null): Record<string, true> {
+    return lineItemId ? { ...held, [lineItemId]: true } : held;
+}
+
+/**
  * Set an entitlement flag on the profile, stamp the term, and refuse to pretend
  * it worked.
  *
@@ -126,14 +139,16 @@ async function setProfileFlag(
     for (let attempt = 0; attempt < TERM_WRITE_ATTEMPTS; attempt++) {
         const { data: held } = await supabase
             .from('profiles')
-            .select('access_expires_at, access_renewal_count, access_term_line_item, has_full_unlock, has_course_pass, has_masterclass_pass')
+            .select('access_expires_at, access_renewal_count, access_term_line_items, has_full_unlock, has_course_pass, has_masterclass_pass')
             .eq('id', userId)
             .maybeSingle();
 
         // This line item already extended the term — a run that died after
-        // granting, re-claimed (PAY-001, migration 27). Doing it again would
-        // be a free year.
-        if (lineItemId && held?.access_term_line_item === lineItemId && held?.[flag]) return;
+        // granting, re-claimed (PAY-001, migrations 27 and 37). Doing it again
+        // would be a free year. Every line item is kept, not just the last:
+        // another purchase may have extended the term before the retry.
+        const heldItems = lineItemsOf(held?.access_term_line_items);
+        if (lineItemId && lineItemId in heldItems && held?.[flag]) return;
 
         const heldExpiry = (held?.access_expires_at as string | null) ?? null;
         const heldCount = (held?.access_renewal_count as number | null) ?? 0;
@@ -149,7 +164,7 @@ async function setProfileFlag(
                 access_renewal_count: isRenewal ? heldCount + 1 : 0,
                 // In the same write as the extension, so a crash cannot
                 // separate the year from the record of who paid for it.
-                access_term_line_item: lineItemId,
+                access_term_line_items: withLineItem(heldItems, lineItemId),
             })
             .eq('id', userId)
             .eq('access_renewal_count', heldCount);
@@ -190,7 +205,7 @@ async function grantItemForTerm(
         grant_type: 'purchase',
         expires_at: nextExpiry(null),
         renewal_count: 0,
-        term_line_item: lineItemId,
+        ...(lineItemId ? { term_line_items: withLineItem({}, lineItemId) } : {}),
     });
 
     if (!isDuplicate(error)) return { error };
@@ -200,7 +215,7 @@ async function grantItemForTerm(
     for (let attempt = 0; attempt < TERM_WRITE_ATTEMPTS; attempt++) {
         const { data: held, error: readError } = await supabase
             .from('user_access_grants')
-            .select('expires_at, renewal_count, term_line_item')
+            .select('expires_at, renewal_count, term_line_items')
             .eq('user_id', userId)
             .eq(column, itemId)
             .maybeSingle();
@@ -209,7 +224,8 @@ async function grantItemForTerm(
         if (!held) return { error: { message: 'grant vanished between insert and extend' } };
 
         // Already extended by this line item: see setProfileFlag.
-        if (lineItemId && held.term_line_item === lineItemId) return { error: null };
+        const heldItems = lineItemsOf(held.term_line_items);
+        if (lineItemId && lineItemId in heldItems) return { error: null };
 
         const heldExpiry = (held.expires_at as string | null) ?? null;
         const heldCount = (held.renewal_count as number | null) ?? 0;
@@ -223,7 +239,7 @@ async function grantItemForTerm(
             .update({
                 expires_at: nextExpiry(heldExpiry),
                 renewal_count: isRenewal ? heldCount + 1 : 0,
-                term_line_item: lineItemId,
+                term_line_items: withLineItem(heldItems, lineItemId),
             })
             .eq('user_id', userId)
             .eq(column, itemId)
@@ -244,9 +260,10 @@ async function grantItemForTerm(
  * reading the marker that `createRenewalCheckoutSession` put on the session.
  *
  * `lineItemId` makes a term extension idempotent per paid line item
- * (migration 27): a re-run of the same line item finds its own id on the term
- * and adds nothing. Fulfilment always passes it; without it (admin tools,
- * tests) every call extends.
+ * (migrations 27 and 37): a re-run of the same line item finds its own id on
+ * the term, however many purchases extended it since, and adds nothing.
+ * Fulfilment always passes it; without it (admin tools, tests) every call
+ * extends.
  */
 export async function grantAccessForProduct(
     supabase: SupabaseClient,

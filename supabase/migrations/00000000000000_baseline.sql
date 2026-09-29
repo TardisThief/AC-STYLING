@@ -704,6 +704,7 @@ CREATE TABLE "public"."profiles" (
     "access_expires_at" timestamp with time zone,
     "access_renewal_count" smallint DEFAULT 0 NOT NULL,
     "access_term_line_item" "text",
+    "access_term_line_items" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
     CONSTRAINT "profiles_role_check" CHECK (("role" = ANY (ARRAY['user'::"text", 'admin'::"text"]))),
     CONSTRAINT "profiles_status_check" CHECK (("status" = ANY (ARRAY['active'::"text", 'archived'::"text"]))),
     CONSTRAINT "username_length" CHECK (("char_length"("username") >= 3))
@@ -734,6 +735,12 @@ COMMENT ON COLUMN "public"."profiles"."access_renewal_count" IS 'Rungs climbed o
 --
 
 COMMENT ON COLUMN "public"."profiles"."access_term_line_item" IS 'Stripe line item id that last extended access_expires_at; a re-run of that line item does not extend again (migration 27).';
+
+--
+-- Name: COLUMN "profiles"."access_term_line_items"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "public"."profiles"."access_term_line_items" IS 'Every Stripe line item that extended the pass term, as keys. A retry finds its own id and does nothing (PAY-001; migrations 27, 37).';
 
 --
 -- Name: purchase_claims; Type: TABLE; Schema: public; Owner: postgres
@@ -895,6 +902,7 @@ CREATE TABLE "public"."user_access_grants" (
     "expires_at" timestamp with time zone,
     "renewal_count" smallint DEFAULT 0 NOT NULL,
     "term_line_item" "text",
+    "term_line_items" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
     CONSTRAINT "user_access_grants_grant_type_check" CHECK (("grant_type" = ANY (ARRAY['purchase'::"text", 'bonus'::"text", 'admin_override'::"text"]))),
     CONSTRAINT "valid_grant_target" CHECK (((((("masterclass_id" IS NOT NULL))::integer + (("chapter_id" IS NOT NULL))::integer) + (("offer_slug" IS NOT NULL))::integer) = 1))
 );
@@ -924,6 +932,12 @@ COMMENT ON COLUMN "public"."user_access_grants"."renewal_count" IS 'Rungs climbe
 --
 
 COMMENT ON COLUMN "public"."user_access_grants"."term_line_item" IS 'Stripe line item id that last extended expires_at; a re-run of that line item does not extend again (migration 27).';
+
+--
+-- Name: COLUMN "user_access_grants"."term_line_items"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "public"."user_access_grants"."term_line_items" IS 'Every Stripe line item that extended this grant, as keys. A retry finds its own id and does nothing (PAY-001; migrations 27, 37).';
 
 --
 -- Name: user_progress; Type: TABLE; Schema: public; Owner: postgres

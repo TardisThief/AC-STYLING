@@ -200,6 +200,8 @@ beforeAll(async () => {
     await expectMigrationApplied(db, '20260925_23_grant_uniqueness_and_studio_unlock.sql');
     // PAY-001, closed by migration 27 (applied to production 2026-09-26).
     await expectMigrationApplied(db, '20260926_27_term_line_item.sql');
+    // ...and its residual window, closed by migration 37 (applied 2026-09-29).
+    await expectMigrationApplied(db, '20260929_37_term_line_items.sql');
     // Deleting an account closes its purchases; applied to production 2026-09-26.
     await expectMigrationApplied(db, '20260926_32_keep_sales_after_account_deletion.sql');
 }, 60000);
@@ -589,7 +591,7 @@ describe('Paid means granted', () => {
     // line item on the term, so a run that died after granting, whose term was
     // then extended by a different purchase before its retry, no longer found
     // itself there and granted again.
-    it.fails.each([
+    it.each([
         ['masterclass', PRODUCT.masterclass],
         ['standalone course', PRODUCT.chapter],
         ['Masterclass Pass', PRODUCT.masterclassPass],
