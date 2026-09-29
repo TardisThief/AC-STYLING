@@ -570,26 +570,19 @@ COMMENT ON COLUMN "public"."fulfillments"."receipt_sent_at" IS 'When this checko
 
 CREATE TABLE "public"."lookbooks" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "user_id" "uuid",
     "title" "text" NOT NULL,
     "collection_name" "text",
     "status" "text" DEFAULT 'Published'::"text",
     "metadata" "jsonb" DEFAULT '{}'::"jsonb",
     "created_at" timestamp with time zone DEFAULT "now"(),
     "updated_at" timestamp with time zone DEFAULT "now"(),
-    "wardrobe_id" "uuid",
+    "wardrobe_id" "uuid" NOT NULL,
     "lookbook_items" "jsonb" DEFAULT '[]'::"jsonb",
     "thumbnail_url" "text",
     CONSTRAINT "lookbooks_status_check" CHECK (("status" = ANY (ARRAY['Draft'::"text", 'Published'::"text"])))
 );
 
 ALTER TABLE "public"."lookbooks" OWNER TO "postgres";
-
---
--- Name: COLUMN "lookbooks"."user_id"; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN "public"."lookbooks"."user_id" IS 'DEPRECATED: Use wardrobe_id instead. Will be removed in future migration.';
 
 --
 -- Name: COLUMN "lookbooks"."lookbook_items"; Type: COMMENT; Schema: public; Owner: postgres
@@ -834,10 +827,17 @@ CREATE TABLE "public"."services" (
     "title_es" "text",
     "subtitle_es" "text",
     "description_es" "text",
+    "price_display_es" "text",
     CONSTRAINT "services_type_check" CHECK (("type" = ANY (ARRAY['session'::"text", 'retainer'::"text"])))
 );
 
 ALTER TABLE "public"."services" OWNER TO "postgres";
+
+--
+-- Name: COLUMN "services"."price_display_es"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN "public"."services"."price_display_es" IS 'The price as shown in Spanish; the Services page falls back to price_display when empty. Migration 36.';
 
 --
 -- Name: stripe_processed_events; Type: TABLE; Schema: public; Owner: postgres
@@ -1676,13 +1676,6 @@ ALTER TABLE ONLY "public"."fulfillments"
     ADD CONSTRAINT "fulfillments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE SET NULL;
 
 --
--- Name: lookbooks lookbooks_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY "public"."lookbooks"
-    ADD CONSTRAINT "lookbooks_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("id") ON DELETE SET NULL;
-
---
 -- Name: lookbooks lookbooks_wardrobe_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2149,9 +2142,9 @@ CREATE POLICY "Users can view their own purchases" ON "public"."purchases" FOR S
 -- Name: lookbooks Users can view their published lookbooks; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY "Users can view their published lookbooks" ON "public"."lookbooks" FOR SELECT USING ((("auth"."uid"() IS NOT NULL) AND (("user_id" = "auth"."uid"()) OR ("wardrobe_id" IN ( SELECT "wardrobes"."id"
-   FROM "public"."wardrobes"
-  WHERE ("wardrobes"."owner_id" = "auth"."uid"())))) AND ("status" = 'Published'::"text")));
+CREATE POLICY "Users can view their published lookbooks" ON "public"."lookbooks" FOR SELECT USING ((("auth"."uid"() IS NOT NULL) AND ("status" = 'Published'::"text") AND ("wardrobe_id" IN ( SELECT "w"."id"
+   FROM "public"."wardrobes" "w"
+  WHERE ("w"."owner_id" = "auth"."uid"())))));
 
 --
 -- Name: admin_notifications; Type: ROW SECURITY; Schema: public; Owner: postgres

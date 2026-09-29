@@ -9,12 +9,13 @@
  * previous client still read its published lookbooks through user_id. The
  * wardrobe is the owner now; user_id is gone.
  *
- * Against the live schema: set the old state up, apply the file, check who
- * sees what. The same checks without the file fail.
+ * Applied to production 2026-09-29 and in the baseline since. The proof that
+ * the previous client could read them (5 of 8 failing without the file) is
+ * in git history and supabase/migrations/README.md; this pins the state.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
 
 const MIGRATION = '20260929_36_service_price_es_and_lookbook_owner.sql';
 const id = (n: number) => `00000000-0000-4000-8000-${String(0xf600 + n).padStart(12, '0')}`;
@@ -33,15 +34,13 @@ beforeAll(async () => {
     db = await createLiveSchemaDb();
     for (const u of [OWNER, FORMER, OTHER]) await createUser(db, u);
     await createUser(db, ADMIN, { role: 'admin' });
+    await expectMigrationApplied(db, MIGRATION);
     // The wardrobe was FORMER's and has been reassigned to OWNER; the
-    // lookbooks were made while it was FORMER's, so they carry her user_id.
+    // lookbooks were made while it was FORMER's.
     await db.query(`INSERT INTO wardrobes (id, owner_id, title, status) VALUES ($1, $2, 'W', 'active')`, [W, OWNER]);
     await db.query(
-        `INSERT INTO lookbooks (id, user_id, wardrobe_id, title, status) VALUES
-            ($1, $3, $4, 'Autumn', 'Published'), ($2, $3, $4, 'Winter', 'Draft')`,
-        [PUBLISHED, DRAFT, FORMER, W]);
-
-    await db.exec(readMigration(MIGRATION));
+        `INSERT INTO lookbooks (id, wardrobe_id, title, status) VALUES ($1, $3, 'Autumn', 'Published'), ($2, $3, 'Winter', 'Draft')`,
+        [PUBLISHED, DRAFT, W]);
 }, 60000);
 
 afterAll(async () => { await db?.close(); });
@@ -78,12 +77,5 @@ describe('a Spanish service price', () => {
         await db.query(`INSERT INTO services (title, price_display, price_display_es) VALUES ('Session', 'From $250', 'Desde $250')`);
         const { rows } = await asRole<{ price_display_es: string }>(db, 'anon', null, "SELECT price_display_es FROM services WHERE title = 'Session'");
         expect(rows).toEqual([{ price_display_es: 'Desde $250' }]);
-    });
-});
-
-describe('the file', () => {
-    it('refuses to run twice', async () => {
-        await expect(db.exec(readMigration(MIGRATION))).rejects.toThrow(/has been applied/);
-        await db.exec('ROLLBACK');
     });
 });

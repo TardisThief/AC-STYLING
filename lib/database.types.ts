@@ -178,22 +178,16 @@ isOneToOne: false
                   ]
                 },"lookbooks": {
                   Row: {
-                    "collection_name": string | null,"created_at": string | null,"id": string,"lookbook_items": Json | null,"metadata": Json | null,"status": string | null,"thumbnail_url": string | null,"title": string,"updated_at": string | null,"user_id": string | null,"wardrobe_id": string | null
+                    "collection_name": string | null,"created_at": string | null,"id": string,"lookbook_items": Json | null,"metadata": Json | null,"status": string | null,"thumbnail_url": string | null,"title": string,"updated_at": string | null,"wardrobe_id": string
                   }
                   Insert: {
-                    "collection_name"?: string | null,"created_at"?: string | null,"id"?: string,"lookbook_items"?: Json | null,"metadata"?: Json | null,"status"?: string | null,"thumbnail_url"?: string | null,"title": string,"updated_at"?: string | null,"user_id"?: string | null,"wardrobe_id"?: string | null
+                    "collection_name"?: string | null,"created_at"?: string | null,"id"?: string,"lookbook_items"?: Json | null,"metadata"?: Json | null,"status"?: string | null,"thumbnail_url"?: string | null,"title": string,"updated_at"?: string | null,"wardrobe_id": string
                   }
                   Update: {
-                    "collection_name"?: string | null,"created_at"?: string | null,"id"?: string,"lookbook_items"?: Json | null,"metadata"?: Json | null,"status"?: string | null,"thumbnail_url"?: string | null,"title"?: string,"updated_at"?: string | null,"user_id"?: string | null,"wardrobe_id"?: string | null
+                    "collection_name"?: string | null,"created_at"?: string | null,"id"?: string,"lookbook_items"?: Json | null,"metadata"?: Json | null,"status"?: string | null,"thumbnail_url"?: string | null,"title"?: string,"updated_at"?: string | null,"wardrobe_id"?: string
                   }
                   Relationships: [
                     {
-      foreignKeyName: "lookbooks_user_id_fkey"
-      columns: ["user_id"]
-isOneToOne: false
-      referencedRelation: "profiles"
-      referencedColumns: ["id"]
-    },{
       foreignKeyName: "lookbooks_wardrobe_id_fkey"
       columns: ["wardrobe_id"]
 isOneToOne: false
@@ -294,13 +288,13 @@ isOneToOne: false
                   ]
                 },"services": {
                   Row: {
-                    "active": boolean | null,"created_at": string | null,"description": string | null,"description_es": string | null,"id": string,"image_url": string | null,"order_index": number | null,"price_display": string | null,"price_id": string | null,"recommendation_tags": (string)[] | null,"stripe_product_id": string | null,"stripe_url": string | null,"subtitle": string | null,"subtitle_es": string | null,"title": string,"title_es": string | null,"type": string | null,"unlocks_studio_access": boolean | null,"updated_at": string | null
+                    "active": boolean | null,"created_at": string | null,"description": string | null,"description_es": string | null,"id": string,"image_url": string | null,"order_index": number | null,"price_display": string | null,"price_display_es": string | null,"price_id": string | null,"recommendation_tags": (string)[] | null,"stripe_product_id": string | null,"stripe_url": string | null,"subtitle": string | null,"subtitle_es": string | null,"title": string,"title_es": string | null,"type": string | null,"unlocks_studio_access": boolean | null,"updated_at": string | null
                   }
                   Insert: {
-                    "active"?: boolean | null,"created_at"?: string | null,"description"?: string | null,"description_es"?: string | null,"id"?: string,"image_url"?: string | null,"order_index"?: number | null,"price_display"?: string | null,"price_id"?: string | null,"recommendation_tags"?: (string)[] | null,"stripe_product_id"?: string | null,"stripe_url"?: string | null,"subtitle"?: string | null,"subtitle_es"?: string | null,"title": string,"title_es"?: string | null,"type"?: string | null,"unlocks_studio_access"?: boolean | null,"updated_at"?: string | null
+                    "active"?: boolean | null,"created_at"?: string | null,"description"?: string | null,"description_es"?: string | null,"id"?: string,"image_url"?: string | null,"order_index"?: number | null,"price_display"?: string | null,"price_display_es"?: string | null,"price_id"?: string | null,"recommendation_tags"?: (string)[] | null,"stripe_product_id"?: string | null,"stripe_url"?: string | null,"subtitle"?: string | null,"subtitle_es"?: string | null,"title": string,"title_es"?: string | null,"type"?: string | null,"unlocks_studio_access"?: boolean | null,"updated_at"?: string | null
                   }
                   Update: {
-                    "active"?: boolean | null,"created_at"?: string | null,"description"?: string | null,"description_es"?: string | null,"id"?: string,"image_url"?: string | null,"order_index"?: number | null,"price_display"?: string | null,"price_id"?: string | null,"recommendation_tags"?: (string)[] | null,"stripe_product_id"?: string | null,"stripe_url"?: string | null,"subtitle"?: string | null,"subtitle_es"?: string | null,"title"?: string,"title_es"?: string | null,"type"?: string | null,"unlocks_studio_access"?: boolean | null,"updated_at"?: string | null
+                    "active"?: boolean | null,"created_at"?: string | null,"description"?: string | null,"description_es"?: string | null,"id"?: string,"image_url"?: string | null,"order_index"?: number | null,"price_display"?: string | null,"price_display_es"?: string | null,"price_id"?: string | null,"recommendation_tags"?: (string)[] | null,"stripe_product_id"?: string | null,"stripe_url"?: string | null,"subtitle"?: string | null,"subtitle_es"?: string | null,"title"?: string,"title_es"?: string | null,"type"?: string | null,"unlocks_studio_access"?: boolean | null,"updated_at"?: string | null
                   }
                   Relationships: [
                     
