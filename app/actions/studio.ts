@@ -55,64 +55,37 @@ export async function permanentDeleteProfile(profileId: string) {
     }
 }
 
-// ... deleteWardrobeItem remains unchanged ...
-export async function deleteWardrobeItem(itemId: string) {
-    const { createClient } = await import("@/utils/supabase/server");
-    const supabase = await createClient();
+/**
+ * The stylist saving a client's measurements (TailorCard in the Studio).
+ * Was a browser upsert on tailor_cards relying on RLS alone (2026-09-29);
+ * now admin-only, and only the known measurement fields are stored.
+ * (A client saves her own through saveMyMeasurements.)
+ */
+export async function saveClientMeasurements(clientId: unknown, measurements: unknown) {
+    const { parseInput, uuid } = await import("@/app/lib/validation/parse");
+    const { measurementsSchema } = await import("@/app/lib/validation/client-studio");
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const id = parseInput(uuid('Client'), clientId);
+    if (!id.ok) return { success: false, error: id.error };
+    const parsed = parseInput(measurementsSchema, measurements);
+    if (!parsed.ok) return { success: false, error: parsed.error };
 
-    // 1. Get User
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Unauthorized" };
+    const supabase = createAdminClient();
+    const { data: client } = await supabase.from('profiles').select('id').eq('id', id.data).maybeSingle();
+    if (!client) return { success: false, error: 'Client not found' };
 
-    // 2. Get Item to check ownership & image path
-    const { data: item, error: fetchError } = await supabase
-        .from('wardrobe_items')
-        .select('user_id, image_url')
-        .eq('id', itemId)
-        .single();
-
-    if (fetchError || !item) return { success: false, error: "Item not found" };
-
-    // 3. Permission Check
-    // Allow if Owner OR Admin
-    let canDelete = item.user_id === user.id;
-
-    if (!canDelete) {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-        if (profile?.role === 'admin') canDelete = true;
-    }
-
-    if (!canDelete) return { success: false, error: "Unauthorized" };
-
-    try {
-        // 4. Delete Database Record
-        const { error: deleteError } = await supabase
-            .from('wardrobe_items')
-            .delete()
-            .eq('id', itemId);
-
-        if (deleteError) throw deleteError;
-
-        // 5. Delete from Storage (Best Effort)
-        // Extract path from public URL: .../studio-wardrobe/user_id/filename
-        try {
-            if (!item.image_url) throw new Error('no image');
-            const url = new URL(item.image_url);
-            const pathParts = url.pathname.split('/studio-wardrobe/');
-            if (pathParts.length > 1) {
-                const storagePath = pathParts[1]; // Should comprise "userId/filename" or similar
-                // We decodeURI just in case spaces etc
-                await supabase.storage.from('studio-wardrobe').remove([decodeURIComponent(storagePath)]);
-            }
-        } catch (storageErr) {
-            console.warn("Failed to delete storage file (orphaned):", storageErr);
-        }
-
-        return { success: true };
-    } catch (err) {
-        console.error("Delete Item Error:", err);
-        return { success: false, error: getErrorMessage(err) };
-    }
+    const { error } = await supabase.from('tailor_cards').upsert(
+        {
+            user_id: id.data,
+            measurements: parsed.data,
+            last_updated_by: auth.user.id,
+            updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' }
+    );
+    if (error) return { success: false, error: error.message };
+    return { success: true };
 }
 
 // --- NEW ACTIONS FOR STUDIO INBOX ---

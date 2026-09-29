@@ -6,12 +6,11 @@ import { Plus, Tag, MessageSquare, Briefcase, ShoppingBag, ExternalLink, Loader2
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { uploadRemoteImage } from "@/app/actions/studio";
-import { getWardrobes, cloneWardrobeItem, getAdminWardrobeItems, updateAdminWardrobeItem, bulkSetItemStatus } from "@/app/actions/wardrobes";
+import { getWardrobes, cloneWardrobeItem, getAdminWardrobeItems, updateAdminWardrobeItem, bulkSetItemStatus, addAdminWardrobeItem, deleteAdminWardrobeItem, getAdminItemUploadUrl, setAdminItemImage } from "@/app/actions/wardrobes";
 import { updateMyWardrobeItem } from "@/app/actions/client-studio";
 import { CLIENT_ITEM_COLUMNS } from "@/app/lib/wardrobe-columns";
 import { extractUrlMetadata } from "@/app/actions/scraper";
 import { signWardrobeItems } from "@/lib/wardrobe-images";
-import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
 import { getErrorMessage } from "@/app/lib/errors";
 import type { WardrobeItem, BoutiqueItem } from "@/app/lib/types";
 import SafeImage from "@/components/ui/SafeImage";
@@ -168,22 +167,32 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
     };
 
     const handleDeleteItem = async (itemId: string) => {
-        // Row count checked as well: RLS refusing a delete changes no rows and
-        // raises no error, which used to read as "removed" (UX-002).
-        const { data, error } = await supabase
-            .from('wardrobe_items')
-            .delete()
-            .eq('id', itemId)
-            .select('id');
-
-        if (error || !data?.length) {
+        // Through the admin action, which removes the photo too; a refusal
+        // or a missing row is an error, not a silent success (UX-002).
+        const res = await deleteAdminWardrobeItem(itemId);
+        if (!res.success) {
             toast.error("Failed to delete item");
         } else {
             setItems(prev => prev.filter(item => item.id !== itemId));
-            setSelectedItem(null);
+            if (selectedItem?.id === itemId) setSelectedItem(null);
             toast.success("Item removed from wardrobe");
         }
         setPendingDelete(null);
+    };
+
+    /** Upload a photo for this wardrobe to a signed URL; the stored path. */
+    const uploadToWardrobe = async (file: File): Promise<string> => {
+        const target = await getAdminItemUploadUrl(wardrobeId, file.name);
+        if (!target.success || !target.signedUrl || !target.filePath) throw new Error(target.error || "Failed to prepare upload");
+        const put = await fetch(target.signedUrl, { method: 'PUT', headers: { 'Content-Type': file.type || 'image/jpeg' }, body: file });
+        if (!put.ok) throw new Error("Upload failed");
+        return target.filePath;
+    };
+
+    /** Put an updated item back into the list and the detail panel. */
+    const applyItem = (item: WardrobeItem) => {
+        setItems(prev => prev.map(i => i.id === item.id ? item : i));
+        if (selectedItem?.id === item.id) setSelectedItem(item);
     };
 
     const handleCloneItem = async () => {
@@ -845,19 +854,16 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                         aria-label={`Import ${bi.name} from the boutique`}
                                                         onClick={async () => {
                                                             setIsSaving(true);
-                                                            const { data, error } = await supabase.from('wardrobe_items').insert({
-                                                                user_id: ownerId,
+                                                            const res = await addAdminWardrobeItem({
                                                                 wardrobe_id: wardrobeId,
                                                                 image_url: bi.image_url,
-                                                                category: bi.category,
+                                                                category: bi.category ?? undefined,
                                                                 product_link_id: bi.id,
-                                                                status: 'Keep',
                                                                 brand: bi.name,
-                                                            }).select(CLIENT_ITEM_COLUMNS).single();
-
-                                                            if (error) toast.error("Failed to import item");
+                                                            });
+                                                            if (!res.success || !res.item) toast.error(res.success ? "Failed to import item" : res.error);
                                                             else {
-                                                                setItems([(await signWardrobeItems(supabase, [data]))[0], ...items]);
+                                                                setItems([res.item, ...items]);
                                                                 toast.success("Item imported from Boutique");
                                                                 setIsAdding(false);
                                                             }
@@ -925,30 +931,10 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                         if (!uploadFile) return toast.error("Please select a file");
                                                         setIsSaving(true);
                                                         try {
-                                                            const path = wardrobeUploadPath(ownerId, wardrobeId, uploadFile.name);
-                                                            const { error: uploadError } = await supabase.storage
-                                                                .from('studio-wardrobe')
-                                                                .upload(path, uploadFile);
-
-                                                            if (uploadError) throw uploadError;
-
-                                                            const { data: { publicUrl } } = supabase.storage
-                                                                .from('studio-wardrobe')
-                                                                .getPublicUrl(path);
-
-                                                            const { data: dbData, error: dbError } = await supabase.from('wardrobe_items').insert({
-                                                                user_id: ownerId,
-                                                                wardrobe_id: wardrobeId,
-                                                                image_url: publicUrl,
-                                                                category: uploadForm.category,
-
-                                                                notes: uploadForm.internalNote,
-                                                                status: 'Keep'
-                                                            }).select(CLIENT_ITEM_COLUMNS).single();
-
-                                                            if (dbError) throw dbError;
-
-                                                            setItems([(await signWardrobeItems(supabase, [dbData]))[0], ...items]);
+                                                            const filePath = await uploadToWardrobe(uploadFile);
+                                                            const res = await addAdminWardrobeItem({ wardrobe_id: wardrobeId, file_path: filePath, category: uploadForm.category, notes: uploadForm.internalNote });
+                                                            if (!res.success || !res.item) throw new Error(res.success ? "Failed to upload" : res.error);
+                                                            setItems([res.item, ...items]);
                                                             toast.success("Item uploaded successfully");
                                                             setIsAdding(false);
                                                             setUploadFile(null);
@@ -1097,19 +1083,10 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                         }
 
                                                         // 2. Save Item
-                                                        const { data, error } = await supabase.from('wardrobe_items').insert({
-                                                            user_id: ownerId,
-                                                            wardrobe_id: wardrobeId,
-                                                            image_url: finalImageUrl,
-                                                            category: linkForm.category,
-                                                            notes: linkForm.internalNote,
-                                                            product_link_id: null,
-                                                            status: 'Keep'
-                                                        }).select(CLIENT_ITEM_COLUMNS).single();
-
-                                                        if (error) toast.error("Failed to save link");
+                                                        const res = await addAdminWardrobeItem({ wardrobe_id: wardrobeId, image_url: finalImageUrl, category: linkForm.category, notes: linkForm.internalNote });
+                                                        if (!res.success || !res.item) toast.error(res.success ? "Failed to save link" : res.error);
                                                         else {
-                                                            setItems([data, ...items]);
+                                                            setItems([res.item, ...items]);
                                                             toast.success("Link added (and image secured)!");
                                                             setIsAdding(false);
                                                             setLinkForm({ url: "", imageUrl: "", category: "Tops", internalNote: "" });
@@ -1201,19 +1178,10 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                                 if (!updateFile) return toast.error("Please select a file");
                                                 setIsSaving(true);
                                                 try {
-                                                    const path = wardrobeUploadPath(ownerId, wardrobeId, `UPDATE-${updateFile.name}`);
-                                                    const { error: uploadError } = await supabase.storage
-                                                        .from('studio-wardrobe')
-                                                        .upload(path, updateFile);
-
-                                                    if (uploadError) throw uploadError;
-
-                                                    const { data: { publicUrl } } = supabase.storage
-                                                        .from('studio-wardrobe')
-                                                        .getPublicUrl(path);
-
-                                                    // Update DB
-                                                    await handleUpdateItem(selectedItem.id, { image_url: publicUrl });
+                                                    const filePath = await uploadToWardrobe(updateFile);
+                                                    const res = await setAdminItemImage({ item_id: selectedItem.id, file_path: filePath });
+                                                    if (!res.success || !res.item) throw new Error(res.success ? "Failed to update the image" : res.error);
+                                                    applyItem(res.item);
                                                     setIsUpdatingImage(false);
                                                     setUpdateFile(null);
                                                     toast.success("Image Updated");
@@ -1252,10 +1220,14 @@ export default function VirtualWardrobe({ wardrobeId, ownerId, isClientView = fa
                                             onClick={async () => {
                                                 if (!updateImageUrl) return toast.error("Please enter a URL");
                                                 setIsSaving(true);
-                                                await handleUpdateItem(selectedItem.id, { image_url: updateImageUrl });
-                                                setIsUpdatingImage(false);
-                                                setUpdateImageUrl("");
-                                                toast.success("Image Updated");
+                                                const res = await setAdminItemImage({ item_id: selectedItem.id, image_url: updateImageUrl });
+                                                if (!res.success || !res.item) toast.error(res.success ? "Failed to update the image" : res.error);
+                                                else {
+                                                    applyItem(res.item);
+                                                    setIsUpdatingImage(false);
+                                                    setUpdateImageUrl("");
+                                                    toast.success("Image Updated");
+                                                }
                                                 setIsSaving(false);
                                             }}
                                             disabled={isSaving}

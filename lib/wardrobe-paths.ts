@@ -23,3 +23,25 @@ export function wardrobeUploadPath(
         .slice(0, 100) || 'upload';
     return `${wardrobeStorageFolder(ownerId, wardrobeId)}/${now}-${safeName}`;
 }
+
+/**
+ * Is this storage path one that an upload for this wardrobe could have used?
+ *
+ * Accepts the guest-intake folder `wardrobe/<id>/…` that `getSignedUploadUrl`
+ * issues, and the owner folder `<ownerId>/…` that owned wardrobes use per
+ * lib/wardrobe-paths.ts. Everything else is refused, including traversal and
+ * any path belonging to a different wardrobe or user.
+ */
+export function isPathWithinWardrobe(
+    filePath: string,
+    wardrobeId: string,
+    ownerId: string | null
+): boolean {
+    if (!filePath || filePath.includes('..') || filePath.startsWith('/')) return false;
+
+    const allowed = [`wardrobe/${wardrobeId}/`];
+    if (ownerId) allowed.push(`${ownerId}/`);
+
+    // A trailing segment is required: the prefix alone is a folder, not a file.
+    return allowed.some((prefix) => filePath.startsWith(prefix) && filePath.length > prefix.length);
+}

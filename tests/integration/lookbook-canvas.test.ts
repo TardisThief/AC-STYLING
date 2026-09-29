@@ -30,8 +30,8 @@ beforeAll(async () => {
     await createUser(db, U);
     await db.query(`INSERT INTO wardrobes (id, owner_id, title, status) VALUES ($1, $2, 'W', 'active')`, [W, U]);
     await db.query(`INSERT INTO wardrobe_items (id, user_id, wardrobe_id, image_url, category) VALUES ($1, $2, $3, 'u/a.jpg', 'Tops')`, [ITEM, U, W]);
-    await db.query(`INSERT INTO lookbooks (id, user_id, wardrobe_id, title, lookbook_items) VALUES ($1, $2, $3, 'Autumn', $4::jsonb)`,
-        [LB, U, W, JSON.stringify([{ id: ITEM, x: 40, y: 60, width: 150 }])]);
+    await db.query(`INSERT INTO lookbooks (id, wardrobe_id, title, lookbook_items) VALUES ($1, $2, 'Autumn', $3::jsonb)`,
+        [LB, W, JSON.stringify([{ id: ITEM, x: 40, y: 60, width: 150 }])]);
 }, 60000);
 
 afterAll(async () => { await db?.close(); });

@@ -94,7 +94,10 @@ describe('pglite-supabase', () => {
 
     it('binds an array of objects as jsonb, and still refuses a plain array', async () => {
         const client = pgliteSupabase(db);
-        const { error } = await client.from('lookbooks').insert({ title: 'Canvas', lookbook_items: [{ image_url: 'a.jpg', x: 1 }] });
+        // A lookbook needs its wardrobe (migration 36).
+        const wardrobe = '00000000-0000-4000-8000-00000000b002';
+        await db.query(`INSERT INTO wardrobes (id, owner_id, title) VALUES ($1, $2, 'W')`, [wardrobe, user]);
+        const { error } = await client.from('lookbooks').insert({ wardrobe_id: wardrobe, title: 'Canvas', lookbook_items: [{ id: 'a', x: 1 }] });
         expect(error).toBeNull();
         await expect(Promise.resolve(client.from('wardrobe_items').insert({ tags: ['a', 'b'] }))).rejects.toThrow(/array columns/);
     });

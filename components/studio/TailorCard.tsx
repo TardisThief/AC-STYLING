@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import type { EssenceResponse } from "@/app/lib/types";
 import { createClient } from "@/utils/supabase/client";
 import { toggleStudioAccess } from "@/app/actions/admin/manage-clients";
+import { saveClientMeasurements } from "@/app/actions/studio";
 import { Ruler, Sparkles, Check, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { jsonText, jsonTextRecord } from '@/app/lib/json';
@@ -74,15 +75,11 @@ export default function TailorCard({ ownerId: ownerIdProp }: TailorCardProps) {
         const newMeasurements = { ...measurements, [key]: value };
         setMeasurements(newMeasurements);
         setSaving(true);
-        const { error } = await supabase
-            .from('tailor_cards')
-            .upsert({
-                user_id: ownerId,
-                measurements: newMeasurements,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' });
+        // Through the admin action (only known measurement fields are stored);
+        // this was a browser upsert on tailor_cards (2026-09-29).
+        const res = await saveClientMeasurements(ownerId, newMeasurements);
 
-        if (error) toast.error("Failed to save measurement");
+        if (!res.success) toast.error(res.error || "Failed to save measurement");
         setSaving(false);
     };
 

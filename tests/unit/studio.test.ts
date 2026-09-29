@@ -31,7 +31,6 @@ vi.mock('next/cache', () => ({
 import {
     updateProfileStatus,
     permanentDeleteProfile,
-    deleteWardrobeItem,
     getStudioInboxItems,
     processWardrobeItem,
 } from '@/app/actions/studio'
@@ -124,115 +123,6 @@ describe('Studio Server Actions', () => {
             const result = await permanentDeleteProfile('profile-123')
 
             expect(result.success).toBe(true)
-        })
-    })
-
-    describe('deleteWardrobeItem', () => {
-        it('returns error when not authenticated', async () => {
-            mockAuth.getUser.mockResolvedValue({ data: { user: null } })
-
-            const result = await deleteWardrobeItem('item-123')
-
-            expect(result.success).toBe(false)
-            expect(result.error).toBe('Unauthorized')
-        })
-
-        it('returns error when item not found', async () => {
-            mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
-
-            mockFrom.mockReturnValue({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } }),
-            })
-
-            const result = await deleteWardrobeItem('nonexistent-item')
-
-            expect(result.success).toBe(false)
-            expect(result.error).toBe('Item not found')
-        })
-
-        it('allows owner to delete their item', async () => {
-            mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
-
-            // Item fetch - owned by user
-            mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                single: vi.fn().mockResolvedValue({
-                    data: { user_id: 'user-123', image_url: 'https://storage.test/studio-wardrobe/user-123/photo.jpg' },
-                    error: null,
-                }),
-            })
-
-            // Delete
-            mockFrom.mockReturnValueOnce({
-                delete: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({ error: null }),
-                })),
-            })
-
-            const result = await deleteWardrobeItem('item-123')
-
-            expect(result.success).toBe(true)
-        })
-
-        it('allows admin to delete any item', async () => {
-            mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-123' } } })
-
-            // Item fetch - owned by different user
-            mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                single: vi.fn().mockResolvedValue({
-                    data: { user_id: 'other-user-456', image_url: 'https://storage.test/photo.jpg' },
-                    error: null,
-                }),
-            })
-
-            // Admin check
-            mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                single: vi.fn().mockResolvedValue({ data: { role: 'admin' }, error: null }),
-            })
-
-            // Delete
-            mockFrom.mockReturnValueOnce({
-                delete: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({ error: null }),
-                })),
-            })
-
-            const result = await deleteWardrobeItem('item-123')
-
-            expect(result.success).toBe(true)
-        })
-
-        it('denies non-owner non-admin from deleting', async () => {
-            mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
-
-            // Item owned by different user
-            mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                single: vi.fn().mockResolvedValue({
-                    data: { user_id: 'other-user-456', image_url: 'https://storage.test/photo.jpg' },
-                    error: null,
-                }),
-            })
-
-            // Profile check - not admin
-            mockFrom.mockReturnValueOnce({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                single: vi.fn().mockResolvedValue({ data: { role: 'user' }, error: null }),
-            })
-
-            const result = await deleteWardrobeItem('item-123')
-
-            expect(result.success).toBe(false)
-            expect(result.error).toBe('Unauthorized')
         })
     })
 

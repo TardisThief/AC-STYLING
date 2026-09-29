@@ -14,6 +14,7 @@ import en from '@/messages/en.json'
 const h = vi.hoisted(() => ({
     rows: {} as Record<string, unknown[]>,
     updates: [] as { table: string; values: Record<string, unknown> }[],
+    saved: [] as Record<string, unknown>[],
 }))
 
 function query(table: string) {
@@ -30,8 +31,17 @@ function query(table: string) {
 vi.mock('@/utils/supabase/client', () => ({
     createClient: () => ({
         from: (table: string) => query(table),
-        storage: { from: () => ({ upload: async () => ({ error: null }), getPublicUrl: () => ({ data: { publicUrl: 'thumb' } }) }) },
+        storage: { from: () => ({ uploadToSignedUrl: async () => ({ error: null }) }) },
     }),
+}))
+// The editor writes through server actions (app/actions/lookbooks.ts, 2026-09-29).
+vi.mock('@/app/actions/lookbooks', () => ({
+    saveLookbook: async (input: Record<string, unknown>) => {
+        h.saved.push(input)
+        return { success: true, data: { id: input.id, lookbook_items: input.lookbook_items } }
+    },
+    getLookbookThumbnailUploadUrl: async () => ({ success: true, path: 'w1/thumb.jpg', token: 't' }),
+    createLookbook: vi.fn(), deleteLookbook: vi.fn(), setLookbookStatus: vi.fn(), cloneLookbook: vi.fn(),
 }))
 // Signing is the live photo: the garment row's image, as the bucket serves it.
 vi.mock('@/lib/wardrobe-images', () => ({
@@ -45,6 +55,7 @@ import DigitalLookbook from '@/components/studio/DigitalLookbook'
 const W = 'w1'
 beforeEach(() => {
     h.updates = []
+    h.saved = []
     h.rows = {
         wardrobe_items: [{ id: 'coat', category: 'Outerwear', image_url: 'wardrobe/w1/new-photo.jpg' }],
         lookbooks: [{
@@ -81,8 +92,10 @@ describe('the lookbook canvas', () => {
         await screen.findByAltText('Outerwear on the lookbook')
         fireEvent.click(screen.getByRole('button', { name: /save/i }))
 
-        await waitFor(() => expect(h.updates.some((u) => u.table === 'lookbooks')).toBe(true))
-        const saved = h.updates.find((u) => u.table === 'lookbooks')!.values.lookbook_items
-        expect(saved).toEqual([{ id: 'coat', x: 40, y: 60, width: 150 }])
+        await waitFor(() => expect(h.saved).toHaveLength(1))
+        expect(h.saved[0].lookbook_items).toEqual([{ id: 'coat', x: 40, y: 60, width: 150 }])
+        expect(h.saved[0].thumbnail_path).toBe('w1/thumb.jpg')
+        // Nothing is written from the browser any more.
+        expect(h.updates).toEqual([])
     })
 })

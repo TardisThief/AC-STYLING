@@ -28,7 +28,7 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   (MAIL-001); a retried guest delivery sent no welcome (PAY-002); checkout sold
   any Stripe price the browser named (PAY-004). The rest of its findings were
   then worked through the same way (below). Migrations are applied and
-  verified through **35**; the code is deployed.
+  verified through **36**; the code is deployed.
 - **The Vault is populated but mostly parked.** 4 masterclasses, **21 modules**
   and 4 standalone courses, all bilingual. **Colorimetry is published and
   priced, so it is on sale, while none of its 5 modules is published or has a
@@ -162,9 +162,9 @@ guest", and now has a sign-in link for returning clients.
   `scripts/cleanup_orphaned_wardrobe_files.ts` (dry run first: all 44 under
   `wardrobe/<id>/` of wardrobes the wipe removed, none referenced). The
   `studio-wardrobe` bucket is now empty; a re-run finds 0.
-- **No database migration is planned.** The next one would be 36; none of
+- **No database migration is planned.** The next one would be 37; none of
   the open items needs one. When one is planned it is written up in
-  `supabase/migrations/README.md`, like 26–35.
+  `supabase/migrations/README.md`, like 26–36.
 - **PAY-001's limit:** only the last line item is remembered on a term, so a
   crash followed by a different purchase on the same term inside the
   15-minute window could still double. Recorded in migration 27.
@@ -181,9 +181,16 @@ guest", and now has a sign-in link for returning clients.
   every Supabase client is typed with them. Typing surfaced 53 mismatches,
   among them a Spanish price column the Services page read that never existed
   (Spanish visitors always got the English price text) and a legacy
-  `response_value` column the tailor card read. Still open from ARCH-001, by
-  choice: duplicate ownership (`lookbooks.user_id` beside `wardrobe_id`) and
-  the remaining browser-side mutations.
+  `response_value` column the tailor card read. **ARCH-001 closed
+  2026-09-29** (migration 36): a lookbook is owned by its wardrobe alone
+  (`user_id` dropped; the member read policy honoured it, so the client a
+  wardrobe used to belong to could still read its published lookbooks: shown
+  live in the probe, then closed); services have a real `price_display_es`
+  (set in the admin service form); and every Studio write is a guarded,
+  validated server action (`app/actions/lookbooks.ts`, the admin garment
+  actions in `app/actions/wardrobes.ts`, `saveClientMeasurements`). The only
+  browser write left is course progress (`CompleteChapterButton`), which is
+  not Studio.
 
 Everything owner-only lives in [`docs/OWNER-ACTIONS.md`](docs/OWNER-ACTIONS.md)
 — kept there rather than here so that "what Claude does next" and

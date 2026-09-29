@@ -6,9 +6,9 @@ import { requireAdmin, requireUser } from "@/app/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import { getErrorMessage } from "@/app/lib/errors";
 import { deriveStoragePath, signWardrobeItems } from "@/lib/wardrobe-images";
-import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
+import { isPathWithinWardrobe, wardrobeUploadPath } from "@/lib/wardrobe-paths";
 import { parseInput, uuid } from "@/app/lib/validation/parse";
-import { adminWardrobeItemUpdateSchema, bulkStatusSchema } from "@/app/lib/validation/wardrobe-items";
+import { adminItemImageSchema, adminNewItemSchema, adminWardrobeItemUpdateSchema, bulkStatusSchema } from "@/app/lib/validation/wardrobe-items";
 import { wardrobeUpdateSchema } from "@/app/lib/validation/wardrobes";
 import { myWardrobeItemSchema } from "@/app/lib/validation/client-studio";
 import type { WardrobeItem } from "@/app/lib/types";
@@ -297,27 +297,6 @@ export async function getSignedUploadUrl(
     }
 }
 
-/**
- * Is this storage path one that an upload for this wardrobe could have used?
- *
- * Accepts the guest-intake folder `wardrobe/<id>/…` that `getSignedUploadUrl`
- * issues, and the owner folder `<ownerId>/…` that owned wardrobes use per
- * lib/wardrobe-paths.ts. Everything else is refused, including traversal and
- * any path belonging to a different wardrobe or user.
- */
-function isPathWithinWardrobe(
-    filePath: string,
-    wardrobeId: string,
-    ownerId: string | null
-): boolean {
-    if (!filePath || filePath.includes('..') || filePath.startsWith('/')) return false;
-
-    const allowed = [`wardrobe/${wardrobeId}/`];
-    if (ownerId) allowed.push(`${ownerId}/`);
-
-    // A trailing segment is required: the prefix alone is a folder, not a file.
-    return allowed.some((prefix) => filePath.startsWith(prefix) && filePath.length > prefix.length);
-}
 
 /**
  * Step 2: Create the wardrobe item record after client uploads directly to storage
@@ -491,6 +470,152 @@ export async function addMyWardrobeItem(input: unknown): Promise<{ success: bool
         console.error('[addMyWardrobeItem]', error);
         return { success: false, error: 'failed' };
     }
+}
+
+// =============================================================================
+// The stylist adding, re-photographing and deleting garments (VirtualWardrobe)
+// =============================================================================
+//
+// These were browser writes relying on RLS alone (2026-09-29, ARCH-001): an
+// insert with whatever columns the page built, a storage upload, a delete
+// whose failure only showed as zero rows. Now: admin-guarded, validated, the
+// item cap enforced, a photo accepted only from this wardrobe's folder, and
+// only the parsed columns written.
+
+type AdminItemResult = { success: true; item?: WardrobeItem } | { success: false; error: string };
+
+/** The wardrobe, if it exists. */
+async function wardrobeFor(supabase: ReturnType<typeof createAdminClient>, wardrobeId: string) {
+    const { data } = await supabase.from('wardrobes').select('id, owner_id').eq('id', wardrobeId).maybeSingle();
+    return data;
+}
+
+/** A photo path uploaded for this wardrobe, as a stored URL; or an error. */
+async function photoUrlFor(
+    supabase: ReturnType<typeof createAdminClient>,
+    wardrobe: { id: string; owner_id: string | null },
+    filePath: string
+): Promise<{ url: string } | { error: string }> {
+    if (!isPathWithinWardrobe(filePath, wardrobe.id, wardrobe.owner_id)) return { error: 'Invalid upload path' };
+    const folder = filePath.slice(0, filePath.lastIndexOf('/'));
+    const name = filePath.slice(filePath.lastIndexOf('/') + 1);
+    const { data: found, error } = await supabase.storage.from('studio-wardrobe').list(folder, { search: name, limit: 1 });
+    if (error || !found?.some((f) => f.name === name)) return { error: 'Upload not found. Please try again.' };
+    return { url: supabase.storage.from('studio-wardrobe').getPublicUrl(filePath).data.publicUrl };
+}
+
+/** Step 1 of an upload: a signed URL in the wardrobe's own folder. */
+export async function getAdminItemUploadUrl(
+    wardrobeId: string,
+    fileName: string
+): Promise<{ success: boolean; signedUrl?: string; filePath?: string; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const id = parseInput(uuid('Wardrobe'), wardrobeId);
+    if (!id.ok) return { success: false, error: id.error };
+
+    const supabase = createAdminClient();
+    const wardrobe = await wardrobeFor(supabase, id.data);
+    if (!wardrobe) return { success: false, error: 'Wardrobe not found' };
+    if (await isWardrobeFull(supabase, wardrobe.id)) return { success: false, error: 'This wardrobe has reached its upload limit.' };
+
+    const filePath = wardrobeUploadPath(wardrobe.owner_id, wardrobe.id, String(fileName ?? ''));
+    const { data, error } = await supabase.storage.from('studio-wardrobe').createSignedUploadUrl(filePath);
+    if (error || !data) return { success: false, error: 'Failed to prepare upload' };
+    return { success: true, signedUrl: data.signedUrl, filePath };
+}
+
+/** Step 2 (or the only step, for a boutique product or a link): the garment itself. */
+export async function addAdminWardrobeItem(input: unknown): Promise<AdminItemResult> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const parsed = parseInput(adminNewItemSchema, input);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+    const { wardrobe_id, file_path, image_url, ...fields } = parsed.data;
+
+    const supabase = createAdminClient();
+    const wardrobe = await wardrobeFor(supabase, wardrobe_id);
+    if (!wardrobe) return { success: false, error: 'Wardrobe not found' };
+    if (await isWardrobeFull(supabase, wardrobe.id)) return { success: false, error: 'This wardrobe has reached its upload limit.' };
+
+    let imageUrl = image_url ?? null;
+    if (file_path) {
+        const photo = await photoUrlFor(supabase, wardrobe, file_path);
+        if ('error' in photo) return { success: false, error: photo.error };
+        imageUrl = photo.url;
+    }
+
+    const { data, error } = await supabase
+        .from('wardrobe_items')
+        .insert({
+            ...fields,
+            status: fields.status ?? 'Keep',
+            wardrobe_id: wardrobe.id,
+            user_id: wardrobe.owner_id,
+            image_url: imageUrl,
+        })
+        .select('*')
+        .single();
+    if (error || !data) return { success: false, error: error?.message ?? 'Failed to add the item' };
+    const [item] = await signWardrobeItems(supabase, [data as WardrobeItem]);
+    return { success: true, item };
+}
+
+/** "Change Image": a new photo (uploaded to the wardrobe, or a link) for a garment. */
+export async function setAdminItemImage(input: unknown): Promise<AdminItemResult> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const parsed = parseInput(adminItemImageSchema, input);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const supabase = createAdminClient();
+    const { data: current } = await supabase.from('wardrobe_items').select('id, wardrobe_id').eq('id', parsed.data.item_id).maybeSingle();
+    if (!current?.wardrobe_id) return { success: false, error: 'Item not found' };
+
+    let imageUrl = parsed.data.image_url ?? null;
+    if (parsed.data.file_path) {
+        const wardrobe = await wardrobeFor(supabase, current.wardrobe_id);
+        if (!wardrobe) return { success: false, error: 'Wardrobe not found' };
+        const photo = await photoUrlFor(supabase, wardrobe, parsed.data.file_path);
+        if ('error' in photo) return { success: false, error: photo.error };
+        imageUrl = photo.url;
+    }
+
+    const { data, error } = await supabase
+        .from('wardrobe_items')
+        .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
+        .eq('id', current.id)
+        .select('*')
+        .single();
+    if (error || !data) return { success: false, error: error?.message ?? 'Failed to update the image' };
+    const [item] = await signWardrobeItems(supabase, [data as WardrobeItem]);
+    return { success: true, item };
+}
+
+/**
+ * Delete a garment and its photo. Replaces deleteWardrobeItem (app/actions/
+ * studio.ts), which deleted through the caller's own client, so for anyone
+ * but an admin it removed nothing and still said it had, and found the photo
+ * only when the image was stored as a full URL.
+ */
+export async function deleteAdminWardrobeItem(itemId: string): Promise<{ success: boolean; error?: string }> {
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const id = parseInput(uuid('Item'), itemId);
+    if (!id.ok) return { success: false, error: id.error };
+
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.from('wardrobe_items').delete().eq('id', id.data).select('image_url');
+    if (error) return { success: false, error: error.message };
+    if (!data?.length) return { success: false, error: 'Item not found' };
+
+    // The row is gone either way; a photo that cannot be removed is only logged.
+    const path = deriveStoragePath(data[0].image_url);
+    if (path) {
+        const { error: removeError } = await supabase.storage.from('studio-wardrobe').remove([path]);
+        if (removeError) console.warn('[deleteAdminWardrobeItem] photo not removed:', removeError.message);
+    }
+    return { success: true };
 }
 
 // =============================================================================

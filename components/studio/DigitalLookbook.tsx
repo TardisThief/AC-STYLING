@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import html2canvas from "html2canvas";
 import { signWardrobeItems } from "@/lib/wardrobe-images";
 import { CLIENT_ITEM_COLUMNS } from "@/app/lib/wardrobe-columns";
-import { wardrobeUploadPath } from "@/lib/wardrobe-paths";
+import { cloneLookbook, createLookbook, deleteLookbook, getLookbookThumbnailUploadUrl, saveLookbook, setLookbookStatus } from "@/app/actions/lookbooks";
 import type { Lookbook, WardrobeItem } from "@/app/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { canvasToStore, moveBy, readCanvas, type CanvasPlacement } from "@/app/lib/lookbook-canvas";
@@ -20,7 +20,7 @@ interface DigitalLookbookProps {
     isClientView?: boolean;
 }
 
-export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = false }: DigitalLookbookProps) {
+export default function DigitalLookbook({ wardrobeId, isClientView = false }: DigitalLookbookProps) {
     const [lookbooks, setLookbooks] = useState<Lookbook[]>([]);
     const [activeLookbook, setActiveLookbook] = useState<Lookbook | null>(null);
     const [wardrobeItems, setWardrobeItems] = useState<WardrobeItem[]>([]);
@@ -75,22 +75,17 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
         setLoading(false);
     }
 
+    // Every write goes through a guarded server action (app/actions/lookbooks.ts);
+    // this view used to write lookbooks straight from the browser (2026-09-29).
     const handleCreateLookbook = async () => {
         if (!newTitle) return toast.error("Title required");
         setIsSaving(true);
-        const { data, error } = await supabase.from('lookbooks').insert({
-            wardrobe_id: wardrobeId,
-            title: newTitle,
-            collection_name: newCollection,
-            status: 'Draft',
-            lookbook_items: []
-        }).select().single();
-
-        if (error) {
-            toast.error("Failed to create");
+        const res = await createLookbook({ wardrobe_id: wardrobeId, title: newTitle, collection_name: newCollection });
+        if (!res.success || !res.data) {
+            toast.error(res.success ? "Failed to create" : res.error);
         } else {
-            setLookbooks([data, ...lookbooks]);
-            setActiveLookbook(data);
+            setLookbooks([res.data, ...lookbooks]);
+            setActiveLookbook(res.data);
             setIsCreating(false);
             setNewTitle("");
             toast.success("Lookbook created");
@@ -98,57 +93,48 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
         setIsSaving(false);
     };
 
+    /** Render the canvas to a small JPEG and upload it; the stored path, or null. */
+    const uploadThumbnail = async (lookbookId: string): Promise<string | null> => {
+        if (!canvasRef.current) return null;
+        try {
+            const canvas = await html2canvas(canvasRef.current, { backgroundColor: '#F5F5F0', scale: 0.5 });
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
+            if (!blob) return null;
+            const target = await getLookbookThumbnailUploadUrl(lookbookId);
+            if (!target.success) return null;
+            const { error } = await supabase.storage.from('studio-wardrobe').uploadToSignedUrl(target.path, target.token, blob);
+            return error ? null : target.path;
+        } catch (e) {
+            console.error("Thumbnail gen failed", e);
+            return null;
+        }
+    };
+
     const handleSaveLookbook = async () => {
         if (!activeLookbook) return;
         setIsSaving(true);
 
-        // Generate Thumbnail
-        let thumbnailUrl = activeLookbook.thumbnail_url;
-        if (canvasRef.current) {
-            try {
-                const canvas = await html2canvas(canvasRef.current, { backgroundColor: '#F5F5F0', scale: 0.5 });
-                const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
-                if (blob) {
-                    const thumbPath = wardrobeUploadPath(ownerId, wardrobeId, `lookbook-thumbs/thumb_${activeLookbook.id}.jpg`);
-                    const { error: thumbError } = await supabase.storage
-                        .from('studio-wardrobe')
-                        .upload(thumbPath, blob, { upsert: true });
-                    if (thumbError) {
-                        toast.warning("Lookbook saved, but the thumbnail could not be updated.");
-                    } else {
-                        thumbnailUrl = supabase.storage.from('studio-wardrobe').getPublicUrl(thumbPath).data.publicUrl;
-                    }
-                }
-            } catch (e) {
-                console.error("Thumbnail gen failed", e);
-            }
-        }
+        const thumbnailPath = await uploadThumbnail(activeLookbook.id);
+        const res = await saveLookbook({
+            id: activeLookbook.id,
+            lookbook_items: canvasToStore(canvasItems, new Set(itemsById.keys())),
+            ...(thumbnailPath ? { thumbnail_path: thumbnailPath } : {}),
+        });
 
-        const placements = canvasToStore(canvasItems, new Set(itemsById.keys()));
-        const { error } = await supabase
-            .from('lookbooks')
-            .update({
-                lookbook_items: placements,
-                thumbnail_url: thumbnailUrl,
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', activeLookbook.id);
-
-        if (error) toast.error("Failed to save");
+        if (!res.success || !res.data) toast.error(res.success ? "Failed to save" : res.error);
         else {
-            toast.success("Lookbook saved");
-            setLookbooks(prev => prev.map(lb => lb.id === activeLookbook.id ? { ...lb, lookbook_items: placements, thumbnail_url: thumbnailUrl } : lb));
+            if (!thumbnailPath) toast.warning("Lookbook saved, but the thumbnail could not be updated.");
+            else toast.success("Lookbook saved");
+            const saved = res.data;
+            setLookbooks(prev => prev.map(lb => lb.id === saved.id ? saved : lb));
         }
         setIsSaving(false);
     };
 
-    // Both of these used to ignore the result and report success regardless
-    // (UX-002, 2026-09-25 assessment). RLS refusing a write is not an error in
-    // Postgres — it changes no rows — so the row count is checked too.
     const handleDeleteLookbook = async (id: string) => {
-        const { data, error } = await supabase.from('lookbooks').delete().eq('id', id).select('id');
+        const res = await deleteLookbook(id);
         setPendingDelete(null);
-        if (error || !data?.length) {
+        if (!res.success) {
             toast.error("Failed to delete lookbook");
             return;
         }
@@ -160,12 +146,8 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
     const handleTogglePublished = async () => {
         if (!activeLookbook) return;
         const newStatus = activeLookbook.status === 'Published' ? 'Draft' : 'Published';
-        const { data, error } = await supabase
-            .from('lookbooks')
-            .update({ status: newStatus })
-            .eq('id', activeLookbook.id)
-            .select('id');
-        if (error || !data?.length) {
+        const res = await setLookbookStatus({ id: activeLookbook.id, status: newStatus });
+        if (!res.success) {
             toast.error(`Failed to set lookbook to ${newStatus}`);
             return;
         }
@@ -175,21 +157,10 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
     };
 
     const handleCloneLookbook = async (lookbook: Lookbook) => {
-        // Named fields, not a spread: a copy gets the canvas and the wardrobe,
-        // never the original's id, dates or anything else on the row.
-        const { data, error } = await supabase.from('lookbooks').insert({
-            wardrobe_id: lookbook.wardrobe_id,
-            title: `${lookbook.title} (Copy)`,
-            collection_name: lookbook.collection_name,
-            metadata: lookbook.metadata,
-            lookbook_items: lookbook.lookbook_items,
-            thumbnail_url: lookbook.thumbnail_url,
-            status: 'Draft'
-        }).select().single();
-
-        if (error) toast.error("Failed to clone");
+        const res = await cloneLookbook(lookbook.id);
+        if (!res.success || !res.data) toast.error("Failed to clone");
         else {
-            setLookbooks([data, ...lookbooks]);
+            setLookbooks([res.data, ...lookbooks]);
             toast.success("Lookbook cloned");
         }
     };
