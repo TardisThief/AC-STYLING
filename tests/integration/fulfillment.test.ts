@@ -585,6 +585,35 @@ describe('Paid means granted', () => {
         expect(f.status).toBe('completed');
     });
 
+    // PAY-001's residual window (migration 37). Migration 27 kept only the LAST
+    // line item on the term, so a run that died after granting, whose term was
+    // then extended by a different purchase before its retry, no longer found
+    // itself there and granted again.
+    it.fails.each([
+        ['masterclass', PRODUCT.masterclass],
+        ['standalone course', PRODUCT.chapter],
+        ['Masterclass Pass', PRODUCT.masterclassPass],
+    ])('grants one year for a %s whose run died, even after another purchase extended the term', async (_, product) => {
+        const buyer = await newBuyer();
+        const a = item(product);
+        const sa = session(buyer, [a]);
+        expect(await deliver(sa)).toBe(200);
+        await db.query(
+            `UPDATE fulfillments SET status = 'processing', completed_at = NULL, updated_at = now() - interval '1 hour'
+             WHERE stripe_line_item_id = $1`, [a.id]);
+
+        expect(await deliver(session(buyer, [item(product)], { kind: 'renewal' }))).toBe(200);
+        expect(await deliver(sa)).toBe(200);
+
+        const expiry = product === PRODUCT.masterclassPass
+            ? (await profile(buyer)).access_expires_at
+            : product === PRODUCT.masterclass
+                ? (await masterclassGrant(buyer)).expires_at
+                : (await db.query<{ expires_at: Date }>(
+                    'SELECT expires_at FROM user_access_grants WHERE user_id = $1 AND chapter_id = $2', [buyer, CHAPTER_ID])).rows[0].expires_at;
+        expect(yearsLeft(expiry), 'two purchases, two years').toBe(2);
+    });
+
     it('still adds a year for a different line item renewing the same masterclass', async () => {
         const buyer = await newBuyer();
         expect(await deliver(session(buyer, [item(PRODUCT.masterclass)]))).toBe(200);
