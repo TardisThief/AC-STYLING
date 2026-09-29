@@ -1,6 +1,8 @@
 # AC Styling — Engineering Roadmap
 
-**Checkpoint: 2026-09-21.** The pre-content engineering push is closed. The
+**Checkpoint: 2026-09-21. Last updated: 2026-09-29** (every open engineering
+item closed; launch waits on content and the Stripe cutover). The pre-content
+engineering push is closed. The
 previous roadmap reached 749 lines and had started getting in the way of the
 work; it is archived whole at
 [`docs/archive/ROADMAP-2026-09-21.md`](docs/archive/ROADMAP-2026-09-21.md),
@@ -28,7 +30,7 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   (MAIL-001); a retried guest delivery sent no welcome (PAY-002); checkout sold
   any Stripe price the browser named (PAY-004). The rest of its findings were
   then worked through the same way (below). Migrations are applied and
-  verified through **36**; the code is deployed.
+  verified through **38** (next free 39); the code is deployed.
 - **The Vault is populated but mostly parked.** 4 masterclasses, **21 modules**
   and 4 standalone courses, all bilingual. **Colorimetry is published and
   priced, so it is on sale, while none of its 5 modules is published or has a
@@ -53,9 +55,11 @@ Phases 0–3.6 are complete and deployed. In plain terms:
   found and fixed payment, access and Studio bugs (commits `4495467`..`9b780eb`;
   stance in CLAUDE.md § Adversarial testing). All users except the two admins
   were wiped on 2026-09-26 (`scripts/wipe_users.mjs`) to start testing clean.
-- **Gates are green** as of 2026-09-26: `tsc` clean, lint 0 errors, the full
-  vitest run (unit + PGlite integration) passing, production build passing,
-  CI running all four. Run `npm run test:run` for the current count rather
+- **Gates are green** as of 2026-09-29 (`516e658`): `tsc` clean, lint 0
+  errors, the full vitest run (unit + PGlite integration) passing, production
+  build passing, Playwright e2e in Chromium and WebKit against a local
+  Supabase, and the baseline, platform and generated-types drift checks, all
+  in CI. Run `npm run test:run` for the current count rather
   than trusting one written here.
 
 ## What actually holds up launch
@@ -113,6 +117,14 @@ and the one live download (Colorimetry's PDF) moved into the private bucket;
 records in `supabase/migrations/README.md`. Checked by the owner the same day: a module page as a member with access
 (resources and Lab load) and as one without (question count only) behave
 as intended.
+
+**2026-09-28/29, the last engineering round before content:** the paid-path
+rehearsal on the live site (`docs/REHEARSAL-2026-09-28.md`, which doubles as
+the post-cutover smoke test), client-facing Spanish parity, e2e in CI, an
+enforced CSP, SEC-004, ARCH-001 (migrations 34–36), every Studio and course
+progress write moved behind guarded server actions (migration 38), and
+PAY-001's residual window (migration 37). Details in the list below and in
+`supabase/migrations/README.md`.
 
 **Paid-path rehearsal, 2026-09-28** (live site, Stripe test mode; complete,
 record at `docs/REHEARSAL-2026-09-28.md`). Every money path ran once for
@@ -237,11 +249,16 @@ open questions worth walking into it with:
 - **What is the smallest publishable slice?** One masterclass with real video
   beats four parked ones, and it would exercise the whole paid path end to end
   for the first time with something real behind it.
-- **F16 or growth first?** F16 is the responsible answer and F12 is the one
-  that bites if launch goes well. Neither matters if nothing ships.
-- **The renewal flow has never run.** It is unit-tested and no Stripe session
-  has ever been created from it. The first person to exercise it should not be
-  a customer.
+- **F16 or growth first?** F16 is the responsible answer (F12, the one that
+  would bite if launch went well, was fixed by migration 31). Neither matters
+  if nothing ships.
+- ~~**The renewal flow has never run.**~~ It ran in the 2026-09-28 rehearsal
+  (Stripe test mode, live site): two renewals, the lapse banner and the
+  blocked-then-restored access all behaved. Re-run the rehearsal once after the
+  cutover, in live mode.
+- **Email volume at launch.** Resend is on the Free plan (100 a day, 3,000 a
+  month; owner action 5). Upgrade before any announcement that could bring
+  more than about 50 purchases in a day.
 
 ---
 
