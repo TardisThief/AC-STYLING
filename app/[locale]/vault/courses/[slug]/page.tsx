@@ -173,9 +173,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
                                     {nextChapterSlug && (
                                         <div className="mt-6 flex justify-end">
                                             <CompleteChapterButton 
-                                                slug={chapter.slug} 
                                                 chapterId={chapter.id} 
-                                                totalQuestions={paid.labQuestionCount} 
                                                 nextChapterSlug={nextChapterSlug} 
                                                 isCompletedInitial={isCompleted} 
                                                 baseRoute="/vault/courses" 
@@ -195,9 +193,7 @@ export default async function CourseLessonPage({ params }: { params: Promise<{ s
                             {nextChapterSlug && (
                                 <div className="mt-6 flex justify-center">
                                     <CompleteChapterButton 
-                                        slug={chapter.slug} 
                                         chapterId={chapter.id} 
-                                        totalQuestions={paid.labQuestionCount} 
                                         nextChapterSlug={nextChapterSlug} 
                                         isCompletedInitial={isCompleted} 
                                         baseRoute="/vault/courses" 

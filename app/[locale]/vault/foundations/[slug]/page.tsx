@@ -208,9 +208,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                                     {nextChapterSlug && (
                                         <div className="mt-6 flex justify-end">
                                             <CompleteChapterButton 
-                                                slug={slug} 
                                                 chapterId={chapter.id} 
-                                                totalQuestions={paid.labQuestionCount} 
                                                 nextChapterSlug={nextChapterSlug} 
                                                 isCompletedInitial={isCompleted} 
                                                 baseRoute="/vault/foundations" 
@@ -230,9 +228,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                         {nextChapterSlug && (
                             <div className="mt-6 flex justify-center">
                                 <CompleteChapterButton 
-                                    slug={slug} 
                                     chapterId={chapter.id} 
-                                    totalQuestions={paid.labQuestionCount} 
                                     nextChapterSlug={nextChapterSlug} 
                                     isCompletedInitial={isCompleted} 
                                     baseRoute="/vault/foundations" 

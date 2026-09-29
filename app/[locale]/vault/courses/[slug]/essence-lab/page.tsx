@@ -77,7 +77,6 @@ export default async function CoursesEssenceLabPage({ params }: { params: Promis
         placeholder: (locale === 'es' && q.placeholder_es) ? q.placeholder_es : q.placeholder
     }));
 
-    const totalQuestions = labQuestions.length;
 
     return (
         <section className="min-h-screen pb-20 pt-6 max-w-4xl mx-auto px-4">
@@ -100,9 +99,7 @@ export default async function CoursesEssenceLabPage({ params }: { params: Promis
 
                 <div className="w-full md:w-auto">
                     <CompleteChapterButton
-                        slug={slug}
                         chapterId={chapter.id}
-                        totalQuestions={totalQuestions}
                         nextChapterSlug={nextChapterSlug}
                         isCompletedInitial={isCompletedInitial}
                         baseRoute="/vault/courses"

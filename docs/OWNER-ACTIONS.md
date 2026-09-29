@@ -95,6 +95,9 @@ Redirect URLs already include `https://www.theacstyle.com/**` and
 `/{locale}/update-password`. No change was needed. Site URL is
 `https://www.theacstyle.com`.
 
+**Done 2026-09-29 (owner):** `https://*.vercel.app/**` is removed from the
+Redirect URLs.
+
 **Recommended on the same screen: remove `https://*.vercel.app/**`.** It
 allows any site on vercel.app, not only ours, and Supabase's public auth
 endpoint accepts a `redirect_to` from any caller as long as it matches the
@@ -246,7 +249,8 @@ email triggered from a preview build sends the recipient to **production**, and
 preview canonicals claim to be the production URL. Add it to Preview with the
 preview host, or accept it knowingly.
 
-**`DATABASE_URL` is in Production — worth removing.** No application code reads
+**~~`DATABASE_URL` is in Production — worth removing.~~ Dropped from Vercel
+2026-09-29 (owner).** No application code reads
 it. It is used only by `scripts/` (migrations, QA helpers) and by the Postgres
 client on your own machine; the app talks to Supabase over the REST API with
 the anon and service-role keys. So a direct Postgres connection string is
@@ -287,7 +291,9 @@ expected — see item 1.
 
 ---
 
-## 3. Make `hello@theacstyle.com` deliver somewhere a human reads
+## 3. ~~Make `hello@theacstyle.com` deliver somewhere a human reads~~ — done (owner, confirmed 2026-09-29)
+
+The mailbox exists. The Resend check in item 5 sent its test email there.
 
 Transactional email is sent from `AC Styling <hello@theacstyle.com>` and now
 carries **no Reply-To header**, so every reply goes to that address.
@@ -324,15 +330,28 @@ improvements, not fixes.
 
 ---
 
-## 5. Check the Resend plan limits
+## 5. Check the Resend plan limits — half answered 2026-09-29; the caps need one look at the dashboard
 
-The send response carried `x-resend-daily-quota: 1` and
-`x-resend-monthly-quota: 2`. It is not documented whether those count sent or
-remaining, and a send-only API key cannot query the account to find out. If
-they are remaining, launch-day volume will hit a wall.
+**What the headers mean (measured 2026-09-29).** One test email to
+`hello@theacstyle.com` moved `x-resend-monthly-quota` from 2 to 4 (an auth
+email had gone out in between) and the daily figure is per UTC day. So these
+headers count emails **already sent**, not what is left: they are no warning
+of a wall. The same response carried `ratelimit-limit: 10` with
+`ratelimit-policy: 10;w=1`: **10 requests per second**, far above anything a
+checkout produces.
 
-**How to check:** Resend dashboard → Usage, and confirm the plan's daily and
-monthly limits against expected volume.
+**What only the dashboard shows:** the plan's daily and monthly caps (a
+send-only key cannot read the account). Resend dashboard → Settings → Usage
+(or Billing): note the plan and its two limits here.
+
+**Expected volume, to compare against:** per purchase, a welcome or receipt
+email (1–2); per new account, the confirmation email (Supabase sends auth
+emails through Resend SMTP only if custom SMTP is set, otherwise through
+Supabase's own low-limit sender); plus answer notifications to the admin.
+A launch week of even 100 purchases is a few hundred emails. The free tier
+(at the time of writing 100 a day, 3,000 a month) would carry that, but a
+launch-day spike above 100 in a day would not: if the dashboard says Free,
+move to the first paid tier before announcing.
 
 ---
 
@@ -388,7 +407,10 @@ both follow; if they stay, the photos should move with the wardrobe.
 
 ---
 
-## 8. Confirm the testimonials are real and attributable
+## 8. ~~Confirm the testimonials are real and attributable~~ — confirmed 2026-09-29 (owner)
+
+The owner confirmed every quote is from a real client and used with
+permission. Original note, for reference:
 
 Carried over from Phase 3.5. The `Testimonials` component ships quotes that
 nobody in the repository can verify. Unverifiable testimonials are the item on

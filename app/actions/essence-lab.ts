@@ -4,7 +4,12 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { loadLabQuestionsFor } from "@/app/lib/paid-content";
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Json } from '@/lib/database.types';
+import { requireUser } from "@/app/lib/auth-guards";
+import { jsonArray } from "@/app/lib/json";
+import { parseInput } from "@/app/lib/validation/parse";
+import { completeChapterSchema, labUnlockSchema } from "@/app/lib/validation/progress";
 
 export type EssenceResponse = {
     question_key: string;
@@ -13,43 +18,118 @@ export type EssenceResponse = {
     updated_at: string | null;
 };
 
+type ChapterRow = { id: string; slug: string; lab_questions: Json | null };
+
 /**
- * Marks that a user has unlocked the Essence Lab for a specific chapter
- * by recording a specific user_progress event.
+ * The chapter, if the caller is a signed-in (not anonymous) member entitled to
+ * it. Entitlement is the `check_access` RPC, asked through her own session as
+ * in getChapterVideo; the row itself comes through the service role, since
+ * `lab_questions` is paid content (migration 30).
+ */
+async function entitledChapter(by: { id: string } | { slug: string }) {
+    const auth = await requireUser();
+    if (!auth.ok) return { ok: false as const, error: auth.error };
+    if (auth.user.is_anonymous) return { ok: false as const, error: 'Unauthorized' };
+
+    const { createAdminClient } = await import('@/utils/supabase/admin');
+    const admin = createAdminClient();
+    const query = admin.from('chapters').select('id, slug, lab_questions');
+    const { data: chapter } = await ('id' in by ? query.eq('id', by.id) : query.eq('slug', by.slug)).maybeSingle<ChapterRow>();
+    // The same answer for a chapter that does not exist and one she has not
+    // bought: neither says which.
+    if (!chapter) return { ok: false as const, error: 'Forbidden' };
+
+    const { data: allowed, error } = await auth.supabase.rpc('check_access', {
+        check_user_id: auth.user.id,
+        check_object_id: chapter.id,
+    });
+    if (error || !allowed) return { ok: false as const, error: 'Forbidden' };
+
+    return { ok: true as const, user: auth.user, supabase: auth.supabase, admin, chapter };
+}
+
+/** Record a progress event once. The unique (user_id, content_id) makes a repeat a no-op. */
+async function recordProgress(admin: SupabaseClient, userId: string, contentId: string) {
+    return admin
+        .from('user_progress')
+        .upsert(
+            { user_id: userId, content_id: contentId, completed_at: new Date().toISOString() },
+            { onConflict: 'user_id,content_id', ignoreDuplicates: true },
+        );
+}
+
+function isAnswered(value: Json | null | undefined): boolean {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim() !== '';
+    if (Array.isArray(value)) return value.length > 0;
+    return true;
+}
+
+/**
+ * Marks that a user has unlocked the Essence Lab for a chapter (she finished
+ * its video). The unlock is what lets her Essence journal read the chapter's
+ * paid questions (getAllEssenceData), so it is only recorded for a chapter she
+ * is entitled to, and written by the server (member INSERT on user_progress is
+ * gone, migration 38).
  */
 export async function markLabUnlocked(chapterSlug: string) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const parsed = parseInput(labUnlockSchema, { chapterSlug });
+    if (!parsed.ok) return { success: false, error: parsed.error };
 
-    if (!user || !chapterSlug) return { success: false };
+    const entitled = await entitledChapter({ slug: parsed.data.chapterSlug });
+    if (!entitled.ok) return { success: false, error: entitled.error };
 
-    const contentId = `lab_unlocked:${chapterSlug}`;
-
-    // Check existence
-    const { data: existing } = await supabase
-        .from('user_progress')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('content_id', contentId)
-        .maybeSingle();
-
-    if (!existing) {
-        const { error } = await supabase
-            .from('user_progress')
-            .insert({
-                user_id: user.id,
-                content_id: contentId,
-                completed_at: new Date().toISOString()
-            });
-
-        if (error) {
-            console.error("markLabUnlocked Error:", error);
-            return { success: false, error: error.message };
-        }
+    const { error } = await recordProgress(entitled.admin, entitled.user.id, `lab_unlocked:${entitled.chapter.slug}`);
+    if (error) {
+        console.error("markLabUnlocked Error:", error);
+        return { success: false, error: 'Could not save your progress' };
     }
-
     return { success: true };
 }
+
+/**
+ * Master a chapter: she is entitled to it and has answered every one of its
+ * Lab questions (a chapter without questions is mastered by finishing it).
+ *
+ * The progress id is `foundations/<slug>` for modules and standalone courses
+ * alike: it is what every reader looks for (the chapter and course pages, the
+ * course and masterclass lists, the dashboard). The browser used to write
+ * `courses/<slug>` for courses, which nothing read.
+ */
+export async function completeChapter(input: { chapterId: string }): Promise<
+    { success: true; mastered: boolean } | { success: false; error: string }
+> {
+    const parsed = parseInput(completeChapterSchema, input);
+    if (!parsed.ok) return { success: false, error: parsed.error };
+
+    const entitled = await entitledChapter({ id: parsed.data.chapterId });
+    if (!entitled.ok) return { success: false, error: entitled.error };
+    const { user, supabase, admin, chapter } = entitled;
+
+    const questionKeys = jsonArray(chapter.lab_questions)
+        .map(q => (q && typeof q === 'object' && !Array.isArray(q) ? q.key : null))
+        .filter((key): key is string => typeof key === 'string' && key !== '');
+
+    if (questionKeys.length > 0) {
+        const { data: responses, error } = await supabase
+            .from('essence_responses')
+            .select('question_key, answer_value')
+            .eq('user_id', user.id)
+            .eq('chapter_id', chapter.id);
+        if (error) return { success: false, error: 'Could not check your answers' };
+
+        const answered = new Set((responses ?? []).filter(r => isAnswered(r.answer_value)).map(r => r.question_key));
+        if (!questionKeys.every(key => answered.has(key))) return { success: true, mastered: false };
+    }
+
+    const { error } = await recordProgress(admin, user.id, `foundations/${chapter.slug}`);
+    if (error) {
+        console.error("completeChapter Error:", error);
+        return { success: false, error: 'Could not save your progress' };
+    }
+    return { success: true, mastered: true };
+}
+
 export async function saveEssenceResponse(
     masterclassId: string | null,
     chapterId: string,

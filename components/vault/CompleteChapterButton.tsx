@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/utils/supabase/client";
-import { getEssenceProgress, checkIncompleteMasterclassLabs } from "@/app/actions/essence-lab";
+import { checkIncompleteMasterclassLabs, completeChapter } from "@/app/actions/essence-lab";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import confetti from "canvas-confetti";
@@ -10,16 +9,14 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 interface CompleteChapterButtonProps {
-    slug: string;
     chapterId: string;
-    totalQuestions: number;
     nextChapterSlug: string | null;
     isCompletedInitial: boolean;
     baseRoute?: string;
     variant?: "default" | "subtle";
 }
 
-export default function CompleteChapterButton({ slug, chapterId, totalQuestions, nextChapterSlug, isCompletedInitial, baseRoute = "/vault/foundations", variant = "default" }: CompleteChapterButtonProps) {
+export default function CompleteChapterButton({ chapterId, nextChapterSlug, isCompletedInitial, baseRoute = "/vault/foundations", variant = "default" }: CompleteChapterButtonProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCompleted, setIsCompleted] = useState(isCompletedInitial);
     const [hasMissingLabs, setHasMissingLabs] = useState(false);
@@ -30,73 +27,35 @@ export default function CompleteChapterButton({ slug, chapterId, totalQuestions,
         }
     }, [chapterId, nextChapterSlug]);
 
-    const supabase = createClient();
     const router = useRouter();
 
     const handleComplete = async () => {
         setIsSubmitting(true);
-        const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) return;
-
-        let isMastered = isCompleted; // Use local state for current completion status
-
-        if (!isMastered && totalQuestions > 0) {
-            // Fetch responses and count in JS to avoid JSONB string query issues
-            const { data: responses } = await supabase
-                .from('essence_responses')
-                .select('answer_value')
-                .eq('user_id', user.id)
-                .eq('chapter_id', chapterId);
-            
-            let answeredCount = 0;
-            if (responses) {
-                answeredCount = responses.filter(r => {
-                    const val = r.answer_value;
-                    if (!val) return false;
-                    if (typeof val === 'string' && val.trim() === '') return false;
-                    return true;
-                }).length;
+        // The server decides: her access to the chapter and every Lab
+        // question answered. Already mastered needs no second write.
+        if (!isCompleted) {
+            const result = await completeChapter({ chapterId });
+            if (!result.success) {
+                toast.error(result.error);
+                setIsSubmitting(false);
+                return;
             }
 
-            if (answeredCount >= totalQuestions) {
-                isMastered = true;
-            }
-        } else if (!isMastered && totalQuestions === 0) {
-            // Master automatically if no questions
-            isMastered = true;
-        }
-
-        if (isMastered && !isCompleted) { // Check against local state
-            // Check if progress row already exists before inserting
-            const contentId = baseRoute.includes('courses') ? `courses/${slug}` : `foundations/${slug}`;
-            const { data: existingProgress } = await supabase
-                .from('user_progress')
-                .select('id')
-                .eq('user_id', user.id)
-                .eq('content_id', contentId)
-                .maybeSingle();
-            
-            if (!existingProgress) {
-                await supabase.from('user_progress').insert({
-                    user_id: user.id,
-                    content_id: contentId,
-                    completed_at: new Date().toISOString()
-                });
-            }
-
-            triggerCelebration();
-            setIsCompleted(true); // Update local state
-            if (nextChapterSlug) {
-                toast.success("Chapter Mastered!", {
-                    description: "Excellent work completing the essence lab.",
-                    duration: 3000,
-                });
-            } else {
-                toast.success("All Chapters Mastered!", {
-                    description: "You have completed this collection.",
-                    duration: 5000,
-                });
+            if (result.mastered) {
+                triggerCelebration();
+                setIsCompleted(true);
+                if (nextChapterSlug) {
+                    toast.success("Chapter Mastered!", {
+                        description: "Excellent work completing the essence lab.",
+                        duration: 3000,
+                    });
+                } else {
+                    toast.success("All Chapters Mastered!", {
+                        description: "You have completed this collection.",
+                        duration: 5000,
+                    });
+                }
             }
         }
 

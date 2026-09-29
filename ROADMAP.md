@@ -162,12 +162,22 @@ guest", and now has a sign-in link for returning clients.
   `scripts/cleanup_orphaned_wardrobe_files.ts` (dry run first: all 44 under
   `wardrobe/<id>/` of wardrobes the wipe removed, none referenced). The
   `studio-wardrobe` bucket is now empty; a re-run finds 0.
-- **No database migration is planned.** The next one would be 37; none of
+- **No database migration is planned.** The next one would be 39; none of
   the open items needs one. When one is planned it is written up in
-  `supabase/migrations/README.md`, like 26–36.
-- **PAY-001's limit:** only the last line item is remembered on a term, so a
-  crash followed by a different purchase on the same term inside the
-  15-minute window could still double. Recorded in migration 27.
+  `supabase/migrations/README.md`, like 26–38.
+- ~~**PAY-001's limit**~~ — **closed 2026-09-29** (migrations 37 and 38): a
+  term now remembers every line item that extended it, not only the last, so
+  a crashed fulfilment retried after a different purchase extended the same
+  term no longer adds a second year (`tests/integration/fulfillment.test.ts`).
+- ~~**Course progress written from the browser**~~ — **closed 2026-09-29**
+  (migration 38): `completeChapter` and `markLabUnlocked` decide after
+  `check_access` and write through the service role; members lost INSERT on
+  `user_progress`. Any member could mark any chapter mastered, and a
+  `lab_unlocked:` row for an unbought chapter made her Essence journal load
+  its paid Lab questions. Also found: standalone courses were saved as
+  `courses/<slug>`, which no page reads, so a finished course never showed as
+  mastered; the two such rows were renamed
+  (`tests/integration/course-progress.test.ts`).
 - ~~**SEC-004**~~ — **fixed 2026-09-28**: every subrequest of a scraped page is
   now checked by its resolved address, once per host per page
   (`createSubrequestGuard`, `tests/unit/scraper-subrequests.test.ts`). Residual,
@@ -188,9 +198,8 @@ guest", and now has a sign-in link for returning clients.
   live in the probe, then closed); services have a real `price_display_es`
   (set in the admin service form); and every Studio write is a guarded,
   validated server action (`app/actions/lookbooks.ts`, the admin garment
-  actions in `app/actions/wardrobes.ts`, `saveClientMeasurements`). The only
-  browser write left is course progress (`CompleteChapterButton`), which is
-  not Studio.
+  actions in `app/actions/wardrobes.ts`, `saveClientMeasurements`). Course
+  progress, the last browser write, followed on 2026-09-29 (below).
 
 Everything owner-only lives in [`docs/OWNER-ACTIONS.md`](docs/OWNER-ACTIONS.md)
 — kept there rather than here so that "what Claude does next" and
