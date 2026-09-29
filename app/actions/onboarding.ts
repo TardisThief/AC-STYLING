@@ -75,7 +75,7 @@ export async function processOnboarding() {
 
             // Transfer Assets
             await adminSupabase.from('tailor_cards').update({ user_id: user.id }).eq('user_id', pendingProfile.id);
-            await adminSupabase.from('lookbooks').update({ user_id: user.id }).eq('user_id', pendingProfile.id);
+            // Lookbooks follow their wardrobe (migration 36); nothing to move.
 
             // Cleanup
             await adminSupabase.from('profiles').delete().eq('id', pendingProfile.id);

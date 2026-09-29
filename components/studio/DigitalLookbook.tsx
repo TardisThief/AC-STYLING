@@ -79,7 +79,6 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
         if (!newTitle) return toast.error("Title required");
         setIsSaving(true);
         const { data, error } = await supabase.from('lookbooks').insert({
-            user_id: ownerId,
             wardrobe_id: wardrobeId,
             title: newTitle,
             collection_name: newCollection,
@@ -176,10 +175,15 @@ export default function DigitalLookbook({ wardrobeId, ownerId, isClientView = fa
     };
 
     const handleCloneLookbook = async (lookbook: Lookbook) => {
-        const { id, created_at, ...rest } = lookbook;
+        // Named fields, not a spread: a copy gets the canvas and the wardrobe,
+        // never the original's id, dates or anything else on the row.
         const { data, error } = await supabase.from('lookbooks').insert({
-            ...rest,
-            title: `${rest.title} (Copy)`,
+            wardrobe_id: lookbook.wardrobe_id,
+            title: `${lookbook.title} (Copy)`,
+            collection_name: lookbook.collection_name,
+            metadata: lookbook.metadata,
+            lookbook_items: lookbook.lookbook_items,
+            thumbnail_url: lookbook.thumbnail_url,
             status: 'Draft'
         }).select().single();
 

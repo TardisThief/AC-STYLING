@@ -348,7 +348,6 @@ export async function activateStudioAccess(token: string) {
             await adminSupabase.from('wardrobe_items').update({ user_id: user.id, wardrobe_id: wardrobeId }).eq('user_id', inviteProfile.id);
         }
         await adminSupabase.from('tailor_cards').update({ user_id: user.id }).eq('user_id', inviteProfile.id);
-        await adminSupabase.from('lookbooks').update({ user_id: user.id }).eq('user_id', inviteProfile.id);
         await adminSupabase.from('profiles').delete().eq('id', inviteProfile.id);
     }
 

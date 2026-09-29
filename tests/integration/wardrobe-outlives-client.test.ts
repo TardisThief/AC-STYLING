@@ -119,10 +119,11 @@ describe('a client closes her account', () => {
                 ($6, $4, $5, '${CLIENT}/fail.jpg')`,
             [id(201), id(202), id(203), CLIENT, W, id(204)]);
         await db().query(
-            `INSERT INTO lookbooks (id, user_id, wardrobe_id, title, thumbnail_url, lookbook_items) VALUES
-                ($1, $3, $4, 'Autumn', '${PUBLIC}${CLIENT}/thumb.jpg', $5::jsonb),
-                ($2, $3, NULL, 'Loose', NULL, '[]'::jsonb)`,
-            [id(301), id(302), CLIENT, W, JSON.stringify([{ id: id(201), x: 10 }])]);
+            // A lookbook belongs to its wardrobe (migration 36): no owner of its
+            // own, and none without a wardrobe.
+            `INSERT INTO lookbooks (id, wardrobe_id, title, thumbnail_url, lookbook_items) VALUES
+                ($1, $2, 'Autumn', '${PUBLIC}${CLIENT}/thumb.jpg', $3::jsonb)`,
+            [id(301), W, JSON.stringify([{ id: id(201), x: 10 }])]);
         await db().query(`INSERT INTO tailor_cards (user_id, measurements) VALUES ($1, '{"waist": 70}')`, [CLIENT]);
     });
 
@@ -167,12 +168,11 @@ describe('a client closes her account', () => {
         expect(result).toMatchObject({ success: true, storageCleanupFailed: true });
     });
 
-    it('still deletes what is hers alone: avatar, loose files, measurements, and garments and lookbooks in no wardrobe', async () => {
+    it('still deletes what is hers alone: avatar, loose files, measurements, and garments in no wardrobe', async () => {
         expect(buckets['avatars'].size).toBe(0);
         expect(buckets['studio-wardrobe'].has(`${CLIENT}/stray.jpg`)).toBe(false);
         expect(buckets['studio-wardrobe'].has(`${CLIENT}/c.jpg`)).toBe(false);
         expect(await rows('SELECT 1 FROM wardrobe_items WHERE id = $1', [id(203)])).toHaveLength(0);
-        expect(await rows('SELECT 1 FROM lookbooks WHERE id = $1', [id(302)])).toHaveLength(0);
         expect(await rows('SELECT 1 FROM tailor_cards WHERE user_id = $1', [CLIENT])).toHaveLength(0);
         // Someone else's files are never touched.
         expect(buckets['studio-wardrobe'].has(`${OLD_OWNER}/keep.jpg`)).toBe(true);

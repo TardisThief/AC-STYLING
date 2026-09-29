@@ -86,7 +86,6 @@ export async function GET(request: Request) {
 
                     // Transfer other assets
                     await adminSupabase.from('tailor_cards').update({ user_id: user.id }).eq('user_id', pendingProfile.id);
-                    await adminSupabase.from('lookbooks').update({ user_id: user.id }).eq('user_id', pendingProfile.id);
                     await adminSupabase.from('profiles').delete().eq('id', pendingProfile.id);
                     cookieStore.delete('intake_token');
                 }

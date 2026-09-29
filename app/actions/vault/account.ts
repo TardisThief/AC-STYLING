@@ -179,16 +179,17 @@ async function keepWardrobes(
     const errors: string[] = [];
     let complete = false;
     try {
-        const [owned, items, lookbooks] = await Promise.all([
+        // A lookbook belongs to its wardrobe (migration 36), so the wardrobes
+        // she owns or has garments in are all there is to look at.
+        const [owned, items] = await Promise.all([
             adminClient.from('wardrobes').select('id').eq('owner_id', userId),
             adminClient.from('wardrobe_items').select('wardrobe_id').eq('user_id', userId),
-            adminClient.from('lookbooks').select('wardrobe_id').eq('user_id', userId),
         ]);
-        const readError = owned.error ?? items.error ?? lookbooks.error;
+        const readError = owned.error ?? items.error;
         if (readError) throw new Error(readError.message);
 
         const ids = new Set<string>();
-        for (const row of [...(owned.data ?? []).map(w => ({ wardrobe_id: w.id })), ...(items.data ?? []), ...(lookbooks.data ?? [])]) {
+        for (const row of [...(owned.data ?? []).map(w => ({ wardrobe_id: w.id })), ...(items.data ?? [])]) {
             if (row.wardrobe_id) ids.add(row.wardrobe_id as string);
         }
 
@@ -202,9 +203,7 @@ async function keepWardrobes(
 
         const { error: itemsDelete } = await adminClient
             .from('wardrobe_items').delete().eq('user_id', userId).is('wardrobe_id', null);
-        const { error: lookbooksDelete } = await adminClient
-            .from('lookbooks').delete().eq('user_id', userId).is('wardrobe_id', null);
-        if (itemsDelete || lookbooksDelete) errors.push((itemsDelete ?? lookbooksDelete)!.message);
+        if (itemsDelete) errors.push(itemsDelete.message);
         // Every wardrobe was examined; photos that failed are in `stranded`.
         complete = true;
     } catch (e) {
