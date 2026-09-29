@@ -703,7 +703,6 @@ CREATE TABLE "public"."profiles" (
     "has_masterclass_pass" boolean DEFAULT false NOT NULL,
     "access_expires_at" timestamp with time zone,
     "access_renewal_count" smallint DEFAULT 0 NOT NULL,
-    "access_term_line_item" "text",
     "access_term_line_items" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
     CONSTRAINT "profiles_role_check" CHECK (("role" = ANY (ARRAY['user'::"text", 'admin'::"text"]))),
     CONSTRAINT "profiles_status_check" CHECK (("status" = ANY (ARRAY['active'::"text", 'archived'::"text"]))),
@@ -729,12 +728,6 @@ COMMENT ON COLUMN "public"."profiles"."access_expires_at" IS 'When the profile-l
 --
 
 COMMENT ON COLUMN "public"."profiles"."access_renewal_count" IS 'Rungs climbed on the renewal ladder: 0 = next renewal costs two thirds, 1+ = one third. Reset to 0 by a full-price purchase after a lapse.';
-
---
--- Name: COLUMN "profiles"."access_term_line_item"; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN "public"."profiles"."access_term_line_item" IS 'Stripe line item id that last extended access_expires_at; a re-run of that line item does not extend again (migration 27).';
 
 --
 -- Name: COLUMN "profiles"."access_term_line_items"; Type: COMMENT; Schema: public; Owner: postgres
@@ -901,7 +894,6 @@ CREATE TABLE "public"."user_access_grants" (
     "offer_slug" "text",
     "expires_at" timestamp with time zone,
     "renewal_count" smallint DEFAULT 0 NOT NULL,
-    "term_line_item" "text",
     "term_line_items" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
     CONSTRAINT "user_access_grants_grant_type_check" CHECK (("grant_type" = ANY (ARRAY['purchase'::"text", 'bonus'::"text", 'admin_override'::"text"]))),
     CONSTRAINT "valid_grant_target" CHECK (((((("masterclass_id" IS NOT NULL))::integer + (("chapter_id" IS NOT NULL))::integer) + (("offer_slug" IS NOT NULL))::integer) = 1))
@@ -926,12 +918,6 @@ COMMENT ON COLUMN "public"."user_access_grants"."expires_at" IS 'When this singl
 --
 
 COMMENT ON COLUMN "public"."user_access_grants"."renewal_count" IS 'Rungs climbed on the renewal ladder for this item. Same meaning as profiles.access_renewal_count.';
-
---
--- Name: COLUMN "user_access_grants"."term_line_item"; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN "public"."user_access_grants"."term_line_item" IS 'Stripe line item id that last extended expires_at; a re-run of that line item does not extend again (migration 27).';
 
 --
 -- Name: COLUMN "user_access_grants"."term_line_items"; Type: COMMENT; Schema: public; Owner: postgres
@@ -2053,12 +2039,6 @@ CREATE POLICY "Users can insert own essence responses" ON "public"."essence_resp
 CREATE POLICY "Users can insert own profile" ON "public"."profiles" FOR INSERT WITH CHECK ((("auth"."uid"() IS NOT NULL) AND ("id" = "auth"."uid"())));
 
 --
--- Name: user_progress Users can insert own progress; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Users can insert own progress" ON "public"."user_progress" FOR INSERT WITH CHECK ((("auth"."uid"() IS NOT NULL) AND ("user_id" = "auth"."uid"())));
-
---
 -- Name: user_questions Users can insert own questions; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -2089,12 +2069,6 @@ CREATE POLICY "Users can update own essence responses" ON "public"."essence_resp
 --
 
 CREATE POLICY "Users can update own profile" ON "public"."profiles" FOR UPDATE USING ((("auth"."uid"() IS NOT NULL) AND ("id" = "auth"."uid"()))) WITH CHECK ((("auth"."uid"() IS NOT NULL) AND ("id" = "auth"."uid"())));
-
---
--- Name: user_progress Users can update own progress.; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Users can update own progress." ON "public"."user_progress" FOR INSERT WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "user_id"));
 
 --
 -- Name: essence_responses Users can view own essence responses; Type: POLICY; Schema: public; Owner: postgres
@@ -3041,8 +3015,8 @@ GRANT ALL ON TABLE "public"."user_access_grants" TO "service_role";
 -- Name: TABLE "user_progress"; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE "public"."user_progress" TO "anon";
-GRANT ALL ON TABLE "public"."user_progress" TO "authenticated";
+GRANT SELECT,REFERENCES,TRIGGER,TRUNCATE,MAINTAIN ON TABLE "public"."user_progress" TO "anon";
+GRANT SELECT,REFERENCES,TRIGGER,TRUNCATE,MAINTAIN ON TABLE "public"."user_progress" TO "authenticated";
 GRANT ALL ON TABLE "public"."user_progress" TO "service_role";
 
 --

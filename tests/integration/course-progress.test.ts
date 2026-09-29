@@ -14,7 +14,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
-import { asRole, createLiveSchemaDb, createUser, readMigration } from '../utils/pglite-db';
+import { asRole, createLiveSchemaDb, createUser, expectMigrationApplied } from '../utils/pglite-db';
 import { pgliteSupabase } from '../utils/pglite-supabase';
 
 const h = vi.hoisted(() => ({ db: null as unknown, userId: null as string | null, anonymous: false }));
@@ -88,11 +88,9 @@ beforeAll(async () => {
         `INSERT INTO user_access_grants (user_id, chapter_id, grant_type, expires_at) VALUES ($1, $2, 'purchase', now() + interval '1 year')`,
         [BUYER, COURSE]);
 
-    // What the browser left before migration 38: `courses/` rows, one with a
-    // `foundations/` twin.
-    await db.query(
-        `INSERT INTO user_progress (user_id, content_id) VALUES ($1, 'courses/solo'), ($1, 'courses/twin'), ($1, 'foundations/twin')`, [OTHER]);
-    await db.exec(readMigration('20260929_38_progress_server_only.sql'));
+    // Applied to production 2026-09-29. Its rename of `courses/` rows was
+    // proven here before it joined the baseline, and by the production probe.
+    await expectMigrationApplied(db, '20260929_38_progress_server_only.sql');
 }, 120_000);
 
 afterAll(async () => { await db?.close(); });
@@ -217,12 +215,6 @@ describe('Her browser cannot write progress (migration 38)', () => {
         const { rows } = await asRole<{ user_id: string }>(db, 'authenticated', BUYER, 'SELECT user_id FROM user_progress');
         expect(rows.length).toBeGreaterThan(0);
         expect(rows.every(r => r.user_id === BUYER)).toBe(true);
-    });
-
-    it('moved the courses/ rows to where the course pages read them', async () => {
-        const ids = await progressOf(OTHER);
-        expect(ids.filter(id => id.startsWith('courses/'))).toEqual([]);
-        expect(ids.filter(id => id === 'foundations/solo' || id === 'foundations/twin')).toEqual(['foundations/solo', 'foundations/twin']);
     });
 
     it('dropped the single term line-item columns', async () => {

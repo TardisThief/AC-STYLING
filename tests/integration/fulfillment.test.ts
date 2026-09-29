@@ -198,10 +198,10 @@ beforeAll(async () => {
     await db.query(`INSERT INTO services (title, stripe_product_id, price_id, unlocks_studio_access) VALUES ('Studio', $1, 'price_studio_service', true)`, [PRODUCT.studioService]);
 
     await expectMigrationApplied(db, '20260925_23_grant_uniqueness_and_studio_unlock.sql');
-    // PAY-001, closed by migration 27 (applied to production 2026-09-26).
-    await expectMigrationApplied(db, '20260926_27_term_line_item.sql');
-    // ...and its residual window, closed by migration 37 (applied 2026-09-29).
+    // PAY-001: migration 27 stamped the last line item on a term; 37 keeps
+    // every one, and 38 dropped 27's single columns (both applied 2026-09-29).
     await expectMigrationApplied(db, '20260929_37_term_line_items.sql');
+    await expectMigrationApplied(db, '20260929_38_progress_server_only.sql');
     // Deleting an account closes its purchases; applied to production 2026-09-26.
     await expectMigrationApplied(db, '20260926_32_keep_sales_after_account_deletion.sql');
 }, 60000);

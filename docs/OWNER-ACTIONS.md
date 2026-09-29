@@ -330,7 +330,13 @@ improvements, not fixes.
 
 ---
 
-## 5. Check the Resend plan limits — half answered 2026-09-29; the caps need one look at the dashboard
+## 5. ~~Check the Resend plan limits~~ — answered 2026-09-29: Free plan, 100 a day, 3,000 a month
+
+**Owner confirmed in the dashboard (2026-09-29):** the caps are **100 emails a
+day and 3,000 a month** (the Free plan). Enough for launch week at normal
+volume; **upgrade to the first paid tier before any announcement** that could
+bring more than about 50 purchases in one day (each can send 1–2 emails, plus
+sign-up confirmations). Background below.
 
 **What the headers mean (measured 2026-09-29).** One test email to
 `hello@theacstyle.com` moved `x-resend-monthly-quota` from 2 to 4 (an auth
