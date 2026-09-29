@@ -444,6 +444,13 @@ in `Studio`). Two choices worth confirming: the category names
 statuses ("Conservar", "Arreglar", "Donar", "Archivar"). The upload page's
 existing Spanish was kept as it was.
 
+**Added 2026-09-29, content to enter (not just read):** the two live services
+have no Spanish text at all, so `/es/vault/services` shows them in English.
+The admin service form now has a Spanish block (Título, Subtítulo,
+Descripción, and Price Display (ES)); each falls back to the English field
+when empty. Their English descriptions are still placeholders ("TEST ----",
+"EXPLANATION"), so both languages need writing.
+
 ## 10. Replace `public/logo.png` with a larger original — minor
 
 150×150. It clears Google's 112×112 floor for the `Organization` logo in

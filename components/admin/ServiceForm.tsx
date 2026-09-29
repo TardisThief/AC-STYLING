@@ -23,6 +23,9 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
         title: service?.title || '',
         subtitle: service?.subtitle || '',
         description: service?.description || '',
+        titleEs: service?.title_es || '',
+        subtitleEs: service?.subtitle_es || '',
+        descriptionEs: service?.description_es || '',
         priceDisplay: service?.price_display || '',
         priceDisplayEs: service?.price_display_es || '',
         priceId: service?.price_id || '',
@@ -45,6 +48,9 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
                 title: service.title,
                 subtitle: service.subtitle || '',
                 description: service.description || '',
+                titleEs: service.title_es || '',
+                subtitleEs: service.subtitle_es || '',
+                descriptionEs: service.description_es || '',
                 priceDisplay: service.price_display || '',
                 priceDisplayEs: service.price_display_es || '',
                 priceId: service.price_id || '',
@@ -108,6 +114,10 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             title: payload.title,
             subtitle: payload.subtitle,
             description: payload.description,
+            // The Services page shows these to Spanish readers, English when empty.
+            title_es: payload.titleEs,
+            subtitle_es: payload.subtitleEs,
+            description_es: payload.descriptionEs,
             price_display: payload.priceDisplay,
             price_display_es: payload.priceDisplayEs,
             price_id: payload.priceId,
@@ -265,6 +275,51 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
                             placeholder="Detailed explanation of the service..."
                             className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:outline-none focus:border-ac-gold resize-none"
                         />
+                    </div>
+
+                    {/* Spanish. Shown on /es/vault/services; each falls back to the
+                        English field above when left empty. */}
+                    <div className="space-y-4 border-t border-ac-taupe/10 pt-6">
+                        <p className="text-xs font-bold text-ac-taupe/60 uppercase tracking-widest">
+                            Spanish
+                        </p>
+                        <div>
+                            <label htmlFor="service-title-es" className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mb-2">
+                                Título (ES)
+                            </label>
+                            <input
+                                id="service-title-es"
+                                type="text"
+                                value={formData.titleEs}
+                                onChange={(e) => setFormData({ ...formData, titleEs: e.target.value })}
+                                placeholder="La estilista personal"
+                                className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:outline-none focus:border-ac-gold"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="service-subtitle-es" className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mb-2">
+                                Subtítulo (ES)
+                            </label>
+                            <input
+                                id="service-subtitle-es"
+                                type="text"
+                                value={formData.subtitleEs}
+                                onChange={(e) => setFormData({ ...formData, subtitleEs: e.target.value })}
+                                className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:outline-none focus:border-ac-gold"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="service-description-es" className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mb-2">
+                                Descripción (ES)
+                            </label>
+                            <textarea
+                                id="service-description-es"
+                                value={formData.descriptionEs}
+                                onChange={(e) => setFormData({ ...formData, descriptionEs: e.target.value })}
+                                rows={4}
+                                className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:outline-none focus:border-ac-gold resize-none"
+                            />
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
