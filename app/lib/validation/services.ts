@@ -11,6 +11,8 @@ export const serviceSchema = z.object({
     subtitle: optionalTextPreserve,
     description: optionalTextPreserve,
     price_display: optionalTextPreserve,
+    // Migration 36: the price as shown in Spanish; empty falls back to price_display.
+    price_display_es: optionalTextPreserve,
     price_id: optionalTextPreserve,
     stripe_url: optionalTextPreserve,
     stripe_product_id: optionalTextPreserve,

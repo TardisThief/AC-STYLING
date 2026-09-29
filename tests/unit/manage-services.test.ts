@@ -59,6 +59,18 @@ describe('upsertService', () => {
         expect(mockWriteFrom).not.toHaveBeenCalled()
     })
 
+    // Migration 36. The schema stripped price_display_es as an unknown key, so
+    // a Spanish price entered in admin never reached the row.
+    it('keeps the Spanish price', async () => {
+        const chain = upsertChain()
+        mockWriteFrom.mockReturnValue(chain)
+
+        const result = await upsertService({ title: 'Styling Session', price_display: 'From $500', price_display_es: 'Desde $500' })
+
+        expect(result.success).toBe(true)
+        expect(chain.upsert.mock.calls[0][0]).toMatchObject({ price_display: 'From $500', price_display_es: 'Desde $500' })
+    })
+
     it('strips unknown columns — mass-assignment regression guard', async () => {
         const chain = upsertChain()
         mockWriteFrom.mockReturnValue(chain)

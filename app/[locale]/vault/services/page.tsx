@@ -7,6 +7,7 @@ import { ArrowLeft, Sparkles, ArrowRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { pageMetadata } from '@/app/lib/seo';
+import { localizedServicePrice } from '@/app/lib/service-price';
 
 export const generateMetadata = pageMetadata({ key: 'vaultServices' });
 
@@ -61,22 +62,13 @@ export default async function ServicesPage({ params }: { params: { locale: strin
         userName = profile?.full_name?.split(' ')[0] || "";
     }
 
-    // The Spanish price when there is one (services.price_display_es, migration
-    // 36). Read defensively: this code ships before the column exists, and the
-    // English text is the right fallback either way.
-    const spanishPrice = (row: object): string | null => {
-        if (locale !== 'es') return null;
-        const es = (row as { price_display_es?: unknown }).price_display_es;
-        return typeof es === 'string' && es.trim() ? es : null;
-    };
-
     // Split services
     const sessionServices = services?.filter(s => s.type === 'session').map(s => ({
         ...s,
         title: locale === 'es' && s.title_es ? s.title_es : s.title,
         subtitle: locale === 'es' && s.subtitle_es ? s.subtitle_es : s.subtitle,
         description: locale === 'es' && s.description_es ? s.description_es : s.description,
-        price_display: spanishPrice(s) ?? s.price_display,
+        price_display: localizedServicePrice(s, locale),
     })) || [];
 
     const retainerServiceRaw = services?.find(s => s.type === 'retainer');
@@ -85,7 +77,7 @@ export default async function ServicesPage({ params }: { params: { locale: strin
         title: locale === 'es' && retainerServiceRaw.title_es ? retainerServiceRaw.title_es : retainerServiceRaw.title,
         subtitle: locale === 'es' && retainerServiceRaw.subtitle_es ? retainerServiceRaw.subtitle_es : retainerServiceRaw.subtitle,
         description: locale === 'es' && retainerServiceRaw.description_es ? retainerServiceRaw.description_es : retainerServiceRaw.description,
-        price_display: spanishPrice(retainerServiceRaw) ?? retainerServiceRaw.price_display,
+        price_display: localizedServicePrice(retainerServiceRaw, locale),
     } : undefined;
 
     return (

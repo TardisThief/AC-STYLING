@@ -24,6 +24,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
         subtitle: service?.subtitle || '',
         description: service?.description || '',
         priceDisplay: service?.price_display || '',
+        priceDisplayEs: service?.price_display_es || '',
         priceId: service?.price_id || '',
         stripeUrl: service?.stripe_url || '',
         stripeProductId: service?.stripe_product_id || '',
@@ -45,6 +46,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
                 subtitle: service.subtitle || '',
                 description: service.description || '',
                 priceDisplay: service.price_display || '',
+                priceDisplayEs: service.price_display_es || '',
                 priceId: service.price_id || '',
                 stripeUrl: service.stripe_url || '',
                 stripeProductId: service.stripe_product_id || '',
@@ -107,6 +109,7 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
             subtitle: payload.subtitle,
             description: payload.description,
             price_display: payload.priceDisplay,
+            price_display_es: payload.priceDisplayEs,
             price_id: payload.priceId,
             stripe_url: payload.stripeUrl,
             stripe_product_id: payload.stripeProductId,
@@ -274,6 +277,16 @@ export default function ServiceForm({ service, onSuccess, onCancel }: ServiceFor
                                 value={formData.priceDisplay}
                                 onChange={(e) => setFormData({ ...formData, priceDisplay: e.target.value })}
                                 placeholder="$500"
+                                className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:outline-none focus:border-ac-gold"
+                            />
+                            <label className="block text-xs font-bold text-ac-taupe/80 uppercase tracking-widest mt-4 mb-2">
+                                Price Display (ES)
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.priceDisplayEs}
+                                onChange={(e) => setFormData({ ...formData, priceDisplayEs: e.target.value })}
+                                placeholder="Desde $500 (empty: same as above)"
                                 className="w-full bg-white/40 border border-ac-taupe/10 rounded-sm p-3 text-ac-taupe focus:outline-none focus:border-ac-gold"
                             />
                         </div>
